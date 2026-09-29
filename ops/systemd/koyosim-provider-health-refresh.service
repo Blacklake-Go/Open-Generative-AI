@@ -1,0 +1,14 @@
+[Unit]
+Description=Refresh health for KoyoSIM primary provider routes
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=www
+Group=www
+WorkingDirectory=/home/wwwroot/AI/domain/koyosim.com/web
+EnvironmentFile=/etc/koyosim.env
+Environment=NODE_ENV=production
+ExecStart=/usr/local/bin/node --conditions=react-server scripts/refresh-provider-readiness.mjs
+TimeoutStartSec=90
