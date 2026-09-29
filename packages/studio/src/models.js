@@ -4408,17 +4408,6 @@ export const t2vModels = [
         "type": "int",
         "description": "The duration of the generated video in seconds",
         "default": 5
-      },
-      "quality": {
-        "enum": [
-          "high",
-          "basic"
-        ],
-        "title": "Quality",
-        "name": "quality",
-        "type": "string",
-        "description": "Quality of the generated video.",
-        "default": "basic"
       }
     },
     "provider": "bytedance",
