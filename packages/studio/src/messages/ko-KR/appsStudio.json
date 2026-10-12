@@ -1,0 +1,42 @@
+{
+  "hero": {
+    "badge": "수익 창출이 가능한 템플릿",
+    "titleLine1": "AI 앱을 실행하세요.",
+    "titleLine2": "오늘부터 수익을 창출하세요.",
+    "subtitle": "각 템플릿은 몇 분 안에 배포할 수 있는 완전한 기능을 갖춘 Stripe 통합 AI SaaS입니다. 사용자에게 비용을 청구하고 수익을 유지하세요. muapi가 AI 인프라를 처리합니다."
+  },
+  "steps": {
+    "stepLabel": "단계",
+    "deploy": {
+      "title": "몇 분 안에 배포",
+      "body": "오픈 소스 템플릿을 포크하고, muapi 키를 추가하고, Vercel에 푸시하세요. 백엔드 설정이 필요하지 않습니다."
+    },
+    "collect": {
+      "title": "지불금 징수",
+      "body": "스트라이프는 사전 배선되어 있습니다. 일회성 크레딧, 구독, 종량제 등 원하는 가격을 설정하세요."
+    },
+    "keep": {
+      "title": "수익을 유지하세요",
+      "body": "결제는 Stripe 계정으로 바로 이루어집니다. 귀하는 제품, 브랜드 및 이익을 소유하고 있습니다."
+    }
+  },
+  "card": {
+    "templateFallback": "주형",
+    "github": "Github",
+    "demo": "데모"
+  },
+  "footer": {
+    "moreComingSoon": "Muapi 생태계 — 더 많은 템플릿이 곧 제공될 예정입니다."
+  },
+  "modal": {
+    "deployTitle": "{appName} 배포",
+    "body": "세부 정보를 입력하시면 설치 지침과 함께 {appName} 템플릿을 보내드립니다. 즉시 배포하고 수익을 창출하실 수 있습니다.",
+    "sending": "세부정보를 보내는 중...",
+    "getTemplate": "템플릿 가져오기",
+    "maybeLater": "어쩌면 나중에"
+  },
+  "toast": {
+    "requestSuccess": "알았어요! 곧 템플릿 세부정보를 보내드리겠습니다.",
+    "requestError": "관심상품 등록에 실패했습니다. 나중에 다시 시도해 주세요."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "hero": {
+    "badge": "收入就緒模板",
+    "titleLine1": "啟動人工智慧應用程式。",
+    "titleLine2": "今天開始賺錢。",
+    "subtitle": "每個模板都是功能齊全、與 Stripe 整合的 AI SaaS，您可以在幾分鐘內完成部署。向用戶收費，保留收入——muapi 負責處理人工智慧基礎設施。"
+  },
+  "steps": {
+    "stepLabel": "步",
+    "deploy": {
+      "title": "只需幾分鐘即可部署",
+      "body": "分叉開源模板，加入 muapi 金鑰，然後推送到 Vercel。無需後端設定。"
+    },
+    "collect": {
+      "title": "收款",
+      "body": "Stripe 已預先接線。設定您自己的定價—一次性積分、訂閱或按使用付費。"
+    },
+    "keep": {
+      "title": "保持收入",
+      "body": "付款直接存入您的 Stripe 帳戶。您擁有產品、品牌和利潤。"
+    }
+  },
+  "card": {
+    "templateFallback": "範本",
+    "github": "吉圖布",
+    "demo": "示範"
+  },
+  "footer": {
+    "moreComingSoon": "Muapi 生態系統 — 更多範本即將推出"
+  },
+  "modal": {
+    "deployTitle": "部署{appName}",
+    "body": "輸入您的詳細信息，我們將向您發送 {appName} 模板以及設定說明，以便您可以立即部署並開始賺錢。",
+    "sending": "正在發送詳細資訊...",
+    "getTemplate": "取得模板",
+    "maybeLater": "也許稍後"
+  },
+  "toast": {
+    "requestSuccess": "知道了！我們很快就會向您發送模板詳細資訊。",
+    "requestError": "未能登記興趣。請稍後重試。"
+  }
+}

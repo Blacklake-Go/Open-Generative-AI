@@ -1,0 +1,68 @@
+{
+  "labels": {
+    "video": "Video",
+    "characterImage": "Imagen del personaje",
+    "library": "Biblioteca",
+    "orientationPrefix": "Orientación:"
+  },
+  "buttons": {
+    "use": "Usar",
+    "download": "Descargar",
+    "delete": "Borrar",
+    "swapBody": "Intercambiar cuerpo",
+    "swapping": "Intercambiando..."
+  },
+  "titles": {
+    "clickToClear": "{fileName} — haga clic para borrar",
+    "uploadFile": "Cargue el archivo {label} o arrástrelo y suéltelo",
+    "enlargePreview": "Ampliar vista previa",
+    "deleteFromLibrary": "Eliminar de la biblioteca"
+  },
+  "assetLibrary": {
+    "header": "Biblioteca de recursos",
+    "tabs": {
+      "videos": "Vídeos",
+      "images": "Imágenes",
+      "results": "Resultados"
+    },
+    "empty": "No se encontraron activos"
+  },
+  "dropdowns": {
+    "model": "Modelo",
+    "selectModel": "Seleccionar modelo",
+    "aspectRatio": "Relación de aspecto",
+    "orientation": "Orientación",
+    "orientationImage": "Imagen",
+    "orientationVideo": "Video",
+    "orientationImageDesc": "Usar orientación de imagen (vídeo máximo de 10 segundos)",
+    "orientationVideoDesc": "Usar orientación de video (video máximo de 30 segundos)"
+  },
+  "empty": {
+    "titleLine1": "COMIENCE A CREAR CON",
+    "titleLine2": "ESTUDIO DE INTERCAMBIO DE CUERPO",
+    "description": "Intercambia el personaje de cualquier vídeo de forma dinámica eligiendo un clip de vídeo y una imagen del personaje objetivo."
+  },
+  "placeholders": {
+    "prompt": "Opcional: describe el movimiento o la escena..."
+  },
+  "badges": {
+    "bodySwap": "Intercambio de cuerpo"
+  },
+  "confirm": {
+    "deleteGenerated": "¿Está seguro de que desea eliminar este elemento generado?"
+  },
+  "errors": {
+    "videoTooLarge": "El vídeo supera el límite de 50 MB.",
+    "imageTooLarge": "La imagen supera el límite de 10 MB.",
+    "missingVideo": "Primero cargue un video fuente.",
+    "missingImage": "Primero sube una imagen de personaje.",
+    "videoUploadFailed": "Error al subir el vídeo: {message}",
+    "imageUploadFailed": "Error al cargar la imagen: {message}",
+    "generationFailed": "Falló la generación de cambio de carrocería"
+  },
+  "defaults": {
+    "selectedVideo": "Vídeo seleccionado",
+    "selectedImage": "Imagen seleccionada",
+    "resultVideo": "Vídeo de resultados"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "tabs": {
+    "templates": "Plantillas",
+    "my-agents": "Mis agentes",
+    "my-chats": "Mis Chats"
+  },
+  "headings": {
+    "agents": "Agentes",
+    "createAgent": "Crear agente"
+  },
+  "buttons": {
+    "back": "Agentes",
+    "create": "Crear",
+    "createAgentSubmit": "Crear agente",
+    "creating": "Creando...",
+    "send": "Enviar",
+    "retry": "Rever",
+    "browseTemplates": "Explorar plantillas"
+  },
+  "labels": {
+    "name": "Nombre",
+    "description": "Descripción",
+    "systemPrompt": "Aviso del sistema",
+    "welcomeMessage": "Mensaje de bienvenida (opcional)"
+  },
+  "placeholders": {
+    "name": "p.ej. Subtítulos Crafter Pro",
+    "description": "¿En qué ayuda este agente?",
+    "systemPrompt": "Eres un asistente útil que...",
+    "welcomeMessage": "¡Hola! ¿Cómo puedo ayudarte hoy?",
+    "chatInput": "Envía un mensaje a este agente..."
+  },
+  "empty": {
+    "noChats": "Aún no hay chats",
+    "noAgents": "No se encontraron agentes"
+  },
+  "errors": {
+    "loadFailed": "No se pudo cargar.",
+    "loadAgentFailed": "No se pudo cargar el agente",
+    "sendFailed": "No se pudo enviar el mensaje",
+    "createFailed": "No se pudo crear el agente"
+  },
+  "card": {
+    "defaultCategory": "Asistente de IA",
+    "unnamedAgent": "Agente sin nombre",
+    "byPrefix": "Por",
+    "unknownAgent": "Agente desconocido",
+    "newChat": "Nuevo chat",
+    "msgsSuffix": "mensajes"
+  },
+  "time": {
+    "justNow": "En este momento",
+    "minutesAgo": "Hace {n} min",
+    "hoursAgo": "Hace {n}h",
+    "daysAgo": "Hace {n}d"
+  },
+  "unavailable": {
+    "title": "Creative Agent no está disponible temporalmente",
+    "description": "Estamos conectando las sesiones por usuario, la facturación de generaciones y el almacenamiento de resultados. Mientras tanto, usa las herramientas de imagen y vídeo disponibles en Studio."
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "builder": {
+    "title": "Diseñador de Personajes",
+    "reset": "Reiniciar"
+  },
+  "categoryTabs": {
+    "face": "Rostro",
+    "body": "Cuerpo",
+    "style": "Estilo y Encuadre"
+  },
+  "subcategories": {
+    "character_type": "Tipo de personaje",
+    "gender": "Género",
+    "ethnicity_origin_base": "Etnia / Origen",
+    "eye_color": "Color de ojos",
+    "eyes_type": "Tipo de ojo",
+    "eyes_details": "Características de los ojos",
+    "mouth": "Boca y dientes",
+    "ears": "Orejas",
+    "horns": "Cuernos",
+    "skin_conditions": "Condiciones de la piel",
+    "face_skin_material": "Material de la piel de la cara",
+    "face_surface_pattern": "Patrón de piel",
+    "body_type": "Tipo de cuerpo",
+    "left_arm": "Brazo izquierdo",
+    "right_arm": "Brazo derecho",
+    "left_leg": "Pierna izquierda",
+    "right_leg": "Pierna derecha",
+    "hair": "Cabello / Crecimiento",
+    "accessories": "Accesorios y marcas",
+    "rendering_style": "Estilo de renderizado",
+    "framing": "Encuadre y ángulo",
+    "outfit_preset": "Traje y equipo",
+    "backdrop": "Ambiente y fondo"
+  },
+  "toolbar": {
+    "shuffle": "Barajar",
+    "generate": "Generar personaje",
+    "generating": "Diseñando…",
+    "model": "Modelo",
+    "credits": "Créditos"
+  },
+  "preview": {
+    "generating": "Generando tu personaje original…",
+    "emptyTitle": "Tu personaje original vive aquí.",
+    "emptySubtitleLine1": "Diseña y construye tu personaje único",
+    "emptySubtitleLine2": "desde cero",
+    "save": "Guardar",
+    "altGenerated": "Personaje original generado"
+  },
+  "tags": {
+    "showMore": "mostrar más",
+    "hide": "ocultar"
+  },
+  "customPrompt": {
+    "placeholder": "Agregue detalles adicionales... p. ej. armadura cyberpunk, luz de borde épica, render UE5"
+  },
+  "gallery": {
+    "title": "Personajes Diseñados",
+    "countSuffix": "personajes",
+    "emptyText": "Los personajes generados\naparecerán aquí",
+    "altPrefix": "Personaje",
+    "download": "Descargar"
+  },
+  "errors": {
+    "generationFailed": "La generación fracasó. Por favor inténtalo de nuevo.",
+    "noActiveModels": "No hay modelos de imagen activos disponibles en este momento.",
+    "loginRequired": "Inicia sesión para generar personajes."
+  }
+}
