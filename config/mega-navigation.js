@@ -226,7 +226,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '智能识别高光片段与自动化剪辑',
           en: 'Smart highlight extraction & automated editing',
         },
-        badge: 'SOON',
+        badge: 'NEW',
         href: '/studio?tab=clipping',
       },
       {
@@ -241,7 +241,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '骨骼姿态追踪与动作轨迹驱动',
           en: 'Skeletal pose tracking & motion transfer',
         },
-        badge: 'SOON',
+        badge: 'HOT',
         href: '/studio?tab=motion-control',
       },
       {
@@ -256,7 +256,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '推拉摇移与复杂动态摄像机转场',
           en: 'Dynamic camera paths, zooms and pans',
         },
-        badge: 'SOON',
+        badge: 'NEW',
         href: '/studio?tab=vibe-motion',
       },
       {
@@ -271,7 +271,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '音频与人物嘴型高精度对齐匹配',
           en: 'Precision lip sync matching voice & audio',
         },
-        badge: 'SOON',
+        badge: 'HOT',
         href: '/studio?tab=lipsync',
       },
       {
@@ -286,7 +286,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '角色身形替换与动作无缝融合',
           en: 'Seamless character body & pose replacement',
         },
-        badge: 'SOON',
+        badge: 'NEW',
         href: '/studio?tab=body-swap',
       },
       {
@@ -301,7 +301,7 @@ export const MEGA_NAV_CATEGORIES = [
           zh: '爆款带货短视频与电商切片制作',
           en: 'High-converting marketing clips & ads',
         },
-        badge: 'SOON',
+        badge: 'BETA',
         href: '/studio?tab=marketing',
       },
     ],

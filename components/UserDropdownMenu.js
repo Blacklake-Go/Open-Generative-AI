@@ -25,7 +25,6 @@ import { normalizeLocale, LOCALE_CONFIGS, SUPPORTED_LOCALES, getCommonCopy } fro
 import { getAuthRoutes } from '@/lib/authCopy';
 import { switchLocale } from '@/lib/client/localeSwitch';
 import { openGlobalAccountModal } from '@/lib/accountEvents';
-import { openGlobalProfileModal } from '@/lib/profileEvents';
 import SubscriptionModal from '@/components/subscription/SubscriptionModal';
 import AvatarFrame from '@/components/profile/AvatarFrame';
 import UserAvatar from '@/components/ui/UserAvatar';
@@ -69,7 +68,6 @@ export default function UserDropdownMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [showMenuLangSub, setShowMenuLangSub] = useState(false);
   const [liveAvatar, setLiveAvatar] = useState(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [userEntitlements, setUserEntitlements] = useState(null);
@@ -93,6 +91,8 @@ export default function UserDropdownMenu({
   };
   const activeLocale = normalizeLocale(locale || user?.locale || getCookieLocale() || 'zh-CN');
   const activeLanguage = LANGUAGE_LIST.find((item) => item.code === activeLocale) || LANGUAGE_LIST[0];
+  const authRoutes = getAuthRoutes(activeLocale);
+  const profileUrl = authRoutes.profileUrl || (activeLocale.startsWith('zh') ? '/zh/profile' : '/profile');
   const copy = getCommonCopy(activeLocale);
   const t = copy.userMenu || {};
   const coinsHref = activeLocale.startsWith('zh') ? '/zh/coins' : '/coins';
@@ -277,7 +277,6 @@ export default function UserDropdownMenu({
     setIsMenuOpen(false);
     setIsNotifOpen(false);
     setIsLangOpen(false);
-    setShowMenuLangSub(false);
   }, [pathname]);
 
   // 复制 6 位不可变数字 ID
@@ -611,12 +610,13 @@ export default function UserDropdownMenu({
               role="menu"
               aria-orientation="vertical"
             >
-              {/* (1) 顶部用户信息卡片 (大头像 + 昵称 + 6位UID + 点击进入资料与头像编辑) */}
+              {/* (1) 顶部用户信息卡片 (大头像 + 昵称 + 6位UID + 点击进入个人主页 / 编辑资料) */}
               <div className="flex items-center justify-between gap-3 p-1">
-                <div
+                <Link
+                  href={profileUrl}
+                  onClick={() => setIsMenuOpen(false)}
                   className="flex min-w-0 items-center gap-2.5 cursor-pointer group"
-                  onClick={() => handleOpenAccountModal('settings')}
-                  title="点击进入个人用户名与头像修改"
+                  title={activeLocale.startsWith('zh') ? '进入个人主页' : 'Go to Profile'}
                 >
                   <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-[#1b1c24] flex items-center justify-center text-base font-bold text-cyan-300 shadow-md">
                     <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
@@ -643,7 +643,10 @@ export default function UserDropdownMenu({
                     <div className="mt-0.5 flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={(e) => handleCopyUserNumber(userNumber, e)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCopyUserNumber(userNumber, e);
+                        }}
                         className="truncate text-[11px] text-zinc-400 font-mono hover:text-cyan-300 transition-colors cursor-pointer"
                         title={t.copyUid || 'Click to copy UID'}
                       >
@@ -656,7 +659,7 @@ export default function UserDropdownMenu({
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* 前往编辑资料 */}
                 <button
@@ -703,12 +706,9 @@ export default function UserDropdownMenu({
               {/* (3) 核心功能列表 (带丝滑 Hover 位移与图标放大动效) */}
               <div className="space-y-0.5 pt-1">
                 {/* 1. 个人主页 (作品集与活跃动态) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openGlobalProfileModal({ creator: user });
-                  }}
+                <Link
+                  href={profileUrl}
+                  onClick={() => setIsMenuOpen(false)}
                   className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
@@ -716,7 +716,7 @@ export default function UserDropdownMenu({
                     <span>{activeLocale.startsWith('zh') ? '个人主页' : 'Creator Profile'}</span>
                   </div>
                   <ChevronRight className="size-3.5 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400" />
-                </button>
+                </Link>
 
                 {/* 2. 账号与设置 (个人资料、头像、用户名、密码安全、绑定) */}
                 <button
@@ -752,58 +752,6 @@ export default function UserDropdownMenu({
                     VIP
                   </span>
                 </button>
-
-                {/* 8. 界面语言切换与展开列表 */}
-                <div className="space-y-1">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e?.preventDefault?.();
-                      e?.stopPropagation?.();
-                      setShowMenuLangSub((prev) => !prev);
-                    }}
-                    className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Globe className="size-4 text-cyan-400/90 transition-transform group-hover:scale-110" />
-                      <span>{t.interfaceLanguage || 'Language'}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                      <span>{activeLanguage.native}</span>
-                      <ChevronRight className={`size-3.5 text-zinc-600 transition-transform group-hover:text-zinc-400 ${showMenuLangSub ? 'rotate-90 text-cyan-400' : ''}`} />
-                    </div>
-                  </button>
-
-                  {/* 展开的语言子列表 */}
-                  {showMenuLangSub && (
-                    <div className="pl-6 pr-1 py-1 space-y-0.5 rounded-xl bg-black/40 border border-white/[0.05]">
-                      {LANGUAGE_LIST.map((item) => {
-                        const isSelected = activeLocale === item.code || (item.code === 'zh-CN' && activeLocale === 'zh');
-                        return (
-                          <button
-                            key={item.code}
-                            type="button"
-                            onClick={() => {
-                              setIsMenuOpen(false);
-                              toggleLanguage(item.code);
-                            }}
-                            className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[11px] transition-all cursor-pointer ${
-                              isSelected
-                                ? 'text-cyan-300 font-semibold bg-cyan-950/30'
-                                : 'text-zinc-400 hover:text-white hover:bg-white/[0.05]'
-                            }`}
-                          >
-                            <span className="flex items-center gap-1.5">
-                              <span>{item.flag}</span>
-                              <span>{item.native}</span>
-                            </span>
-                            {isSelected && <Check className="size-3 text-cyan-400" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
 
                 {/* 管理员控制台 (仅限管理员) */}
                 {isAdmin && (

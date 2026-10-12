@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
+  Loader2,
 } from 'lucide-react';
 import RechargeModal from '@/components/account/RechargeModal';
 import AuthModal from '@/components/AuthModal';
@@ -644,9 +645,17 @@ export default function SubscriptionModal({
                   <button
                     type="button"
                     onClick={() => handleSubscribe(plan)}
-                    className={`mt-4 w-full h-11 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-150 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-elevation-1 ${plan.btnBgClass}`}
+                    disabled={isRechargeOpen && selectedPlanId === plan.id}
+                    className={`mt-4 w-full h-11 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-150 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-elevation-1 flex items-center justify-center gap-1.5 ${plan.btnBgClass}`}
                   >
-                    订阅
+                    {isRechargeOpen && selectedPlanId === plan.id ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" />
+                        <span>正在拉起支付...</span>
+                      </>
+                    ) : (
+                      <span>订阅</span>
+                    )}
                   </button>
 
                   {/* 模块一：常用模型折算 */}
