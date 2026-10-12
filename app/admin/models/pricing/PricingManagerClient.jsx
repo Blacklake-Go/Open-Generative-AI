@@ -3,6 +3,7 @@
 import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import { Card, MetricCard, StatusBadge, Button } from '@/components/admin/AdminUi';
+import BrandLogo from '@/components/admin/BrandLogo';
 import {
   Coins,
   Search,
@@ -590,8 +591,13 @@ export default function PricingManagerClient({
                   {filteredRulesList.map((p) => (
                     <tr key={p.modelId} className="transition-colors hover:bg-white/[0.02]">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-white">{p.modelName}</div>
-                        <div className="text-[11px] text-gray-500 font-mono">{p.modelId}</div>
+                        <div className="flex items-center gap-2.5">
+                          <BrandLogo model={{ id: p.modelId, name: p.modelName }} size="sm" className="rounded-md shrink-0" />
+                          <div className="min-w-0">
+                            <div className="font-medium text-white truncate">{p.modelName}</div>
+                            <div className="text-[11px] text-gray-500 font-mono truncate">{p.modelId}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge tone="neutral">{CATEGORY_LABELS[p.category] || p.category}</StatusBadge>
@@ -891,24 +897,31 @@ export default function PricingManagerClient({
                   {filteredFrontendList.map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-white/[0.02]">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-white">{item.displayName}</span>
-                          {item.isDefault && (
-                            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.2 text-[10px] text-amber-300">
-                              默认推荐
-                            </span>
-                          )}
-                          {item.isPinned && (
-                            <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.2 text-[10px] text-cyan-300">
-                              置顶
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[11px] text-gray-500 font-mono">{item.id}</span>
-                          <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.2 text-[10px] text-white/50">
-                            {item.brand}
-                          </span>
+                        <div className="flex items-center gap-2.5">
+                          <BrandLogo model={{ id: item.id, name: item.displayName, brand: item.brand }} size="sm" className="rounded-md shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-white truncate">{item.displayName}</span>
+                              {item.isDefault && (
+                                <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.2 text-[10px] text-amber-300">
+                                  默认推荐
+                                </span>
+                              )}
+                              {item.isPinned && (
+                                <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.2 text-[10px] text-cyan-300">
+                                  置顶
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[11px] text-gray-500 font-mono truncate">{item.id}</span>
+                              {item.brand && (
+                                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.2 text-[10px] text-white/50">
+                                  {item.brand}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">

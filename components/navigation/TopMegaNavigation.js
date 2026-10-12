@@ -1,15 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
-import { getMegaNavCategories, getMegaNavCopy } from '../../config/mega-navigation';
+import { ChevronDown } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import { getMegaNavCategories } from '../../config/mega-navigation';
 import MegaMenuPanel from './MegaMenuPanel';
 import NavBadge from './NavBadge';
+import { getCommonCopy, getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import { inferStudioTabFromModel } from '@/lib/studio-routes';
 import {
   FOCUS_RING,
-  PILL_SEGMENT_ACTIVE,
-  PILL_SEGMENT_IDLE,
-  PILL_SEGMENT_TRACK,
   withoutRadiusUtilities,
 } from 'studio/ui/tokens';
 
@@ -28,86 +32,234 @@ export default function TopMegaNavigation({
   onSelectTab,
   className = '',
 }) {
-  const categories = getMegaNavCategories(locale);
-  const copy = getMegaNavCopy(locale);
+  const pathname = usePathname();
+  const normLocale = normalizeLocale(locale);
+  const isChinese = normLocale.startsWith('zh');
+  const copy = getCommonCopy(normLocale);
+  const tNav = copy.topNav || {};
+  const rootPath = getLocaleConfig(normLocale)?.rootPath || '';
+  const categories = getMegaNavCategories(normLocale);
   const [currentOpenValue, setCurrentOpenValue] = useState('');
+  const [viewportOffset, setViewportOffset] = useState(0);
+  const [headerBottom, setHeaderBottom] = useState(56);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const rootRef = useRef(null);
+  const triggerRefs = useRef({});
+  const viewportRef = useRef(null);
+
+  // 自适应视口居中与屏幕边界检测
+  const updatePosition = useCallback(() => {
+    if (!currentOpenValue || !rootRef.current) return;
+    const triggerEl = triggerRefs.current[currentOpenValue];
+    if (!triggerEl) return;
+
+    const compute = () => {
+      if (!rootRef.current || !triggerEl || typeof window === 'undefined') return;
+      const rootRect = rootRef.current.getBoundingClientRect();
+      const triggerRect = triggerEl.getBoundingClientRect();
+
+      const headerEl = rootRef.current.closest('header');
+      if (headerEl) {
+        const headerRect = headerEl.getBoundingClientRect();
+        setHeaderBottom(Math.round(headerRect.bottom));
+      } else {
+        setHeaderBottom(Math.round(rootRect.bottom));
+      }
+
+      // 触发器中心点相对于根容器的水平坐标
+      const triggerCenter = triggerRect.left + triggerRect.width / 2 - rootRect.left;
+
+      // 浮层面板宽度：若已渲染取实测宽度，否则默认 768px (max-w-3xl)
+      const panelWidth = viewportRef.current?.offsetWidth || Math.min(768, window.innerWidth - 32);
+      let targetLeft = triggerCenter - panelWidth / 2;
+
+      // 视口边界保护：距屏幕左右边缘至少保留 16px 边距
+      const minPadding = 18;
+      const screenLeft = rootRect.left + targetLeft;
+      if (screenLeft < minPadding) {
+        targetLeft = Math.ceil(minPadding - rootRect.left);
+      } else if (screenLeft + panelWidth > window.innerWidth - minPadding) {
+        targetLeft = Math.floor(window.innerWidth - minPadding - panelWidth - rootRect.left);
+      }
+
+      setViewportOffset(Math.round(targetLeft));
+    };
+
+    compute();
+    const rafId = requestAnimationFrame(compute);
+    return () => cancelAnimationFrame(rafId);
+  }, [currentOpenValue]);
+
+  useEffect(() => {
+    const cleanup = updatePosition();
+    const handleResize = () => updatePosition();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      if (cleanup) cleanup();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updatePosition]);
 
   // 处理菜单项点击
   const handleItemClick = (e, item, cat) => {
     setCurrentOpenValue('');
-    const targetTabId = item.tabId || cat?.tabId || (item.modelKey ? 'image' : null);
+    const targetTabId = item.tabId || cat?.tabId || (item.modelKey ? inferStudioTabFromModel(item.modelKey) : null);
     if (targetTabId && onSelectTab) {
       onSelectTab(e, targetTabId, item.modelKey);
     }
   };
 
   return (
-    <NavigationMenu.Root
-      value={currentOpenValue}
-      onValueChange={setCurrentOpenValue}
-      delayDuration={120}
-      skipDelayDuration={300}
-      className={`${PILL_SEGMENT_TRACK} relative z-header min-w-0 ${withoutRadiusUtilities(className)}`}
-    >
-      <NavigationMenu.List className="m-0 flex list-none items-center gap-1 overflow-x-auto p-0 scrollbar-rail">
+    <>
+      <NavigationMenu.Root
+        ref={rootRef}
+        value={currentOpenValue}
+        onValueChange={setCurrentOpenValue}
+        delayDuration={120}
+        skipDelayDuration={300}
+        className={`relative z-header flex items-center min-w-0 ${withoutRadiusUtilities(className)}`}
+      >
+        <NavigationMenu.List className="m-0 flex list-none items-center gap-1.5 overflow-x-auto p-0 scrollbar-rail font-jost">
 
-        {/* 首页/探索入口 (纯链接) */}
-        <NavigationMenu.Item>
-          <NavigationMenu.Link
-            href="/studio"
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm font-medium text-ink-muted transition-[background-color,color,box-shadow] duration-fast ${PILL_SEGMENT_IDLE} ${FOCUS_RING}`}
-          >
-            {copy.explore}
-          </NavigationMenu.Link>
-        </NavigationMenu.Item>
-
-        {/* 各主分类 Mega Menu (图像、视频、音频、智能体、社区) */}
-        {categories.map((cat) => {
-          const label = cat.label;
-          const isCategoryActive = cat.features?.some((f) => f.tabId === activeTab);
-
-          return (
-            <NavigationMenu.Item key={cat.id} value={cat.id}>
-              <NavigationMenu.Trigger
-                className={`group inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm font-medium transition-[background-color,color,box-shadow] duration-fast select-none ${FOCUS_RING} ${
-                  isCategoryActive
-                    ? `font-semibold ${PILL_SEGMENT_ACTIVE}`
-                    : `${PILL_SEGMENT_IDLE} data-[state=open]:bg-wash-strong data-[state=open]:text-ink`
+          {/* 首页 */}
+          <NavigationMenu.Item>
+            <NavigationMenu.Link asChild>
+              <Link
+                href={rootPath || '/'}
+                prefetch={false}
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
+                  pathname === '/' || pathname === '/zh' || (rootPath && pathname === rootPath) ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
                 }`}
               >
-                <span>{label}</span>
-                {cat.badge && <NavBadge badge={cat.badge} />}
-                <svg
-                  className="size-3 text-ink-muted transition-transform duration-fast ease-in-out group-data-[state=open]:rotate-180 group-hover:text-ink"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+                {tNav.home || (isChinese ? '首页' : 'Home')}
+              </Link>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>
+
+          {/* 资产中心入口 */}
+          <NavigationMenu.Item>
+            <NavigationMenu.Link asChild>
+              <Link
+                href={rootPath ? `${rootPath}/assets` : '/assets'}
+                prefetch={false}
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
+                  pathname?.includes('/assets') ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
+                }`}
+              >
+                {tNav.assets || (isChinese ? '资产' : 'Assets')}
+              </Link>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>
+
+          {/* 各主分类 Mega Menu (图像、视频、音频、智能体、社区) */}
+          {categories.map((cat) => {
+            const label = cat.label;
+            const isCategoryActive = cat.features?.some((f) => f.tabId === activeTab) || (cat.id === 'community' && (pathname === '/community' || pathname?.startsWith('/community/') || pathname === '/zh/community' || pathname?.startsWith('/zh/community/')));
+
+            return (
+              <NavigationMenu.Item key={cat.id} value={cat.id}>
+                <NavigationMenu.Trigger
+                  ref={(el) => {
+                    if (el) {
+                      triggerRefs.current[cat.id] = el;
+                    } else {
+                      delete triggerRefs.current[cat.id];
+                    }
+                  }}
+                  className={`group inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast select-none ${FOCUS_RING} ${
+                    isCategoryActive
+                      ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
+                      : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink data-[state=open]:bg-wash-strong data-[state=open]:text-ink data-[state=open]:border-line-subtle'
+                  }`}
                 >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </NavigationMenu.Trigger>
+                  <span>{label}</span>
+                  {cat.badge && <NavBadge badge={cat.badge} className="font-jost" />}
+                  <ChevronDown
+                    className="w-3.5 h-3.5 ml-1 transition-transform duration-fast group-data-[state=open]:rotate-180"
+                    aria-hidden="true"
+                  />
+                </NavigationMenu.Trigger>
 
-              <NavigationMenu.Content className="animate-fade-in duration-fast">
-                <MegaMenuPanel
-                  category={cat}
-                  locale={locale}
-                  onItemClick={handleItemClick}
-                />
-              </NavigationMenu.Content>
-            </NavigationMenu.Item>
-          );
-        })}
+                <NavigationMenu.Content className="animate-fade-in duration-fast">
+                  <MegaMenuPanel
+                    category={cat}
+                    locale={locale}
+                    onItemClick={handleItemClick}
+                  />
+                </NavigationMenu.Content>
+              </NavigationMenu.Item>
+            );
+          })}
 
-      </NavigationMenu.List>
+          {/* KoyoSIM 的第二创作工作台使用同一账号与业务 API。 */}
+          <NavigationMenu.Item key="infinite-canvas">
+            <NavigationMenu.Link asChild>
+              <Link
+                href="https://www.Supdance.com/canvas"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
+              >
+                <span>{tNav.infiniteCanvas || (isChinese ? '无限画布' : 'Infinite Canvas')}</span>
+                <ExternalLink className="size-3.5" aria-hidden="true" />
+              </Link>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>
 
-      {/* 浮层视口容器 (Radix Viewport) */}
-      <div className="absolute left-0 top-full mt-2 flex justify-start">
-        <NavigationMenu.Viewport className="relative overflow-hidden rounded-2xl shadow-elevation-3 transition-[width,height] duration-fast ease-standard" />
-      </div>
-    </NavigationMenu.Root>
+          {/* 顶部导航栏最后一个菜单项：关于本站 (Fixed Final Item: About) */}
+          <NavigationMenu.Item key="nav_about_pinned">
+            <NavigationMenu.Link asChild>
+              <Link
+                href={rootPath ? `${rootPath}/about` : '/about'}
+                prefetch={false}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
+                  pathname === '/about' || (rootPath && pathname === `${rootPath}/about`)
+                    ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
+                    : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink'
+                }`}
+              >
+                <span>{tNav.about || (isChinese ? '关于' : 'About')}</span>
+              </Link>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>
+
+        </NavigationMenu.List>
+
+        {/* 浮层视口容器 (Radix Viewport - 自适应触发器居中与边界平滑过渡) */}
+        <div
+          className="absolute top-full mt-2 transition-transform duration-fast ease-standard"
+          style={{ transform: `translateX(${viewportOffset}px)` }}
+        >
+          <NavigationMenu.Viewport
+            ref={viewportRef}
+            className="relative overflow-hidden rounded-2xl shadow-elevation-3 transition-[width,height] duration-fast ease-standard"
+          />
+        </div>
+      </NavigationMenu.Root>
+
+      {/* 沉浸式 Backdrop Scrim 遮罩层 (Portal 挂载至 document.body，避免 header backdrop-filter 包含块陷阱) */}
+      {mounted &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            data-mega-scrim
+            data-state={currentOpenValue ? 'open' : 'closed'}
+            aria-hidden="true"
+            onClick={() => setCurrentOpenValue('')}
+            style={{ top: `${headerBottom}px` }}
+            className={`fixed inset-x-0 bottom-0 z-sticky bg-scrim transition-opacity duration-fast will-change-[opacity] ${
+              currentOpenValue
+                ? 'opacity-100 pointer-events-auto'
+                : 'opacity-0 pointer-events-none'
+            }`}
+          />,
+          document.body
+        )}
+    </>
   );
 }

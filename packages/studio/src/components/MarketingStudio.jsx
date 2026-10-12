@@ -26,6 +26,10 @@ import {
 } from "./prompt/PromptComposer.jsx";
 import en from "../messages/en/marketingStudio.json";
 import zh from "../messages/zh/marketingStudio.json";
+import ja from "../messages/ja-JP/marketingStudio.json";
+import ko from "../messages/ko-KR/marketingStudio.json";
+import zhTw from "../messages/zh-TW/marketingStudio.json";
+import es from "../messages/es-ES/marketingStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 const SCROLLBAR_STYLE = `
@@ -40,14 +44,14 @@ const SCROLLBAR_STYLE = `
     border-radius: 10px;
   }
   .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(34, 211, 238, 0.3);
+    background: rgba(225, 29, 116, 0.3);
   }
 `;
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
 const CheckSvg = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="4">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e11d74" strokeWidth="4">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -201,7 +205,7 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
         {url && !multiple && (
           <button 
             onClick={(e) => { e.stopPropagation(); onClear(); }}
-            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity shadow-lg"
+            className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover/slot:pointer-events-auto group-hover/slot:opacity-100 group-focus-within/slot:pointer-events-auto group-focus-within/slot:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 shadow-lg"
           >
             <CloseSvg />
           </button>
@@ -248,7 +252,7 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
                   e.stopPropagation();
                   onPreview(item);
                 }}
-                className="absolute top-1.5 left-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-[#22d3ee] hover:text-black transition-all border border-white/10 z-20 text-white"
+                className="pointer-events-none absolute left-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-[#e11d74] hover:text-white"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -326,7 +330,7 @@ export default function MarketingStudio({
   historyItems,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
   const LEGACY_PERSIST_KEY = "hg_marketing_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -466,13 +470,13 @@ export default function MarketingStudio({
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden">
       <style>{SCROLLBAR_STYLE}</style>
       
       {/* ── MAIN CONTENT AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {history.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in">
             {history.map(entry => (
               <div
                 key={entry.id}
@@ -486,7 +490,7 @@ export default function MarketingStudio({
                 />
                 
                 {/* Actions Overlay */}
-                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="pointer-events-none absolute top-2 right-2 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                   <GenerationCopyButtons
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
@@ -562,31 +566,31 @@ export default function MarketingStudio({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "1")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "2")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "3")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "4")}
@@ -597,7 +601,7 @@ export default function MarketingStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -617,7 +621,7 @@ export default function MarketingStudio({
                   <img src={img} className="w-9 h-9 rounded-full object-cover border border-white/10" />
                   <button 
                     onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
-                    className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-black/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-white/10"
+                  className="pointer-events-none absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white/10 bg-black/80 text-white opacity-0 transition-opacity group-hover/img:pointer-events-auto group-hover/img:opacity-100 group-focus-within/img:pointer-events-auto group-focus-within/img:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100"
                   >
                     <CloseSvg />
                   </button>
@@ -736,7 +740,7 @@ export default function MarketingStudio({
                     }}
                     className={promptControlClassName({
                       iconOnly: true,
-                      className: "text-white/40 hover:text-[#22d3ee]",
+                      className: "text-white/40 hover:text-[#e11d74]",
                     })}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -769,7 +773,7 @@ export default function MarketingStudio({
                       active: dropdown === key,
                       className:
                         dropdown === key
-                          ? "text-xs font-semibold text-[#22d3ee]"
+                          ? "text-xs font-semibold text-[#e11d74]"
                           : "text-xs font-semibold text-white/70",
                     })}
                   >
@@ -820,7 +824,7 @@ export default function MarketingStudio({
 
       {/* Fullscreen Preview */}
       {fullscreenUrl && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in" onClick={() => setFullscreenUrl(null)}>
+        <div className="fixed inset-0 z-modal flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in" onClick={() => setFullscreenUrl(null)}>
           <button className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white border border-white/10 transition-colors shadow-2xl"><CloseSvg /></button>
           <video src={fullscreenUrl} controls autoPlay className="max-w-[95vw] max-h-[95vh] rounded-lg shadow-4xl animate-scale-up" onClick={e => e.stopPropagation()} />
         </div>
@@ -829,7 +833,7 @@ export default function MarketingStudio({
       {/* ── AVATAR FULLSCREEN PREVIEW MODAL ── */}
       {previewAvatar && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in select-none"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in select-none"
           onClick={() => setPreviewAvatar(null)}
         >
           {/* Close button (cross) in the right corner */}
@@ -973,7 +977,7 @@ export default function MarketingStudio({
                       setPreviewAvatar(null);
                       setDropdown(null);
                     }}
-                    className="bg-[#22d3ee] text-black px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#22d3ee]/20"
+                    className="bg-[#e11d74] text-white px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#e11d74]/20"
                   >
                     <CheckSvg />
                     {copy.buttons.selectAvatar}

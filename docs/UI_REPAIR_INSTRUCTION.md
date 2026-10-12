@@ -87,6 +87,21 @@ getComputedStyle($0).zIndex
 - 真实 Trigger 必须 `pointer-events:auto`。
 - 禁止用 `z-[9999]` / `z-[99999]` 抢层级。
 
+## 浮层遮罩层一致性与防穿孔规则（Overlay Consistency & Punch-Through Prevention）
+
+浮层内部条目悬停/选中出现“遮盖层不一致、深黑补丁色块、辅助栏穿孔”属于 P0 级严重视觉回归。必须遵循以下检查规则：
+
+1. **条目内部标题行严禁设置不透明背景**：
+   - 检查所有 `DropdownMenu`、`Popover`、`MegaMenuPanel`、`SelectContent` 内部的 `<a>`、`<button>`。
+   - 内部的标题包裹容器（如 `<div className="flex items-center gap-1.5">`）必须保持背景全透明。**严禁写死 `bg-overlay`**。
+   - 外层交互项在 hover 时获得 `hover:bg-wash-strong`，内部一旦嵌套 `bg-overlay`（`#202429`）就会像黑胶布一样粗暴覆盖悬停微光。
+2. **多栏微光辅助栏防穿孔**：
+   - 双栏面板中辅助栏常设为微光底色 `bg-wash`。辅助栏内所有列表子项绝不能打 `bg-overlay`，否则会在微光层上打孔穿透出底层死黑。
+3. **Backdrop Scrim 动态定位契约**：
+   - 全屏暗色遮罩（`data-mega-scrim`）严禁硬编码 `top-14`。
+   - 必须在挂载/展开时动态测量当前顶栏底边缘 `header.getBoundingClientRect().bottom`，并绑定行内样式 `style={{ top: `${headerBottom}px` }}`。
+   - 绝不允许遮罩层在有顶部公告（如 ChinaIpGate、维护提示）时向上切入半透明玻璃 Header 底板造成横向色差断层。
+
 ## 浏览器验收
 
 为 Pill 根节点加 `data-pill-segmented`，Trigger 加 `data-pill-segment-item`，并增加 Playwright 断言：
@@ -98,6 +113,16 @@ expect(radius).toBeGreaterThanOrEqual(height / 2)
 expect(getComputedStyle(el).pointerEvents).toBe('auto')
 ```
 
+对于浮层与遮罩层，增加自动化断言：
+```js
+// 验证浮层内无硬编码穿孔底色
+expect(itemTitleEl.className).not.toContain('bg-overlay')
+// 验证遮罩层顶部与顶栏底部像素级对齐
+const headerBottom = Math.round(headerEl.getBoundingClientRect().bottom)
+const scrimTop = Math.round(parseFloat(getComputedStyle(scrimEl).top))
+expect(scrimTop).toBe(headerBottom)
+```
+
 逐页验证：顶部分类、Tabs、按钮、Select、Modal 开关、输入聚焦、滑杆、滚动、键盘 Tab/方向键均正常。
 
 ## 交付要求
@@ -105,3 +130,4 @@ expect(getComputedStyle(el).pointerEvents).toBe('auto')
 最终输出表格：页面、组件、根因、文件:行、修复前 class、修复前 computed border-radius、修复后 class、修复后 border-radius、pointer-events、点击验证、键盘验证。
 
 在以上项目全部通过前，不得继续下一轮 UI 批量更新。
+

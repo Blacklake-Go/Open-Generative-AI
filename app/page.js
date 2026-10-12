@@ -1,5 +1,20 @@
 import { redirect } from 'next/navigation';
+import { cookies, headers } from 'next/headers';
+import { getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import JimengHomePortal from '@/components/home/JimengHomePortal';
 
-export default function Home() {
-  redirect('/studio');
+export const metadata = {
+  title: 'KOYO Studio — AI Creative Workspace',
+  description: 'AI Image, Video, Audio and Creative Workflow Studio.',
+};
+
+export default async function Home() {
+  const cookieStore = await cookies();
+  const headerList = await headers();
+
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
+  const headerLocale = headerList.get('x-locale');
+  const targetLocale = normalizeLocale(cookieLocale || headerLocale || 'en');
+
+  return <JimengHomePortal locale={targetLocale} />;
 }

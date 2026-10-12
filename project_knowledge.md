@@ -73,7 +73,7 @@ Contains the `t2iModels` array.
 ## 4. UI & Styling (Tailwind v4)
 
 - **Theme:** Dark mode by default (`bg-app-bg` = `#050505`).
-- **Accent:** Electric Cyan (`#22d3ee`) used for primary actions and glows.
+- **Accent:** Brand Magenta (`#e11d74`) used for primary actions and accents (white text on accent).
 - **Glassmorphism:** Extensive use of `backdrop-blur` and `bg-white/5` or `bg-black/60` for panels, headers, and modals.
 - **Responsiveness:**
     - **Mobile:** Stacked layout, simplified controls, hidden sidebar.

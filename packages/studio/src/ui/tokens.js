@@ -142,7 +142,7 @@ export const BUTTON_WEIGHT = {
  */
 export const BUTTON_VARIANTS = {
   primary: [
-    'bg-brand text-ink-on-accent border-brand-line',
+    'bg-brand text-ink-on-accent border-brand-line btn-spatial-glow',
     'hover:bg-brand-hover hover:border-brand-hover',
     'active:bg-brand-active active:border-brand-active',
   ].join(' '),
@@ -305,17 +305,16 @@ export const STATUS_TONE = {
 /* ------------------------------------------------------------------ */
 
 export const PROMPT_PANEL = [
-  'w-full bg-surface-glass backdrop-blur-sm rounded-composer border border-line',
-  'flex flex-col gap-3 p-4 shadow-elevation-2',
+  'w-full prompt-composer-spatial backdrop-blur-xl rounded-composer',
+  'flex flex-col gap-3 p-4',
 ].join(' ');
 
 export const PROMPT_TEXTAREA = [
-  'w-full resize-none border-none bg-transparent pt-1',
-  FIELD_RADIUS,
+  'w-full resize-none border-none bg-transparent pt-1 rounded-xl',
   'text-ink placeholder:text-ink-subtle',
   'min-h-control-md max-h-composer md:max-h-composer-lg overflow-y-auto',
   'disabled:cursor-not-allowed disabled:opacity-40',
-  FOCUS_RING,
+  'outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none',
 ].join(' ');
 
 export const PROMPT_FOOTER = [

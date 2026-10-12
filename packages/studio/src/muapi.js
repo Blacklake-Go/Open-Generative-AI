@@ -20,6 +20,67 @@ const PROXY_WF_BASE = '/api/workflow';
 const FILE_UPLOAD_TIMEOUT_MS = 300_000;
 const FILE_UPLOAD_PENDING_PROGRESS = 99;
 
+async function uploadViaProviderProxy(apiKey, file, onProgress) {
+    let uploadKey = apiKey || (typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_API_KEY__
+        ? await window.__KOYOSIM_REQUIRE_API_KEY__()
+        : null);
+    if (!uploadKey && typeof document !== 'undefined') {
+        uploadKey = document.cookie.match(/muapi_key=([^;]+)/)?.[1] || null;
+    }
+    uploadKey ||= 'koyosim-account-session';
+
+    return new Promise((resolve, reject) => {
+        const uploadEndpoint = (typeof window !== 'undefined' && window.location?.protocol?.startsWith('http'))
+            ? '/api/assets/upload'
+            : `${BASE_URL}/api/v1/upload_file`;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', uploadEndpoint);
+        xhr.withCredentials = true;
+        if (uploadEndpoint !== '/api/assets/upload') {
+            xhr.setRequestHeader('x-api-key', uploadKey);
+        }
+        xhr.timeout = FILE_UPLOAD_TIMEOUT_MS;
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) onProgress?.(Math.min(Math.round((event.loaded / event.total) * 100), FILE_UPLOAD_PENDING_PROGRESS));
+        };
+        xhr.onload = () => {
+            if (xhr.status < 200 || xhr.status >= 300) {
+                let payload = null;
+                try { payload = JSON.parse(xhr.responseText); } catch { /* non-json body */ }
+                const upstream = payload?.detail?.error || payload?.error ||
+                    (typeof payload?.detail === 'string' ? { message: payload.detail } : null);
+                const rawDetail = typeof upstream?.message === 'string' ? upstream.message
+                    : (typeof payload?.detail === 'string' ? payload.detail : xhr.statusText);
+                const detail = rawDetail || '上传服务暂时不可用';
+                // The fallback channel bills against the server-side provider account, so a
+                // credit 403 there says nothing about this visitor's session; prompting for
+                // login just traps them in a loop they cannot get out of.
+                const providerQuota = String(upstream?.code || '').toUpperCase().includes('CREDIT')
+                    || /credit/i.test(detail);
+                if (!providerQuota) notifyAuthRequired(xhr.status, detail);
+                reject(new Error(providerQuota
+                    ? '参考图上传通道暂不可用：对象存储未配置且备用上传额度不足，请联系管理员'
+                    : `文件上传失败：${xhr.status} ${detail}`.trim()));
+                return;
+            }
+            try {
+                const data = JSON.parse(xhr.responseText);
+                const fileUrl = data.url || data.file_url || data.asset?.url || data.data?.url;
+                if (!fileUrl) throw new Error('上传服务未返回文件地址');
+                onProgress?.(100);
+                resolve(fileUrl);
+            } catch {
+                reject(new Error('上传服务返回了无效响应'));
+            }
+        };
+        xhr.onerror = () => reject(new Error('文件上传网络错误'));
+        xhr.ontimeout = () => reject(new Error('文件上传超时，请稍后重试'));
+        const formData = new FormData();
+        formData.append('file', file);
+        xhr.send(formData);
+    });
+}
+
 function notifyAuthRequired(status, detail) {
     if (typeof window === 'undefined') return;
     if (status !== 401 && status !== 403) return;
@@ -62,10 +123,136 @@ function normalizePredictionResult(submitData, result, outputUrl) {
 }
 
 async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 60) {
+    // The shell opens the account dialog only when a model request is about
+    // to consume quota. It resolves after login so the original request can
+    // continue without making the user click Generate a second time.
+    const accountGate = typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_ACCOUNT__;
+    if (accountGate) {
+        const user = await accountGate();
+        if (!user) throw new Error('Generation cancelled: account login is required.');
+    }
+    let requestKey = key;
+    if (!requestKey && typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_API_KEY__) {
+        requestKey = await window.__KOYOSIM_REQUIRE_API_KEY__();
+    }
+    if (!requestKey) {
+        const cookieMatch = typeof document !== 'undefined' && document.cookie.match(/muapi_key=([^;]+)/);
+        if (cookieMatch) requestKey = cookieMatch[1];
+    }
+    if (!requestKey) {
+        requestKey = 'koyosim-account-session';
+    }
+
+    const isBrowserApp = typeof window !== 'undefined' && BASE_URL === '/api';
+    if (isBrowserApp) {
+        const idempotencyKey = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+        // 生成前先获取防篡改报价（formula 定价 + 订阅阶梯折扣），并把 quote_id 随任务提交。
+        // 报价失败时静默回退，后端会按模型底价兜底计价，绝不阻塞生成。
+        let quoteId = null;
+        let quoteCredits = null;
+        try {
+            const quoteRes = await fetch('/api/generation/quote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `${idempotencyKey}:quote` },
+                body: JSON.stringify({ modelId: endpoint, parameters: payload }),
+            });
+            if (quoteRes.ok) {
+                const quote = await quoteRes.json();
+                quoteId = quote.quote_id || null;
+                quoteCredits = quote.credits ?? null;
+            }
+        } catch { /* 报价失败不阻塞生成 */ }
+
+        if (typeof window !== 'undefined' && quoteCredits != null) {
+            window.dispatchEvent(new CustomEvent('koyosim:quote', { detail: { modelId: endpoint, credits: quoteCredits, quoteId } }));
+        }
+
+        const genResponse = await fetch('/api/generations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': idempotencyKey,
+            },
+            body: JSON.stringify({
+                modelId: endpoint,
+                studioId: 'studio',
+                prompt: payload.prompt || '',
+                parameters: payload,
+                quoteId: quoteId || undefined,
+            }),
+        });
+
+        if (!genResponse.ok) {
+            const errData = await genResponse.json().catch(() => ({}));
+            const errCode = errData.code || genResponse.status;
+            const errMsg = errData.error || '生成任务创建失败';
+
+            if (genResponse.status === 401) {
+                notifyAuthRequired(401, errMsg);
+                throw new Error('请先登录后再进行创作');
+            }
+            if (genResponse.status === 402 || errCode === 'INSUFFICIENT_CREDITS') {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('koyosim:insufficient-credits', { detail: { message: errMsg } }));
+                }
+                throw new Error(errMsg || '算力额度不足，请先充值或升级套餐');
+            }
+            throw new Error(`生成服务请求失败: ${errMsg}`);
+        } else {
+            const taskData = await genResponse.json();
+            const creation = taskData.creation || taskData;
+            const requestId = creation.id || taskData.creation_id || taskData.id;
+
+            // 任务创建成功（后端数据库已完成两阶段积分预扣 reserveCredits）
+            // 实时通知应用外壳联动刷新最新账户积分
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
+                    detail: { phase: 'reserved', requestId, modelId: endpoint }
+                }));
+            }
+
+            if (onRequestId && requestId) onRequestId(requestId);
+
+            if (creation.status === 'succeeded' && creation.result_url) {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
+                        detail: { phase: 'completed', requestId, modelId: endpoint }
+                    }));
+                }
+                return {
+                    id: requestId,
+                    request_id: requestId,
+                    status: 'completed',
+                    url: creation.result_url,
+                    outputs: [creation.result_url],
+                };
+            }
+
+            try {
+                const result = await pollForResult(requestId, requestKey, maxAttempts);
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
+                        detail: { phase: 'completed', requestId, modelId: endpoint }
+                    }));
+                }
+                const outputUrl = result.outputs?.[0] || result.url || result.output?.url;
+                return normalizePredictionResult({ request_id: requestId }, result, outputUrl);
+            } catch (pollErr) {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
+                        detail: { phase: 'failed_or_refunded', requestId, modelId: endpoint }
+                    }));
+                }
+                throw pollErr;
+            }
+        }
+    }
+
     const url = `${BASE_URL}/api/v1/${endpoint}`;
     const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': requestKey },
         body: JSON.stringify(payload)
     });
     if (!response.ok) {
@@ -77,14 +264,14 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
     const requestId = submitData.request_id || submitData.id;
     if (!requestId) return submitData;
     if (onRequestId) onRequestId(requestId);
-    const result = await pollForResult(requestId, key, maxAttempts);
+    const result = await pollForResult(requestId, requestKey, maxAttempts);
     const outputUrl = result.outputs?.[0] || result.url || result.output?.url;
     return normalizePredictionResult(submitData, result, outputUrl);
 }
 
 export async function generateImage(apiKey, params) {
     const modelInfo = getModelById(params.model);
-    const endpoint = modelInfo?.endpoint || params.model;
+    const endpoint = params.model || modelInfo?.id || modelInfo?.endpoint;
     const payload = {
         ...buildSupplementalInputPayload(modelInfo, params),
         prompt: params.prompt
@@ -93,21 +280,20 @@ export async function generateImage(apiKey, params) {
     else if (params.aspect_ratio) payload.aspect_ratio = params.aspect_ratio;
     if (params.resolution) payload.resolution = params.resolution;
     if (params.quality) payload.quality = params.quality;
-    if (params.image_url) { 
-        payload.image_url = params.image_url; 
-        payload.strength = params.strength || 0.6; 
+    if (params.image_url) {
+        payload.image_url = params.image_url;
+        payload.strength = params.strength || 0.6;
     } else if (params.images_list) {
         payload.images_list = params.images_list;
-    } else {
-        payload.image_url = null;
     }
-    if (params.seed && params.seed !== -1) payload.seed = params.seed;
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 60);
+    if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
+    if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180);
 }
 
 export async function generateI2I(apiKey, params) {
     const modelInfo = getI2IModelById(params.model);
-    const endpoint = modelInfo?.endpoint || params.model;
+    const endpoint = params.model || modelInfo?.id || modelInfo?.endpoint;
     const imageField = modelInfo?.imageField || 'image_url';
     const imagesList = normalizePrimaryImageUrls(params.images_list, params.image_url);
     const inputError = getImageInputValidationError(modelInfo, 'i2i', {
@@ -132,7 +318,9 @@ export async function generateI2I(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 60);
+    if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
+    if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180);
 }
 
 export async function decomposeLayers(apiKey, params) {
@@ -151,7 +339,7 @@ export async function decomposeLayers(apiKey, params) {
 
 export async function generateVideo(apiKey, params) {
     const modelInfo = getVideoModelById(params.model);
-    const endpoint = modelInfo?.endpoint || params.model;
+    const endpoint = params.model || modelInfo?.id || modelInfo?.endpoint;
     const mediaCapabilities = getModelMediaCapabilities(modelInfo);
     assertRequiredPrompt(modelInfo, params);
     let payload = {
@@ -170,6 +358,8 @@ export async function generateVideo(apiKey, params) {
     if (!mediaCapabilities.image.field && params.images_list?.length > 0) payload.images_list = params.images_list;
     if (!mediaCapabilities.video.field && params.videos_list?.length > 0) payload.videos_list = params.videos_list;
     if (!mediaCapabilities.video.field && params.video_files?.length > 0) payload.video_files = params.video_files;
+    if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
+    if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     Object.assign(payload, serializeVideoToolOptions(modelInfo, params.options));
     payload = includeRequiredArrayDefaults(modelInfo, payload);
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
@@ -193,6 +383,8 @@ export async function generateI2V(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
+    if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
+    if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     payload = includeRequiredArrayDefaults(modelInfo, payload);
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
@@ -366,60 +558,60 @@ export async function generateAudio(apiKey, params) {
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
-export function uploadFile(apiKey, file, onProgress) {
-    return new Promise((resolve, reject) => {
-        const url = `${BASE_URL}/api/v1/upload_file`;
-        const formData = new FormData();
-        formData.append('file', file);
+export async function uploadFile(apiKey, file, onProgress) {
+    if (!file || typeof file.size !== 'number') throw new Error('请选择有效文件');
+    const accountGate = typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_ACCOUNT__;
+    if (accountGate) {
+        const user = await accountGate();
+        if (!user) throw new Error('LOGIN_CANCELLED');
+    }
+    const type = String(file.type || '').startsWith('video/')
+        ? 'video'
+        : String(file.type || '').startsWith('audio/')
+            ? 'audio'
+            : 'image';
 
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    const assetUrl = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', url);
-        xhr.setRequestHeader('x-api-key', apiKey);
+        xhr.open('POST', '/api/assets/upload');
         xhr.timeout = FILE_UPLOAD_TIMEOUT_MS;
-
-        if (onProgress) {
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const percentComplete = Math.min(
-                        Math.round((event.loaded / event.total) * 100),
-                        FILE_UPLOAD_PENDING_PROGRESS
-                    );
-                    onProgress(percentComplete);
-                }
-            };
-        }
-
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                onProgress?.(Math.min(Math.round((event.loaded / event.total) * 100), 95));
+            }
+        };
         xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
                 try {
-                    const data = JSON.parse(xhr.responseText);
-                    const fileUrl = data.url || data.file_url || data.data?.url;
-                    if (!fileUrl) {
-                        reject(new Error('No URL returned from file upload'));
-                    } else {
+                    const res = JSON.parse(xhr.responseText);
+                    const url = res.url || res.asset?.url || res.data?.asset?.url;
+                    if (url) {
                         onProgress?.(100);
-                        resolve(fileUrl);
+                        return resolve(url);
                     }
+                    reject(new Error(res.error || '上传成功但未返回有效地址'));
                 } catch (e) {
-                    reject(new Error('Failed to parse upload response'));
+                    reject(new Error('上传响应解析失败'));
                 }
             } else {
-                let detail = xhr.statusText;
                 try {
-                    const errObj = JSON.parse(xhr.responseText);
-                    detail = errObj.detail || detail;
-                } catch (e) {
-                    // fallback to statusText
+                    const res = JSON.parse(xhr.responseText);
+                    reject(new Error(res.error || `文件上传失败：${xhr.status}`));
+                } catch {
+                    reject(new Error(`文件上传失败：${xhr.status}`));
                 }
-                notifyAuthRequired(xhr.status, detail);
-                reject(new Error(`File upload failed: ${xhr.status} - ${detail}`));
             }
         };
-
-        xhr.onerror = () => reject(new Error('Network error during file upload'));
-        xhr.ontimeout = () => reject(new Error('File upload timed out. Please try again.'));
+        xhr.onerror = () => reject(new Error('文件上传网络错误'));
+        xhr.ontimeout = () => reject(new Error('文件上传超时，请稍后重试'));
         xhr.send(formData);
     });
+
+    return assetUrl;
 }
 
 export async function getUserBalance(apiKey) {
@@ -445,10 +637,15 @@ export async function getTemplateWorkflows(apiKey) {
         }
     });
     if (!response.ok) {
+        // Templates are optional. Older MuAPI deployments do not expose this
+        // endpoint; the Studio must render its empty state instead of failing
+        // the whole Workflows workbench on a harmless 404.
+        if (response.status === 404) return [];
         const errText = await response.text();
         throw new Error(`Failed to fetch template workflows: ${response.status} - ${errText.slice(0, 100)}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return Array.isArray(data) ? data : (Array.isArray(data?.workflows) ? data.workflows : []);
 };
 
 export async function getUserWorkflows(apiKey) {
@@ -479,16 +676,25 @@ export async function getPublishedWorkflows(apiKey) {
     return await response.json();
 };
 
+function resolveAgentKey(apiKey) {
+    if (apiKey) return apiKey;
+    if (typeof window !== 'undefined') return 'koyosim-account-session';
+    return null;
+}
+
 // Agents — uses direct URL → https://api.muapi.ai/agents/...
 export async function getTemplateAgents(apiKey) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/templates/agents`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch template agents: ${response.status} - ${errText.slice(0, 100)}`);
     }
     const data = await response.json();
@@ -496,14 +702,17 @@ export async function getTemplateAgents(apiKey) {
 };
 
 export async function getUserAgents(apiKey) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/user/agents`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch user agents: ${response.status} - ${errText.slice(0, 100)}`);
     }
     const data = await response.json();
@@ -512,14 +721,17 @@ export async function getUserAgents(apiKey) {
 
 export async function getPublishedAgents(apiKey) {
     // MuAPI: GET /agents/featured/agents
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/featured/agents`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch featured agents: ${response.status} - ${errText.slice(0, 100)}`);
     }
     const data = await response.json();
@@ -528,14 +740,17 @@ export async function getPublishedAgents(apiKey) {
 
 // GET /agents/user/conversations — returns the user's chat history across all agents
 export async function getUserConversations(apiKey) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/user/conversations`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch conversations: ${response.status} - ${errText.slice(0, 100)}`);
     }
     const data = await response.json();
@@ -545,14 +760,17 @@ export async function getUserConversations(apiKey) {
 // GET /agents/by-slug/{slug} — public agent details (works unauthenticated for
 // published/template agents; x-api-key is sent for consistency but not required).
 export async function getAgentBySlug(apiKey, slug) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/by-slug/${slug}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch agent: ${response.status} - ${errText.slice(0, 100)}`);
     }
     return await response.json();
@@ -560,14 +778,17 @@ export async function getAgentBySlug(apiKey, slug) {
 
 // GET /agents/by-slug/{slug}/{conversationId} — chat history for one conversation.
 export async function getAgentConversation(apiKey, agentSlug, conversationId) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/by-slug/${agentSlug}/${conversationId}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+        headers,
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to fetch conversation: ${response.status} - ${errText.slice(0, 100)}`);
     }
     return await response.json();
@@ -576,12 +797,14 @@ export async function getAgentConversation(apiKey, agentSlug, conversationId) {
 // POST /agents/by-slug/{slug}/chat — send a message, returns {request_id, status}
 // to poll via pollAgentChatResult.
 export async function sendAgentChatMessage(apiKey, agentSlug, { message, conversationId, attachments } = {}) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents/by-slug/${agentSlug}/chat`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
             message,
             conversation_id: conversationId || null,
@@ -591,6 +814,7 @@ export async function sendAgentChatMessage(apiKey, agentSlug, { message, convers
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to send message: ${response.status} - ${errText.slice(0, 100)}`);
     }
     return await response.json();
@@ -603,14 +827,16 @@ export async function sendAgentChatMessage(apiKey, agentSlug, { message, convers
 // text (get_result_url_from_output only returns output_data once COMPLETED), so
 // this just waits until is_complete rather than showing incremental progress.
 export async function pollAgentChatResult(apiKey, requestId, { maxAttempts = 150, interval = 2000 } = {}) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const url = `${BASE_URL}/api/v1/predictions/${requestId}/result`;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         await new Promise(resolve => setTimeout(resolve, interval));
         const response = await fetch(url, {
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey
-            }
+            headers,
+            credentials: 'include',
         });
         if (response.status === 400) {
             const errBody = await response.json().catch(() => ({}));
@@ -630,16 +856,19 @@ export async function pollAgentChatResult(apiKey, requestId, { maxAttempts = 150
 // embedded form; skill_ids defaults to [] server-side, so the agent is created
 // as a plain system-prompt-driven assistant with no extra tool skills attached).
 export async function createAgent(apiKey, payload) {
+    const reqKey = resolveAgentKey(apiKey);
+    const headers = { 'Content-Type': 'application/json' };
+    if (reqKey) headers['x-api-key'] = reqKey;
+
     const response = await fetch(`${BASE_URL}/agents`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify(payload)
     });
     if (!response.ok) {
         const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
         throw new Error(`Failed to create agent: ${response.status} - ${errText.slice(0, 100)}`);
     }
     return await response.json();
@@ -956,14 +1185,37 @@ export async function getAppInterests(apiKey) {
 // Paginated past-generations list, scoped server-side to the calling identity
 // (BYOK key or white-label session token) — see GET /api/v1/history.
 export async function getHistory(apiKey, { cursor, limit = 50 } = {}) {
+    const isBrowser = typeof window !== 'undefined' && window.location?.protocol?.startsWith('http');
+    if (isBrowser) {
+        const response = await fetch(`/api/generations?limit=${limit}`, {
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return {
+                items: (data.creations || []).map((c) => ({
+                    id: c.id,
+                    request_id: c.id,
+                    status: c.status,
+                    outputs: c.result_url ? [c.result_url] : [],
+                    url: c.result_url,
+                    model: c.model,
+                    created_at: c.created_at,
+                })),
+                creations: data.creations,
+            };
+        }
+    }
     const params = new URLSearchParams();
     if (cursor) params.set('cursor', cursor);
     if (limit) params.set('limit', String(limit));
     const response = await fetch(`${BASE_URL}/api/v1/history?${params.toString()}`, {
         headers: {
             'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        }
+            ...(apiKey ? { 'x-api-key': apiKey } : {}),
+        },
+        credentials: 'include',
     });
     if (!response.ok) {
         const errText = await response.text();

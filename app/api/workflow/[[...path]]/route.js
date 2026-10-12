@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
+import { getUserFromRequest } from '@/lib/services/auth';
+import { publicErrorMessage } from '@/lib/security/publicError';
+import { guardMutation } from '@/lib/security/requestGuard';
+import { resolveProviderApiKey } from '@/lib/security/byok';
+import { PROXY_SCOPE } from '@/lib/security/legacyProxyPolicy';
+import { guardScopedProxyRequest } from '@/lib/security/scopedProxyGuard';
 
 const MUAPI_BASE = 'https://api.muapi.ai';
 
-function getApiKey(request) {
-    // Only accept x-api-key header. Cookie-based auth is removed for security:
-    // cookies without HttpOnly flag can be stolen by any XSS (CWE-522).
-    const headerKey = request.headers.get('x-api-key');
-    return headerKey || null;
+async function getApiKey(request) {
+    return resolveProviderApiKey(request);
 }
 
 function cleanHeaders(request) {
@@ -14,12 +17,18 @@ function cleanHeaders(request) {
     headers.delete('host');
     headers.delete('connection');
     headers.delete('cookie'); // CRITICAL: Stop forwarding browser cookies to MuAPI to avoid auth conflicts
+    headers.delete('authorization');
+    headers.delete('x-api-key');
     return headers;
 }
 
 export async function GET(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.WORKFLOW, pathSegments, method: 'GET', user });
+    if (denied) return denied;
     const path = pathSegments.join('/');
     
     const { search } = new URL(request.url);
@@ -27,9 +36,9 @@ export async function GET(request, { params }) {
 
     const headers = cleanHeaders(request);
 
-    const apiKey = getApiKey(request);
-    // NOTE: apiKey is intentionally NOT logged here to prevent credential leakage (CWE-200)
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Workflow 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const response = await fetch(targetUrl, {
@@ -37,18 +46,32 @@ export async function GET(request, { params }) {
             method: 'GET',
         });
         const data = await response.json();
+        // Template workflows are an optional upstream capability. Normalize
+        // the missing capability to a successful empty response so the client
+        // can show its empty state without a noisy 404 request.
+        if (path === 'get-template-workflows' && response.status === 404) {
+            return NextResponse.json({ workflows: [] }, {
+                status: 200,
+                headers: { 'x-workflow-template-source': 'empty-upstream' },
+            });
+        }
         if (path.includes('get-workflow-def')) {
-            console.log(`[proxy GET] get-workflow-def response: is_owner=${data?.is_owner}, workflow_id=${data?.workflow_id}`);
         }
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Workflow 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function POST(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 512 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.WORKFLOW, pathSegments, method: 'POST', user });
+    if (denied) return denied;
     const path = pathSegments.join('/');
     
     const { search } = new URL(request.url);
@@ -56,34 +79,33 @@ export async function POST(request, { params }) {
 
     const headers = cleanHeaders(request);
 
-    const apiKey = getApiKey(request);
-    // NOTE: credential logging removed for security (CWE-200)
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Workflow 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const body = await request.arrayBuffer();
-        // Decode body to see what workflow_id is being sent
-        try {
-            const parsed = JSON.parse(Buffer.from(body).toString('utf-8'));
-            console.log(`[proxy POST] body: workflow_id=${parsed.workflow_id}, source_workflow_id=${parsed.source_workflow_id}, name=${parsed.name}`);
-        } catch(e) { /* ignore decode errors */ }
-
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers,
             body
         });
         const data = await response.json();
-        console.log(`[proxy POST] response: status=${response.status}`, JSON.stringify(data).slice(0, 200));
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Workflow 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function DELETE(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 32 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.WORKFLOW, pathSegments, method: 'DELETE', user });
+    if (denied) return denied;
     const path = pathSegments.join('/');
     
     const { search } = new URL(request.url);
@@ -91,8 +113,9 @@ export async function DELETE(request, { params }) {
 
     const headers = cleanHeaders(request);
 
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Workflow 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const response = await fetch(targetUrl, {
@@ -102,13 +125,19 @@ export async function DELETE(request, { params }) {
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Workflow 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function PUT(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 512 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.WORKFLOW, pathSegments, method: 'PUT', user });
+    if (denied) return denied;
     const path = pathSegments.join('/');
     
     const { search } = new URL(request.url);
@@ -116,8 +145,9 @@ export async function PUT(request, { params }) {
 
     const headers = cleanHeaders(request);
 
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Workflow 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const body = await request.arrayBuffer();
@@ -129,6 +159,6 @@ export async function PUT(request, { params }) {
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Workflow 请求暂时不可用') }, { status: 500 });
     }
 }

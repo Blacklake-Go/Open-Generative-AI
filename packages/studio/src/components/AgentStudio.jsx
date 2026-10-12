@@ -16,6 +16,10 @@ import {
 } from "../muapi.js";
 import en from "../messages/en/agentStudio.json";
 import zh from "../messages/zh/agentStudio.json";
+import ja from "../messages/ja-JP/agentStudio.json";
+import ko from "../messages/ko-KR/agentStudio.json";
+import zhTw from "../messages/zh-TW/agentStudio.json";
+import es from "../messages/es-ES/agentStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -37,7 +41,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
     <div className="group relative aspect-[4/5] rounded-xl cursor-pointer">
       <div
         onClick={() => onClick(agent)}
-        className="absolute inset-0 rounded-xl overflow-hidden border border-white/5 bg-[#0a0a0a] transition-all group-hover:border-[#22d3ee]/30 group-hover:scale-[1.02] shadow-2xl"
+        className="absolute inset-0 rounded-xl overflow-hidden border border-white/5 bg-[#0a0a0a] transition-all group-hover:border-[#e11d74]/30 group-hover:scale-[1.02] shadow-2xl"
       >
         {agent.icon_url ? (
           <img
@@ -54,10 +58,10 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <div className="text-[10px] font-bold text-[#22d3ee] uppercase tracking-wider mb-1 opacity-80">
+          <div className="text-[10px] font-bold text-[#e11d74] uppercase tracking-wider mb-1 opacity-80">
             {agent.category || copy.card.defaultCategory}
           </div>
-          <h3 className="text-sm font-bold text-white truncate group-hover:text-[#22d3ee] transition-colors">
+          <h3 className="text-sm font-bold text-white truncate group-hover:text-[#e11d74] transition-colors">
             {agent.name || copy.card.unnamedAgent}
           </h3>
           {agent.owner_username && (
@@ -74,7 +78,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
             e.stopPropagation();
             onEdit(agent);
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-[#22d3ee] hover:text-black hover:scale-110 z-10"
+          className="pointer-events-none absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-[#e11d74] hover:text-white hover:scale-110"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -93,7 +97,7 @@ function ConversationCard({ conv, onClick, copy }) {
   return (
     <div
       onClick={() => onClick(agentSlug, conv.id)}
-      className="group flex flex-col gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4 hover:border-[#22d3ee]/20 hover:bg-white/5 transition-all cursor-pointer"
+      className="group flex flex-col gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4 hover:border-[#e11d74]/20 hover:bg-white/5 transition-all cursor-pointer"
     >
       <div className="flex items-center gap-3">
         <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-white/5 shrink-0">
@@ -108,7 +112,7 @@ function ConversationCard({ conv, onClick, copy }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black text-[#22d3ee] uppercase tracking-wider truncate">
+          <p className="text-[10px] font-black text-[#e11d74] uppercase tracking-wider truncate">
             {conv.agent_name || copy.card.unknownAgent}
           </p>
           <p className="text-sm font-bold text-white truncate" title={displayTitle}>
@@ -143,7 +147,7 @@ function ChatBubble({ message }) {
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? "bg-[#22d3ee] text-black font-medium"
+            ? "bg-[#e11d74] text-white font-medium"
             : "bg-white/[0.04] border border-white/5 text-white/90"
         }`}
       >
@@ -159,13 +163,120 @@ function ChatBubble({ message }) {
   );
 }
 
+const FALLBACK_TEMPLATES = [
+  {
+    id: "d5d5f2c4-35f6-4d5c-8bec-33aae1cbba9b",
+    name: "CaptionCrafter Pro",
+    agent_id: "captioncrafterpro",
+    description: "友好且专业的文案生成专家，为各种图像、主题和社交平台量身定制吸睛文案。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/466840908889/0cb0f860-0c88-4bde-80c5-14e5c8580bbb.jpg",
+    category: "AI 助手",
+    welcome_message: "你好！准备好将你的创意转化为引人注目的文案了吗？",
+    theme: "cosmic",
+    owner_username: "KoyoSIM",
+  },
+  {
+    id: "2ef7de87-d151-4622-b7e6-3c4fed3b274a",
+    name: "Suno Prompter Pro",
+    agent_id: "sunoprompterpro",
+    description: "Suno 音乐创作提示词架构师，帮助提炼歌词、雕琢编曲与声音情绪风格。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/486500878153/9e9a908e-bdf1-406e-80a4-d5651bc6055a.jpg",
+    category: "AI 音乐",
+    welcome_message: "嘿！准备好打磨你的下一首 Suno 歌曲了吗？告诉我你想要的氛围与风格。",
+    theme: "light",
+    owner_username: "KoyoSIM",
+  },
+  {
+    id: "edfa0142-e03c-4006-8c7c-a1de05264a90",
+    name: "FutureScope",
+    agent_id: "futurescope",
+    description: "趣味预测助手，根据名字或主题构想生动有趣、脑洞大开的未来场景。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/433722331049/55b8271c-5842-44bc-9ac1-6e6362eddcb6.jpg",
+    category: "趣味互动",
+    welcome_message: "输入你的名字或角色，我来为你揭晓一个意想不到的未来片段。",
+    theme: "cosmic",
+    owner_username: "KoyoSIM",
+  },
+  {
+    id: "08452be2-296a-4a41-8bf4-cb569343dad3",
+    name: "Email Copywriter Pro",
+    agent_id: "emailcopywriterpro",
+    description: "高效营销与商务邮件专家，专精高打开率的主题行与行动号召撰写。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/466840908889/0cb0f860-0c88-4bde-80c5-14e5c8580bbb.jpg",
+    category: "营销创作",
+    welcome_message: "准备好撰写引人入胜、促成转化的优质邮件了。今天想构思什么主题？",
+    theme: "light",
+    owner_username: "KoyoSIM",
+  },
+  {
+    id: "394fd4dd-de6f-40a0-828e-e10c63b05840",
+    name: "Visual Storyteller",
+    agent_id: "visualstoryteller",
+    description: "分镜脚本与视觉叙事大师，将剧本与灵感快速转化为生动的多镜头故事。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/486500878153/9e9a908e-bdf1-406e-80a4-d5651bc6055a.jpg",
+    category: "视觉叙事",
+    welcome_message: "告诉我你的故事大纲或核心角色，我们一起来拆解镜头与视觉设定。",
+    theme: "cosmic",
+    owner_username: "KoyoSIM",
+  },
+  {
+    id: "27bc8fb6-78c5-4545-988a-e7779e3a1492",
+    name: "Prompt Architect",
+    agent_id: "promptarchitect",
+    description: "高级多模态提示词优化师，精细调节光影、材质、构图与镜头参数。",
+    icon_url: "https://d3adwkbyhxyrtq.cloudfront.net/data/186/433722331049/55b8271c-5842-44bc-9ac1-6e6362eddcb6.jpg",
+    category: "提示词工程",
+    welcome_message: "把你的初步灵感发给我，我来帮你转换为专业级图像与视频提示词。",
+    theme: "light",
+    owner_username: "KoyoSIM",
+  }
+];
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 const TABS = ["templates", "my-agents", "my-chats"];
 
-export default function AgentStudio({ apiKey, locale = "en" }) {
+export default function AgentStudio({
+  apiKey,
+  locale = "en",
+  signedIn = false,
+  onRequireAuth,
+  initialModel = "",
+  isHeaderVisible = true,
+  onToggleHeader,
+}) {
   const router = useRouter();
   const params = useParams();
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+
+  const effectiveApiKey = apiKey || (signedIn ? 'koyosim-account-session' : null);
+  const [selectedModel, setSelectedModel] = useState(() => {
+    if (initialModel) return initialModel;
+    if (typeof window !== "undefined") {
+      const urlModel = new URLSearchParams(window.location.search).get("model");
+      if (urlModel) return urlModel;
+    }
+    return "";
+  });
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    const urlModel = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("model") : null;
+    const targetModel = initialModel || urlModel;
+    if (targetModel) setSelectedModel(targetModel);
+  }, [initialModel]);
+
+  useEffect(() => {
+    const handleModelSelect = (e) => {
+      const model = e?.detail?.modelKey || e?.detail?.modelId;
+      const tabId = e?.detail?.tabId;
+      if (tabId && tabId !== "agents") return;
+      if (model) {
+        setSelectedModel(model);
+      }
+    };
+    window.addEventListener("koyosim-select-model", handleModelSelect);
+    return () => window.removeEventListener("koyosim-select-model", handleModelSelect);
+  }, []);
 
   const [activeMainTab, setActiveMainTab] = useState("templates");
   const [agents, setAgents] = useState([]);
@@ -202,9 +313,13 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   const handleSelectAgent = useCallback(
     (agent) => {
       const id = agent.agent_id || agent.id;
+      if (!effectiveApiKey && onRequireAuth) {
+        onRequireAuth();
+        return;
+      }
       router.push(`/agents/${id}`);
     },
-    [router]
+    [effectiveApiKey, onRequireAuth, router]
   );
 
   const handleEditAgent = useCallback(
@@ -216,8 +331,12 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   );
 
   const handleCreateAgent = useCallback(() => {
+    if (!effectiveApiKey && onRequireAuth) {
+      onRequireAuth();
+      return;
+    }
     router.push("/agents/create");
-  }, [router]);
+  }, [effectiveApiKey, onRequireAuth, router]);
 
   const handleOpenConversation = useCallback(
     (agentSlug, convId) => {
@@ -230,7 +349,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   // from the standalone dashboard today) — treat it as "back to list" rather than
   // trying to load an agent named "edit" and showing a confusing error.
   useEffect(() => {
-    if (!apiKey) return;
+    if (!effectiveApiKey) return;
     if (!urlAgentSlug || urlAgentSlug === "edit") {
       setView("list");
       return;
@@ -245,11 +364,11 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
       setChatLoading(true);
       setChatError(null);
       try {
-        const agent = await getAgentBySlug(apiKey, urlAgentSlug);
+        const agent = await getAgentBySlug(effectiveApiKey, urlAgentSlug);
         if (cancelled) return;
         setActiveAgent(agent);
         if (urlConversationId) {
-          const conv = await getAgentConversation(apiKey, urlAgentSlug, urlConversationId);
+          const conv = await getAgentConversation(effectiveApiKey, urlAgentSlug, urlConversationId);
           if (cancelled) return;
           setConversationId(conv.id);
           setChatMessages(conv.history || []);
@@ -266,7 +385,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
     }
     openFromUrl();
     return () => { cancelled = true; };
-  }, [apiKey, urlAgentSlug, urlConversationId]);
+  }, [effectiveApiKey, urlAgentSlug, urlConversationId]);
 
   const handleSendMessage = useCallback(async () => {
     if (!chatInput.trim() || sending || !activeAgent) return;
@@ -277,11 +396,11 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
     setChatError(null);
     try {
       const agentSlug = activeAgent.agent_id;
-      const { request_id } = await sendAgentChatMessage(apiKey, agentSlug, {
+      const { request_id } = await sendAgentChatMessage(effectiveApiKey, agentSlug, {
         message: text,
         conversationId,
       });
-      const result = await pollAgentChatResult(apiKey, request_id);
+      const result = await pollAgentChatResult(effectiveApiKey, request_id);
       // result.messages is only this turn's assistant/pulse entries, not the
       // full transcript (see AiAgent.jsx) — append, don't replace, or every
       // send wipes the user's own message and all prior history from view.
@@ -301,7 +420,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
     } finally {
       setSending(false);
     }
-  }, [apiKey, activeAgent, conversationId, chatInput, sending, router]);
+  }, [effectiveApiKey, activeAgent, conversationId, chatInput, sending, router, copy.errors.sendFailed]);
 
   const handleCreateSubmit = useCallback(
     async (e) => {
@@ -310,7 +429,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
       setCreating(true);
       setCreateError(null);
       try {
-        const created = await createAgent(apiKey, {
+        const created = await createAgent(effectiveApiKey, {
           name: createForm.name.trim(),
           description: createForm.description.trim() || null,
           system_prompt: createForm.system_prompt.trim(),
@@ -324,28 +443,49 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
         setCreating(false);
       }
     },
-    [apiKey, createForm, creating, router]
+    [effectiveApiKey, createForm, creating, router, copy.errors.createFailed]
   );
 
   useEffect(() => {
-    if (!apiKey || view !== "list") return;
     let cancelled = false;
+
+    if (view !== "list") return () => { cancelled = true; };
 
     async function load() {
       setLoading(true);
       setError(null);
-      setAgents([]);
-      setConversations([]);
       try {
         if (activeMainTab === "templates") {
-          const data = await getTemplateAgents(apiKey);
-          if (!cancelled) setAgents(data);
+          let data = [];
+          try {
+            data = await getTemplateAgents(effectiveApiKey);
+          } catch (fetchErr) {
+            console.warn("Upstream template fetch failed, using fallback templates:", fetchErr);
+            data = FALLBACK_TEMPLATES;
+          }
+          if (!cancelled) {
+            setAgents(Array.isArray(data) && data.length > 0 ? data : FALLBACK_TEMPLATES);
+          }
         } else if (activeMainTab === "my-agents") {
-          const data = await getUserAgents(apiKey);
-          if (!cancelled) setAgents(data);
+          if (!effectiveApiKey) {
+            if (!cancelled) {
+              setAgents([]);
+              setLoading(false);
+            }
+            return;
+          }
+          const data = await getUserAgents(effectiveApiKey);
+          if (!cancelled) setAgents(Array.isArray(data) ? data : []);
         } else if (activeMainTab === "my-chats") {
-          const data = await getUserConversations(apiKey);
-          if (!cancelled) setConversations(data);
+          if (!effectiveApiKey) {
+            if (!cancelled) {
+              setConversations([]);
+              setLoading(false);
+            }
+            return;
+          }
+          const data = await getUserConversations(effectiveApiKey);
+          if (!cancelled) setConversations(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         console.error("AgentStudio load error:", err);
@@ -357,12 +497,12 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
 
     load();
     return () => { cancelled = true; };
-  }, [apiKey, activeMainTab, view]);
+  }, [effectiveApiKey, activeMainTab, view, retryCount, copy.errors.loadFailed]);
 
   // ── Render: Create ───────────────────────────────────────────────────────────
   if (view === "create") {
     return (
-      <div className="h-full flex flex-col bg-[#030303] text-white overflow-y-auto custom-scrollbar">
+      <div className="h-full flex flex-col bg-canvas text-white overflow-y-auto custom-scrollbar">
         <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center gap-6 px-8 bg-black/40">
           <button
             onClick={() => router.push("/agents")}
@@ -374,7 +514,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
             </svg>
             {copy.buttons.back}
           </button>
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#22d3ee]">{copy.headings.createAgent}</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#e11d74]">{copy.headings.createAgent}</h2>
         </div>
 
         <form onSubmit={handleCreateSubmit} className="max-w-2xl w-full mx-auto p-8 space-y-6">
@@ -386,7 +526,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.name}
               onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
               placeholder={copy.placeholders.name}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
             />
           </div>
 
@@ -397,7 +537,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.description}
               onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))}
               placeholder={copy.placeholders.description}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
             />
           </div>
 
@@ -408,7 +548,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.system_prompt}
               onChange={(e) => setCreateForm((f) => ({ ...f, system_prompt: e.target.value }))}
               placeholder={copy.placeholders.systemPrompt}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors min-h-[140px] resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors min-h-[140px] resize-none"
             />
           </div>
 
@@ -419,7 +559,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               value={createForm.welcome_message}
               onChange={(e) => setCreateForm((f) => ({ ...f, welcome_message: e.target.value }))}
               placeholder={copy.placeholders.welcomeMessage}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
             />
           </div>
 
@@ -430,7 +570,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
           <button
             type="submit"
             disabled={creating || !createForm.name.trim() || !createForm.system_prompt.trim()}
-            className="w-full py-4 bg-[#22d3ee] text-black text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-3"
+            className="w-full py-4 bg-[#e11d74] text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-3"
           >
             {creating ? (
               <>
@@ -449,7 +589,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
   // ── Render: Chat ─────────────────────────────────────────────────────────────
   if (view === "chat") {
     return (
-      <div className="h-full flex flex-col bg-[#030303] text-white">
+      <div className="h-full flex flex-col bg-canvas text-white">
         <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center gap-4 px-8 bg-black/40">
           <button
             onClick={() => router.push("/agents")}
@@ -477,7 +617,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 max-w-3xl w-full mx-auto">
           {chatLoading ? (
             <div className="h-full flex items-center justify-center">
-              <div className="w-10 h-10 border-2 border-white/5 border-t-[#22d3ee] rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-white/5 border-t-[#e11d74] rounded-full animate-spin" />
             </div>
           ) : (
             <>
@@ -490,7 +630,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               {sending && (
                 <div className="flex justify-start">
                   <div className="bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-3">
-                    <div className="w-4 h-4 border-2 border-white/10 border-t-[#22d3ee] rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/10 border-t-[#e11d74] rounded-full animate-spin" />
                   </div>
                 </div>
               )}
@@ -517,12 +657,12 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               }}
               placeholder={copy.placeholders.chatInput}
               rows={1}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors resize-none max-h-40"
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors resize-none max-h-40"
             />
             <button
               type="submit"
               disabled={!chatInput.trim() || sending}
-              className="px-5 py-3 bg-[#22d3ee] text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-40"
+              className="px-5 py-3 bg-[#e11d74] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-40"
             >
               {copy.buttons.send}
             </button>
@@ -534,11 +674,11 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
 
   // ── Render: List ──────────────────────────────────────────────────────────────
   return (
-    <div className="h-full flex flex-col bg-[#030303] text-white">
+    <div className="h-full flex flex-col bg-canvas text-white">
       {/* Header */}
       <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/40">
-        <div className="flex items-center gap-8 h-full">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#22d3ee]">
+        <div className="flex items-center gap-6 h-full">
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#e11d74]">
             {copy.headings.agents}
           </h2>
           <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
@@ -556,11 +696,18 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               </button>
             ))}
           </div>
+
+          {selectedModel && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 border border-brand/25 text-brand text-[11px] font-mono tracking-tight">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+              <span>{selectedModel === 'deepseek-r1' ? 'DeepSeek-R1' : selectedModel === 'gpt-4o' ? 'GPT-4o' : selectedModel === 'claude-3-7-sonnet' ? 'Claude 3.7 Sonnet' : selectedModel}</span>
+            </div>
+          )}
         </div>
 
         <button
           onClick={handleCreateAgent}
-          className="px-6 py-2 bg-[#22d3ee] text-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#ebff66] transition-all active:scale-95 flex items-center gap-2"
+          className="px-6 py-2 bg-[#e11d74] text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#f43f5e] active:bg-[#c0175f] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
         >
           <span className="text-sm">+</span>
           {copy.buttons.create}
@@ -571,19 +718,41 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         {loading ? (
           <div className="h-full flex items-center justify-center">
-            <div className="w-10 h-10 border-2 border-white/5 border-t-[#22d3ee] rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-white/5 border-t-[#e11d74] rounded-full animate-spin" />
+          </div>
+        ) : (!effectiveApiKey && (activeMainTab === "my-agents" || activeMainTab === "my-chats")) ? (
+          <div className="h-full flex flex-col items-center justify-center p-8">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#131519] p-8 text-center flex flex-col items-center gap-4 shadow-elevation-2">
+              <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#e11d74]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <h3 className="text-base font-bold text-white">{copy.auth?.heading || "登录以使用智能体"}</h3>
+              <p className="text-xs text-[#a0a4ab] leading-relaxed">
+                {copy.auth?.description || "模板、智能体配置与对话历史已同步至您的 KoyoSIM 账号。请先登录。"}
+              </p>
+              <button
+                type="button"
+                onClick={() => onRequireAuth?.()}
+                className="mt-2 px-6 py-2.5 bg-[#e11d74] hover:bg-[#f43f5e] active:bg-[#c0175f] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-elevation-1 cursor-pointer"
+              >
+                {copy.auth?.cta || "立即登录"}
+              </button>
+            </div>
           </div>
         ) : error ? (
-          <div className="h-full flex flex-col items-center justify-center text-white/20 gap-4">
+          <div className="h-full flex flex-col items-center justify-center text-white/30 gap-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#a0a4ab]">{error}</p>
             <button
-              onClick={() => setActiveMainTab(activeMainTab)} // retrigger effect
-              className="text-[10px] text-white/40 hover:text-white border border-white/10 px-4 py-2 rounded-lg transition-colors"
+              type="button"
+              onClick={() => setRetryCount((c) => c + 1)}
+              className="text-[10px] text-white/60 hover:text-white border border-white/10 hover:border-[#e11d74] px-4 py-2 rounded-lg transition-colors cursor-pointer"
             >
               {copy.buttons.retry}
             </button>
@@ -598,7 +767,7 @@ export default function AgentStudio({ apiKey, locale = "en" }) {
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">{copy.empty.noChats}</p>
               <button
                 onClick={() => setActiveMainTab("templates")}
-                className="text-[10px] text-[#22d3ee] hover:text-white border border-[#22d3ee]/20 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
+                className="text-[10px] text-[#e11d74] hover:text-white border border-[#e11d74]/20 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
               >
                 {copy.buttons.browseTemplates}
               </button>

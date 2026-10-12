@@ -8,36 +8,43 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
+import {
+  FIELD_RADIUS,
+  PILL_SEGMENT_ACTIVE,
+  PILL_SEGMENT_IDLE,
+  PILL_SEGMENT_TRACK,
+  PROMPT_PANEL,
+  FOCUS_RING,
+  pillControlClasses,
+  withoutRadiusUtilities,
+} from "../../ui/tokens";
+import { Button } from "../../ui/Button";
 
 const DEFAULT_POSITION_CLASS =
-  "absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-30 animate-fade-in-up";
+  "absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-sticky";
 
-const DEFAULT_PANEL_CLASS =
-  "w-full bg-gradient-to-b from-[#18181c]/90 via-[#0f0f12]/90 to-[#0c0c0e]/95 backdrop-blur-2xl rounded-[2rem] border border-white/[0.08] p-4 flex flex-col gap-3 shadow-[0_15px_50px_rgba(0,0,0,0.8)]";
+const DEFAULT_PANEL_CLASS = PROMPT_PANEL;
 
 const DEFAULT_TEXTAREA_CLASS =
-  "w-full bg-transparent border-none text-white text-sm placeholder:text-white/20 focus:outline-none resize-none pt-1 leading-relaxed min-h-[40px] max-h-[150px] md:max-h-[250px] overflow-y-auto custom-scrollbar disabled:opacity-40";
-
-const DEFAULT_ACTION_CLASS =
-  "bg-[#22d3ee] text-black px-7 py-3 rounded-full font-bold text-sm hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg shadow-[#22d3ee]/20 hover:shadow-[#22d3ee]/35 border border-[#22d3ee]/10 z-10 disabled:opacity-50 disabled:cursor-not-allowed";
+  `w-full bg-transparent border-none text-ink text-body placeholder:text-ink-subtle focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none resize-none pt-1 leading-relaxed min-h-control-lg max-h-composer md:max-h-composer-lg overflow-y-auto custom-scrollbar disabled:opacity-40 rounded-xl`;
 
 const CONTROL_LAYOUT_CLASS =
-  "h-[38px] flex items-center gap-2 rounded-md transition-all border group whitespace-nowrap shadow-inner focus:outline-none focus-visible:border-[#22d3ee]/45 focus-visible:ring-1 focus-visible:ring-[#22d3ee]/30";
+  "h-control-md flex items-center gap-2 rounded-lg transition-[background-color,border-color,color,box-shadow] border group whitespace-nowrap focus:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring select-none text-label font-medium";
 
 const CONTROL_IDLE_CLASS =
-  "text-white bg-[#16161a]/60 hover:bg-[#202026]/80 border-white/[0.06]";
+  "text-ink-muted bg-wash hover:bg-wash-strong hover:text-ink border-line";
 
 const CONTROL_ACTIVE_CLASS =
-  "text-[#22d3ee] bg-[#22d3ee]/10 hover:bg-[#22d3ee]/15 border-[#22d3ee]/25";
+  "text-brand bg-brand-soft hover:bg-brand-pressed border-brand-line";
 
 const MEDIA_CONTROL_LAYOUT_CLASS =
-  "w-10 h-10 shrink-0 rounded-full border transition-all flex items-center justify-center relative overflow-hidden group focus:outline-none focus-visible:border-[#22d3ee]/45 focus-visible:ring-1 focus-visible:ring-[#22d3ee]/30";
+  "size-control-md shrink-0 rounded-lg border transition-[background-color,border-color,color,box-shadow] flex items-center justify-center relative overflow-hidden group focus:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring";
 
 const DEFAULT_POPOVER_POSITION_CLASS =
-  "absolute bottom-[calc(100%+12px)] left-0 z-50";
+  "absolute bottom-[calc(100%+10px)] left-0 z-popover";
 
 const DEFAULT_POPOVER_CLASS =
-  "rounded-xl p-3.5 shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/[0.08] backdrop-blur-2xl min-w-[160px] max-h-[40vh] overflow-y-auto custom-scrollbar";
+  "rounded-xl p-2 shadow-elevation-3 border border-line-strong min-w-popover max-h-popover overflow-y-auto custom-scrollbar animate-fade-in";
 
 function joinClasses(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -52,12 +59,12 @@ export function promptControlClassName({
   return joinClasses(
     CONTROL_LAYOUT_CLASS,
     iconOnly
-      ? "w-[38px] px-0 justify-center"
+      ? "w-control-md px-0 justify-center"
       : compact
-        ? "px-3"
-        : "px-4",
+        ? "px-2"
+        : "px-3",
     active ? CONTROL_ACTIVE_CLASS : CONTROL_IDLE_CLASS,
-    className,
+    withoutRadiusUtilities(className),
   );
 }
 
@@ -68,17 +75,17 @@ export function promptMediaButtonClassName({
   return joinClasses(
     MEDIA_CONTROL_LAYOUT_CLASS,
     active
-      ? "border-[#22d3ee]/60 bg-[#22d3ee]/5 hover:border-[#22d3ee]/70"
-      : "border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.06] hover:border-[#22d3ee]/40",
-    className,
+      ? "border-brand-line bg-brand-soft text-brand"
+      : "border-line bg-wash text-ink-muted hover:text-ink hover:bg-wash-strong hover:border-line-strong",
+    withoutRadiusUtilities(className),
   );
 }
 
 export const PROMPT_MEDIA_PREVIEW_CLASS =
-  "relative w-10 h-10 shrink-0 rounded-full border border-white/10 overflow-hidden shadow-md group";
+  "relative size-control-md shrink-0 rounded-xl border border-line overflow-hidden shadow-elevation-1 group";
 
 export const PROMPT_CONTROL_LABEL_CLASS =
-  "text-xs font-semibold text-current opacity-70 group-hover:text-[#22d3ee] group-hover:opacity-100 transition-all";
+  "text-label font-medium text-current opacity-80 group-hover:opacity-100 transition-opacity";
 
 export function PromptChevronIcon({ className = "" }) {
   return (
@@ -88,11 +95,11 @@ export function PromptChevronIcon({ className = "" }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="3"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={joinClasses(
-        "text-current opacity-[0.45] group-hover:opacity-100 flex-shrink-0 transition-opacity",
+        "text-current opacity-50 group-hover:opacity-100 flex-shrink-0 transition-opacity",
         className,
       )}
       aria-hidden="true"
@@ -111,7 +118,7 @@ export function PromptAspectRatioIcon({ className = "" }) {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className={joinClasses("text-current opacity-[0.45] flex-shrink-0", className)}
+      className={joinClasses("text-current opacity-60 flex-shrink-0", className)}
       aria-hidden="true"
     >
       <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -130,7 +137,7 @@ export function PromptDurationIcon({ className = "" }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={joinClasses("text-current opacity-[0.45] flex-shrink-0", className)}
+      className={joinClasses("text-current opacity-60 flex-shrink-0", className)}
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="9" />
@@ -142,15 +149,15 @@ export function PromptDurationIcon({ className = "" }) {
 export function PromptQualityIcon({ className = "" }) {
   return (
     <svg
-      width="18"
-      height="18"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={joinClasses("text-current opacity-70 flex-shrink-0", className)}
+      className={joinClasses("text-current opacity-60 flex-shrink-0", className)}
       aria-hidden="true"
     >
       <path d="M6.5 3.5h11L22 9 12 21 2 9l4.5-5.5Z" />
@@ -178,6 +185,7 @@ export const PromptPopover = forwardRef(function PromptPopover(
     if (!fitViewport) return;
     const position = () => {
       const popover = popoverRef.current;
+      if (!popover) return;
       popover.style.translate = "";
       popover.style.height = "";
       let left = 16;
@@ -202,10 +210,10 @@ export const PromptPopover = forwardRef(function PromptPopover(
     };
     position();
     const popover = popoverRef.current;
-    popover.addEventListener("toggle", position, true);
+    if (popover) popover.addEventListener("toggle", position, true);
     window.addEventListener("resize", position);
     return () => {
-      popover.removeEventListener("toggle", position, true);
+      if (popover) popover.removeEventListener("toggle", position, true);
       window.removeEventListener("resize", position);
     };
   }, [fitViewport, children]);
@@ -216,8 +224,8 @@ export const PromptPopover = forwardRef(function PromptPopover(
       className={joinClasses(
         positionClassName,
         DEFAULT_POPOVER_CLASS,
-        solid ? "bg-[#0c0c0f]" : "bg-[#0c0c0f]/95",
-        className,
+        solid ? "bg-surface-raised" : "bg-overlay-glass",
+        withoutRadiusUtilities(className),
       )}
     >
       {children}
@@ -229,8 +237,8 @@ export function PromptPopoverHeader({ children, className = "" }) {
   return (
     <div
       className={joinClasses(
-        "text-[11px] font-semibold text-white/30 uppercase tracking-wider pb-2 border-b border-white/[0.05] mb-2 px-1",
-        className,
+        "text-caption font-semibold text-ink-subtle uppercase tracking-wide pb-2 border-b border-line-subtle mb-1.5 px-1",
+        withoutRadiusUtilities(className),
       )}
     >
       {children}
@@ -240,7 +248,7 @@ export function PromptPopoverHeader({ children, className = "" }) {
 
 export function PromptMenuList({ children, className = "" }) {
   return (
-    <div role="menu" className={joinClasses("flex flex-col gap-1", className)}>
+    <div role="menu" className={joinClasses("flex flex-col gap-0.5", className)}>
       {children}
     </div>
   );
@@ -262,19 +270,22 @@ export function PromptMenuItem({
       aria-checked={selected}
       role="menuitemradio"
       className={joinClasses(
-        "w-full min-h-10 flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all group/menu-item",
-        "text-xs font-semibold text-white/70 hover:bg-[#22d3ee]/10 hover:text-[#22d3ee] focus:outline-none focus-visible:bg-[#22d3ee]/10 focus-visible:text-[#22d3ee]",
-        className,
+        "w-full min-h-control-sm flex items-center justify-between gap-3 px-3 py-1 rounded-md text-left cursor-pointer transition-[background-color,color] duration-fast group/menu-item select-none",
+        selected
+          ? "bg-brand-soft text-brand font-medium"
+          : "text-ink-muted hover:bg-wash-strong hover:text-ink focus:bg-wash-strong focus:text-ink",
+        FOCUS_RING,
+        withoutRadiusUtilities(className),
       )}
     >
       <span className="min-w-0">
-        <span className="block truncate">{children}</span>
+        <span className="block truncate text-label">{children}</span>
         {description && (
           <span className={joinClasses(
-            "block font-medium mt-0.5",
+            "block mt-0.5",
             wrapDescription
-              ? "text-[10px] leading-relaxed whitespace-normal text-white/55 group-hover/menu-item:text-white/70"
-              : "text-[9px] text-white/35 truncate group-hover/menu-item:text-white/50",
+              ? "text-micro leading-relaxed whitespace-normal text-ink-subtle group-hover/menu-item:text-ink-muted"
+              : "text-micro text-ink-subtle truncate group-hover/menu-item:text-ink-muted",
           )}>
             {description}
           </span>
@@ -286,9 +297,9 @@ export function PromptMenuItem({
           height="12"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#22d3ee"
-          strokeWidth="4.5"
-          className="flex-shrink-0"
+          stroke="currentColor"
+          strokeWidth="3.5"
+          className="flex-shrink-0 text-brand"
           aria-hidden="true"
         >
           <polyline points="20 6 9 17 4 12" />
@@ -302,8 +313,8 @@ export function PromptSegmentedControl({ children, className = "" }) {
   return (
     <div
       className={joinClasses(
-        "inline-flex items-center gap-1 bg-white/[0.03] border border-white/[0.05] rounded-full p-0.5",
-        className,
+        PILL_SEGMENT_TRACK,
+        withoutRadiusUtilities(className),
       )}
     >
       {children}
@@ -324,12 +335,13 @@ export function PromptSegmentOption({
       type={type}
       aria-pressed={selected}
       className={joinClasses(
-        "min-h-7 px-3 py-1 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
-        "focus:outline-none focus-visible:ring-1 focus-visible:ring-[#22d3ee]/40",
+        "font-medium transition-[background-color,color,box-shadow] duration-fast flex items-center justify-center gap-1.5 select-none",
+        FOCUS_RING,
         selected
-          ? "bg-[#22d3ee] text-black shadow-md shadow-[#22d3ee]/20"
-          : "text-white/40 hover:text-white/70",
-        className,
+          ? `${PILL_SEGMENT_ACTIVE} font-semibold`
+          : PILL_SEGMENT_IDLE,
+        pillControlClasses("xs", { pad: "px-2.5", text: "text-label" }),
+        withoutRadiusUtilities(className),
       )}
     >
       {children}
@@ -342,11 +354,11 @@ export function PromptComposer({
   className = "",
   panelClassName = "",
   positionClassName = DEFAULT_POSITION_CLASS,
-  style = { animationDelay: "0.2s" },
+  style = { animationDelay: "0.15s" },
 }) {
   return (
     <div className={joinClasses(positionClassName, className)} style={style}>
-      <div className={joinClasses(DEFAULT_PANEL_CLASS, panelClassName)}>
+      <div className={joinClasses(DEFAULT_PANEL_CLASS, withoutRadiusUtilities(panelClassName))}>
         {children}
       </div>
     </div>
@@ -404,7 +416,7 @@ export const PromptTextarea = forwardRef(function PromptTextarea(
       onChange={handleChange}
       onInput={handleInput}
       rows={rows}
-      className={joinClasses(DEFAULT_TEXTAREA_CLASS, className)}
+      className={joinClasses(DEFAULT_TEXTAREA_CLASS, withoutRadiusUtilities(className))}
     />
   );
 });
@@ -413,7 +425,7 @@ export function PromptFooter({ children, className = "" }) {
   return (
     <div
       className={joinClasses(
-        "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-3 border-t border-white/[0.03] relative",
+        "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-line-subtle relative",
         className,
       )}
     >
@@ -430,7 +442,7 @@ export const PromptControls = forwardRef(function PromptControls(
     <div
       ref={ref}
       className={joinClasses(
-        "flex items-center gap-2 relative flex-wrap pb-1 md:pb-0",
+        "flex items-center gap-2 relative flex-wrap pb-0.5 sm:pb-0",
         className,
       )}
     >
@@ -440,17 +452,20 @@ export const PromptControls = forwardRef(function PromptControls(
 });
 
 export const PromptAction = forwardRef(function PromptAction(
-  { children, className = "", type = "button", ...props },
+  { children, className = "", type = "button", shape = "control", ...props },
   ref,
 ) {
   return (
-    <button
-      {...props}
+    <Button
       ref={ref}
       type={type}
-      className={joinClasses(DEFAULT_ACTION_CLASS, className)}
+      variant="primary"
+      size="lg"
+      shape={shape}
+      className={joinClasses("w-full sm:w-auto", withoutRadiusUtilities(className))}
+      {...props}
     >
       {children}
-    </button>
+    </Button>
   );
 });

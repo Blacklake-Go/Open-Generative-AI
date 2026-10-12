@@ -29,7 +29,19 @@ release/
 
 # Next.js
 .next/
+.next*/
 out/
+
+# Local runtime/session data and generated archives
+cookies.txt
+data/backups/
+/data/static_archive/
+/.playwright-artifacts/
+/.ui-repair-preview/
+/.agents/
+*.db
+*.tar
+*.tar.gz
 
 # Misc
 *.pem

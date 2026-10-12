@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { generateVideo, generateI2V, processV2V, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import DrawModal from "./DrawModal.jsx";
+import ModelPriceTag from "./ModelPriceTag.jsx";
+import FrontendModelPicker from "./FrontendModelPicker.jsx";
+import { priceForIds } from "../modelPrice.js";
+import VideoSpecPopover from "./VideoSpecPopover.jsx";
 import ModelParameterControls from "./ModelParameterControls.jsx";
 import { VideoOptionControl, VideoSettingsControl } from "./VideoModelControls.jsx";
 import MobileGenerationActions, {
@@ -23,6 +28,7 @@ import {
   getDefaultEffectForI2VModel,
 } from "../models.js";
 import {
+  filterActiveModelEntries,
   getFamilyVariant,
   videoModelCatalog,
   videoModelMenuEntries as videoModelPickerEntries,
@@ -91,14 +97,24 @@ import {
   PromptPopoverHeader,
   PromptDurationIcon,
   PromptQualityIcon,
-  PromptTextarea,
   promptControlClassName,
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import usePromptMenu from "./prompt/usePromptMenu.js";
 import en from "../messages/en/videoStudio.json";
 import zh from "../messages/zh/videoStudio.json";
+import ja from "../messages/ja-JP/videoStudio.json";
+import ko from "../messages/ko-KR/videoStudio.json";
+import zhTw from "../messages/zh-TW/videoStudio.json";
+import es from "../messages/es-ES/videoStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import {
+  PROVIDER_LOGOS,
+  invertLogos,
+  getProviderLogo,
+  getProviderStyle,
+} from "../providerLogos.js";
 
 async function downloadFile(url, filename) {
   try {
@@ -145,7 +161,7 @@ function ReferenceMediaLabel({ label, required = false }) {
     >
       {label}
       {required && (
-        <span className="ml-0.5 text-[#22d3ee]" aria-hidden="true">
+        <span className="ml-0.5 text-[#e11d74]" aria-hidden="true">
           *
         </span>
       )}
@@ -170,7 +186,7 @@ function ReferencePreview({
         {type === "image" ? (
           <img src={url} alt="" className="w-full h-full object-cover" />
         ) : type === "video" ? (
-          <video src={url} className="w-full h-full object-cover" muted />
+          <video src={url} className="w-full h-full object-cover" muted onError={(e) => { e.target.style.display = 'none'; if (e.target.parentElement) e.target.parentElement.classList.add('bg-white/5'); }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-white/5 text-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -319,24 +335,24 @@ function ReferenceUploadButton({
                 fill="transparent"
                 strokeDasharray={88}
                 strokeDashoffset={88 - (88 * progress) / 100}
-                className="text-[#22d3ee] transition-all duration-300"
+                className="text-[#e11d74] transition-all duration-300"
               />
             </svg>
-            <span className="absolute text-[9px] font-black text-[#22d3ee] leading-none">{progress}%</span>
+            <span className="absolute text-[9px] font-black text-[#e11d74] leading-none">{progress}%</span>
           </div>
         ) : type === "video" ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white/40 group-hover:text-[#22d3ee] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
             <polygon points="23 7 16 12 23 17 23 7" />
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
           </svg>
         ) : type === "audio" ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#22d3ee] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
             <path d="M9 18V5l10-2v13" />
             <circle cx="6" cy="18" r="3" />
             <circle cx="16" cy="16" r="3" />
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#22d3ee] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -363,7 +379,7 @@ const CheckSvg = () => (
     height="16"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#22d3ee"
+    stroke="#e11d74"
     strokeWidth="4"
   >
     <polyline points="20 6 9 17 4 12" />
@@ -397,41 +413,16 @@ const VideoReadySvg = () => (
   >
     <polygon points="23 7 16 12 23 17 23 7" />
     <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-    <polyline points="7 10 10 13 15 8" stroke="#22d3ee" strokeWidth="2.5" />
+    <polyline points="7 10 10 13 15 8" stroke="#e11d74" strokeWidth="2.5" />
   </svg>
 );
 
 // ── Dropdown components ───────────────────────────────────────────────────────
 
-const PROVIDER_LOGOS = {
-  openai: "https://cdn.muapi.ai/models/openai.png",
-  google: "https://cdn.muapi.ai/models/gemini.png",
-  kling: "https://cdn.muapi.ai/models/kling.png",
-  alibaba: "https://cdn.muapi.ai/models/alibaba.png",
-  bytedance: "https://cdn.muapi.ai/models/bytedance.png",
-  blackforest: "https://cdn.muapi.ai/models/bfl.png",
-  minimax: "https://cdn.muapi.ai/models/minimax.png",
-  suno: "https://cdn.muapi.ai/models/suno.png",
-  anthropic: "https://cdn.muapi.ai/models/claude.png",
-  meshy: "https://cdn.muapi.ai/models/meshy-3.png",
-  tripo3d: "https://cdn.muapi.ai/models/tripo3d.png",
-  grok: "https://cdn.muapi.ai/models/xai.png",
-  muapi: "https://cdn.muapi.ai/models/muapi.png",
-  midjourney: "https://cdn.muapi.ai/models/midjourney.png",
-  vidu: "https://cdn.muapi.ai/models/vidu.png",
-  runway: "https://cdn.muapi.ai/models/runway.png",
-  luma: "https://cdn.muapi.ai/models/luma.png",
-  ideogram: "https://cdn.muapi.ai/models/ideogram.png",
-  leonardoai: "https://cdn.muapi.ai/models/leonardoai.png",
-  hunyuan: "https://cdn.muapi.ai/models/hunyuan.png",
-  hidream: "https://cdn.muapi.ai/models/hidream.png",
-  lightricks: "https://cdn.muapi.ai/models/lightricks.png",
-  pixverse: "https://cdn.muapi.ai/models/pixverse.png",
-  reve: "https://cdn.muapi.ai/models/reve.png",
-  stability: "https://cdn.muapi.ai/models/stability.png"
-};
-
-const invertLogos = ['openai', 'blackforest', 'runway', 'ideogram', 'lightricks', 'grok'];
+// Grouped menu entries derive `defaultVariant` from their mode variants, so an
+// entry whose grouped variants all fail to resolve has none — dereferencing it
+// during render crashed the whole video workbench.
+const entryModelId = (entry) => entry?.defaultVariant?.model?.id ?? null;
 
 function seedanceToolLabel(tool, copy, includeAction = false) {
   return [
@@ -441,30 +432,31 @@ function seedanceToolLabel(tool, copy, includeAction = false) {
   ].filter(Boolean).join(" · ");
 }
 
-function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
+function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "en" }) {
   const [search, setSearch] = useState("");
   const selectedEntry = videoModelPickerEntryByVariantId.get(selectedModel);
   const selectedModelProvider = selectedEntry?.family.provider || "all";
+  const activeEntries = filterActiveModelEntries(videoModelPickerEntries);
   const modelCategories = [
     {
       id: "all",
       label: copy.categories.all,
-      entries: videoModelPickerEntries,
+      entries: activeEntries,
     },
     {
       id: "t2v",
       label: copy.categories.t2v,
-      entries: videoModelPickerEntries.filter((entry) => entry.variantsByMode.t2v && !getVeoToolConfiguration(entry.defaultVariant.model.id)),
+      entries: activeEntries.filter((entry) => entry.variantsByMode.t2v && !getVeoToolConfiguration(entryModelId(entry))),
     },
     {
       id: "i2v",
       label: copy.categories.i2v,
-      entries: videoModelPickerEntries.filter((entry) => entry.variantsByMode.i2v),
+      entries: activeEntries.filter((entry) => entry.variantsByMode.i2v),
     },
     {
       id: "v2v",
       label: copy.categories.v2v,
-      entries: videoModelPickerEntries.filter((entry) => entry.variantsByMode.v2v || getVeoToolConfiguration(entry.defaultVariant.model.id)),
+      entries: activeEntries.filter((entry) => entry.variantsByMode.v2v || getVeoToolConfiguration(entryModelId(entry))),
     },
   ];
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -483,41 +475,6 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
     }
   }, []);
 
-  const getProviderStyle = (provider) => {
-    switch (provider) {
-      case "grok":
-        return { text: "xI", bg: "bg-orange-500/10 text-orange-400 border-orange-500/25" };
-      case "openai":
-        return { text: "O", bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" };
-      case "google":
-        return { text: "G", bg: "bg-blue-500/10 text-blue-400 border-blue-500/25" };
-      case "blackforest":
-        return { text: "BF", bg: "bg-amber-500/10 text-amber-400 border-amber-500/25" };
-      case "bytedance":
-        return { text: "BD", bg: "bg-purple-500/10 text-purple-400 border-purple-500/25" };
-      case "midjourney":
-        return { text: "MJ", bg: "bg-indigo-500/10 text-indigo-400 border-indigo-500/25" };
-      case "kling":
-        return { text: "KL", bg: "bg-rose-500/10 text-rose-400 border-rose-500/25" };
-      case "vidu":
-        return { text: "VD", bg: "bg-cyan-500/10 text-cyan-400 border-cyan-500/25" };
-      case "minimax":
-        return { text: "MX", bg: "bg-pink-500/10 text-pink-400 border-pink-500/25" };
-      case "ideogram":
-        return { text: "ID", bg: "bg-yellow-500/10 text-yellow-400 border-yellow-500/25" };
-      case "luma":
-        return { text: "LM", bg: "bg-teal-500/10 text-teal-400 border-teal-500/25" };
-      case "alibaba":
-        return { text: "AL", bg: "bg-sky-500/10 text-sky-400 border-sky-500/25" };
-      case "leonardoai":
-        return { text: "LE", bg: "bg-violet-500/10 text-violet-400 border-violet-500/25" };
-      case "stability":
-        return { text: "SD", bg: "bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/25" };
-      default:
-        const name = provider ? provider.toUpperCase() : "AI";
-        return { text: name.substring(0, 2), bg: "bg-primary/10 text-primary border-primary/25" };
-    }
-  };
 
   // Dynamically compute list of providers from the input models lists
   const availableProviders = [];
@@ -550,8 +507,8 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
   const seedanceToolsByGroup = { continueGenerated: [], removeWatermark: [] };
   const veoTools = [];
   for (const entry of filtered) {
-    const tool = getSeedanceToolConfiguration(entry.defaultVariant.model.id);
-    const veoTool = getVeoToolConfiguration(entry.defaultVariant.model.id);
+    const tool = getSeedanceToolConfiguration(entryModelId(entry));
+    const veoTool = getVeoToolConfiguration(entryModelId(entry));
     if (tool) seedanceToolsByGroup[tool.group][tool.order] = entry;
     else if (veoTool) veoTools[veoTool.order] = entry;
     else mainEntries.push(entry);
@@ -581,25 +538,32 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
       }}
     >
       <div className="flex items-center gap-3.5">
-        {PROVIDER_LOGOS[family.provider] ? (
-          <div className="w-8 h-8 rounded-xl border border-white/5 overflow-hidden shrink-0 flex items-center justify-center bg-white/[0.02]">
-            <img
-              src={PROVIDER_LOGOS[family.provider]}
-              alt={family.provider_name}
-              className={`w-full h-full object-contain p-1 ${invertLogos.includes(family.provider) ? "invert" : ""}`}
-            />
-          </div>
-        ) : (
-          <div
-            className={`w-9 h-9 ${getIconColor(family)} border rounded-xl flex items-center justify-center font-black text-xs shadow-inner uppercase`}
-          >
-            {entry.name.charAt(0)}
-          </div>
-        )}
+        {(() => {
+          const logo = getProviderLogo(family.provider, family.id);
+          return logo ? (
+            <div className="w-8 h-8 rounded-xl border border-white/5 overflow-hidden shrink-0 flex items-center justify-center bg-white/[0.02]">
+              <img
+                src={logo}
+                alt={family.provider_name}
+                className={`w-full h-full object-contain p-1 ${invertLogos.includes(family.provider) ? "invert" : ""}`}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              className={`w-9 h-9 ${getIconColor(family)} border rounded-xl flex items-center justify-center font-black text-xs shadow-inner uppercase`}
+            >
+              {entry.name.charAt(0)}
+            </div>
+          );
+        })()}
         <div className="flex flex-col gap-0.5 min-w-0">
           <span className="text-xs font-bold text-white tracking-tight truncate">
             {label}
           </span>
+          <ModelPriceTag ids={entry.variantIds} locale={locale} />
           <div className="flex items-center gap-1.5">
             {selectedProvider === "all" && family.provider_name && (
               <span className="text-[9px] text-white/40">
@@ -615,7 +579,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
   };
 
   return (
-    <div className="flex gap-4 h-full max-h-[70vh] min-h-[350px]">
+    <div className="flex gap-4 flex-1 min-h-[350px] overflow-hidden">
       {/* Left Sidebar: Provider tabs */}
       <div className="flex flex-col gap-2.5 items-center pr-2 border-r border-white/5 shrink-0 select-none overflow-y-auto custom-scrollbar w-14 pt-0.5">
         <button
@@ -649,51 +613,39 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
               }`}
               title={p.name}
             >
-              {PROVIDER_LOGOS[p.id] ? (
-                <img
-                  src={PROVIDER_LOGOS[p.id]}
-                  alt={p.name}
-                  className={`w-full h-full rounded-full object-contain ${invertLogos.includes(p.id) ? "invert" : ""}`}
-                />
-              ) : (
-                style.text
-              )}
+              {(() => {
+                const logo = getProviderLogo(p.id);
+                return logo ? (
+                  <img
+                    src={logo}
+                    alt={p.name}
+                    className={`w-full h-full rounded-full object-contain ${invertLogos.includes(p.id) ? "invert" : ""}`}
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  style.text
+                );
+              })()}
             </button>
           );
         })}
       </div>
 
       {/* Right Pane: Search + Lists */}
-      <div className="flex-1 flex flex-col gap-2 min-w-0">
+      <div className="flex-1 flex flex-col gap-2 min-w-0 overflow-hidden">
         <div className="px-1 pb-2 border-b border-white/5 shrink-0 space-y-2">
-          <div className="flex gap-1.5 overflow-x-auto custom-scrollbar pb-0.5">
-            {modelCategories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(category.id);
-                  setSelectedProvider("all");
-                }}
-                className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-bold transition-colors border ${
-                  selectedCategory === category.id
-                    ? "bg-primary/15 text-primary border-primary/30"
-                    : "bg-white/[0.02] text-white/50 border-white/[0.04] hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-2 border border-white/5 focus-within:border-primary/50 transition-colors">
+          {/* Top Search Input (Fixed at top) */}
+          <div className="flex items-center gap-2.5 bg-white/5 rounded-xl px-3 py-2 border border-white/5 focus-within:border-primary/50 transition-colors">
             <svg
               width="14"
               height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="3"
-              className="text-muted"
+              strokeWidth="2.5"
+              className="text-white/40 shrink-0"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
@@ -708,21 +660,56 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
                 if (value.trim()) setSelectedProvider("all");
               }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-transparent border-none text-xs text-white focus:ring-0 w-full p-0 outline-none"
+              className="bg-transparent border-none text-xs text-white placeholder:text-white/40 focus:ring-0 w-full p-0 outline-none"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSearch("");
+                }}
+                className="text-white/40 hover:text-white/80 p-0.5 text-xs shrink-0"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* Category Tabs below search */}
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5">
+            {modelCategories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(category.id);
+                  setSelectedProvider("all");
+                }}
+                className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors border ${
+                  selectedCategory === category.id
+                    ? "bg-primary/15 text-primary border-primary/30"
+                    : "bg-white/[0.02] text-white/50 border-white/[0.04] hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+            {selectedProvider !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedProvider("all")}
+                className="shrink-0 rounded-lg px-2 py-0.5 text-[10px] bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 flex items-center gap-1 transition-colors"
+                title="Clear provider filter"
+              >
+                <span>{availableProviders.find(p => p.id === selectedProvider)?.name || selectedProvider}</span>
+                <span className="opacity-60">✕</span>
+              </button>
+            )}
           </div>
         </div>
         
-        <div className="text-xs font-bold text-secondary px-2 py-1 shrink-0 flex items-center justify-between">
-          <span>{activeCategory.label} models</span>
-          {selectedProvider !== "all" && (
-            <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/60">
-              {availableProviders.find(p => p.id === selectedProvider)?.name || selectedProvider}
-            </span>
-          )}
-        </div>
-        
-        <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2 flex-1">
+        <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2 flex-1 min-h-0">
           {filtered.length === 0 ? (
             <div className="text-xs text-white/30 text-center py-6">
               No models found
@@ -740,7 +727,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
                     return entries.length > 0 && (
                       <div key={group} role="group" aria-label={copy.seedance[group]} className="pt-2">
                         <p className="px-3 pb-1 text-[11px] font-semibold text-white/60">{copy.seedance[group]}</p>
-                        {entries.map((entry) => renderItem(entry, seedanceToolLabel(getSeedanceToolConfiguration(entry.defaultVariant.model.id), copy)))}
+                        {entries.map((entry) => renderItem(entry, seedanceToolLabel(getSeedanceToolConfiguration(entryModelId(entry)), copy)))}
                       </div>
                     );
                   })}
@@ -750,9 +737,10 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
                 <details open={Boolean(search.trim()) || Boolean(selectedVeoTool)} className="mt-2 border-t border-white/5 pt-2">
                   <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-white/50">{copy.veo.tools}</summary>
                   <p className="px-3 pb-2 text-[11px] text-white/45">{copy.veo.toolsHelp}</p>
-                  {veoTools.filter(Boolean).map((entry) => renderItem(
-                    entry, copy.veo.toolNames[getVeoToolConfiguration(entry.defaultVariant.model.id).key],
-                  ))}
+                  {veoTools.filter(Boolean).map((entry) => {
+                    const veoTool = getVeoToolConfiguration(entryModelId(entry));
+                    return renderItem(entry, copy.veo.toolNames[veoTool?.key] ?? entry.name);
+                  })}
                 </details>
               )}
             </>
@@ -772,6 +760,8 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en }) {
 
 export default function VideoStudio({
   apiKey,
+  initialModel = "",
+  initialPrompt = "",
   onGenerationStart,
   onGenerationEnd,
   onGenerationComplete,
@@ -782,7 +772,7 @@ export default function VideoStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = useMemo(() => resolveCopy(en, zh, locale), [locale]);
+  const copy = useMemo(() => resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale), [locale]);
   const LEGACY_PERSIST_KEY = "hg_video_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -795,10 +785,12 @@ export default function VideoStudio({
   const [selectedWorkflowId, setSelectedWorkflowId] = useState(null);
 
   // ── model / params ──
-  const defaultModel = t2vModels[0];
+  const defaultModel = t2vModels.find((m) => m.id === "kling-v3.0-standard-text-to-video") ||
+                       t2vModels.find((m) => m.id === "seedance-2.5-text-to-video") ||
+                       t2vModels[0] || {};
   const defaultFamily = videoModelCatalog.familyByVariantId.get(defaultModel.id);
-  const [selectedModel, setSelectedModel] = useState(defaultModel.id);
-  const [selectedFamilyId, setSelectedFamilyId] = useState(defaultFamily.id);
+  const [selectedModel, setSelectedModel] = useState(defaultModel.id || "");
+  const [selectedFamilyId, setSelectedFamilyId] = useState(defaultFamily?.id || defaultModel.id || "");
   const [selectedAr, setSelectedAr] = useState(
     defaultModel.inputs?.aspect_ratio?.default || "16:9",
   );
@@ -849,10 +841,13 @@ export default function VideoStudio({
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
-  const [canvasUrl, setCanvasUrl] = useState(null);
-  const [canvasModel, setCanvasModel] = useState(null);
-  const [showCanvas, setShowCanvas] = useState(false);
+  const [failedVideoUrls, setFailedVideoUrls] = useState({});
+  const [fullscreenVideoError, setFullscreenVideoError] = useState(false);
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
+
+  useEffect(() => {
+    setFullscreenVideoError(false);
+  }, [fullscreenUrl]);
   const [generationSources, setGenerationSources] = useState({});
   const [selectedVeoSourceId, setSelectedVeoSourceId] = useState("");
 
@@ -864,7 +859,7 @@ export default function VideoStudio({
   const [openDropdown, setOpenDropdown] = useState(null);
 
   // ── prompt ──
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt || "");
 
   // ── refs ──
   const containerRef = useRef(null);
@@ -1296,6 +1291,137 @@ export default function VideoStudio({
     [applySelectedVariant, reconcileReferencesForModel],
   );
 
+  const VIDEO_MODEL_ALIASES = {
+    'sora': 'openai-sora-2-text-to-video',
+    'sora-2': 'openai-sora-2-text-to-video',
+    'openai-sora': 'openai-sora-2-text-to-video',
+    'openai-sora-2': 'openai-sora-2-text-to-video',
+    'veo-2': 'veo3.1-text-to-video',
+    'veo-2-text-to-video': 'veo3.1-text-to-video',
+    'google-veo-2': 'veo3.1-text-to-video',
+    'veo-3': 'veo3-text-to-video',
+    'veo-3.1': 'veo3.1-text-to-video',
+    'google-veo-3-1': 'veo3.1-text-to-video',
+    'kling-2.6': 'kling-v2.6-standard-text-to-video',
+    'kling-3.0': 'kling-v3.0-standard-text-to-video',
+    'kling-3-0': 'kling-v3.0-standard-text-to-video',
+    'hailuo-2.3': 'minimax-hailuo-2.3-standard-t2v',
+    'hailuo-ai': 'minimax-hailuo-2.3-standard-t2v',
+    'minimax-hailuo-2.3': 'minimax-hailuo-2.3-standard-t2v',
+    'wan-2.7': 'wan2.7-text-to-video',
+    'wan-2-7': 'wan2.7-text-to-video',
+    'wan-video': 'wan2.7-text-to-video',
+    'hunyuan-3d': 'hunyuan-text-to-video',
+    'hunyuan-video': 'hunyuan-text-to-video',
+    'hunyuan': 'hunyuan-text-to-video',
+    'grok-video': 'grok-imagine-text-to-video',
+    'grok': 'grok-imagine-text-to-video',
+    'vidu-q2': 'vidu-q2-text-to-video',
+    'vidu': 'vidu-q2-text-to-video',
+  };
+
+  const applyModelSelection = useCallback((targetModelKey) => {
+    if (!targetModelKey) return;
+    const rawKey = String(targetModelKey).trim();
+    const cleanKey = VIDEO_MODEL_ALIASES[rawKey] || VIDEO_MODEL_ALIASES[rawKey.toLowerCase()] || rawKey;
+
+    // 1. Try resolvePersistedVideoWorkflowSelection directly
+    const directResolution = resolvePersistedVideoWorkflowSelection(cleanKey, null);
+    if (directResolution?.family && directResolution?.variant) {
+      applyUserSelectedVariant(
+        directResolution.variant,
+        directResolution.variant.mode,
+        directResolution.family,
+        directResolution.workflowId,
+      );
+      return;
+    }
+
+    // 2. Direct variant in catalog
+    const variant = videoModelCatalog.variantById.get(cleanKey);
+    const family = videoModelCatalog.familyByVariantId.get(cleanKey);
+    if (variant && family) {
+      const targetWorkflowFamily = getVideoWorkflowFamily(family.id);
+      const workflowId = targetWorkflowFamily
+        ? (targetWorkflowFamily.base.variantIds.has(variant.model.id) || targetWorkflowFamily.unmanagedVariantIds.has(variant.model.id)
+            ? null
+            : inferVideoWorkflowId(family.id, variant.model.id))
+        : null;
+      applyUserSelectedVariant(variant, variant.mode, family, workflowId);
+      return;
+    }
+
+    // 2.5 Direct family in catalog (fallback to default family variant)
+    const directFamily = videoModelCatalog.familyById.get(cleanKey);
+    if (directFamily) {
+      const defaultVar = getFamilyVariant(videoModelCatalog, directFamily, "t2v") || directFamily.variants?.[0];
+      if (defaultVar) {
+        applyUserSelectedVariant(defaultVar, defaultVar.mode || "t2v", directFamily, null);
+        return;
+      }
+    }
+
+    // 3. Search in videoModelPickerEntries
+    const pickerEntry = videoModelPickerEntries.find(
+      (e) => e.id === cleanKey || e.variantIds?.has(cleanKey) || e.name?.toLowerCase() === cleanKey.toLowerCase()
+    );
+    if (pickerEntry) {
+      const target = pickerEntry.defaultVariant || pickerEntry.variantsByMode?.t2v || pickerEntry.variantsByMode?.i2v;
+      const targetFamily = pickerEntry.family;
+      if (target && targetFamily) {
+        const targetWorkflowFamily = getVideoWorkflowFamily(targetFamily.id);
+        const workflowId = targetWorkflowFamily
+          ? (targetWorkflowFamily.base.variantIds.has(target.model.id) || targetWorkflowFamily.unmanagedVariantIds.has(target.model.id)
+              ? null
+              : inferVideoWorkflowId(targetFamily.id, target.model.id))
+          : null;
+        applyUserSelectedVariant(target, target.mode, targetFamily, workflowId);
+        return;
+      }
+    }
+
+    // 4. Raw search in t2vModels / i2vModels / v2vModels
+    const rawT2V = t2vModels.find((m) => m.id === cleanKey || m.endpoint === cleanKey);
+    if (rawT2V) {
+      const rawFamily = videoModelCatalog.familyByVariantId.get(rawT2V.id) || { id: rawT2V.id, name: rawT2V.name };
+      applyUserSelectedVariant({ mode: "t2v", model: rawT2V }, "t2v", rawFamily, null);
+      return;
+    }
+  }, [applyUserSelectedVariant]);
+
+  // ── Sync with initialModel prop and URL ?model= ──────────────────────────
+  useEffect(() => {
+    const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const urlModel = urlParams?.get("model");
+    const targetModel = initialModel || urlModel;
+    if (targetModel) {
+      applyModelSelection(targetModel);
+    }
+  }, [initialModel, applyModelSelection]);
+
+  // ── Sync with initialPrompt prop and URL ?prompt= / ?remixPrompt= ────────
+  useEffect(() => {
+    const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const urlPrompt = urlParams?.get("prompt") || urlParams?.get("remixPrompt");
+    const targetPrompt = urlPrompt || initialPrompt;
+    if (targetPrompt) {
+      setPrompt(targetPrompt);
+    }
+  }, [initialPrompt]);
+
+  // ── Sync with global koyosim-select-model custom events ──────────────────
+  useEffect(() => {
+    const handleSelectModelEvent = (e) => {
+      const detail = e.detail;
+      const modelKey = typeof detail === "string" ? detail : (detail?.modelKey || detail?.modelId);
+      if (modelKey) {
+        applyModelSelection(modelKey);
+      }
+    };
+    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+  }, [applyModelSelection]);
+
   // ── Persistence: Load ────────────────────────────────────────────────────
   useEffect(() => {
     try {
@@ -1586,7 +1712,7 @@ export default function VideoStudio({
       const selectedFiles = Array.from(files);
       const tooLarge = selectedFiles.find((file) => file.size > maxBytes);
       if (tooLarge) {
-        alert(copy.errors.labelExceedsLimit.replace('{label}', label).replace('{limit}', Math.round(maxBytes / 1024 / 1024)));
+        toast.error(copy.errors.labelExceedsLimit.replace('{label}', label).replace('{limit}', Math.round(maxBytes / 1024 / 1024)));
         return [];
       }
       setUploading(true);
@@ -1609,7 +1735,7 @@ export default function VideoStudio({
             : [],
         );
         if (failures.length > 0) {
-          alert(copy.errors.labelUploadFailed
+          toast.error(copy.errors.labelUploadFailed
             .replace('{label}', label)
             .replace('{message}', failures.join('\n')));
         }
@@ -1618,7 +1744,7 @@ export default function VideoStudio({
         );
       } catch (err) {
         console.error(`[VideoStudio] ${label} upload failed:`, err);
-        alert(copy.errors.labelUploadFailed.replace('{label}', label).replace('{message}', err.message));
+        toast.error(copy.errors.labelUploadFailed.replace('{label}', label).replace('{message}', err.message));
         return [];
       } finally {
         setUploading(false);
@@ -1863,7 +1989,7 @@ export default function VideoStudio({
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      alert(copy.errors.imageExceeds10MB);
+      toast.error(copy.errors.imageExceeds10MB);
       return;
     }
     setEndImageUploading(true);
@@ -1884,7 +2010,7 @@ export default function VideoStudio({
         setUploadedEndImageUrl(url);
       }
     } catch (err) {
-      alert(`End frame upload failed: ${err.message}`);
+      toast.error(`End frame upload failed: ${err.message}`);
     } finally {
       setEndImageUploading(false);
       setEndImageProgress(0);
@@ -1978,7 +2104,7 @@ export default function VideoStudio({
         return;
       }
       const target = category !== "all"
-        ? category === "v2v" && getVeoToolConfiguration(defaultVariant.model.id)
+        ? category === "v2v" && getVeoToolConfiguration(defaultVariant?.model?.id)
           ? defaultVariant : variantsByMode[category]
         : variantsByMode[currentFamilyMode] || defaultVariant;
       if (!target) return;
@@ -2071,13 +2197,6 @@ export default function VideoStudio({
     setActiveHistoryIdx(0);
   }, []);
 
-  // ── show result in canvas ─────────────────────────────────────────────────
-  const showVideoInCanvas = useCallback((url, model) => {
-    setCanvasUrl(url);
-    setCanvasModel(model);
-    setShowCanvas(true);
-  }, []);
-
   // ── generate ──────────────────────────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
     if (mediaUploading || workflowUploadSlotRef.current) {
@@ -2117,19 +2236,19 @@ export default function VideoStudio({
         };
 
     if (!selectedWorkflowId && uploadedVideoUrls.length > 0 && capabilities.video.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support video references.`);
+      toast.error(`${selectedFamily.name} does not support video references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedImageUrls.length > 0 && capabilities.image.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support image references.`);
+      toast.error(`${selectedFamily.name} does not support image references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedAudioUrls.length > 0 && capabilities.audio.maxItems === 0) {
-      alert(`${selectedFamily.name} does not support audio references.`);
+      toast.error(`${selectedFamily.name} does not support audio references.`);
       return;
     }
     if ((currentModel?.promptRequired || veoContinuation?.promptRequired) && !trimmedPrompt) {
-      alert(copy.errors.noPromptForModel);
+      toast.error(copy.errors.noPromptForModel);
       return;
     }
 
@@ -2140,33 +2259,33 @@ export default function VideoStudio({
         currentModel,
       );
       if (!validation.valid) {
-        alert(validation.message);
+        toast.error(validation.message);
         return;
       }
     } else if (v2vMode) {
       if (!uploadedVideoUrl) {
-        alert(copy.errors.uploadVideoFirst);
+        toast.error(copy.errors.uploadVideoFirst);
         return;
       }
       if (currentModel?.imageField && !currentModel?.imageOptional && !uploadedImageUrl) {
-        alert(copy.errors.uploadReferenceImageForMotion);
+        toast.error(copy.errors.uploadReferenceImageForMotion);
         return;
       }
     } else if (isExtendMode) {
       if (!requestSource?.requestId || (selectedFamily.id === "seedance-2" && !isContinuationSourceModel(currentModel, requestSource.modelId))) {
-        alert(copy.errors.noContinuationSource.replace("{family}", selectedFamily.name));
+        toast.error(copy.errors.noContinuationSource.replace("{family}", selectedFamily.name));
         return;
       }
     } else if (imageMode) {
       const requiresImage =
         currentModel?.imageField && !currentModel?.imageOptional;
       if (requiresImage && uploadedImageUrls.length === 0) {
-        alert(copy.errors.uploadAtLeastOneReferenceImage);
+        toast.error(copy.errors.uploadAtLeastOneReferenceImage);
         return;
       }
     } else {
       if (!trimmedPrompt) {
-        alert(copy.errors.enterPromptToGenerate);
+        toast.error(copy.errors.enterPromptToGenerate);
         return;
       }
     }
@@ -2210,7 +2329,6 @@ export default function VideoStudio({
           timestamp: new Date().toISOString(),
         };
         addToLocalHistory(entry);
-        showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
             url: res.url,
@@ -2255,7 +2373,6 @@ export default function VideoStudio({
           timestamp: new Date().toISOString(),
         };
         addToLocalHistory(entry);
-        showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
             url: res.url,
@@ -2305,7 +2422,6 @@ export default function VideoStudio({
           timestamp: new Date().toISOString(),
         };
         addToLocalHistory(entry);
-        showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
             url: res.url,
@@ -2352,20 +2468,32 @@ export default function VideoStudio({
     mediaUploading,
     getCurrentModel,
     addToLocalHistory,
-    showVideoInCanvas,
     onGenerationComplete,
     onGenerationEnd,
     onGenerationError,
     onGenerationStart,
   ]);
 
-  // ── reset to prompt bar ───────────────────────────────────────────────────
-  const resetToPromptBar = useCallback(() => {
-    setShowCanvas(false);
-  }, []);
+  // ── Auto-generation trigger from URL (?auto=1) ───────────────────────────
+  const autoTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || autoTriggeredRef.current) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("auto") === "1") {
+      autoTriggeredRef.current = true;
+      try {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete("auto");
+        window.history.replaceState({}, "", nextUrl.toString());
+      } catch {}
+      const timer = setTimeout(() => {
+        handleGenerate();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [handleGenerate]);
 
   const handleNewPrompt = useCallback(() => {
-    resetToPromptBar();
     setPrompt("");
     setUploadedImageUrls([]);
     setUploadedEndImageUrl(null);
@@ -2378,11 +2506,10 @@ export default function VideoStudio({
     const variant = videoModelCatalog.variantById.get(first.id);
     applyUserSelectedVariant(variant, "t2v", family);
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [applyUserSelectedVariant, resetToPromptBar]);
+  }, [applyUserSelectedVariant]);
 
   const handleExtend = useCallback((requestId, sourceModelId) => {
     if (!requestId) return;
-    resetToPromptBar();
     setPrompt("");
     setUploadedImageUrls([]);
     setUploadedEndImageUrl(null);
@@ -2395,7 +2522,7 @@ export default function VideoStudio({
     );
     applyUserSelectedVariant(target, "t2v", family);
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [applyUserSelectedVariant, resetToPromptBar]);
+  }, [applyUserSelectedVariant]);
 
   // ── derived UI values ────────────────────────────────────────────────────
   const currentModelObj = selectedVariant?.model;
@@ -2486,12 +2613,12 @@ export default function VideoStudio({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative overflow-hidden"
+      className="w-full h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden"
     >
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {history.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in">
             {history.map((entry, idx) => {
               const isSeedance2 = isContinuationSourceModel("seedance-2-extend", entry.model);
               return (
@@ -2500,22 +2627,36 @@ export default function VideoStudio({
                   className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
                   onClick={() => setFullscreenUrl(entry.url)}
                 >
-                  <video
-                    src={entry.url}
-                    className="w-full aspect-video object-cover bg-black/40 hover:opacity-80 transition-opacity"
-                    controls={false}
-                    loop
-                    muted
-                    playsInline
-                    onMouseOver={(e) => e.target.play()}
-                    onMouseOut={(e) => {
-                      e.target.pause();
-                      e.target.currentTime = 0;
-                    }}
-                  />
+                  {failedVideoUrls[entry.url] ? (
+                    <div className="w-full aspect-video flex flex-col items-center justify-center bg-zinc-900 border border-white/5 text-white/50 p-4 text-center">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400 mb-2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span className="text-xs font-medium text-white/60">Failed to load video</span>
+                    </div>
+                  ) : (
+                    <video
+                      src={entry.url}
+                      className="w-full aspect-video object-cover bg-black/40 hover:opacity-80 transition-opacity"
+                      controls={false}
+                      loop
+                      muted
+                      playsInline
+                      onError={() => setFailedVideoUrls((prev) => ({ ...prev, [entry.url]: true }))}
+                      onMouseOver={(e) => {
+                        e.target.play().catch(() => {});
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.pause();
+                        e.target.currentTime = 0;
+                      }}
+                    />
+                  )}
                   
                   {/* Overlay actions */}
-                  <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="pointer-events-none absolute top-2 right-2 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                     <GenerationCopyButtons
                       prompt={entry.prompt}
                       onCopyError={onGenerationError}
@@ -2625,31 +2766,31 @@ export default function VideoStudio({
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt={copy.creativeAssets.asset1}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt={copy.creativeAssets.asset2}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt={copy.creativeAssets.asset3}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt={copy.creativeAssets.asset4}
@@ -2660,7 +2801,7 @@ export default function VideoStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               {!selectedTool && !selectedVeoTool && <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.heading}</span>}
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {selectedTool || selectedVeoTool || selectedPickerEntry?.groupedVideo ? selectedPickerLabel : selectedFamily.name}
               </span>
             </h1>
@@ -2880,12 +3021,13 @@ export default function VideoStudio({
             {/* Prompt textarea */}
             <div className="flex-1 flex flex-col gap-1">
               {!(selectedVeoTool && promptDisabled) && (
-              <PromptTextarea
+              <PromptInputField
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptInput}
                 placeholder={promptPlaceholder}
                 disabled={promptDisabled}
+                className="relative"
               />
               )}
             </div>
@@ -2954,14 +3096,21 @@ export default function VideoStudio({
                   <div className="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
                     {(() => {
                       const selectedModelProvider = selectedFamily.provider || 'muapi';
-                      return PROVIDER_LOGOS[selectedModelProvider] ? (
+                      const logo = getProviderLogo(selectedModelProvider, selectedFamily.id || selectedModel);
+                      const style = getProviderStyle(selectedModelProvider);
+                      return logo ? (
                         <img 
-                          src={PROVIDER_LOGOS[selectedModelProvider]} 
+                          src={logo} 
                           alt="" 
                           className={`w-full h-full object-contain ${invertLogos.includes(selectedModelProvider) ? "invert" : ""}`} 
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
                       ) : (
-                        <span className="text-[9px] font-bold text-black uppercase">V</span>
+                        <span className="text-[9px] font-bold text-white/80 uppercase">
+                          {style.text || "V"}
+                        </span>
                       );
                     })()}
                 </div>
@@ -2973,16 +3122,17 @@ export default function VideoStudio({
                 {openDropdown === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] md:w-[480px] max-w-md md:max-w-none max-h-[70vh]"
+                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
                     fitViewport={Boolean(groupedConfiguration)}
                     solid={Boolean(groupedConfiguration)}
                   >
-                    <PromptPopoverHeader>{copy.dropdowns.model}</PromptPopoverHeader>
-                    <ModelDropdown
+                    <FrontendModelPicker
+                      studioType="video"
                       selectedModel={selectedModel}
                       onSelect={handleModelSelect}
                       onClose={() => setOpenDropdown(null)}
                       copy={copy}
+                      locale={locale}
                     />
                   </PromptPopover>
                 )}
@@ -3162,103 +3312,94 @@ export default function VideoStudio({
                 />
               )}
 
-              {/* Aspect ratio btn */}
-              {showAr && (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={toggleDropdown("ar")}
-                    className={promptControlClassName({
-                      active: openDropdown === "ar",
-                    })}
-                  >
-                    <PromptAspectRatioIcon />
-                    <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                      {getVideoAspectRatioLabel(selectedAr, groupCopy)}
-                    </span>
-                  </button>
-                  {openDropdown === "ar" && (
-                    <PromptPopover
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <PromptPopoverHeader>
-                        {copy.dropdowns.aspectRatio}
-                      </PromptPopoverHeader>
-                      {aspectRatioHelp && (
-                        <p className="px-3 pb-2 text-[11px] text-white/45">{aspectRatioHelp}</p>
-                      )}
-                      <PromptMenuList>
-                        {(groupedConfiguration ? commonOptions.aspectRatios : getCurrentAspectRatios(selectedModel)).map((r) => (
-                          <PromptMenuItem
-                            key={r}
-                            selected={selectedAr === r}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedAr(r);
-                              setOpenDropdown(null);
-                            }}
-                          >
-                            {getVideoAspectRatioLabel(r, groupCopy)}
-                          </PromptMenuItem>
-                        ))}
-                      </PromptMenuList>
-                    </PromptPopover>
-                  )}
-                </div>
-              )}
+              {/* Unified Video Specification (Aspect Ratio · Resolution) */}
+              {(() => {
+                const currentVideoAspectRatios = groupedConfiguration
+                  ? commonOptions.aspectRatios
+                  : getCurrentAspectRatios(selectedModel);
 
-              {/* Effect btn */}
-              {showEffect && (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={toggleDropdown("effect")}
-                    className={promptControlClassName({
-                      active: openDropdown === "effect",
-                    })}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="opacity-40 text-white"
+                const currentVideoResolutions = groupedConfiguration
+                  ? (groupedResolution?.options || [])
+                  : getCurrentResolutions(selectedModel);
+
+                const currentVideoResValue = groupedConfiguration
+                  ? groupedResolution?.value
+                  : selectedResolution;
+
+                const currentVideoResDisplayLabel = (() => {
+                  if (groupedConfiguration) {
+                    const found = groupedResolution?.options?.find(
+                      (o) => o.value === currentVideoResValue,
+                    );
+                    return found?.label || currentVideoResValue || "720P";
+                  }
+                  return selectedResolution ? String(selectedResolution).toUpperCase() : "720P";
+                })();
+
+                const shouldShowSpec =
+                  showAr ||
+                  showResolution ||
+                  (groupedResolution?.options && groupedResolution.options.length > 0);
+
+                if (!shouldShowSpec) return null;
+
+                return (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={toggleDropdown("spec")}
+                      className={promptControlClassName({
+                        active: openDropdown === "spec",
+                      })}
                     >
-                      <path d="M5 3l14 9-14 9V3z" />
-                    </svg>
-                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} max-w-[140px] truncate`}>
-                      {selectedEffect || copy.dropdowns.effect}
-                    </span>
-                  </button>
-                  {openDropdown === "effect" && (
-                    <PromptPopover
-                      onClick={(e) => e.stopPropagation()}
-                      className="min-w-[200px]"
-                    >
-                      <PromptPopoverHeader>
-                        {copy.dropdowns.effectType}
-                      </PromptPopoverHeader>
-                      <PromptMenuList>
-                        {getEffectsForI2VModel(selectedModel).map((eff) => (
-                          <PromptMenuItem
-                            key={eff}
-                            selected={selectedEffect === eff}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedEffect(eff);
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="opacity-60 flex-shrink-0"
+                      >
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="M10 9l5 3-5 3V9z" fill="currentColor" fillOpacity="0.4" />
+                      </svg>
+                      <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                        {selectedAr} · {currentVideoResDisplayLabel}
+                      </span>
+                      <PromptChevronIcon />
+                    </button>
+
+                    {openDropdown === "spec" && (
+                      <PromptPopover
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-[calc(100vw-2rem)] sm:w-[380px] p-4 flex flex-col"
+                      >
+                        <VideoSpecPopover
+                          aspectRatios={currentVideoAspectRatios}
+                          selectedAr={selectedAr}
+                          onSelectAr={(r) => setSelectedAr(r)}
+                          aspectRatioHelp={aspectRatioHelp}
+                          resolutions={currentVideoResolutions}
+                          selectedResolution={currentVideoResValue}
+                          onSelectResolution={(opt) => {
+                            if (groupedConfiguration) {
+                              handleGroupedResolutionChange(opt);
+                            } else {
+                              const val = typeof opt === "object" ? opt.value : opt;
+                              setSelectedResolution(val);
                               setOpenDropdown(null);
-                            }}
-                          >
-                            {eff}
-                          </PromptMenuItem>
-                        ))}
-                      </PromptMenuList>
-                    </PromptPopover>
-                  )}
-                </div>
-              )}
+                            }
+                          }}
+                          copy={copy}
+                        />
+                      </PromptPopover>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Duration btn */}
               {groupedConfiguration && (
@@ -3320,49 +3461,51 @@ export default function VideoStudio({
                 </div>
               )}
 
-              {/* Resolution btn */}
-              <VideoOptionControl
-                label={copy.dropdowns.resolution}
-                field={groupedResolution}
-                icon={<PromptQualityIcon />}
-                open={openDropdown === "resolution"}
-                onToggle={toggleDropdown("resolution")}
-                onSelect={handleGroupedResolutionChange}
-                copy={groupCopy}
-              />
-              {!groupedConfiguration && showResolution && (
+              {/* Effect btn */}
+              {showEffect && (
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={toggleDropdown("resolution")}
+                    onClick={toggleDropdown("effect")}
                     className={promptControlClassName({
-                      active: openDropdown === "resolution",
+                      active: openDropdown === "effect",
                     })}
                   >
-                    <PromptQualityIcon />
-                    <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                      {selectedResolution || "720p"}
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="opacity-40 text-white"
+                    >
+                      <path d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} max-w-[140px] truncate`}>
+                      {selectedEffect || copy.dropdowns.effect}
                     </span>
                   </button>
-                  {openDropdown === "resolution" && (
+                  {openDropdown === "effect" && (
                     <PromptPopover
                       onClick={(e) => e.stopPropagation()}
+                      className="min-w-[200px]"
                     >
                       <PromptPopoverHeader>
-                        {copy.dropdowns.resolution}
+                        {copy.dropdowns.effectType}
                       </PromptPopoverHeader>
                       <PromptMenuList>
-                        {getCurrentResolutions(selectedModel).map((r) => (
+                        {getEffectsForI2VModel(selectedModel).map((eff) => (
                           <PromptMenuItem
-                            key={r}
-                            selected={selectedResolution === r}
+                            key={eff}
+                            selected={selectedEffect === eff}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedResolution(r);
+                              setSelectedEffect(eff);
                               setOpenDropdown(null);
                             }}
                           >
-                            {r}
+                            {eff}
                           </PromptMenuItem>
                         ))}
                       </PromptMenuList>
@@ -3384,7 +3527,7 @@ export default function VideoStudio({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2.5"
-                    className="opacity-40 text-white group-hover:text-[#22d3ee] transition-colors"
+                    className="opacity-40 text-white group-hover:text-[#e11d74] transition-colors"
                   >
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
@@ -3394,31 +3537,47 @@ export default function VideoStudio({
               )}
             </PromptControls>
 
-            {/* Generate button */}
-            <PromptAction
-              onClick={handleGenerate}
-              disabled={generating || mediaUploading || (selectedTool?.group === "continueGenerated" && !hasContinuationSource) || (selectedVeoTool && !selectedVeoSource)}
-            >
-              {generating ? (
-                <>
-                  <span className="animate-spin inline-block text-black">
-                    ◌
-                  </span>{" "}
-                  {copy.controls.generating}
-                </>
-              ) : (
-                <>
-                  <span>{copy.controls.generate}</span>
-                </>
-              )}
-            </PromptAction>
+            {/* Right actions: Cost in credits + Generate button */}
+            <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+              {(() => {
+                const isZh = String(locale || "").startsWith("zh");
+                return (
+                  <div className="flex items-center gap-1.5 px-2 py-1 select-none whitespace-nowrap">
+                    <span className="text-[11px] text-white/50">{isZh ? "消耗" : "Cost"}</span>
+                    <ModelPriceTag
+                      ids={selectedModel}
+                      locale={locale}
+                      className="text-xs font-semibold text-white/90"
+                    />
+                  </div>
+                );
+              })()}
+
+              <PromptAction
+                onClick={handleGenerate}
+                disabled={generating || mediaUploading || (selectedTool?.group === "continueGenerated" && !hasContinuationSource) || (selectedVeoTool && !selectedVeoSource)}
+              >
+                {generating ? (
+                  <>
+                    <span className="animate-spin inline-block text-black">
+                      ◌
+                    </span>{" "}
+                    {copy.controls.generating}
+                  </>
+                ) : (
+                  <>
+                    <span>{copy.controls.generate}</span>
+                  </>
+                )}
+              </PromptAction>
+            </div>
           </PromptFooter>
       </PromptComposer>
 
       {/* ── FULLSCREEN VIDEO MODAL ── */}
       {fullscreenUrl && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
           <button
@@ -3434,14 +3593,29 @@ export default function VideoStudio({
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
-          <video 
-            src={fullscreenUrl} 
-            controls 
-            autoPlay 
-            loop 
-            className="max-w-[95vw] max-h-[95vh] rounded-2xl shadow-2xl object-contain animate-scale-up" 
-            onClick={(e) => e.stopPropagation()}
-          />
+          {fullscreenVideoError ? (
+            <div
+              className="flex flex-col items-center justify-center p-8 bg-zinc-900/90 rounded-2xl border border-white/10 text-white text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-red-400 mb-3">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span className="text-sm font-medium text-white/70">Failed to load video preview</span>
+            </div>
+          ) : (
+            <video 
+              src={fullscreenUrl} 
+              controls 
+              autoPlay 
+              loop 
+              className="max-w-[95vw] max-h-[95vh] rounded-2xl shadow-2xl object-contain animate-scale-up" 
+              onClick={(e) => e.stopPropagation()}
+              onError={(e) => { setFullscreenVideoError(true); e.target.style.display = 'none'; }}
+            />
+          )}
         </div>
       )}
 
@@ -3452,7 +3626,7 @@ export default function VideoStudio({
         batchSize={1}
         onAddHistoryItem={handleDrawReference}
       />
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
+      <Toaster position="top-right" duration={5000} />
     </div>
   );
 }

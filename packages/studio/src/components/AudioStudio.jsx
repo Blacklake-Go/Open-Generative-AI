@@ -1,13 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { generateAudio, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import { audioModels, getAudioModelById } from "../models.js";
+import { getProviderLogo } from "../providerLogos.js";
+import ModelPriceTag from "./ModelPriceTag.jsx";
 import en from "../messages/en/audioStudio.json";
 import zh from "../messages/zh/audioStudio.json";
+import ja from "../messages/ja-JP/audioStudio.json";
+import ko from "../messages/ko-KR/audioStudio.json";
+import zhTw from "../messages/zh-TW/audioStudio.json";
+import es from "../messages/es/audioStudio.json";
+import esEs from "../messages/es-ES/audioStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 // ---------------------------------------------------------------------------
@@ -50,7 +58,7 @@ const VolumeMuteIcon = () => (
   </svg>
 );
 
-const MusicIcon = ({ className = "text-[#22d3ee]" }) => (
+const MusicIcon = ({ className = "text-brand" }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M9 18V5l12-2v13" />
     <circle cx="6" cy="18" r="3" />
@@ -94,7 +102,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
     if (!file) return;
 
     if (file.size > 20 * 1024 * 1024) {
-      alert(copy.uploader.sizeLimitError);
+      toast.error(copy.uploader.sizeLimitError);
       return;
     }
 
@@ -110,7 +118,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
       onChange(url);
     } catch (err) {
       setUploadState(UPLOAD_STATE.IDLE);
-      alert(copy.uploader.uploadFailedError.replace('{message}', err.message));
+      toast.error(copy.uploader.uploadFailedError.replace('{message}', err.message));
     } finally {
       setProgress(0);
     }
@@ -166,14 +174,14 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+        <label className="text-xs font-semibold text-ink-muted uppercase tracking-wider">
           {label}
         </label>
         {uploadState === UPLOAD_STATE.READY && (
           <button
             type="button"
             onClick={clearFile}
-            className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-wider flex items-center gap-1.5"
+            className="text-xs font-medium text-danger hover:text-danger-hover transition-colors uppercase tracking-wider flex items-center gap-1.5"
           >
             <TrashIcon /> {copy.uploader.clear}
           </button>
@@ -186,12 +194,12 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`relative border rounded p-4 transition-all duration-300 flex items-center gap-3.5 cursor-pointer ${
+        className={`relative border rounded-xl p-4 transition-all duration-300 flex items-center gap-3.5 cursor-pointer backdrop-blur-md ${
           isDragging
-            ? "border-primary bg-primary/15 shadow-[0_0_15px_rgba(34,211,238,0.15)]"
+            ? "border-brand bg-brand-soft shadow-elevation-1"
             : uploadState === UPLOAD_STATE.READY
-            ? "border-primary/60 bg-primary/10 shadow-[0_0_15px_rgba(34,211,238,0.05)]"
-            : "border-zinc-700 bg-zinc-900 hover:bg-zinc-850 hover:border-primary/50"
+            ? "border-brand-line bg-brand-soft shadow-elevation-1"
+            : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20"
         }`}
       >
         <input
@@ -204,14 +212,14 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
 
         {uploadState === UPLOAD_STATE.IDLE && (
           <>
-            <div className="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center text-zinc-200 border border-zinc-700/50">
+            <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center text-ink-muted border border-white/5">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
               </svg>
             </div>
             <div className="text-left">
-              <div className="text-xs font-bold text-white">{copy.uploader.uploadPrompt}</div>
-              <div className="text-[11px] text-zinc-300 font-medium mt-0.5">{copy.uploader.uploadHint}</div>
+              <div className="text-xs font-semibold text-ink">{copy.uploader.uploadPrompt}</div>
+              <div className="text-[11px] text-ink-muted mt-0.5">{copy.uploader.uploadHint}</div>
             </div>
           </>
         )}
@@ -219,12 +227,12 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
         {uploadState === UPLOAD_STATE.UPLOADING && (
           <div className="w-full flex items-center gap-4">
             <div className="flex-1">
-              <div className="flex justify-between text-xs text-white/95 mb-1.5 font-bold">
+              <div className="flex justify-between text-xs text-ink mb-1.5 font-semibold">
                 <span>{copy.uploader.uploading}</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-brand rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
               </div>
             </div>
           </div>
@@ -232,12 +240,12 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
 
         {uploadState === UPLOAD_STATE.READY && (
           <>
-            <div className="w-10 h-10 rounded bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
-              <MusicIcon className="text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-brand-soft flex items-center justify-center text-brand border border-brand-line">
+              <MusicIcon className="text-brand" />
             </div>
             <div className="text-left flex-1 min-w-0">
-              <div className="text-xs font-bold text-white truncate">{fileName}</div>
-              <div className="text-[11px] text-primary font-bold mt-0.5">{copy.uploader.ready}</div>
+              <div className="text-xs font-semibold text-ink truncate">{fileName}</div>
+              <div className="text-[11px] text-brand font-medium mt-0.5">{copy.uploader.ready}</div>
             </div>
           </>
         )}
@@ -262,7 +270,7 @@ function AudioListUploader({ label, value = [], onChange, apiKey, maxItems = 2, 
 
   return (
     <div className="space-y-4">
-      <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
+      <label className="block text-xs font-semibold text-ink-muted uppercase tracking-wider">
         {label} {copy.uploader.maxSuffix.replace('{max}', maxItems)}
       </label>
       <div className="space-y-3">
@@ -418,7 +426,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
   };
 
   return (
-    <div className="w-full bg-zinc-900 border border-zinc-700/80 rounded p-6 shadow-3xl space-y-6 backdrop-blur-md">
+    <div className="w-full bg-surface-glass/85 border border-white/10 rounded-2xl p-6 lg:p-8 shadow-elevation-3 space-y-6 backdrop-blur-2xl">
       <audio
         ref={audioRef}
         src={url}
@@ -429,21 +437,21 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
       />
 
       {/* Visualizer and Track Details */}
-      <div className="flex flex-col items-center justify-center py-6 relative rounded bg-black/60 overflow-hidden border border-zinc-800">
+      <div className="flex flex-col items-center justify-center py-6 relative rounded-xl bg-black/40 overflow-hidden border border-white/5 backdrop-blur-md">
         <div className="flex items-center gap-1.5 h-12 mb-4 justify-center">
           {visualizerHeights.map((h, i) => (
             <div
               key={i}
-              className="w-1.5 rounded-full bg-gradient-to-t from-primary to-[#a855f7] transition-all duration-100"
+              className="w-1.5 rounded-full bg-gradient-to-t from-brand to-rose-400 transition-all duration-100"
               style={{ height: `${h}px` }}
             />
           ))}
         </div>
         <div className="text-center px-4 max-w-full relative z-10">
-          <span className="text-xs font-black text-primary uppercase tracking-[0.2em] block mb-1">
+          <span className="text-xs font-bold text-brand uppercase tracking-[0.2em] block mb-1">
             {copy.player.nowPlaying}
           </span>
-          <p className="text-white font-bold text-base truncate max-w-xs">{title || copy.player.defaultTitle}</p>
+          <p className="text-ink font-bold text-base truncate max-w-sm">{title || copy.player.defaultTitle}</p>
         </div>
       </div>
 
@@ -451,26 +459,26 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
       <div className="space-y-4">
         {/* Progress bar */}
         <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-zinc-200 w-10 text-right">
+          <span className="text-xs font-mono font-medium text-ink-muted w-10 text-right">
             {formatTime(currentTime)}
           </span>
           
           <div
             ref={progressBarRef}
             onClick={handleScrub}
-            className="flex-1 h-2 bg-zinc-700 hover:bg-zinc-650 rounded-full cursor-pointer relative group transition-colors"
+            className="flex-1 h-2 bg-white/10 hover:bg-white/15 rounded-full cursor-pointer relative group transition-colors"
           >
             <div 
-              className="absolute left-0 top-0 bottom-0 bg-primary rounded-full group-hover:bg-primary/95 transition-all"
+              className="absolute left-0 top-0 bottom-0 bg-brand rounded-full group-hover:bg-brand-hover transition-all"
               style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
             />
             <div 
-              className="absolute w-3.5 h-3.5 bg-white rounded-full -top-[3px] shadow-glow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+              className="absolute w-3.5 h-3.5 bg-white rounded-full -top-[3px] shadow-elevation-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
               style={{ left: `calc(${(currentTime / (duration || 1)) * 100}% - 7px)` }}
             />
           </div>
 
-          <span className="text-xs font-bold text-zinc-200 w-10 text-left">
+          <span className="text-xs font-mono font-medium text-ink-muted w-10 text-left">
             {formatTime(duration)}
           </span>
         </div>
@@ -481,7 +489,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           <div className="flex items-center gap-2 group/volume w-24">
             <button
               onClick={toggleMute}
-              className="p-2 bg-zinc-800/80 border border-zinc-700 hover:bg-zinc-700 rounded text-zinc-200 hover:text-white transition-all"
+              className="p-2.5 bg-wash hover:bg-wash-strong border border-line rounded-xl text-ink-muted hover:text-ink transition-all"
               title={copy.player.muteUnmute}
               type="button"
             >
@@ -494,14 +502,14 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-16 h-1 bg-zinc-700 rounded appearance-none cursor-pointer accent-primary hover:bg-zinc-600 transition-all opacity-0 group-hover/volume:opacity-100"
+              className="range pointer-events-none w-16 h-1 bg-white/15 rounded-full appearance-none cursor-pointer accent-brand transition-colors opacity-0 group-hover/volume:pointer-events-auto group-hover/volume:opacity-100 group-focus-within/volume:pointer-events-auto group-focus-within/volume:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100"
             />
           </div>
 
           {/* Main Play/Pause Button */}
           <button
             onClick={togglePlay}
-            className="w-12 h-12 bg-primary hover:bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-glow"
+            className="w-12 h-12 bg-brand hover:bg-brand-hover text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-elevation-brand"
             title={isPlaying ? copy.player.pause : copy.player.play}
             type="button"
           >
@@ -511,7 +519,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           {/* Download Button */}
           <button
             onClick={downloadAudio}
-            className="px-4 py-2 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 rounded text-xs font-bold text-white flex items-center gap-2 hover:border-primary/45 transition-all"
+            className="px-4 py-2 bg-wash hover:bg-wash-strong border border-line hover:border-brand-line rounded-xl text-xs font-semibold text-ink flex items-center gap-2 transition-all"
             title={copy.player.download}
             type="button"
           >
@@ -531,6 +539,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
 // ---------------------------------------------------------------------------
 export default function AudioStudio({
   apiKey,
+  initialModel,
   onGenerationStart,
   onGenerationEnd,
   onGenerationComplete,
@@ -540,20 +549,95 @@ export default function AudioStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(
+    en,
+    {
+      zh,
+      'zh-CN': zh,
+      'zh-TW': zhTw,
+      'zh-HK': zhTw,
+      'zh-Hant': zhTw,
+      'zh-Hans': zh,
+      ja,
+      'ja-JP': ja,
+      ko,
+      'ko-KR': ko,
+      es,
+      'es-ES': esEs,
+      en,
+    },
+    locale
+  );
   const LEGACY_PERSIST_KEY = "hg_audio_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
     migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
   }, [PERSIST_KEY]);
 
+  const AUDIO_MODEL_ALIASES = {
+    'suno': 'suno-create-music',
+    'suno-v4': 'suno-create-music',
+    'suno-music': 'suno-create-music',
+    'minimax-music': 'minimax-music-3.0',
+    'minimax-music-3': 'minimax-music-3.0',
+    'minimax-music-3-0': 'minimax-music-3.0',
+    'minimax-speech': 'minimax-speech-2.6-hd',
+    'elevenlabs': 'elevenlabs-text-to-dialogue-v3',
+    'elevenlabs-v3': 'elevenlabs-text-to-dialogue-v3',
+    'mmaudio': 'mmaudio-v2-text-to-audio',
+  };
+
+  const resolveAudioModelId = useCallback((modelKey) => {
+    if (!modelKey) return audioModels[0]?.id ?? "";
+    const rawKey = String(modelKey).trim();
+    const cleanKey = AUDIO_MODEL_ALIASES[rawKey] || AUDIO_MODEL_ALIASES[rawKey.toLowerCase()] || rawKey;
+    const keyLower = cleanKey.toLowerCase();
+    const found = audioModels.find(
+      (m) =>
+        m.id.toLowerCase() === keyLower ||
+        (m.endpoint && m.endpoint.toLowerCase() === keyLower) ||
+        (m.family && m.family.toLowerCase() === keyLower) ||
+        keyLower.includes(m.id.toLowerCase())
+    );
+    return found?.id || audioModels[0]?.id || "";
+  }, []);
+
   // ── Mode & model state ──────────────────────────────────────────────────
-  const [selectedModelId, setSelectedModelId] = useState(audioModels[0]?.id ?? "");
+  const [selectedModelId, setSelectedModelId] = useState(() => {
+    const urlModel = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('model') : null;
+    return resolveAudioModelId(initialModel || urlModel);
+  });
   const [params, setParams] = useState({});
   const [openDropdown, setOpenDropdown] = useState(false);
   const [openParamDropdown, setOpenParamDropdown] = useState(null);
   const modelBtnRef = useRef(null);
   const sidebarRef = useRef(null);
+
+  // Sync with initialModel prop updates and URL ?model=
+  useEffect(() => {
+    const urlModel = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('model') : null;
+    const targetModel = initialModel || urlModel;
+    if (targetModel) {
+      const resolved = resolveAudioModelId(targetModel);
+      if (resolved) setSelectedModelId(resolved);
+    }
+  }, [initialModel, resolveAudioModelId]);
+
+  // Sync with global koyosim-select-model custom events
+  useEffect(() => {
+    const handleSelectModelEvent = (e) => {
+      const detail = e.detail;
+      const modelKey = typeof detail === "string" ? detail : (detail?.modelKey || detail?.modelId);
+      const tabId = detail?.tabId;
+      if (tabId && tabId !== "audio") return;
+      if (modelKey) {
+        const resolved = resolveAudioModelId(modelKey);
+        if (resolved) setSelectedModelId(resolved);
+      }
+    };
+    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+  }, [resolveAudioModelId]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -586,11 +670,31 @@ export default function AudioStudio({
     if (!selectedModel) return;
     const initial = {};
     Object.entries(selectedModel.inputs || {}).forEach(([key, schema]) => {
-      // Don't overwrite parameters like vocal upload, list etc. if they are already in state
+      // Don't overwrite parameters if already in state and valid
       if (params[key] !== undefined) {
-        initial[key] = params[key];
+        if (schema.enum) {
+          const enumValues = schema.enum.map(opt => typeof opt === "object" ? opt.value : opt);
+          if (enumValues.includes(params[key])) {
+            initial[key] = params[key];
+          } else {
+            initial[key] = schema.default !== undefined ? schema.default : enumValues[0];
+          }
+        } else if (schema.type === "boolean") {
+          initial[key] = typeof params[key] === "boolean" ? params[key] : (schema.default ?? false);
+        } else if (schema.type === "int" || schema.type === "integer" || schema.type === "float" || schema.type === "number") {
+          if (typeof params[key] === "number" && !isNaN(params[key])) {
+            let val = params[key];
+            if (schema.minValue !== undefined) val = Math.max(schema.minValue, val);
+            if (schema.maxValue !== undefined) val = Math.min(schema.maxValue, val);
+            initial[key] = val;
+          } else {
+            initial[key] = schema.default !== undefined ? schema.default : 0;
+          }
+        } else {
+          initial[key] = params[key];
+        }
       } else {
-        initial[key] = schema.default !== undefined ? schema.default : "";
+        initial[key] = schema.default !== undefined ? schema.default : (schema.enum ? (typeof schema.enum[0] === 'object' ? schema.enum[0].value : schema.enum[0]) : "");
       }
     });
     setParams(initial);
@@ -654,7 +758,7 @@ export default function AudioStudio({
             .then(url => {
               setParams(prev => ({ ...prev, [key]: url }));
             })
-            .catch(err => alert(copy.generate.droppedFileUploadError.replace('{message}', err.message)));
+            .catch(err => toast.error(copy.generate.droppedFileUploadError.replace('{message}', err.message)));
         } else if (firstAudioListField) {
           const [key] = firstAudioListField;
           uploadFile(apiKey, audioFiles[0], () => {})
@@ -665,7 +769,7 @@ export default function AudioStudio({
                 return { ...prev, [key]: currentList };
               });
             })
-            .catch(err => alert(copy.generate.droppedFileUploadError.replace('{message}', err.message)));
+            .catch(err => toast.error(copy.generate.droppedFileUploadError.replace('{message}', err.message)));
         }
       }
       onFilesHandled?.();
@@ -691,7 +795,8 @@ export default function AudioStudio({
     if (selectedModel.required) {
       for (const field of selectedModel.required) {
         if (!params[field] || (Array.isArray(params[field]) && params[field].length === 0)) {
-          alert(copy.sidebar.requiredFieldError.replace('{field}', selectedModel.inputs?.[field]?.title || field));
+          const reqFieldTitle = copy.fields?.[field]?.title || selectedModel.inputs?.[field]?.title || field;
+          toast.error(copy.sidebar.requiredFieldError.replace('{field}', reqFieldTitle));
           return;
         }
       }
@@ -714,7 +819,8 @@ export default function AudioStudio({
         throw new Error(copy.generate.noUrlError);
       }
 
-      const title = params.title || params.prompt || `Generated ${selectedModel.name}`;
+      const localizedModelName = copy.models?.[selectedModelId]?.name || selectedModel.name;
+      const title = params.title || params.prompt || localizedModelName;
       const entry = {
         id: res.id || Date.now().toString(),
         url: res.url,
@@ -742,6 +848,7 @@ export default function AudioStudio({
     } catch (e) {
       console.error("[AudioStudio]", e);
       const errMsg = formatErrorMessage(e, copy.generate.genericError);
+      setGenerateError(errMsg);
       if (onGenerationError) onGenerationError(errMsg);
       else toast.error(errMsg);
     } finally {
@@ -754,78 +861,161 @@ export default function AudioStudio({
     setView("input");
     setActiveResultUrl(null);
     setActiveResultTitle("");
-    // Keep parameters to avoid having to reupload files if they wish to adjust details
   };
 
   return (
-    <div className="w-full h-full flex bg-app-bg text-white overflow-hidden relative">
+    <div className="w-full h-full flex bg-transparent text-white overflow-hidden relative">
       
       {/* ─── LEFT CONFIGURATION SIDEBAR ─── */}
-      <div ref={sidebarRef} className="w-full lg:w-[400px] border-r border-zinc-900 flex flex-col bg-zinc-950/40 backdrop-blur-lg flex-shrink-0 z-30">
-        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6 pb-24">
+      <div ref={sidebarRef} className="w-full lg:w-[400px] border-r border-white/10 flex flex-col bg-surface-glass/80 backdrop-blur-2xl flex-shrink-0 z-30">
+        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6 pb-28">
           
           {/* Model Selector */}
           <div className="space-y-2 relative">
-            <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-zinc-200 uppercase tracking-wider block">
               {copy.sidebar.modelLabel}
             </label>
             <button
               ref={modelBtnRef}
               type="button"
               onClick={() => setOpenDropdown(!openDropdown)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded px-4 py-3.5 text-sm text-left font-bold text-white flex items-center justify-between hover:bg-zinc-850 hover:border-primary/50 transition-all"
+              className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-line/50 rounded-xl px-4 py-3.5 text-xs text-left font-bold text-white flex items-center justify-between transition-all backdrop-blur-md cursor-pointer"
             >
-              <span>{selectedModel?.name ?? copy.sidebar.selectModel}</span>
+              <span className="flex items-center gap-2 truncate">
+                {(() => {
+                  const logo = getProviderLogo(selectedModel?.family || selectedModel?.id);
+                  return logo ? (
+                    <img
+                      src={logo}
+                      alt=""
+                      className="size-4 object-contain rounded shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : null;
+                })()}
+                <span className="truncate">{selectedModel ? (copy.models?.[selectedModel.id]?.name || selectedModel.name) : copy.sidebar.selectModel}</span>
+              </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-200 ${openDropdown ? 'rotate-180' : ''}`}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
 
             {openDropdown && (
-              <div className="absolute left-0 right-0 mt-2 z-50 bg-[#161618] border border-zinc-700 rounded shadow-3xl max-h-60 overflow-y-auto custom-scrollbar p-1.5">
-                {audioModels.map((model) => (
-                  <button
-                    key={model.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedModelId(model.id);
-                      setOpenDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 rounded text-xs font-bold transition-all flex flex-col gap-1.5 border ${
-                      model.id === selectedModelId ? "text-primary bg-primary/10 border-primary/20" : "text-zinc-200 border-transparent hover:bg-zinc-900 hover:text-white"
-                    }`}
-                  >
-                    <span>{model.name}</span>
-                    {model.description && (
-                      <span className="text-[10px] text-zinc-300 truncate max-w-[320px] font-normal">
-                        {model.description}
+              <div className="absolute left-0 right-0 mt-2 z-50 bg-[#161618]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-elevation-3 max-h-60 overflow-y-auto custom-scrollbar p-1.5">
+                {audioModels.map((model) => {
+                  const localizedModelName = copy.models?.[model.id]?.name || model.name;
+                  const localizedModelDesc = copy.models?.[model.id]?.description || model.description;
+                  const itemLogo = getProviderLogo(model.family || model.id);
+                  return (
+                    <button
+                      key={model.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedModelId(model.id);
+                        setOpenDropdown(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all flex flex-col gap-1.5 border cursor-pointer ${
+                        model.id === selectedModelId ? "text-brand bg-brand-soft border-brand-line" : "text-zinc-200 border-transparent hover:bg-white/[0.06] hover:text-white"
+                      }`}
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2 truncate">
+                          {itemLogo && (
+                            <img
+                              src={itemLogo}
+                              alt=""
+                              className="size-4 object-contain rounded shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <span className="truncate">{localizedModelName}</span>
+                        </span>
+                        <ModelPriceTag ids={model.id} locale={locale} className="flex-shrink-0" />
                       </span>
-                    )}
-                  </button>
-                ))}
+                      {localizedModelDesc && (
+                        <span className="text-[10px] text-zinc-400 truncate max-w-[320px] font-normal">
+                          {localizedModelDesc}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
 
           {/* Model Description */}
-          {selectedModel?.description && (
-            <div className="">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider block mb-1.5">{copy.sidebar.descriptionLabel}</span>
-              <p className="text-zinc-400 text-xs leading-relaxed font-semibold">{selectedModel.description}</p>
+          {selectedModel && (copy.models?.[selectedModel.id]?.description || selectedModel.description) && (
+            <div>
+              <span className="text-[10px] font-bold text-brand uppercase tracking-wider block mb-1.5">{copy.sidebar.descriptionLabel}</span>
+              <p className="text-zinc-400 text-xs leading-relaxed font-normal">
+                {copy.models?.[selectedModel.id]?.description || selectedModel.description}
+              </p>
             </div>
           )}
 
           {/* Dynamic Configuration Form */}
           <div className="space-y-5">
             {selectedModel && Object.entries(selectedModel.inputs || {}).map(([key, schema]) => {
-              // Skip model switcher itself (if it's in schemas)
-              if (key === 'model') return null;
+              const fieldMeta = copy.fields?.[key] || {};
+              const fieldTitle = fieldMeta.title || schema.title || key;
+              const fieldDescription = fieldMeta.description || schema.description || "";
+              const fieldPlaceholder = fieldMeta.placeholder || schema.placeholder || fieldDescription || (copy.sidebar?.fieldPlaceholder ? copy.sidebar.fieldPlaceholder.replace('{field}', fieldTitle) : "");
+              const fieldOptions = fieldMeta.options || schema.optionLabels || {};
+
+              // Dedicated Model Version Selector (e.g. Suno V3_5, V4, V4_5, V5, V5_5)
+              if (key === 'model' && schema.enum) {
+                const currentVal = params[key] || schema.default || "V5";
+                return (
+                  <div key={key} className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-zinc-200 uppercase tracking-wider block">
+                        {fieldTitle || copy.sidebar?.modelVersionLabel || copy.fields?.model?.title || "Model Version"}
+                      </label>
+                      <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-brand-soft border border-brand-line text-brand">
+                        {currentVal}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-1.5 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl">
+                      {schema.enum.map((opt) => {
+                        const val = typeof opt === "object" ? opt.value : opt;
+                        const label = fieldOptions[val] || (typeof opt === "object" ? (opt.label || opt.value) : opt);
+                        const isSelected = currentVal === val;
+                        return (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => setParams(prev => ({ ...prev, [key]: val }))}
+                            className={`py-2 px-2 rounded-lg text-xs font-semibold text-center transition-all cursor-pointer ${
+                              isSelected
+                                ? "bg-brand text-white shadow-elevation-1 font-bold"
+                                : "text-zinc-300 hover:text-white hover:bg-white/[0.06]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {fieldDescription && (
+                      <span className="block text-[11px] text-zinc-400 leading-normal">
+                        {fieldDescription}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+
               // Audio URL file upload (single)
               if (schema.type === "string" && schema.field === "audio") {
                 return (
                   <AudioFileUploader
                     key={key}
-                    label={schema.title || key}
+                    label={fieldTitle}
                     value={params[key] || ""}
                     onChange={(url) => setParams(prev => ({ ...prev, [key]: url }))}
                     apiKey={apiKey}
@@ -833,12 +1023,13 @@ export default function AudioStudio({
                   />
                 );
               }
+
               // Audio URLs list file upload (multiple)
               if (schema.type === "array" && schema.field === "audios_list") {
                 return (
                   <AudioListUploader
                     key={key}
-                    label={schema.title || key}
+                    label={fieldTitle}
                     value={params[key] || []}
                     onChange={(urls) => setParams(prev => ({ ...prev, [key]: urls }))}
                     apiKey={apiKey}
@@ -847,41 +1038,81 @@ export default function AudioStudio({
                   />
                 );
               }
+
               // Boolean Toggles
               if (schema.type === "boolean") {
                 return (
-                  <div key={key} className="flex items-center justify-between bg-zinc-900 border border-zinc-700/80 rounded p-4 transition-all hover:border-zinc-600">
+                  <div key={key} className="flex items-center justify-between bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-all hover:bg-white/[0.05] hover:border-white/20">
                     <div className="flex-1 pr-4">
                       <span className="block text-xs font-bold text-white tracking-tight">
-                        {schema.title || key}
+                        {fieldTitle}
                       </span>
-                      {schema.description && (
-                        <span className="block text-[11px] text-zinc-300 leading-normal mt-1">
-                          {schema.description}
+                      {fieldDescription && (
+                        <span className="block text-[11px] text-zinc-400 leading-normal mt-1">
+                          {fieldDescription}
                         </span>
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={() => setParams(prev => ({ ...prev, [key]: !prev[key] }))}
-                      className={`w-11 h-6 rounded-full p-1 transition-all duration-300 relative shrink-0 ${
-                        params[key] ? "bg-primary" : "bg-zinc-800"
+                      className={`w-11 h-6 rounded-full p-1 transition-all duration-300 relative shrink-0 cursor-pointer ${
+                        params[key] ? "bg-brand shadow-elevation-brand" : "bg-white/10 hover:bg-white/15"
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full bg-black shadow-md transform transition-all duration-300 ${
-                        params[key] ? "translate-x-5 bg-white" : "translate-x-0"
+                      <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-all duration-300 ${
+                        params[key] ? "translate-x-5" : "translate-x-0"
                       }`} />
                     </button>
                   </div>
                 );
               }
-              // Enum Dropdowns
+
+              // Small Enum Pills (<= 3 options)
+              if (schema.enum && schema.enum.length <= 3) {
+                const currentVal = params[key] !== undefined ? params[key] : (schema.default || "");
+                return (
+                  <div key={key} className="space-y-2">
+                    <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                      {fieldTitle}
+                    </label>
+                    <div className="flex gap-1.5 p-1.5 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl">
+                      {schema.enum.map((opt) => {
+                        const val = typeof opt === "object" ? opt.value : opt;
+                        const label = fieldOptions[val] || (typeof opt === "object" ? (opt.label || opt.value) : opt);
+                        const isSelected = currentVal === val;
+                        return (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => setParams(prev => ({ ...prev, [key]: val }))}
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all cursor-pointer ${
+                              isSelected
+                                ? "bg-brand text-white shadow-elevation-1 font-bold"
+                                : "text-zinc-300 hover:text-white hover:bg-white/[0.06]"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {fieldDescription && (
+                      <span className="block text-[11px] text-zinc-400 leading-normal">
+                        {fieldDescription}
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+
+              // Enum Dropdowns (> 3 options)
               if (schema.enum) {
                 const isOpen = openParamDropdown === key;
                 return (
                   <div key={key} className="space-y-2 relative">
-                    <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                      {schema.title || key}
+                    <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                      {fieldTitle}
                     </label>
                     <button
                       type="button"
@@ -889,19 +1120,19 @@ export default function AudioStudio({
                         setOpenDropdown(false);
                         setOpenParamDropdown(isOpen ? null : key);
                       }}
-                      className="w-full bg-zinc-900 border border-zinc-700 hover:border-zinc-600 rounded px-4 py-3.5 text-xs text-left font-bold text-white flex items-center justify-between transition-all cursor-pointer"
+                      className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-xl px-4 py-3.5 text-xs text-left font-medium text-white flex items-center justify-between transition-all cursor-pointer backdrop-blur-md"
                     >
-                      <span>{params[key] || copy.sidebar.selectOption}</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-200 ${isOpen ? 'rotate-185' : ''}`}>
+                      <span>{fieldOptions[params[key]] || params[key] || copy.sidebar.selectOption}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </button>
 
                     {isOpen && (
-                      <div className="absolute left-0 right-0 mt-1 z-50 bg-[#161618] border border-zinc-700 rounded shadow-3xl max-h-60 overflow-y-auto custom-scrollbar p-1">
+                      <div className="absolute left-0 right-0 mt-1.5 z-50 bg-[#161618]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-elevation-3 max-h-60 overflow-y-auto custom-scrollbar p-1.5">
                         {schema.enum.map((opt) => {
                           const optionValue = typeof opt === "object" ? opt.value : opt;
-                          const optionLabel = typeof opt === "object" ? (opt.label || opt.value) : opt;
+                          const optionLabel = fieldOptions[optionValue] || (typeof opt === "object" ? (opt.label || opt.value) : opt);
                           return (
                             <button
                               key={optionValue}
@@ -910,10 +1141,10 @@ export default function AudioStudio({
                                 setParams(prev => ({ ...prev, [key]: optionValue }));
                                 setOpenParamDropdown(null);
                               }}
-                              className={`w-full text-left px-4 py-2.5 rounded text-xs font-bold transition-all border ${
+                              className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
                                 params[key] === optionValue
-                                  ? "text-primary bg-primary/10 border-primary/20"
-                                  : "text-zinc-200 border-transparent hover:bg-zinc-900 hover:text-white"
+                                  ? "text-brand bg-brand-soft border-brand-line font-bold"
+                                  : "text-zinc-200 border-transparent hover:bg-white/[0.06] hover:text-white"
                               }`}
                             >
                               {optionLabel}
@@ -922,9 +1153,9 @@ export default function AudioStudio({
                         })}
                       </div>
                     )}
-                    {schema.description && (
-                      <span className="block text-[11px] text-zinc-300 leading-normal">
-                        {schema.description}
+                    {fieldDescription && (
+                      <span className="block text-[11px] text-zinc-400 leading-normal">
+                        {fieldDescription}
                       </span>
                     )}
                   </div>
@@ -937,13 +1168,15 @@ export default function AudioStudio({
               if (isNumber && hasMinMax) {
                 const step = schema.step || (schema.type === "float" ? 0.05 : 1);
                 return (
-                  <div key={key} className="space-y-3 bg-zinc-900 border border-zinc-700/80 rounded p-4 transition-all hover:border-zinc-600">
+                  <div key={key} className="space-y-3 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-all hover:bg-white/[0.05] hover:border-white/20">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-white tracking-tight">{schema.title || key}</span>
-                      <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded border border-primary/20">{params[key] !== undefined ? params[key] : schema.default}</span>
+                      <span className="text-white tracking-tight">{fieldTitle}</span>
+                      <span className="text-brand font-mono bg-brand-soft px-2 py-0.5 rounded-md border border-brand-line text-[11px]">
+                        {params[key] !== undefined ? params[key] : schema.default}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-zinc-300 font-medium w-6 text-right">{schema.minValue}</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[10px] text-zinc-400 font-medium w-6 text-right font-mono">{schema.minValue}</span>
                       <input
                         type="range"
                         min={schema.minValue}
@@ -951,13 +1184,13 @@ export default function AudioStudio({
                         step={step}
                         value={params[key] !== undefined ? params[key] : (schema.default || 0)}
                         onChange={(e) => setParams(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
-                        className="flex-1 h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-primary hover:bg-zinc-700 transition-all"
+                        className="range flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand transition-all"
                       />
-                      <span className="text-[10px] text-zinc-300 font-medium w-6 text-left">{schema.maxValue}</span>
+                      <span className="text-[10px] text-zinc-400 font-medium w-6 text-left font-mono">{schema.maxValue}</span>
                     </div>
-                    {schema.description && (
-                      <span className="block text-[11px] text-zinc-300 leading-normal">
-                        {schema.description}
+                    {fieldDescription && (
+                      <span className="block text-[11px] text-zinc-400 leading-normal">
+                        {fieldDescription}
                       </span>
                     )}
                   </div>
@@ -966,29 +1199,27 @@ export default function AudioStudio({
 
               // Prompt / Textarea Input
               if (key === "prompt") {
+                const exampleText = fieldMeta.example || schema.examples?.[0];
                 return (
                   <div key={key} className="space-y-2">
                     <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
-                      {schema.title || copy.sidebar.lyricsPromptLabel}
+                      {fieldTitle || copy.sidebar.lyricsPromptLabel}
                     </label>
                     <textarea
                       value={params[key] || ""}
                       onChange={(e) => setParams(prev => ({ ...prev, [key]: e.target.value }))}
-                      className="w-full bg-zinc-900 border border-zinc-700 focus:border-primary/85 rounded p-3 text-xs text-white placeholder:text-zinc-400 focus:outline-none transition-all min-h-[100px] resize-none leading-relaxed shadow-inner"
-                      placeholder={schema.description || copy.sidebar.promptPlaceholder}
+                      className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl p-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-all min-h-[110px] resize-none leading-relaxed"
+                      placeholder={fieldPlaceholder || copy.sidebar.promptPlaceholder}
                     />
-                    {schema.examples && Array.isArray(schema.examples) && (
+                    {exampleText && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {schema.examples.map((ex, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setParams(prev => ({ ...prev, [key]: ex }))}
-                            className="text-[11px] px-3 py-1 bg-zinc-800/80 border border-zinc-700 hover:bg-primary/20 hover:border-primary/45 hover:text-white rounded-full transition-all font-semibold text-zinc-100"
-                          >
-                            "{ex.slice(0, 35)}..."
-                          </button>
-                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setParams(prev => ({ ...prev, [key]: exampleText }))}
+                          className="text-[11px] px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-line hover:text-white rounded-full transition-all font-medium text-zinc-300 cursor-pointer"
+                        >
+                          "{exampleText.slice(0, 35)}..."
+                        </button>
                       </div>
                     )}
                   </div>
@@ -999,21 +1230,21 @@ export default function AudioStudio({
               return (
                 <div key={key} className="space-y-2">
                   <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
-                    {schema.title || key}
+                    {fieldTitle}
                   </label>
                   <input
                     type={isNumber ? "number" : "text"}
                     value={params[key] !== undefined ? params[key] : ""}
-                    placeholder={schema.placeholder || schema.description || copy.sidebar.fieldPlaceholder.replace('{field}', key)}
+                    placeholder={fieldPlaceholder}
                     onChange={(e) => {
                       const val = isNumber ? (e.target.value === "" ? "" : parseFloat(e.target.value)) : e.target.value;
                       setParams(prev => ({ ...prev, [key]: val }));
                     }}
-                    className="w-full bg-zinc-900 border border-zinc-700 hover:border-zinc-600 focus:border-primary/80 rounded px-4 py-3.5 text-xs text-white placeholder:text-zinc-400 focus:outline-none transition-all shadow-inner"
+                    className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-white/20 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl px-4 py-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-all shadow-inner"
                   />
-                  {schema.description && (
-                    <span className="block text-[11px] text-zinc-300 leading-normal">
-                      {schema.description}
+                  {fieldDescription && (
+                    <span className="block text-[11px] text-zinc-400 leading-normal">
+                      {fieldDescription}
                     </span>
                   )}
                 </div>
@@ -1024,22 +1255,22 @@ export default function AudioStudio({
         </div>
 
         {/* Dynamic Cost & Generate Section */}
-        <div className="p-4 border-t border-zinc-900 bg-zinc-950/80 backdrop-blur-xl absolute bottom-0 left-0 w-full lg:w-[400px] z-40">
+        <div className="p-4 border-t border-white/10 bg-surface-glass/90 backdrop-blur-2xl absolute bottom-0 left-0 w-full lg:w-[400px] z-40">
           <button
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || !selectedModel}
-            className="w-full py-4 bg-primary text-black text-base font-bold rounded hover:bg-white transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-glow flex items-center justify-center gap-3"
+            className="w-full py-3.5 bg-brand text-white text-sm font-bold rounded-xl hover:bg-brand-hover active:bg-brand-active transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-elevation-brand flex items-center justify-center gap-2.5 cursor-pointer"
           >
             {isGenerating ? (
               <>
-                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 <span>{copy.generate.generating}</span>
               </>
             ) : (
               <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M5 3l14 9-14 9V3z" />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
                 <span>{copy.generate.cta}</span>
               </>
@@ -1047,6 +1278,7 @@ export default function AudioStudio({
           </button>
         </div>
       </div>
+
       {/* ─── RIGHT CONTENT AREA ─── */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative z-20">
         
@@ -1057,8 +1289,8 @@ export default function AudioStudio({
             
             {/* 1. Error Display */}
             {generateError && (
-              <div className="w-full max-w-md p-6 bg-red-500/10 border border-red-500/20 rounded flex flex-col items-center gap-4 animate-shake">
-                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 border border-red-500/30 shadow-lg">
+              <div className="w-full max-w-md p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col items-center gap-4 animate-shake backdrop-blur-md">
+                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center text-red-400 border border-red-500/30 shadow-lg">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="12" cy="12" r="10" />
                     <line x1="12" y1="8" x2="12" y2="12" />
@@ -1066,7 +1298,7 @@ export default function AudioStudio({
                   </svg>
                 </div>
                 <div className="text-center">
-                  <span className="text-xs font-black text-red-500 uppercase tracking-widest block mb-1">
+                  <span className="text-xs font-black text-red-400 uppercase tracking-widest block mb-1">
                     {copy.result.errorHeading}
                   </span>
                   <p className="text-white font-medium text-sm leading-relaxed">
@@ -1080,16 +1312,16 @@ export default function AudioStudio({
             {isGenerating && !generateError && (
               <div className="flex flex-col items-center gap-6 animate-fade-in">
                 <div className="relative">
-                  <div className="w-24 h-24 border-[3px] border-zinc-800 border-t-primary rounded-full animate-spin shadow-glow" />
-                  <div className="absolute inset-0 flex items-center justify-center text-primary">
-                    <MusicIcon className="animate-pulse text-primary" />
+                  <div className="w-24 h-24 border-[3px] border-white/10 border-t-brand rounded-full animate-spin shadow-elevation-brand" />
+                  <div className="absolute inset-0 flex items-center justify-center text-brand">
+                    <MusicIcon className="animate-pulse text-brand" />
                   </div>
                 </div>
                 <div className="text-center space-y-2">
-                  <div className="text-xs font-black text-primary uppercase tracking-[0.3em] animate-pulse">
+                  <div className="text-xs font-black text-brand uppercase tracking-[0.3em] animate-pulse">
                     {copy.result.loadingHeading}
                   </div>
-                  <div className="text-sm text-zinc-200 font-bold">
+                  <div className="text-sm text-zinc-300 font-bold">
                     {copy.result.loadingSubtext}
                   </div>
                 </div>
@@ -1098,15 +1330,15 @@ export default function AudioStudio({
 
             {/* 3. Empty State (no audio, not loading, no error) */}
             {view === "input" && !isGenerating && !generateError && (
-              <div className="flex flex-col items-center gap-6 max-w-md text-center p-8 bg-zinc-900/40 border border-zinc-800 rounded backdrop-blur-sm relative group animate-fade-in-up">
+              <div className="flex flex-col items-center gap-6 max-w-md text-center p-8 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-elevation-2 relative group animate-fade-in">
                 {/* Glow behind the icon */}
-                <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full opacity-25 group-hover:opacity-40 transition-opacity duration-1000 pointer-events-none" />
-                <div className="w-20 h-20 bg-zinc-900 border border-zinc-705 rounded flex items-center justify-center shadow-inner relative z-10 transition-transform duration-500 group-hover:scale-105">
-                  <MusicIcon className="text-primary w-8 h-8 filter drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]" />
+                <div className="absolute inset-0 bg-brand/5 blur-3xl rounded-full opacity-30 group-hover:opacity-50 transition-opacity duration-1000 pointer-events-none" />
+                <div className="w-20 h-20 bg-white/[0.04] border border-white/15 rounded-2xl flex items-center justify-center shadow-inner relative z-10 transition-transform duration-500 group-hover:scale-105">
+                  <MusicIcon className="text-brand w-9 h-9" />
                 </div>
                 <div className="relative z-10">
                   <h3 className="text-white font-black text-xl mb-3 tracking-tight">{copy.result.emptyHeading}</h3>
-                  <p className="text-sm text-zinc-200 font-medium leading-relaxed px-4">
+                  <p className="text-sm text-zinc-300 font-medium leading-relaxed px-4">
                     {copy.result.emptyBody}
                   </p>
                 </div>
@@ -1115,11 +1347,11 @@ export default function AudioStudio({
 
             {/* 4. Active Result Player Display */}
             {view === "result" && activeResultUrl && !isGenerating && !generateError && (
-              <div className="w-full max-w-2xl animate-fade-in-up space-y-4">
+              <div className="w-full max-w-2xl animate-fade-in space-y-4">
                 <div className="flex items-center justify-between px-1">
                   <button
                     onClick={handleNew}
-                    className="text-xs font-bold text-zinc-200 hover:text-primary flex items-center gap-2 transition-all bg-zinc-905 border border-zinc-700 hover:border-primary/30 px-4 py-2 rounded-full"
+                    className="text-xs font-bold text-zinc-200 hover:text-white flex items-center gap-2 transition-all bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 px-4 py-2 rounded-full cursor-pointer shadow-elevation-1"
                     type="button"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -1128,8 +1360,8 @@ export default function AudioStudio({
                     </svg>
                     <span>{copy.result.newGeneration}</span>
                   </button>
-                  <span className="text-[11px] font-bold text-green-400 px-3.5 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" /> {copy.result.success}
+                  <span className="text-[11px] font-bold text-emerald-400 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" /> {copy.result.success}
                   </span>
                 </div>
                 <PremiumAudioPlayer url={activeResultUrl} title={activeResultTitle} copy={copy} />
@@ -1140,31 +1372,31 @@ export default function AudioStudio({
 
           {/* ─── BOTTOM HISTORY FOOTER ─── */}
           {history.length > 0 && (
-            <div className="border-t border-zinc-900 pt-6 w-full animate-fade-in-up">
+            <div className="border-t border-white/10 pt-6 w-full animate-fade-in">
               <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-4 px-1">
                 {copy.history.heading.replace('{count}', history.length)}
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5">
                 {history.map((entry, idx) => (
                   <div
                     key={entry.id || idx}
                     onClick={() => handleSelectHistory(entry, idx)}
-                    className={`p-3.5 bg-zinc-900 border rounded cursor-pointer transition-all flex flex-col justify-between h-28 border-zinc-700/80 hover:bg-zinc-850 hover:border-zinc-500 ${
+                    className={`p-3.5 bg-white/[0.03] backdrop-blur-md border rounded-xl cursor-pointer transition-all flex flex-col justify-between h-28 hover:bg-white/[0.07] hover:border-white/20 ${
                       activeResultUrl === entry.url && view === "result"
-                        ? "border-primary bg-primary/5 shadow-glow"
-                        : ""
+                        ? "border-brand-line bg-brand-soft/20 shadow-elevation-1"
+                        : "border-white/10"
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${
-                        activeResultUrl === entry.url && view === "result" ? "bg-primary/20 text-primary" : "bg-zinc-800 text-zinc-200"
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        activeResultUrl === entry.url && view === "result" ? "bg-brand-soft text-brand border border-brand-line" : "bg-white/[0.06] text-zinc-300"
                       }`}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                         </svg>
                       </div>
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider truncate">
-                        {entry.model ? entry.model.split('-').slice(0, 2).join(' ') : copy.history.fallbackModel}
+                      <span className="text-[10px] font-bold text-brand uppercase tracking-wider truncate">
+                        {entry.model ? (copy.models?.[entry.model]?.name || entry.model.split('-').slice(0, 2).join(' ')) : copy.history.fallbackModel}
                       </span>
                     </div>
                     <p className="text-[11px] font-semibold text-white line-clamp-2 leading-tight">
@@ -1179,7 +1411,7 @@ export default function AudioStudio({
         </div>
 
       </div>
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
+      <Toaster position="top-right" duration={5000} />
     </div>
   );
 }

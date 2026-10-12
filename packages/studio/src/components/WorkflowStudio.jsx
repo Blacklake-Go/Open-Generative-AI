@@ -15,13 +15,20 @@ import {
   getWorkflowData,
 } from "../muapi.js";
 import dynamic from "next/dynamic";
+import enCopy from "../messages/en/workflowStudio.json";
+import zhCopy from "../messages/zh/workflowStudio.json";
+import jaCopy from "../messages/ja-JP/workflowStudio.json";
+import koCopy from "../messages/ko-KR/workflowStudio.json";
+import zhTwCopy from "../messages/zh-TW/workflowStudio.json";
+import esCopy from "../messages/es-ES/workflowStudio.json";
+import { resolveCopy } from "../i18nUtils";
 
 const WorkflowUI = dynamic(() => import("./WorkflowUI"), {
   ssr: false,
   loading: () => (
     <div className="absolute inset-0 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-white/5 border-t-[#22d3ee] rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-white/5 border-t-brand rounded-full animate-spin" />
         <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">
           Loading Builder...
         </div>
@@ -36,7 +43,7 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
   return (
     <div
       onClick={() => onClick(workflow)}
-      className="group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer border border-white/5 bg-[#0a0a0a] transition-all hover:border-[#22d3ee]/30 hover:scale-[1.02] shadow-2xl"
+      className="group relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border border-line-subtle bg-surface transition-[border-color,transform,box-shadow] hover:border-brand/30 hover:scale-[1.02] shadow-elevation-1"
     >
       {workflow.thumbnail ? (
         <img
@@ -66,7 +73,7 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
       {/* Options Dropdown for My Workflows */}
       {activeTab === 'my-workflows' && (
         <div 
-          className="absolute top-2 right-2 z-30"
+          className="absolute top-2 right-2 z-dropdown"
           onClick={(e) => { e.stopPropagation(); }}
         >
           <button
@@ -80,10 +87,10 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
           </button>
           
           {showOptions && (
-            <div className="absolute top-10 right-0 w-32 bg-[#111] border border-white/10 rounded-lg shadow-2xl py-1 animate-in fade-in zoom-in duration-200">
+            <div className="absolute top-10 right-0 z-dropdown w-32 rounded-lg border border-line bg-overlay-glass py-1 shadow-elevation-3 animate-fade-in">
               <button
                 onClick={() => onRename(workflow)}
-                className="w-full px-4 py-2 text-left text-[11px] font-bold text-white/70 hover:text-[#22d3ee] hover:bg-white/5 transition-colors flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-[11px] font-bold text-ink-muted hover:text-brand hover:bg-wash transition-colors flex items-center gap-2"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -107,17 +114,17 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
 
       {/* Community Profile Info */}
       {activeTab === 'published' && workflow.user_name && (
-        <div className="absolute top-2 left-2 z-20 flex items-center gap-2 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
+        <div className="absolute top-2 left-2 z-raised flex items-center gap-2 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
           <img src={workflow.user_profile || "/user_profile.png"} alt="profile" className="w-4 h-4 rounded-full" />
           <span className="text-[9px] font-black text-white/80 uppercase tracking-widest">{workflow.user_name}</span>
         </div>
       )}
 
       <div className="absolute inset-x-0 bottom-0 p-4">
-        <div className="text-[10px] font-bold text-[#22d3ee] uppercase tracking-wider mb-1 opacity-80">
+        <div className="text-[10px] font-bold text-brand uppercase tracking-wider mb-1 opacity-80">
           {workflow.category || "General"}
         </div>
-        <h3 className="text-sm font-bold text-white truncate group-hover:text-[#22d3ee] transition-colors">
+        <h3 className="text-sm font-bold text-white truncate group-hover:text-brand transition-colors">
           {workflow.name || "Untitled Flow"}
         </h3>
       </div>
@@ -127,6 +134,7 @@ function WorkflowCard({ workflow, onClick, activeTab, onRename, onDelete }) {
 
 export default function WorkflowStudio({
   apiKey,
+  locale = "en",
   isHeaderVisible = true,
   onToggleHeader,
   onGenerationStart,
@@ -134,11 +142,20 @@ export default function WorkflowStudio({
   onGenerationComplete,
   onGenerationError,
 }) {
+  const workflowFeatureAvailable = false;
+  const copy = resolveCopy(enCopy, {
+    "zh-CN": zhCopy,
+    "ja-JP": jaCopy,
+    "ko-KR": koCopy,
+    "zh-TW": zhTwCopy,
+    es: esCopy,
+    "es-ES": esCopy,
+  }, locale);
   const params = useParams();
   const router = useRouter();
   const idFromParams = params?.id;     // exists on /workflow/[id]/[tab] route
   const tabFromParams = params?.tab;   // string on /workflow/[id]/[tab]; array on the [[...tab]] catch-all
-  // Catch-all routes (/studio/[brandSlug]/[[...tab]], /open-generative-ai/[[...tab]]) expose the
+  // Catch-all routes (/studio/[brandSlug]/[[...tab]], /koyosim/[[...tab]]) expose the
   // whole remaining path as params.tab (an array) — NOT params.slug, which doesn't exist on either
   // route and previously made this whole fallback branch permanently dead.
   const catchAllSegments = Array.isArray(tabFromParams) ? tabFromParams : [];
@@ -199,6 +216,7 @@ export default function WorkflowStudio({
 
   // Dedicated data fetching effect for the active workflow
   useEffect(() => {
+    if (!workflowFeatureAvailable) return;
     if (!selectedWorkflow?.id || !apiKey) return;
 
     async function loadWorkflowDetails() {
@@ -330,6 +348,7 @@ export default function WorkflowStudio({
   // KEY FIX: If the user is on /studio/workflows/[id], redirect to /workflow/[id]
   // so the builder library's useParams().id resolves correctly, preventing duplicate creation.
   useEffect(() => {
+    if (!workflowFeatureAvailable) return;
     if (typeof window !== 'undefined' && urlWorkflowId && urlWorkflowId !== 'new') {
       const path = window.location.pathname;
       if (path.startsWith('/studio/workflows/')) {
@@ -341,6 +360,7 @@ export default function WorkflowStudio({
 
   // 1. Sync state with URL on mount or URL change
   useEffect(() => {
+    if (!workflowFeatureAvailable) return;
     if (loading) return;
 
     if (urlWorkflowId) {
@@ -378,16 +398,8 @@ export default function WorkflowStudio({
     handleSelectWorkflow,
   ]);
 
-  // Handle reload on exit to clear builder CSS
   useEffect(() => {
-    const fromBuilder = sessionStorage.getItem("fromWorkflowBuilder");
-    if (fromBuilder && (!urlWorkflowId || activeSubTab !== "builder")) {
-      sessionStorage.removeItem("fromWorkflowBuilder");
-      window.location.reload();
-    }
-  }, [urlWorkflowId, activeSubTab]);
-
-  useEffect(() => {
+    if (!workflowFeatureAvailable) return;
     async function loadWorkflows() {
       try {
         setLoading(true);
@@ -446,20 +458,38 @@ export default function WorkflowStudio({
     }
   };
 
+  // Workflow execution and private workflow ownership are not yet backed by
+  // user-scoped KoyoSIM APIs. Keep the imported gallery/editor closed until
+  // those paths have billing, authorization, and terminal-result verification.
+  if (!workflowFeatureAvailable) {
+    return (
+      <section
+        className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center gap-3 px-6 text-center"
+        role="status"
+        data-feature-status="unavailable"
+      >
+        <h2 className="text-lg font-semibold text-ink">{copy.unavailable.title}</h2>
+        <p className="max-w-lg text-sm text-ink-muted">
+          {copy.unavailable.description}
+        </p>
+      </section>
+    );
+  }
+
   if (loading && !selectedWorkflow) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="animate-spin text-[#22d3ee] text-3xl">◌</div>
+        <div className="animate-spin text-brand text-3xl">◌</div>
       </div>
     );
   }
 
   if (selectedWorkflow) {
     return (
-      <div className="h-full flex flex-col bg-[#030303] text-white">
+      <div className="h-full flex flex-col bg-transparent text-white">
         {/* Immersive Sub-header / Floating Toggle */}
         {isHeaderVisible ? (
-          <div className="flex-shrink-0 h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 z-30">
+          <div className="flex-shrink-0 h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 z-header">
             <div className="flex items-center gap-8 h-full">
               <button
                 onClick={() => router.push("/studio/workflows")}
@@ -475,17 +505,17 @@ export default function WorkflowStudio({
               <div className="h-4 w-[1px] bg-white/10" />
 
               <div className="flex h-full">
-                <div className="flex bg-white/5 p-1 rounded-lg my-auto">
+                <div className="flex bg-wash p-1 rounded-full my-auto">
                   <button
                     onClick={() => {
                         setActiveSubTab("playground");
                         if (selectedWorkflow?.id) router.push(`/workflow/${selectedWorkflow.id}/playground`);
                     }}
                     type="button"
-                    className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${
+                    className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full transition-[background-color,color,box-shadow] ${
                       activeSubTab === "playground"
-                        ? "bg-[#22d3ee] text-black shadow-[0_0_15px_rgba(34, 211, 238,0.2)]"
-                        : "text-white/40 hover:text-white"
+                        ? "bg-surface-inverse text-ink-inverse shadow-elevation-1"
+                        : "text-ink-muted hover:text-ink hover:bg-wash"
                     }`}
                   >
                     Playground
@@ -499,10 +529,10 @@ export default function WorkflowStudio({
                         }
                     }}
                     type="button"
-                    className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${
+                    className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full transition-[background-color,color,box-shadow] ${
                       activeSubTab === "builder"
-                        ? "bg-[#22d3ee] text-black shadow-[0_0_15px_rgba(34, 211, 238,0.2)]"
-                        : "text-white/40 hover:text-white"
+                        ? "bg-surface-inverse text-ink-inverse shadow-elevation-1"
+                        : "text-ink-muted hover:text-ink hover:bg-wash"
                     }`}
                   >
                     Full Workflow
@@ -512,7 +542,7 @@ export default function WorkflowStudio({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-black text-[#22d3ee] uppercase tracking-widest">
+              <span className="text-[11px] font-black text-brand uppercase tracking-widest">
                 {selectedWorkflow.name}
               </span>
               <button
@@ -529,7 +559,7 @@ export default function WorkflowStudio({
           </div>
         ) : (
           /* Floating Immersive Mode Controller */
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4 px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl animate-fade-in-down">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-sticky flex items-center gap-4 px-4 py-2 bg-overlay-glass backdrop-blur-xl border border-line-subtle rounded-full shadow-elevation-2 animate-fade-in">
             <button
                onClick={() => router.push("/studio/workflows")}
                className="p-1.5 text-white/40 hover:text-white transition-colors"
@@ -541,12 +571,12 @@ export default function WorkflowStudio({
             
             <div className="h-4 w-[1px] bg-white/10" />
             
-            <div className="flex bg-white/5 p-1 rounded-lg">
+            <div className="flex bg-wash p-1 rounded-full">
                <button
                  onClick={() => setActiveSubTab("playground")}
                  type="button"
-                 className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${
-                   activeSubTab === "playground" ? "bg-[#22d3ee] text-black" : "text-white/40"
+                 className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full transition-[background-color,color,box-shadow] ${
+                   activeSubTab === "playground" ? "bg-surface-inverse text-ink-inverse shadow-elevation-1" : "text-ink-muted hover:text-ink hover:bg-wash"
                  }`}
                >
                  Play
@@ -554,8 +584,8 @@ export default function WorkflowStudio({
                <button
                  onClick={() => setActiveSubTab("builder")}
                  type="button"
-                 className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${
-                   activeSubTab === "builder" ? "bg-[#22d3ee] text-black" : "text-white/40"
+                 className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full transition-[background-color,color,box-shadow] ${
+                   activeSubTab === "builder" ? "bg-surface-inverse text-ink-inverse shadow-elevation-1" : "text-ink-muted hover:text-ink hover:bg-wash"
                  }`}
                >
                  Builder
@@ -603,7 +633,7 @@ export default function WorkflowStudio({
                                         [key]: e.target.value,
                                       })
                                     }
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors min-h-[80px] resize-none"
+                                    className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring transition-[background-color,border-color,box-shadow] min-h-[80px] resize-none"
                                     placeholder={
                                       prop.description || `Enter ${key}...`
                                     }
@@ -617,7 +647,7 @@ export default function WorkflowStudio({
                                         [key]: e.target.value,
                                       })
                                     }
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+                                    className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring transition-[background-color,border-color,box-shadow]"
                                   >
                                     {prop.enum.map((opt) => (
                                       <option
@@ -639,7 +669,7 @@ export default function WorkflowStudio({
                                         [key]: e.target.value,
                                       })
                                     }
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+                                    className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring transition-[background-color,border-color,box-shadow]"
                                     placeholder={
                                       prop.description || `Enter ${key}...`
                                     }
@@ -654,7 +684,7 @@ export default function WorkflowStudio({
                     <button
                       type="submit"
                       disabled={isExecuting || !selectedWorkflow.id}
-                      className="w-full py-4 bg-[#22d3ee] text-black text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-[0_0_30px_rgba(34, 211, 238,0.15)] flex items-center justify-center gap-3 mt-8"
+                      className="w-full py-4 bg-brand text-ink-on-accent text-xs font-black uppercase tracking-[0.2em] rounded-lg hover:bg-brand-hover transition-[background-color,color,transform,box-shadow] transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-elevation-1 flex items-center justify-center gap-3 mt-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
                     >
                       {isExecuting ? (
                         <>
@@ -738,8 +768,8 @@ export default function WorkflowStudio({
                 {isExecuting && (
                   <div className="flex flex-col items-center gap-6 animate-fade-in">
                     <div className="relative">
-                      <div className="w-24 h-24 border-[3px] border-white/5 border-t-[#22d3ee] rounded-full animate-spin shadow-[0_0_40px_rgba(34, 211, 238,0.1)]" />
-                      <div className="absolute inset-0 flex items-center justify-center text-[#22d3ee]">
+                      <div className="w-24 h-24 border-[3px] border-white/5 border-t-brand rounded-full animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center text-brand">
                         <svg
                           width="32"
                           height="32"
@@ -754,7 +784,7 @@ export default function WorkflowStudio({
                       </div>
                     </div>
                     <div className="text-center space-y-2">
-                      <div className="text-[10px] font-black text-[#22d3ee] uppercase tracking-[0.3em] animate-pulse">
+                      <div className="text-[10px] font-black text-brand uppercase tracking-[0.3em] animate-pulse">
                         Running Pipeline
                       </div>
                       <div className="text-[13px] text-white/40 font-medium">
@@ -765,7 +795,7 @@ export default function WorkflowStudio({
                 )}
 
                 {result && (
-                  <div className="w-full max-w-4xl space-y-8 animate-fade-in-up">
+                  <div className="w-full max-w-4xl space-y-8 animate-fade-in">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-black text-white/30 uppercase tracking-widest">
                         Workflow Results
@@ -780,7 +810,7 @@ export default function WorkflowStudio({
                       {result.outputs?.map((out, idx) => (
                         <div
                           key={idx}
-                          className="group relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-[#22d3ee]/30 transition-all shadow-2xl"
+                          className="group relative bg-surface border border-line-subtle rounded-xl overflow-hidden hover:border-brand/30 transition-[border-color,box-shadow] shadow-elevation-2"
                         >
                           {out.type === "image_url" ? (
                             <img
@@ -802,14 +832,14 @@ export default function WorkflowStudio({
 
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black text-[#22d3ee] uppercase tracking-widest">
+                              <span className="text-[10px] font-black text-brand uppercase tracking-widest">
                                 {out.id}
                               </span>
                               <a
                                 href={out.value}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#22d3ee] hover:text-black transition-colors"
+                                className="w-8 h-8 rounded-lg bg-raised flex items-center justify-center hover:bg-brand hover:text-ink-on-accent transition-colors"
                               >
                                 <svg
                                   width="14"
@@ -851,7 +881,7 @@ export default function WorkflowStudio({
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-white/5 border-t-[#22d3ee] rounded-full animate-spin" />
+                    <div className="w-12 h-12 border-4 border-white/5 border-t-brand rounded-full animate-spin" />
                     <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">
                       Loading Builder...
                     </div>
@@ -881,7 +911,7 @@ export default function WorkflowStudio({
             </div>
             <button
               onClick={() => handleCreateWorkflow()}
-              className="px-6 py-3 bg-[#22d3ee] text-black text-xs font-black uppercase tracking-widest rounded-lg hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(34, 211, 238,0.3)] flex items-center gap-2"
+              className="px-6 py-3 bg-brand text-ink-on-accent text-xs font-black uppercase tracking-widest rounded-lg hover:bg-brand-hover transition-[background-color,color,transform,box-shadow] transform hover:scale-105 active:scale-95 shadow-elevation-1 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
             >
               <svg
                 width="14"
@@ -903,30 +933,30 @@ export default function WorkflowStudio({
           <div className="flex items-center gap-2 border-b border-white/5">
             <button
               onClick={() => setActiveMainTab("templates")}
-              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${
+              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-[color,border-color] border-b-2 ${
                 activeMainTab === "templates"
-                  ? "text-[#22d3ee] border-[#22d3ee]"
-                  : "text-white/30 border-transparent hover:text-white"
+                  ? "text-brand border-brand"
+                  : "text-ink-subtle border-transparent hover:text-ink"
               }`}
             >
               Templates
             </button>
             <button
               onClick={() => setActiveMainTab("my-workflows")}
-              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${
+              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-[color,border-color] border-b-2 ${
                 activeMainTab === "my-workflows"
-                  ? "text-[#22d3ee] border-[#22d3ee]"
-                  : "text-white/30 border-transparent hover:text-white"
+                  ? "text-brand border-brand"
+                  : "text-ink-subtle border-transparent hover:text-ink"
               }`}
             >
               My Workflows
             </button>
             <button
               onClick={() => setActiveMainTab("published")}
-              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-all border-b-2 ${
+              className={`px-6 py-4 text-xs font-black uppercase tracking-[0.2em] transition-[color,border-color] border-b-2 ${
                 activeMainTab === "published"
-                  ? "text-[#22d3ee] border-[#22d3ee]"
-                  : "text-white/30 border-transparent hover:text-white"
+                  ? "text-brand border-brand"
+                  : "text-ink-subtle border-transparent hover:text-ink"
               }`}
             >
               Community
@@ -936,7 +966,7 @@ export default function WorkflowStudio({
 
         {loading ? (
           <div className="py-20 flex items-center justify-center">
-            <div className="w-10 h-10 border-4 border-white/5 border-t-[#22d3ee] rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-white/5 border-t-brand rounded-full animate-spin" />
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
@@ -966,25 +996,25 @@ export default function WorkflowStudio({
 
       {/* Rename Modal */}
       {renamingWorkflow && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-modal flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setRenamingWorkflow(null)} />
           <form 
             onSubmit={handleRenameWorkflow}
-            className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300"
+            className="relative w-full max-w-sm bg-overlay border border-line-strong rounded-2xl p-8 shadow-elevation-4 animate-scale-in"
           >
             <h3 className="text-xl font-bold text-white mb-2">Rename Workflow</h3>
             <p className="text-white/40 text-sm mb-6">Enter a new descriptive name for your pipeline.</p>
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#22d3ee] uppercase tracking-widest">Workflow Name</label>
+                <label className="text-[10px] font-black text-brand uppercase tracking-widest">Workflow Name</label>
                 <input
                   autoFocus
                   type="text"
                   value={newWorkflowName}
                   onChange={(e) => setNewWorkflowName(e.target.value)}
                   placeholder="e.g. Cinematic Video Flow"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#22d3ee]/50 transition-colors"
+                  className="w-full bg-well border border-line rounded-xl px-4 py-3 text-sm text-ink focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring transition-[background-color,border-color,box-shadow]"
                 />
               </div>
               
@@ -998,7 +1028,7 @@ export default function WorkflowStudio({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#22d3ee] text-black px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-white transition-all transform hover:scale-105 active:scale-95"
+                  className="flex-1 bg-brand text-ink-on-accent px-4 py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-brand-hover transition-[background-color,color,transform] transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
                 >
                   Save Name
                 </button>

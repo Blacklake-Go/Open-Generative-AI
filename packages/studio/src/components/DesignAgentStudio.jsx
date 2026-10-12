@@ -4,9 +4,17 @@ import { useState, useEffect } from 'react';
 import { CreativeCanvas } from 'design-agent';
 
 import { getUserBalance } from '../muapi';
+import enCopy from '../messages/en/agentStudio.json';
+import zhCopy from '../messages/zh/agentStudio.json';
+import jaCopy from '../messages/ja-JP/agentStudio.json';
+import koCopy from '../messages/ko-KR/agentStudio.json';
+import zhTwCopy from '../messages/zh-TW/agentStudio.json';
+import esCopy from '../messages/es-ES/agentStudio.json';
+import { resolveCopy } from '../i18nUtils';
 
 export default function DesignAgentStudio({
   apiKey,
+  locale = 'en',
   userEmail,
   balance,
   isHeaderVisible,
@@ -17,6 +25,14 @@ export default function DesignAgentStudio({
   onGenerationError,
 }) {
   const [userData, setUserData] = useState(null);
+  const copy = resolveCopy(enCopy, {
+    'zh-CN': zhCopy,
+    'ja-JP': jaCopy,
+    'ko-KR': koCopy,
+    'zh-TW': zhTwCopy,
+    es: esCopy,
+    'es-ES': esCopy,
+  }, locale);
 
   // Written synchronously during render (not inside an effect below) so it's already in
   // localStorage before CreativeCanvas's own mount effects read it — passive effects run
@@ -26,6 +42,11 @@ export default function DesignAgentStudio({
     sessionStorage.setItem("fromDesignAgent", "true");
     localStorage.setItem("token", apiKey);
   }
+
+  useEffect(() => {
+    if (!apiKey) return undefined;
+    return () => sessionStorage.removeItem("fromDesignAgent");
+  }, [apiKey]);
 
   useEffect(() => {
     if (!apiKey) return;
@@ -62,6 +83,7 @@ export default function DesignAgentStudio({
     <div className="h-full w-full bg-black overflow-hidden design-agent-studio">
       <CreativeCanvas 
         user={userData}
+        unavailableCopy={copy.unavailable}
         isAuthorized={!!userData}
         creditConversionRate={200}
         theme="dark"

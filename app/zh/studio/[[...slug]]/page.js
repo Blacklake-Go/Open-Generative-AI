@@ -1,12 +1,40 @@
+import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
 import StandaloneShell from '@/components/StandaloneShell';
+import { isStudioSlug, inferStudioTabFromModel } from '@/lib/studio-routes';
+import { getUserBySession } from '@/lib/services/auth';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Studio — Open Generative AI',
+  title: 'Studio — koyosim',
 };
 
-// Additive locale route wrapper: reuses the exact same shell component as
-// app/studio/[[...slug]]/page.js, only passing `locale="zh"`. A future
-// locale repeats this file under app/<locale>/studio/[[...slug]]/page.js.
-export default function ZhStudioPage() {
-  return <StandaloneShell locale="zh" />;
+export default async function ZhStudioPage({ params, searchParams }) {
+  const { slug } = await params;
+  if (!isStudioSlug(slug)) notFound();
+
+  let user = null;
+  try {
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('ko_session')?.value;
+    if (sessionToken) {
+      user = await getUserBySession(sessionToken);
+    }
+  } catch {}
+
+  const rawQuery = searchParams ? await searchParams : {};
+  const initialModel = typeof rawQuery?.model === 'string' ? rawQuery.model : '';
+  const initialTab = typeof rawQuery?.tab === 'string'
+    ? rawQuery.tab
+    : (Array.isArray(slug) && slug[0] ? slug[0] : (initialModel ? inferStudioTabFromModel(initialModel, 'image') : 'image'));
+
+  return (
+    <StandaloneShell
+      locale="zh-CN"
+      initialUser={user}
+      initialTab={initialTab}
+      initialModel={initialModel}
+    />
+  );
 }

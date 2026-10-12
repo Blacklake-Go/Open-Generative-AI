@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { runMotionGraphics, runMotionGraphicsEdit } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -28,6 +29,10 @@ import {
 } from "./prompt/PromptComposer.jsx";
 import en from "../messages/en/vibeMotionStudio.json";
 import zh from "../messages/zh/vibeMotionStudio.json";
+import ja from "../messages/ja-JP/vibeMotionStudio.json";
+import ko from "../messages/ko-KR/vibeMotionStudio.json";
+import zhTw from "../messages/zh-TW/vibeMotionStudio.json";
+import es from "../messages/es-ES/vibeMotionStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -53,7 +58,7 @@ const formatTime = (s) =>
 
 // ── icons ─────────────────────────────────────────────────────────────────────
 const CheckSvg = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="4">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e11d74" strokeWidth="4">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -79,7 +84,7 @@ export default function VibeMotionStudio({
   onGenerationError,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
   const LEGACY_PERSIST_KEY = "hg_vibe_motion_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -258,11 +263,11 @@ export default function VibeMotionStudio({
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden">
       {/* ── Fullscreen overlay ── */}
       {fullscreenUrl && (
         <div
-          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-modal bg-black/95 flex items-center justify-center"
           onClick={() => setFullscreenUrl(null)}
         >
           <video
@@ -282,11 +287,11 @@ export default function VibeMotionStudio({
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {generating && (
           /* ── Loading card at top of grid ── */
-          <div className="w-full pt-6 flex justify-center animate-fade-in-up">
+          <div className="w-full pt-6 flex justify-center animate-fade-in">
             <div className="flex flex-col items-center gap-4 py-16">
               <div className="relative w-20 h-20">
                 <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping" />
-                <div className="absolute inset-2 rounded-full border-2 border-[#22d3ee]/30 animate-spin" />
+                <div className="absolute inset-2 rounded-full border-2 border-[#e11d74]/30 animate-spin" />
                 <div className="absolute inset-4 rounded-full border-2 border-violet-400/50 animate-[spin_1.5s_linear_infinite_reverse]" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400 animate-pulse">
@@ -312,7 +317,7 @@ export default function VibeMotionStudio({
         )}
 
         {!generating && history.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in">
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
@@ -334,14 +339,14 @@ export default function VibeMotionStudio({
                 {/* ── Mode tag (top-left) ── */}
                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm border ${
                   entry.mode === "edit"
-                    ? "bg-[#22d3ee]/20 text-[#22d3ee] border-[#22d3ee]/30"
+                    ? "bg-[#e11d74]/20 text-[#e11d74] border-[#e11d74]/30"
                     : "bg-violet-600/30 text-violet-300 border-violet-500/30"
                 }`}>
                   {entry.mode === "edit" ? copy.card.modeEdit : copy.card.modeGenerated}
                 </div>
 
                 {/* ── Hover overlay actions ── */}
-                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="pointer-events-none absolute top-2 right-2 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                   <GenerationCopyButtons
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
@@ -367,7 +372,7 @@ export default function VibeMotionStudio({
                         setPrompt("");
                         setTimeout(() => textareaRef.current?.focus(), 50);
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#22d3ee] hover:text-black transition-all border border-white/10"
+                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#e11d74] hover:text-white transition-all border border-white/10"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -466,31 +471,31 @@ export default function VibeMotionStudio({
           </div>
         ) : !generating ? (
           /* ── Empty State ── */
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -501,7 +506,7 @@ export default function VibeMotionStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -539,7 +544,7 @@ export default function VibeMotionStudio({
 
             {/* Right: Edit mode status banner beside toggle buttons */}
             {editMode && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-[#22d3ee]/5 border border-[#22d3ee]/10 rounded-full text-[11px] text-[#22d3ee] font-medium tracking-tight min-w-0 max-w-full overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-1 bg-[#e11d74]/5 border border-[#e11d74]/10 rounded-full text-[11px] text-[#e11d74] font-medium tracking-tight min-w-0 max-w-full overflow-hidden">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="flex-shrink-0">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -551,7 +556,7 @@ export default function VibeMotionStudio({
                 </span>
                 <button
                   onClick={() => { setEditMode(false); setEditSourceId(null); setPrompt(""); }}
-                  className="ml-auto text-[#22d3ee]/40 hover:text-[#22d3ee] transition-colors text-sm leading-none flex-shrink-0"
+                  className="ml-auto text-[#e11d74]/40 hover:text-[#e11d74] transition-colors text-sm leading-none flex-shrink-0"
                   title={copy.editBanner.cancelEdit}
                 >
                   ×
@@ -657,13 +662,13 @@ export default function VibeMotionStudio({
                     onClick={toggleDropdown("source")}
                     className={promptControlClassName({ active: true })}
                   >
-                    <div className="w-4 h-4 bg-[#22d3ee]/20 rounded flex items-center justify-center border border-[#22d3ee]/30">
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="w-4 h-4 bg-[#e11d74]/20 rounded flex items-center justify-center border border-[#e11d74]/30">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#e11d74" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                       </svg>
                     </div>
-                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} text-[#22d3ee]/70 max-w-[120px] truncate`}>
+                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} text-[#e11d74]/70 max-w-[120px] truncate`}>
                       {sourceEntry ? `${copy.controls.sourcePrefix} ${sourceEntry.prompt?.slice(0, 20)}…` : copy.controls.pickSource}
                     </span>
                     <PromptChevronIcon />
@@ -715,7 +720,7 @@ export default function VibeMotionStudio({
             </PromptAction>
           </PromptFooter>
       </PromptComposer>
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
+      <Toaster position="top-right" duration={5000} />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { processLipSync, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -35,6 +36,10 @@ import {
 } from "./prompt/PromptComposer.jsx";
 import en from "../messages/en/lipSyncStudio.json";
 import zh from "../messages/zh/lipSyncStudio.json";
+import ja from "../messages/ja-JP/lipSyncStudio.json";
+import ko from "../messages/ko-KR/lipSyncStudio.json";
+import zhTw from "../messages/zh-TW/lipSyncStudio.json";
+import es from "../messages/es-ES/lipSyncStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 // ---------------------------------------------------------------------------
@@ -136,7 +141,7 @@ function MediaPickerButton({
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
         className: isDragging
-          ? "ring-2 ring-[#22d3ee] ring-offset-1 ring-offset-black scale-105"
+          ? "ring-2 ring-[#e11d74] ring-offset-1 ring-offset-black scale-105"
           : "",
       })}
     >
@@ -303,7 +308,7 @@ function HistoryThumb({ entry, isActive, onSelect, onDownload }) {
         muted
         className="w-full aspect-square object-cover"
       />
-      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover/thumb:pointer-events-auto group-hover/thumb:opacity-100 group-focus-within/thumb:pointer-events-auto group-focus-within/thumb:opacity-100">
         <button
           type="button"
           onClick={(e) => {
@@ -381,7 +386,7 @@ export default function LipSyncStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
   const LEGACY_PERSIST_KEY = "hg_lipsync_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -812,12 +817,12 @@ export default function LipSyncStudio({
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-app-bg relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent relative overflow-hidden">
       
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
         {history.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in">
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
@@ -839,7 +844,7 @@ export default function LipSyncStudio({
                 />
                 
                 {/* Overlay actions */}
-                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="pointer-events-none absolute top-2 right-2 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                   <GenerationCopyButtons
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
@@ -921,31 +926,31 @@ export default function LipSyncStudio({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -956,7 +961,7 @@ export default function LipSyncStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.hero.titleLine1}</span>
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.hero.titleLine2}
               </span>
             </h1>
@@ -1015,7 +1020,7 @@ export default function LipSyncStudio({
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="text-white/40 group-hover:text-[#22d3ee] transition-colors"
+                      className="text-white/40 group-hover:text-[#e11d74] transition-colors"
                     >
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
@@ -1044,7 +1049,7 @@ export default function LipSyncStudio({
                   label={copy.media.videoLabel}
                   mediaCopy={copy.media}
                   icon={
-                    <VideoIcon className="text-white/40 group-hover:text-[#22d3ee] transition-colors" />
+                    <VideoIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />
                   }
                   onUpload={handleVideoPick}
                   onClear={() => {
@@ -1067,7 +1072,7 @@ export default function LipSyncStudio({
                 label={copy.media.audioLabel}
                 mediaCopy={copy.media}
                 icon={
-                  <MicIcon className="text-white/40 group-hover:text-[#22d3ee] transition-colors" />
+                  <MicIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />
                 }
                 onUpload={handleAudioPick}
                 onClear={() => {
@@ -1113,7 +1118,7 @@ export default function LipSyncStudio({
                     active: openDropdown === "model",
                   })}
                 >
-                  <div className="w-3.5 h-3.5 bg-[#22d3ee] rounded-sm flex items-center justify-center">
+                  <div className="w-3.5 h-3.5 bg-[#e11d74] rounded-sm flex items-center justify-center">
                     <span className="text-[9px] font-black text-black">
                       S
                     </span>
@@ -1193,7 +1198,7 @@ export default function LipSyncStudio({
       {/* ── FULLSCREEN MEDIA MODAL ── */}
       {fullscreenUrl && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
           <button
@@ -1219,7 +1224,7 @@ export default function LipSyncStudio({
           />
         </div>
       )}
-      <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} toastOptions={{ duration: 5000, style: { background: '#18181b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', fontSize: '13px', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', maxWidth: '440px', wordBreak: 'break-word', whiteSpace: 'pre-wrap', padding: '12px 16px' } }} />
+      <Toaster position="top-right" duration={5000} />
     </div>
   );
 }

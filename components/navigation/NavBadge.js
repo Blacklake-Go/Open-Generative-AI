@@ -19,11 +19,15 @@ export default function NavBadge({ badge, className = '' }) {
     colorStyle = 'bg-warning text-ink-inverse font-bold shadow-elevation-1';
   } else if (b === 'FREE') {
     colorStyle = 'bg-info text-ink-inverse font-bold shadow-elevation-1';
+  } else if (b === 'SOON') {
+    colorStyle = 'bg-wash-strong text-ink-subtle border border-line-subtle font-medium';
+  } else if (b === 'BETA') {
+    colorStyle = 'bg-brand-soft text-brand border border-brand-line font-bold';
   }
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-micro font-bold uppercase tracking-wider select-none ${colorStyle} ${withoutRadiusUtilities(className)}`}
+      className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-micro font-bold font-jost uppercase tracking-wider select-none ${colorStyle} ${withoutRadiusUtilities(className)}`}
       aria-label={`Tag: ${b}`}
     >
       {b}

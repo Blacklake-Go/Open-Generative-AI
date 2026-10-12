@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { processMotionControl, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -33,6 +34,10 @@ import {
 } from "./prompt/PromptComposer.jsx";
 import en from "../messages/en/motionControlStudio.json";
 import zh from "../messages/zh/motionControlStudio.json";
+import ja from "../messages/ja-JP/motionControlStudio.json";
+import ko from "../messages/ko-KR/motionControlStudio.json";
+import zhTw from "../messages/zh-TW/motionControlStudio.json";
+import es from "../messages/es-ES/motionControlStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -64,14 +69,14 @@ const UPLOAD_STATE = {
 };
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-const VideoIcon = ({ className = "text-white/40 group-hover:text-[#22d3ee] transition-colors" }) => (
+const VideoIcon = ({ className = "text-white/40 group-hover:text-[#e11d74] transition-colors" }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polygon points="23 7 16 12 23 17 23 7" />
     <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
   </svg>
 );
 
-const ImageIcon = ({ className = "text-white/40 group-hover:text-[#22d3ee] transition-colors" }) => (
+const ImageIcon = ({ className = "text-white/40 group-hover:text-[#e11d74] transition-colors" }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
     <circle cx="8.5" cy="8.5" r="1.5" />
@@ -79,7 +84,7 @@ const ImageIcon = ({ className = "text-white/40 group-hover:text-[#22d3ee] trans
   </svg>
 );
 
-const SlidersIcon = ({ className = "text-white/50 group-hover:text-[#22d3ee] transition-colors" }) => (
+const SlidersIcon = ({ className = "text-white/50 group-hover:text-[#e11d74] transition-colors" }) => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <line x1="4" y1="21" x2="4" y2="14" />
     <line x1="4" y1="10" x2="4" y2="3" />
@@ -153,9 +158,9 @@ function VideoMediaButton({
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
         className: isDragging
-          ? "border-[#22d3ee] bg-[#22d3ee]/20 ring-2 ring-[#22d3ee]/50 scale-105"
+          ? "border-[#e11d74] bg-[#e11d74]/20 ring-2 ring-[#e11d74]/50 scale-105"
           : uploadState === UPLOAD_STATE.READY
-          ? "border-[#22d3ee] ring-1 ring-[#22d3ee]/40"
+          ? "border-[#e11d74] ring-1 ring-[#e11d74]/40"
           : "",
       })}
     >
@@ -184,21 +189,21 @@ function VideoMediaButton({
             <circle
               cx="16" cy="16" r="14" stroke="currentColor" strokeWidth="2" fill="transparent"
               strokeDasharray={88} strokeDashoffset={88 - (88 * progress) / 100}
-              className="text-[#22d3ee] transition-all duration-300"
+              className="text-[#e11d74] transition-all duration-300"
             />
           </svg>
-          <span className="absolute text-[9px] font-black text-[#22d3ee] leading-none">
+          <span className="absolute text-[9px] font-black text-[#e11d74] leading-none">
             {progress}%
           </span>
         </div>
       )}
 
       {uploadState === UPLOAD_STATE.READY && (
-        <div className="flex items-center justify-center w-full h-full absolute inset-0 bg-[#22d3ee]/10 rounded-full group-hover:bg-red-500/20 transition-all">
+        <div className="flex items-center justify-center w-full h-full absolute inset-0 bg-[#e11d74]/10 rounded-full group-hover:bg-red-500/20 transition-all">
           {previewUrl ? (
             <video src={previewUrl} className="w-full h-full object-cover rounded-full" muted playsInline />
           ) : (
-            <VideoIcon className="text-[#22d3ee]" />
+            <VideoIcon className="text-[#e11d74]" />
           )}
           {/* Clear hover icon */}
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-400 font-bold text-base transition-opacity">
@@ -260,7 +265,7 @@ function CharacterImagesMediaButton({
         }
         className={promptMediaButtonClassName({
           active: images.length > 0,
-          className: images.length > 0 ? "border-[#22d3ee] ring-1 ring-[#22d3ee]/40" : "",
+          className: images.length > 0 ? "border-[#e11d74] ring-1 ring-[#e11d74]/40" : "",
         })}
       >
         <input
@@ -283,14 +288,14 @@ function CharacterImagesMediaButton({
 
         {isUploading && (
           <div className="flex flex-col items-center justify-center w-full h-full absolute inset-0 bg-black/80 z-20 backdrop-blur-[2px]">
-            <span className="animate-spin text-xs text-[#22d3ee]">◌</span>
+            <span className="animate-spin text-xs text-[#e11d74]">◌</span>
           </div>
         )}
 
         {images.length > 0 && (
           <div className="w-full h-full relative rounded-full overflow-hidden">
             <img src={images[images.length - 1].url} alt="" className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-black text-[#22d3ee] text-center leading-3">
+            <div className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-black text-[#e11d74] text-center leading-3">
               {images.length}
             </div>
           </div>
@@ -303,7 +308,7 @@ function CharacterImagesMediaButton({
           type="button"
           onClick={() => inputRef.current?.click()}
           title={copy.titles.uploadImage}
-          className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/10 hover:border-[#22d3ee]/50 hover:bg-[#22d3ee]/10 text-white/50 hover:text-[#22d3ee] flex items-center justify-center text-xs transition-colors"
+          className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/10 hover:border-[#e11d74]/50 hover:bg-[#e11d74]/10 text-white/50 hover:text-[#e11d74] flex items-center justify-center text-xs transition-colors"
         >
           +
         </button>
@@ -319,7 +324,7 @@ function CharacterImagesMediaButton({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="text-[11px] font-bold text-[#22d3ee] hover:underline"
+              className="text-[11px] font-bold text-[#e11d74] hover:underline"
             >
               + {copy.labels.addImage}
             </button>
@@ -336,7 +341,7 @@ function CharacterImagesMediaButton({
                     onRemoveImage(idx);
                   }}
                   title={copy.titles.removeImage}
-                  className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-400 font-bold text-base transition-opacity"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/75 text-base font-bold text-red-400 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100"
                 >
                   ×
                 </button>
@@ -396,7 +401,7 @@ function AssetsDropdown({
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
               activeTab === tab
-                ? "bg-[#22d3ee] text-black shadow-sm"
+                ? "bg-[#e11d74] text-white shadow-sm"
                 : "text-white/50 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
@@ -430,7 +435,7 @@ function AssetsDropdown({
                     e.stopPropagation();
                     setFullscreenUrl(item.url);
                   }}
-                  className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 flex items-center justify-center transition-opacity text-white hover:text-[#22d3ee]"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover/item:pointer-events-auto group-hover/item:opacity-100 group-focus-within/item:pointer-events-auto group-focus-within/item:opacity-100 hover:text-[#e11d74] focus-visible:ring-2 focus-visible:ring-brand-ring focus-visible:ring-inset"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="11" cy="11" r="8" />
@@ -456,7 +461,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectImage(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-[#22d3ee] rounded-md hover:bg-[#22d3ee]/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-white font-black px-2.5 py-1 bg-[#e11d74] rounded-md hover:bg-[#e11d74]/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsImage}
                   </button>
@@ -467,7 +472,7 @@ function AssetsDropdown({
                       e.stopPropagation();
                       onSelectVideo(item.url, item.name);
                     }}
-                    className="text-[11px] text-black font-black px-2.5 py-1 bg-[#22d3ee] rounded-md hover:bg-[#22d3ee]/90 transition-colors whitespace-nowrap shadow-sm"
+                    className="text-[11px] text-white font-black px-2.5 py-1 bg-[#e11d74] rounded-md hover:bg-[#e11d74]/90 transition-colors whitespace-nowrap shadow-sm"
                   >
                     {copy.buttons.useAsVideo}
                   </button>
@@ -555,7 +560,7 @@ export default function MotionControlStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
   const LEGACY_PERSIST_KEY = "hg_motion_control_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
 
@@ -873,17 +878,17 @@ export default function MotionControlStudio({
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-[#030303] relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-canvas relative overflow-hidden">
       <Toaster position="top-right" />
 
       {/* ── CENTRAL GALLERY AREA ── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-3">
         {history.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in-up">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 animate-fade-in">
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-[#22d3ee]/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-[#e11d74]/50 transition-all duration-300 flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -901,7 +906,7 @@ export default function MotionControlStudio({
                 />
 
                 {/* Overlay actions on hover */}
-                <div className="absolute top-2 right-2 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <div className="pointer-events-none absolute top-2 right-2 z-10 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                   <GenerationCopyButtons
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
@@ -913,7 +918,7 @@ export default function MotionControlStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `motion-control-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#22d3ee] hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-[#e11d74] hover:text-white transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -929,7 +934,7 @@ export default function MotionControlStudio({
                       setVideoState(UPLOAD_STATE.READY);
                       toast.success("Loaded video as reference motion!");
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-[#22d3ee] hover:bg-[#22d3ee] hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-[#e11d74] hover:bg-[#e11d74] hover:text-white transition-all border border-white/10"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="17 1 21 5 17 9" />
@@ -986,7 +991,7 @@ export default function MotionControlStudio({
                     </p>
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-1 mt-1">
-                    <span className="text-[10px] font-bold text-[#22d3ee] px-2 py-0.5 bg-[#22d3ee]/10 rounded border border-[#22d3ee]/20 whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-[#e11d74] px-2 py-0.5 bg-[#e11d74]/10 rounded border border-[#e11d74]/20 whitespace-nowrap">
                       {entry.mode === "objects_swap" ? copy.badges.objectsSwap : copy.badges.motionTransfer}
                     </span>
                     <span className="text-[10px] text-white/40">
@@ -999,9 +1004,9 @@ export default function MotionControlStudio({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh] relative">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh] relative">
             {/* Ambient background glow */}
-            <div className="absolute w-96 h-96 bg-[#22d3ee]/5 rounded-full blur-3xl pointer-events-none -z-10" />
+            <div className="absolute w-96 h-96 bg-[#e11d74]/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
             {/* Visual Overlapping Cards */}
             <div className="flex items-center justify-center gap-2 md:gap-4 mb-8 select-none scale-90 sm:scale-100">
@@ -1023,7 +1028,7 @@ export default function MotionControlStudio({
               <span className="text-white/60 uppercase text-xs sm:text-sm font-bold tracking-widest mb-1.5">
                 {copy.empty.titleLine1}
               </span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#22d3ee] to-white font-black uppercase tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#e11d74] to-white font-black uppercase tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -1114,7 +1119,7 @@ export default function MotionControlStudio({
                   active: openDropdown === "model",
                 })}
               >
-                <div className="w-3.5 h-3.5 bg-[#22d3ee] rounded-sm flex items-center justify-center flex-shrink-0">
+                <div className="w-3.5 h-3.5 bg-[#e11d74] rounded-sm flex items-center justify-center flex-shrink-0">
                   <span className="text-[9px] font-black text-black">M</span>
                 </div>
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1199,7 +1204,7 @@ export default function MotionControlStudio({
                     max={maxDurationAllowed}
                     value={duration}
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full accent-[#22d3ee] cursor-pointer"
+                    className="w-full accent-[#e11d74] cursor-pointer"
                   />
 
                   {/* Preset Pills */}
@@ -1214,7 +1219,7 @@ export default function MotionControlStudio({
                         }}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
                           duration === d
-                            ? "bg-[#22d3ee] text-black font-bold shadow-sm"
+                            ? "bg-[#e11d74] text-white font-bold shadow-sm"
                             : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/10"
                         }`}
                       >
@@ -1236,7 +1241,7 @@ export default function MotionControlStudio({
                 className: "gap-1.5",
               })}
             >
-              <AudioIcon enabled={generateAudio} className={generateAudio ? "text-[#22d3ee]" : "text-white/40"} />
+              <AudioIcon enabled={generateAudio} className={generateAudio ? "text-[#e11d74]" : "text-white/40"} />
               <span className={PROMPT_CONTROL_LABEL_CLASS}>
                 {copy.labels.generateAudio}
               </span>
@@ -1279,7 +1284,7 @@ export default function MotionControlStudio({
                         type="button"
                         onClick={() => setHighBitrate(!highBitrate)}
                         className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${
-                          highBitrate ? "bg-[#22d3ee]" : "bg-white/15"
+                          highBitrate ? "bg-[#e11d74]" : "bg-white/15"
                         }`}
                       >
                         <div
@@ -1303,7 +1308,7 @@ export default function MotionControlStudio({
                             onClick={() => setQuality(q)}
                             className={`flex-1 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
                               quality === q
-                                ? "bg-[#22d3ee] text-black shadow-sm"
+                                ? "bg-[#e11d74] text-white shadow-sm"
                                 : "text-white/50 hover:text-white bg-white/[0.04]"
                             }`}
                           >
@@ -1325,7 +1330,7 @@ export default function MotionControlStudio({
                       value={seed}
                       onChange={(e) => setSeed(Number(e.target.value))}
                       placeholder="-1"
-                      className="w-20 px-2 py-1 text-xs bg-black/60 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-[#22d3ee]/50"
+                      className="w-20 px-2 py-1 text-xs bg-black/60 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-[#e11d74]/50"
                     />
                   </div>
                 </PromptPopover>
@@ -1352,7 +1357,7 @@ export default function MotionControlStudio({
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  className="text-white/50 group-hover:text-[#22d3ee] transition-colors"
+                  className="text-white/50 group-hover:text-[#e11d74] transition-colors"
                 >
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -1410,7 +1415,7 @@ export default function MotionControlStudio({
       {/* ── FULLSCREEN MEDIA MODAL ── */}
       {fullscreenUrl && (
         <div
-          className="fixed inset-0 z-[300] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-modal bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
           <div

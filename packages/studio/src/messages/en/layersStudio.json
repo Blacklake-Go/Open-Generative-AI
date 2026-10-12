@@ -47,7 +47,9 @@
     "runLayerDecomposition": "Run Layer Decomposition",
     "backToTools": "Back to Tools",
     "closePanel": "Close Panel",
-    "regionalPromptPlaceholder": "Type your prompt here..."
+    "regionalPromptPlaceholder": "Type your prompt here...",
+    "promptPlaceholder": "Describe how to edit image or split layers...",
+    "markedPromptPlaceholder": "Describe layers for {count} marked region(s)..."
   },
   "sample": {
     "clickToLoad": "Click to load this layer decomposition example",

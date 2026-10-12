@@ -1,8 +1,9 @@
 :root {
   /* Brand Colors */
-  --color-primary: #22d3ee;
-  /* Electric Cyan */
-  --color-primary-hover: #06b6d4;
+  --color-primary: #e11d74;
+  /* Brand Magenta */
+  --color-primary-hover: #f43f5e;
+  --color-primary-active: #c0175f;
   --color-accent: #a855f7;
   /* Creative Purple */
   --color-accent-hover: #9333ea;

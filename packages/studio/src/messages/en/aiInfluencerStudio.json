@@ -1,12 +1,12 @@
 {
   "builder": {
-    "title": "Builder",
+    "title": "Character Builder",
     "reset": "Reset"
   },
   "categoryTabs": {
     "face": "Face",
     "body": "Body",
-    "style": "Style"
+    "style": "Style & Framing"
   },
   "subcategories": {
     "character_type": "Character Type",
@@ -28,36 +28,43 @@
     "right_leg": "Right Leg",
     "hair": "Hair / Head Growth",
     "accessories": "Accessories & Markings",
-    "rendering_style": "Rendering Style"
+    "rendering_style": "Rendering Style",
+    "framing": "Framing & Angle",
+    "outfit_preset": "Outfit & Gear",
+    "backdrop": "Atmosphere & Backdrop"
   },
   "toolbar": {
     "shuffle": "Shuffle",
     "generate": "Generate Character",
-    "generating": "Generating…"
+    "generating": "Generating…",
+    "model": "Model",
+    "credits": "Credits"
   },
   "preview": {
-    "generating": "Generating your AI influencer…",
-    "emptyTitle": "Your AI influencer lives here.",
-    "emptySubtitleLine1": "Design and build your AI influencer",
-    "emptySubtitleLine2": "from scratch",
+    "generating": "Generating your character concept…",
+    "emptyTitle": "Your original character lives here.",
+    "emptySubtitleLine1": "Design and craft your unique character",
+    "emptySubtitleLine2": "concept from scratch",
     "save": "Save",
-    "altGenerated": "Generated AI Character"
+    "altGenerated": "Generated Original Character"
   },
   "tags": {
     "showMore": "show more",
     "hide": "hide"
   },
   "customPrompt": {
-    "placeholder": "Add extra details… e.g. neon cyberpunk lighting, dramatic shadows"
+    "placeholder": "Add extra character details, attire, lighting effects, backdrop... e.g. cyberpunk armor, epic rim light, UE5 render"
   },
   "gallery": {
-    "title": "Generated",
+    "title": "Designed Characters",
     "countSuffix": "characters",
     "emptyText": "Generated characters\nappear here",
     "altPrefix": "Character",
     "download": "Download"
   },
   "errors": {
-    "generationFailed": "Generation failed. Please try again."
+    "generationFailed": "Generation failed. Please try again.",
+    "noActiveModels": "No active image models available. Please try again later.",
+    "loginRequired": "Please log in to generate characters."
   }
 }

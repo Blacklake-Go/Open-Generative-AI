@@ -18,6 +18,33 @@ function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+const runtimeCatalogs = Object.create(null);
+
+export function setRuntimeLocaleCatalog(locale, catalog) {
+  if (!locale || !catalog || typeof catalog !== 'object') return;
+  runtimeCatalogs[locale] = catalog;
+}
+
+function scoreBundle(candidate, reference) {
+  if (!isPlainObject(candidate) || !isPlainObject(reference)) return 0;
+  return Object.keys(reference).reduce((score, key) => score + (Object.prototype.hasOwnProperty.call(candidate, key) ? 1 : 0), 0);
+}
+
+function findRuntimeBundle(locale, reference) {
+  const studioBundles = runtimeCatalogs[locale]?.studio;
+  if (!studioBundles || !isPlainObject(reference)) return null;
+  let best = null;
+  let bestScore = 0;
+  for (const candidate of Object.values(studioBundles)) {
+    const score = scoreBundle(candidate, reference);
+    if (score > bestScore) {
+      best = candidate;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
 export function mergeCopy(base, override) {
   if (!override) return base;
   if (!base) return override;
@@ -37,5 +64,56 @@ export function mergeCopy(base, override) {
 // when locale === 'en'). Always returns a fully-populated copy object.
 export function resolveCopy(en, localeBundle, locale) {
   if (!locale || locale === 'en') return en;
-  return mergeCopy(en, localeBundle);
+
+  // The host application uses explicit BCP-47 locale values while the
+  // original Studio package used the legacy `zh` alias. Accept both without
+  // ever applying Simplified Chinese to Japanese, Korean, or Traditional
+  // Chinese screens. A component may pass either its legacy `zh` bundle or a
+  // map such as `{ 'zh-CN': zh, 'ja-JP': ja }` while migrating bundles.
+  const normalizedLocale = locale === 'zh' ? 'zh-CN' : locale;
+  const runtimeBundle = findRuntimeBundle(normalizedLocale, en);
+  if (runtimeBundle) return mergeCopy(en, runtimeBundle);
+
+  if (!localeBundle) return en;
+
+  // 1. Direct match on normalizedLocale
+  if (Object.prototype.hasOwnProperty.call(localeBundle, normalizedLocale)) {
+    return mergeCopy(en, localeBundle[normalizedLocale]);
+  }
+
+  // 2. Direct match on raw locale
+  if (Object.prototype.hasOwnProperty.call(localeBundle, locale)) {
+    return mergeCopy(en, localeBundle[locale]);
+  }
+
+  // 3. Match aliases: es <-> es-ES, ja <-> ja-JP, ko <-> ko-KR, zh <-> zh-CN
+  const baseLang = String(locale).toLowerCase().split('-')[0];
+  const aliasCandidates = [
+    baseLang,
+    `${baseLang}-${baseLang.toUpperCase()}`,
+    baseLang === 'es' ? 'es-ES' : undefined,
+    baseLang === 'ja' ? 'ja-JP' : undefined,
+    baseLang === 'ko' ? 'ko-KR' : undefined,
+    baseLang === 'zh' ? 'zh-CN' : undefined,
+  ].filter(Boolean);
+
+  for (const candidate of aliasCandidates) {
+    if (Object.prototype.hasOwnProperty.call(localeBundle, candidate)) {
+      return mergeCopy(en, localeBundle[candidate]);
+    }
+  }
+
+  // 4. Case-insensitive key match
+  for (const [key, val] of Object.entries(localeBundle)) {
+    if (key.toLowerCase() === normalizedLocale.toLowerCase() || key.toLowerCase() === locale.toLowerCase()) {
+      return mergeCopy(en, val);
+    }
+  }
+
+  // 5. Legacy zh-CN bundle passed directly
+  if (normalizedLocale === 'zh-CN' && !localeBundle['zh-CN']) {
+    return mergeCopy(en, localeBundle);
+  }
+
+  return en;
 }

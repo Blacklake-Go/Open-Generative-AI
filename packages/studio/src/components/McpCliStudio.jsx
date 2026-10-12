@@ -4,6 +4,10 @@ import React from 'react';
 import { FaGithub, FaTerminal, FaPlug, FaStar, FaExternalLinkAlt } from 'react-icons/fa';
 import en from '../messages/en/mcpCliStudio.json';
 import zh from '../messages/zh/mcpCliStudio.json';
+import ja from '../messages/ja-JP/mcpCliStudio.json';
+import ko from '../messages/ko-KR/mcpCliStudio.json';
+import zhTw from '../messages/zh-TW/mcpCliStudio.json';
+import es from '../messages/es-ES/mcpCliStudio.json';
 import { resolveCopy } from '../i18nUtils';
 
 // `title`/`tag` stay canonical (product/package names and short technical
@@ -20,7 +24,6 @@ const FEATURES = [
 muapi auth login
 muapi image generate "a cyberpunk city" \\
   --model flux-dev`,
-    href: 'https://github.com/SamurAIGPT/muapi-cli',
   },
   {
     id: 'mcp',
@@ -30,22 +33,20 @@ muapi image generate "a cyberpunk city" \\
     code: `claude mcp add --transport http muapi \\
   https://api.muapi.ai/mcp \\
   --header "Authorization: Bearer YOUR_KEY"`,
-    href: 'https://github.com/SamurAIGPT/muapi-mcp-server',
   },
   {
     id: 'skills',
     tag: 'Skills',
     title: 'Generative Media Skills',
     icon: FaStar,
-    code: `npx skills add SamurAIGPT/Generative-Media-Skills --all`,
-    href: 'https://github.com/SamurAIGPT/Generative-Media-Skills',
+    code: `npx skills add @koyosim/media-skills --all`,
   },
 ];
 
 const QUICK_STEPS = [
   { id: 'installCli', num: '1', code: 'npm install -g muapi-cli' },
   { id: 'signIn', num: '2', code: 'muapi auth login' },
-  { id: 'addSkills', num: '3', code: 'npx skills add SamurAIGPT/Generative-Media-Skills' },
+  { id: 'addSkills', num: '3', code: 'npx skills add @koyosim/media-skills' },
 ];
 
 const EXAMPLES = [
@@ -58,7 +59,7 @@ const EXAMPLES = [
 function CodeBlock({ children, className = '' }) {
   return (
     <pre
-      className={`text-[11.5px] font-mono text-[#22d3ee] bg-black/50 border border-white/5 rounded-md px-3 py-2 overflow-x-auto whitespace-pre ${className}`}
+      className={`text-[11.5px] font-mono text-[#e11d74] bg-black/50 border border-white/5 rounded-md px-3 py-2 overflow-x-auto whitespace-pre ${className}`}
     >
       {children}
     </pre>
@@ -66,7 +67,7 @@ function CodeBlock({ children, className = '' }) {
 }
 
 export default function McpCliStudio({ locale = 'en' }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
 
   return (
     <div className="w-full h-full overflow-y-auto bg-[#050505] text-white">
@@ -96,7 +97,7 @@ export default function McpCliStudio({ locale = 'en' }) {
                 className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex flex-col gap-2"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-white text-black text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white text-white text-xs font-bold flex items-center justify-center">
                     {step.num}
                   </span>
                   <span className="text-sm font-bold">{copy.quickStart.steps[step.id]}</span>
@@ -112,11 +113,8 @@ export default function McpCliStudio({ locale = 'en' }) {
           {FEATURES.map((f) => {
             const Icon = f.icon;
             return (
-              <a
+              <div
                 key={f.title}
-                href={f.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 flex flex-col gap-3 hover:bg-white/[0.04] hover:border-white/10 transition-colors group"
               >
                 <div className="flex items-center justify-between">
@@ -128,12 +126,7 @@ export default function McpCliStudio({ locale = 'en' }) {
                 <h3 className="text-lg font-bold">{f.title}</h3>
                 <p className="text-[13px] text-white/60 leading-relaxed">{copy.features[f.id].description}</p>
                 <CodeBlock>{f.code}</CodeBlock>
-                <div className="mt-auto flex items-center gap-1.5 text-[12px] font-bold text-white/50 group-hover:text-white transition-colors">
-                  <FaGithub className="text-sm" />
-                  <span>{copy.viewOnGithub}</span>
-                  <FaExternalLinkAlt className="text-[10px]" />
-                </div>
-              </a>
+              </div>
             );
           })}
         </section>

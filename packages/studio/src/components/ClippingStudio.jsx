@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { ToastHost as Toaster } from "../ui";
 import { runClipping, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
@@ -27,7 +28,12 @@ import {
 } from "./prompt/PromptComposer.jsx";
 import en from "../messages/en/clippingStudio.json";
 import zh from "../messages/zh/clippingStudio.json";
+import ja from "../messages/ja-JP/clippingStudio.json";
+import ko from "../messages/ko-KR/clippingStudio.json";
+import zhTw from "../messages/zh-TW/clippingStudio.json";
+import es from "../messages/es-ES/clippingStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { isModelActive } from "../models.js";
 
 const MAX_VIDEO_SIZE_MB = 100;
 const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
@@ -49,7 +55,7 @@ const dismissErrorToast = (toastId) => {
 // ---------------------------------------------------------------------------
 // Inline SVG Icons
 // ---------------------------------------------------------------------------
-const ScissorsIcon = ({ className = "text-[#22d3ee]" }) => (
+const ScissorsIcon = ({ className = "text-[#e11d74]" }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <circle cx="6" cy="6" r="3" />
     <circle cx="6" cy="18" r="3" />
@@ -218,7 +224,7 @@ export default function ClippingStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, zh, locale);
+  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
   const LEGACY_PERSIST_KEY = "hg_clipping_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -495,6 +501,10 @@ export default function ClippingStudio({
       alert(copy.alerts.needVideo);
       return;
     }
+    if (!isModelActive('ai-clipping')) {
+      setGenerateError('当前剪辑模型暂不可用，请稍后重试');
+      return;
+    }
 
     onGenerationStart?.();
     setIsGenerating(true);
@@ -574,7 +584,7 @@ export default function ClippingStudio({
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-app-bg text-white relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent text-white relative overflow-hidden">
       
       {/* ─── CENTRAL AREA ─── */}
       <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
@@ -588,31 +598,31 @@ export default function ClippingStudio({
 
         {/* 1. Empty State (No history, no result active) */}
         {!result && history.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-18 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-18 h-22 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -623,7 +633,7 @@ export default function ClippingStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.headings.startCreatingWith}</span>
-              <span className="text-[#22d3ee] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.headings.aiClippingStudio}
               </span>
             </h1>
@@ -646,7 +656,7 @@ export default function ClippingStudio({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full animate-fade-in-up">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full animate-fade-in">
               {history.map((entry, idx) => (
                 <div
                   key={entry.id || idx}
@@ -669,7 +679,7 @@ export default function ClippingStudio({
                     />
                     
                     {/* Overlay actions */}
-                    <div className="absolute top-2 right-2 z-10 hidden md:flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="pointer-events-none absolute top-2 right-2 z-10 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
                       <button
                         type="button"
                         title={copy.buttons.deleteFromHistory}
@@ -791,7 +801,7 @@ export default function ClippingStudio({
                             }}
                             className={`w-full p-4 border rounded-lg text-left transition-all hover:bg-zinc-900/60 flex flex-col gap-2 group/hl ${
                               isActive 
-                                ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(34,211,238,0.03)]" 
+                                ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(225, 29, 116,0.03)]" 
                                 : "border-zinc-800 bg-zinc-900/30 hover:border-zinc-700"
                             }`}
                           >
@@ -862,7 +872,7 @@ export default function ClippingStudio({
                           />
                           
                           {/* Overlay actions */}
-                          <div className="absolute top-2 right-2 z-10 hidden md:flex flex-col gap-2 opacity-0 group-hover/vid:opacity-100 transition-opacity">
+                          <div className="pointer-events-none absolute top-2 right-2 z-10 hidden flex-col gap-2 opacity-0 transition-opacity group-hover/vid:pointer-events-auto group-hover/vid:opacity-100 group-focus-within/vid:pointer-events-auto group-focus-within/vid:opacity-100 md:flex">
                             <GenerationCopyButtons
                               prompt={result.prompt}
                               onCopyError={onGenerationError}
@@ -1001,16 +1011,16 @@ export default function ClippingStudio({
                         fill="transparent"
                         strokeDasharray={88}
                         strokeDashoffset={88 - (88 * videoProgress) / 100}
-                        className="text-[#22d3ee] transition-all duration-300"
+                        className="text-[#e11d74] transition-all duration-300"
                       />
                     </svg>
-                    <span className={`absolute text-[8px] font-black text-[#22d3ee] leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
+                    <span className={`absolute text-[8px] font-black text-[#e11d74] leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
                       {videoProgress >= 100 ? "..." : `${videoProgress}%`}
                     </span>
                   </div>
                 ) : null}
 
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-[#22d3ee] transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
@@ -1033,7 +1043,7 @@ export default function ClippingStudio({
               
               {/* Model Identifier (C) */}
               <div className={promptControlClassName()}>
-                <div className="w-4 h-4 bg-[#22d3ee] rounded flex items-center justify-center shadow-lg shadow-[#22d3ee]/10">
+                <div className="w-4 h-4 bg-[#e11d74] rounded flex items-center justify-center shadow-lg shadow-[#e11d74]/10">
                   <span className="text-[9px] font-bold text-black uppercase">C</span>
                 </div>
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1125,7 +1135,7 @@ export default function ClippingStudio({
                 className={promptControlClassName({
                   active: returnCoordinatesOnly,
                   className: returnCoordinatesOnly
-                    ? "text-[#22d3ee]"
+                    ? "text-[#e11d74]"
                     : "text-white/70 hover:text-white",
                 })}
               >
@@ -1181,27 +1191,9 @@ export default function ClippingStudio({
         position="bottom-right"
         reverseOrder={false}
         gutter={8}
-        containerStyle={{ zIndex: 99999, right: 20, bottom: 20 }}
+        containerStyle={{ right: 20, bottom: 20 }}
         toastOptions={{
           duration: 6000,
-          style: {
-            background: "#0d0d0f",
-            color: "#f4f4f5",
-            border: "1px solid rgba(239,68,68,0.35)",
-            fontSize: "13px",
-            borderRadius: "12px",
-            boxShadow: "0 16px 48px rgba(0,0,0,0.65)",
-            maxWidth: "380px",
-            wordBreak: "break-word",
-            whiteSpace: "pre-wrap",
-            padding: "12px 14px",
-          },
-          error: {
-            iconTheme: {
-              primary: "#f87171",
-              secondary: "#0d0d0f",
-            },
-          },
         }}
       />
     </div>

@@ -1,4 +1,5 @@
 import { getMediaCapability } from "./modelCapabilities.js";
+import { setServerModelMeta } from "./modelDescriptions.js";
 
 // Synced from the canonical Muapi schema_data.json catalog.
 import {
@@ -2019,6 +2020,76 @@ export const t2iModels = [
           "2K",
           "4K"
         ],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "The target resolution of the generated image.",
+        "default": "2K"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "OpenAI"
+  },
+  {
+    "id": "gpt-image-2.5-flash",
+    "name": "GPT 图像 2.5 闪光",
+    "endpoint": "gpt-image-2.5-flash-text-to-image",
+    "family": "gpt-2.5",
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "A sleek modern coffee machine on a minimalist kitchen countertop, soft morning light, 8K hyper-detailed product rendering."
+        ],
+        "description": "Text prompt describing the image.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": ["auto", "1:1", "16:9", "9:16", "4:3", "3:4"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      },
+      "resolution": {
+        "enum": ["1K", "2K", "4K"],
+        "title": "Resolution",
+        "name": "resolution",
+        "type": "string",
+        "description": "The target resolution of the generated image.",
+        "default": "2K"
+      }
+    },
+    "provider": "openai",
+    "provider_name": "OpenAI"
+  },
+  {
+    "id": "gpt-image-2.5-sunrise",
+    "name": "GPT 图像 2.5 旭日",
+    "endpoint": "gpt-image-2.5-sunrise-text-to-image",
+    "family": "gpt-2.5",
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "A breathtaking sunrise over misty mountain peaks, golden rays illuminating alpine lakes, cinematic national geographic style."
+        ],
+        "description": "Text prompt describing the image.",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "aspect_ratio": {
+        "enum": ["auto", "1:1", "16:9", "9:16", "4:3", "3:4"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "description": "Aspect ratio of the output image.",
+        "default": "1:1"
+      },
+      "resolution": {
+        "enum": ["1K", "2K", "4K"],
         "title": "Resolution",
         "name": "resolution",
         "type": "string",
@@ -28253,7 +28324,7 @@ export const audioModels = [
     "name": "Suno Create Music",
     "endpoint": "suno-create-music",
     "family": "suno",
-    "description": "Suno generate music that turns text prompts into full songs ΓÇö complete with vocals, lyrics, and instrumentation. You can describe a mood, genre, or even a specific lyric idea, and Suno creates a realistic, studio-quality track in seconds.",
+    "description": "Suno generate music that turns text prompts into full songs — complete with vocals, lyrics, and instrumentation. You can describe a mood, genre, or even a specific lyric idea, and Suno creates a realistic, studio-quality track in seconds.",
     "required": [
       "style"
     ],
@@ -28357,7 +28428,7 @@ export const audioModels = [
         "title": "Style Weight",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Strength of adherence to the specified style (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28367,7 +28438,7 @@ export const audioModels = [
         "title": "Weirdness Constraint",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Controls experimental/creative deviation (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28377,7 +28448,7 @@ export const audioModels = [
         "title": "Audio Weight",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Balance weight for audio features vs. other factors (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28505,7 +28576,7 @@ export const audioModels = [
         "title": "Style Weight",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Strength of adherence to the specified style (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28515,7 +28586,7 @@ export const audioModels = [
         "title": "Weirdness Constraint",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Controls experimental/creative deviation (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28525,7 +28596,7 @@ export const audioModels = [
         "title": "Audio Weight",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Balance weight for audio features vs. other factors (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28664,7 +28735,7 @@ export const audioModels = [
         "title": "Style Weight",
         "name": "style_weight",
         "type": "int",
-        "description": "Strength of adherence to the specified style (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Strength of adherence to the specified style (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28674,7 +28745,7 @@ export const audioModels = [
         "title": "Weirdness Constraint",
         "name": "weirdness_constraint",
         "type": "int",
-        "description": "Controls experimental/creative deviation (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Controls experimental/creative deviation (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28684,7 +28755,7 @@ export const audioModels = [
         "title": "Audio Weight",
         "name": "audio_weight",
         "type": "int",
-        "description": "Balance weight for audio features vs. other factors (optional). Range 0ΓÇô1, up to 2 decimal places.",
+        "description": "Balance weight for audio features vs. other factors (optional). Range 0–1, up to 2 decimal places.",
         "minValue": 0,
         "maxValue": 1,
         "step": 0.05,
@@ -28890,7 +28961,7 @@ export const audioModels = [
   },
   {
     "id": "suno-generate-mashup",
-    "name": "Suno Geneate Mashup",
+    "name": "Suno Generate Mashup",
     "endpoint": "suno-generate-mashup",
     "family": "suno",
     "description": "Create a mashup using 1-5 audio tracks.",
@@ -29175,7 +29246,7 @@ export const audioModels = [
     "name": "Minimax Voice Clone",
     "endpoint": "minimax-voice-clone",
     "family": "minimax-2.3",
-    "description": "Minimax Voice Clone creates a high-fidelity digital clone of a speakerΓÇÖs voice from a short reference audio sample. It reproduces the speakerΓÇÖs tone, emotion, accent, rhythm, and speaking style, then generates new speech from any text input.",
+    "description": "Minimax Voice Clone creates a high-fidelity digital clone of a speaker’s voice from a short reference audio sample. It reproduces the speaker’s tone, emotion, accent, rhythm, and speaking style, then generates new speech from any text input.",
     "required": [
       "audio_url",
       "custom_voice_id"
@@ -29257,7 +29328,7 @@ export const audioModels = [
     "name": "Minimax Speech HD",
     "endpoint": "minimax-speech-2.6-hd",
     "family": "minimax-2.6",
-    "description": "Speech-2.6-hd is MinimaxΓÇÖs high-definition text-to-speech model that turns written text into natural, human-like audio. It produces studio-quality speech with clear pronunciation, smooth pacing, realistic emotion, and no background noise.",
+    "description": "Speech-2.6-hd is Minimax’s high-definition text-to-speech model that turns written text into natural, human-like audio. It produces studio-quality speech with clear pronunciation, smooth pacing, realistic emotion, and no background noise.",
     "required": [
       "prompt",
       "voice_id"
@@ -29916,7 +29987,7 @@ export const audioModels = [
     "name": "Minimax Speech Turbo",
     "endpoint": "minimax-speech-2.6-turbo",
     "family": "minimax-2.6",
-    "description": "Speech-2.6-turbo is MinimaxΓÇÖs fast, lightweight text-to-speech model designed for quick audio generation while maintaining good natural voice quality. It produces clear speech with smooth pacing and minimal delay.",
+    "description": "Speech-2.6-turbo is Minimax’s fast, lightweight text-to-speech model designed for quick audio generation while maintaining good natural voice quality. It produces clear speech with smooth pacing and minimal delay.",
     "required": [
       "prompt",
       "voice_id"
@@ -31421,3 +31492,103 @@ export const audioModels = [
 ];
 
 export const getAudioModelById = (id) => audioModels.find(m => m.id === id);
+
+// PostgreSQL owns the active model directory. The Studio catalog remains a
+// presentation/parameter schema, but it must be filtered by the server
+// response before a workbench mounts. Mutating the existing arrays preserves
+// the API consumed by the legacy workbench components without reintroducing a
+// second source of truth for availability or pricing.
+const MODEL_DIRECTORY_ARRAYS = [
+  t2iModels,
+  i2iModels,
+  t2vModels,
+  i2vModels,
+  v2vModels,
+  audioModels,
+  lipsyncModels,
+  imageLipSyncModels,
+  videoLipSyncModels,
+  recastModels,
+  motionControlModels,
+];
+
+const GLOBAL_PRICING_MAP_KEY = '__KOYOSIM_MODEL_PRICING_MAP__';
+const GLOBAL_ACTIVE_IDS_KEY = '__KOYOSIM_ACTIVE_MODEL_IDS__';
+
+let activeModelIds = null;
+let modelPricingById = new Map();
+
+export function isModelActive(modelId) {
+  if (typeof globalThis !== 'undefined' && globalThis[GLOBAL_ACTIVE_IDS_KEY]) {
+    return globalThis[GLOBAL_ACTIVE_IDS_KEY].has(String(modelId));
+  }
+  return activeModelIds === null || activeModelIds.has(String(modelId));
+}
+
+/**
+ * Shelf-carried price for a catalog id, or null when the model has no published
+ * price row. Deliberately never falls back to a default: a displayed number has
+ * to be traceable to `model_pricing`, which is what the previous storefront code
+ * (`COALESCE(base_credits, 50)`) broke.
+ */
+export function getModelPricing(modelId) {
+  if (typeof globalThis !== 'undefined' && globalThis[GLOBAL_PRICING_MAP_KEY]) {
+    const globalPrice = globalThis[GLOBAL_PRICING_MAP_KEY].get(String(modelId));
+    if (globalPrice) return globalPrice;
+  }
+  return modelPricingById.get(String(modelId)) || null;
+}
+
+export function applyActiveModelDirectory(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  if (list.length > 0) {
+    setServerModelMeta(list);
+  }
+
+  const activeIds = new Set(
+    list
+      .filter((row) => row && row.id && row.isActive !== false && row.isVisible !== false)
+      .map((row) => String(row.id)),
+  );
+
+  // If server returns valid models, use them. If server returns 0 models (e.g. initial boot/error),
+  // do not blind the UI; preserve existing catalog entries.
+  if (activeIds.size > 0) {
+    activeModelIds = activeIds;
+  }
+
+  modelPricingById = new Map(
+    list
+      .filter((row) => row?.id && Number.isFinite(Number(row.creditsPrice)) && Number(row.creditsPrice) > 0)
+      .map((row) => [String(row.id), {
+        credits: Number(row.creditsPrice),
+        formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
+      }]),
+  );
+
+  if (typeof globalThis !== 'undefined') {
+    globalThis[GLOBAL_PRICING_MAP_KEY] = modelPricingById;
+    if (activeIds.size > 0) {
+      globalThis[GLOBAL_ACTIVE_IDS_KEY] = activeIds;
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('koyosim-model-pricing-updated', {
+        detail: { count: modelPricingById.size }
+      }));
+    }
+  }
+
+  if (activeIds.size > 0) {
+    for (const catalog of MODEL_DIRECTORY_ARRAYS) {
+      const active = catalog.filter((model) => activeIds.has(String(model.id)));
+      if (active.length > 0) {
+        catalog.splice(0, catalog.length, ...active);
+      }
+    }
+  }
+
+  return {
+    activeCount: activeIds.size,
+    visibleCount: MODEL_DIRECTORY_ARRAYS.reduce((count, catalog) => count + catalog.length, 0),
+  };
+}

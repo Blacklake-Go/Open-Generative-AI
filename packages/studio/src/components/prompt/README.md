@@ -11,6 +11,9 @@ individual Studio component.
   radius, padding, shadow, and animation.
 - `PromptTextarea` provides the shared typography, placeholder treatment,
   scrolling, and responsive auto-resize behavior.
+- `PromptInputField` combines that textarea with optional `@` reference
+  suggestions and an optional Enter-to-submit callback. Pass the media picker,
+  model controls, price, and submission handler from the owning page.
 - `PromptFooter` provides the responsive divider and action-row layout.
 - `PromptControls` keeps parameter controls aligned and spaced consistently.
 - `PromptAction` provides the shared primary generation button.

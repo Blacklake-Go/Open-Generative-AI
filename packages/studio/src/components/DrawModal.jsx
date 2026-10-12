@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { uploadFile, generateI2I } from "../muapi.js";
 
 export default function DrawModal({
@@ -7,10 +8,18 @@ export default function DrawModal({
   apiKey,
   batchSize = 1,
   onAddHistoryItem,
+  initialBgImageUrl = null,
 }) {
   const [activeTab, setActiveTab] = useState("draw-to-edit"); // 'sketch-to-video' | 'draw-to-video' | 'draw-to-edit'
-  const [viewState, setViewState] = useState("setup"); // 'setup' | 'canvas'
-  const [bgImageUrl, setBgImageUrl] = useState(null); // Image dataURL or src
+  const [viewState, setViewState] = useState(initialBgImageUrl ? "canvas" : "setup"); // 'setup' | 'canvas'
+  const [bgImageUrl, setBgImageUrl] = useState(initialBgImageUrl || null); // Image dataURL or src
+
+  useEffect(() => {
+    if (initialBgImageUrl) {
+      setBgImageUrl(initialBgImageUrl);
+      setViewState("canvas");
+    }
+  }, [initialBgImageUrl]);
   const [aspectRatio, setAspectRatio] = useState("16:9"); // '16:9' | '1:1' | 'Auto'
   const [selectedModel, setSelectedModel] = useState("nano-banana-pro-edit"); // 'nano-banana-2-edit' | 'nano-banana-pro-edit'
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
@@ -104,6 +113,13 @@ export default function DrawModal({
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
+      // Escape closes the open modal even when focus is inside a text field.
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose?.();
+        return;
+      }
+
       // Ignore shortcuts if writing in an input, textarea or contenteditable element
       const activeEl = document.activeElement;
       if (
@@ -159,7 +175,7 @@ export default function DrawModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Save history state
   const saveStateToHistory = (newObjects) => {
@@ -1043,11 +1059,11 @@ export default function DrawModal({
         }
       });
 
-      alert("Generations complete!");
+      toast.success("画板编辑与生成已完成！");
       onClose();
     } catch (e) {
       console.error("[DrawModal] Generation failed:", e);
-      alert(`Generation failed: ${e.message}`);
+      toast.error(`生成失败: ${e.message}`);
     } finally {
       setGenerating(false);
     }
@@ -1070,9 +1086,9 @@ export default function DrawModal({
   const bbox = getObjectBoundingBox(selectedObj);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-md p-4">
       {/* Modal Box */}
-      <div className="relative w-full max-w-5xl bg-[#0b0b0d] border border-white/10 rounded-2xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.9)] overflow-hidden h-[90vh]">
+      <div className="relative w-full max-w-5xl bg-overlay border border-line-strong rounded-modal shadow-elevation-4 flex flex-col overflow-hidden h-[90vh]">
         {/* Header Tab Selector */}
         <div className="flex items-center justify-between border-b border-white/5 p-4 shrink-0 bg-[#0f0f12]">
           <div className="flex items-center gap-1.5 bg-[#131316]/60 border border-white/5 p-1 rounded-full select-none">
@@ -1085,7 +1101,7 @@ export default function DrawModal({
               }`}
             >
               Sketch to Video
-              <span className="bg-[#b5f500] text-black text-[8px] font-black px-1 rounded">
+              <span className="bg-[#e11d74] text-white text-[8px] font-black px-1 rounded">
                 NEW
               </span>
             </button>
@@ -1114,6 +1130,7 @@ export default function DrawModal({
           {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="关闭绘制弹窗"
             className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-all"
           >
             ×
@@ -1121,7 +1138,7 @@ export default function DrawModal({
         </div>
 
         {/* Workspace Body */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto custom-scrollbar relative bg-[#070708]/30">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto custom-scrollbar relative bg-base/30">
           {viewState === "setup" ? (
             /* Setup Card */
             <div
@@ -1129,9 +1146,9 @@ export default function DrawModal({
               onDragLeave={handleBgDragLeave}
               onDragOver={handleBgDragOver}
               onDrop={handleBgDrop}
-              className={`border-2 border-dashed rounded-2xl p-8 max-w-md w-full text-center flex flex-col items-center gap-6 bg-[#070708]/50 transition-colors ${
+              className={`border-2 border-dashed rounded-2xl p-8 max-w-md w-full text-center flex flex-col items-center gap-6 bg-base/50 transition-colors ${
                 isBgDragging
-                  ? "border-[#b5f500] bg-[#b5f500]/5"
+                  ? "border-[#e11d74] bg-[#e11d74]/5"
                   : "border-white/10"
               }`}
             >
@@ -1142,7 +1159,7 @@ export default function DrawModal({
                   className="w-full h-full object-cover opacity-60"
                 />
                 <div className="absolute bottom-2 left-2 right-2 bg-black/80 backdrop-blur-md rounded-md p-1 px-2 border border-white/5 flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#b5f500] animate-pulse"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#e11d74] animate-pulse"></div>
                   <span className="text-[9px] text-white/50 tracking-wider uppercase font-bold">
                     Sketchpad active
                   </span>
@@ -1263,7 +1280,7 @@ export default function DrawModal({
                       return (
                         <div
                           key={imgObj.id}
-                          className={`absolute group cursor-move ${isSelected ? "ring-2 ring-[#b5f500] ring-offset-1 ring-offset-black z-10" : ""}`}
+                          className={`absolute group cursor-move ${isSelected ? "ring-2 ring-[#e11d74] ring-offset-1 ring-offset-black z-10" : ""}`}
                           style={{
                             left: `${leftPct}%`,
                             top: `${topPct}%`,
@@ -1320,7 +1337,7 @@ export default function DrawModal({
                           }}
                           className={`absolute bg-transparent border-none outline-none resize-none font-bold text-left overflow-hidden select-text z-10 ${
                             isSelected
-                              ? "ring-1 ring-[#b5f500] ring-dashed bg-black/25"
+                              ? "ring-1 ring-[#e11d74] ring-dashed bg-black/25"
                               : ""
                           }`}
                           style={{
@@ -1341,7 +1358,7 @@ export default function DrawModal({
                   {/* Unified Outline Handles Overlay for Selected Object */}
                   {activeTool === "pointer" && selectedObjectId && bbox && (
                     <div
-                      className="absolute border border-dashed border-[#b5f500] pointer-events-auto z-20 cursor-move"
+                      className="absolute border border-dashed border-[#e11d74] pointer-events-auto z-20 cursor-move"
                       style={{
                         left: `${(bbox.x / canvasDimensions.width) * 100}%`,
                         top: `${(bbox.y / canvasDimensions.height) * 100}%`,
@@ -1352,37 +1369,37 @@ export default function DrawModal({
                     >
                       {/* Corner handles */}
                       <div
-                        className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nwse-resize rounded-full"
+                        className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-nwse-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "tl")}
                       />
                       <div
-                        className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nesw-resize rounded-full"
+                        className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-nesw-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "tr")}
                       />
                       <div
-                        className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nesw-resize rounded-full"
+                        className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-nesw-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "bl")}
                       />
                       <div
-                        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-nwse-resize rounded-full"
+                        className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-nwse-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "br")}
                       />
 
                       {/* Edge handles */}
                       <div
-                        className="absolute -top-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#b5f500] cursor-ns-resize rounded-full"
+                        className="absolute -top-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#e11d74] cursor-ns-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "t")}
                       />
                       <div
-                        className="absolute -bottom-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#b5f500] cursor-ns-resize rounded-full"
+                        className="absolute -bottom-1.5 left-[calc(50%-6px)] w-3 h-3 bg-white border border-[#e11d74] cursor-ns-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "b")}
                       />
                       <div
-                        className="absolute top-[calc(50%-6px)] -left-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-ew-resize rounded-full"
+                        className="absolute top-[calc(50%-6px)] -left-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-ew-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "l")}
                       />
                       <div
-                        className="absolute top-[calc(50%-6px)] -right-1.5 w-3 h-3 bg-white border border-[#b5f500] cursor-ew-resize rounded-full"
+                        className="absolute top-[calc(50%-6px)] -right-1.5 w-3 h-3 bg-white border border-[#e11d74] cursor-ew-resize rounded-full"
                         onMouseDown={(e) => handleStartResizeSelected(e, "r")}
                       />
                     </div>
@@ -1568,7 +1585,7 @@ export default function DrawModal({
                   title="Insert overlay image (or drop an image here)"
                   className={`p-1.5 rounded-lg transition-all ${
                     isOverlayDragging
-                      ? "bg-[#b5f500] text-black ring-2 ring-[#b5f500]"
+                      ? "bg-[#e11d74] text-white ring-2 ring-[#e11d74]"
                       : activeTool === "image"
                       ? "bg-white text-black"
                       : "text-white/60 hover:text-white"
@@ -1657,7 +1674,7 @@ export default function DrawModal({
                 <button
                   onClick={handleGenerateClick}
                   disabled={generating}
-                  className="ml-1 bg-[#b5f500] hover:opacity-90 active:scale-[0.97] transition-all text-black font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-[#b5f500]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="ml-1 bg-[#e11d74] hover:opacity-90 active:scale-[0.97] transition-all text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-[#e11d74]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {generating ? (
                     <>
@@ -1685,7 +1702,7 @@ export default function DrawModal({
                   onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
                   className="h-[38px] flex items-center gap-2 px-3 bg-[#131316]/80 hover:bg-[#1c1c22] rounded-xl border border-white/5 text-xs text-white/70 whitespace-nowrap shadow-xl"
                 >
-                  <span className="text-[10px] text-[#b5f500] font-black bg-[#b5f500]/10 px-1.5 rounded border border-[#b5f500]/25">
+                  <span className="text-[10px] text-[#e11d74] font-black bg-[#e11d74]/10 px-1.5 rounded border border-[#e11d74]/25">
                     G
                   </span>
                   {selectedModel === "nano-banana-pro-edit"
@@ -1707,14 +1724,14 @@ export default function DrawModal({
                       }}
                       className={`flex flex-col text-left p-2.5 rounded-xl transition-all ${
                         selectedModel === "nano-banana-2-edit"
-                          ? "bg-[#b5f500]/10 text-white"
+                          ? "bg-[#e11d74]/10 text-white"
                           : "hover:bg-white/5 text-white/70"
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center gap-1.5">
                         Nano Banana 2
                         {selectedModel === "nano-banana-2-edit" && (
-                          <span className="text-[#b5f500]">✓</span>
+                          <span className="text-[#e11d74]">✓</span>
                         )}
                       </div>
                       <div className="text-[9px] text-white/30 leading-snug mt-0.5">
@@ -1729,14 +1746,14 @@ export default function DrawModal({
                       }}
                       className={`flex flex-col text-left p-2.5 rounded-xl transition-all ${
                         selectedModel === "nano-banana-pro-edit"
-                          ? "bg-[#b5f500]/10 text-white"
+                          ? "bg-[#e11d74]/10 text-white"
                           : "hover:bg-white/5 text-white/70"
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center gap-1.5">
                         Nano Banana Pro
                         {selectedModel === "nano-banana-pro-edit" && (
-                          <span className="text-[#b5f500]">✓</span>
+                          <span className="text-[#e11d74]">✓</span>
                         )}
                       </div>
                       <div className="text-[9px] text-white/30 leading-snug mt-0.5">
@@ -1787,7 +1804,7 @@ export default function DrawModal({
                       max="100"
                       value={brushSize}
                       onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#b5f500]"
+                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#e11d74]"
                     />
                     <span className="text-[11px] font-bold text-white/60 text-right">
                       {brushSize}px
@@ -1806,7 +1823,7 @@ export default function DrawModal({
                 if (e.key === "Enter" && !generating) handleGenerateClick();
               }}
               placeholder="Describe what you want to generate…"
-              className="flex-1 mx-3 h-[38px] bg-[#131316]/80 border border-white/5 rounded-xl px-3 text-xs text-white/80 placeholder-white/25 outline-none focus:border-[#b5f500]/40 focus:ring-1 focus:ring-[#b5f500]/20 transition-all"
+              className="flex-1 mx-3 h-[38px] bg-[#131316]/80 border border-white/5 rounded-xl px-3 text-xs text-white/80 placeholder-white/25 outline-none focus:border-[#e11d74]/40 focus:ring-1 focus:ring-[#e11d74]/20 transition-all"
             />
 
             {/* Right Options */}
@@ -1845,7 +1862,7 @@ export default function DrawModal({
                         }}
                         className={`text-left p-1.5 px-2.5 rounded-xl text-xs font-bold transition-all ${
                           aspectRatio === r
-                            ? "bg-[#b5f500]/10 text-white"
+                            ? "bg-[#e11d74]/10 text-white"
                             : "hover:bg-white/5 text-white/70"
                         }`}
                       >

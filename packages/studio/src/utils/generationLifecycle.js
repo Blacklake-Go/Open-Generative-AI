@@ -37,7 +37,8 @@ export async function pollForGenerationResult({
   onAuthRequired,
   fetchImpl = fetch,
 }) {
-  const pollUrl = `${baseUrl}/api/v1/predictions/${requestId}/result`;
+  const cleanBase = String(baseUrl || '').replace(/\/api\/?$/, '');
+  const pollUrl = `${cleanBase}/api/generations/${requestId}`;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     await wait(interval);
@@ -45,7 +46,11 @@ export async function pollForGenerationResult({
     let response;
     try {
       response = await fetchImpl(pollUrl, {
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        headers: {
+          "Content-Type": "application/json",
+          ...(apiKey && apiKey !== 'koyosim-account-session' ? { "x-api-key": apiKey } : {}),
+        },
+        credentials: "include",
       });
     } catch (error) {
       if (attempt === maxAttempts) throw error;

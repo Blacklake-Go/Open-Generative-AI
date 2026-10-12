@@ -53,5 +53,14 @@
     "minutesAgo": "{n}m ago",
     "hoursAgo": "{n}h ago",
     "daysAgo": "{n}d ago"
+  },
+  "auth": {
+    "heading": "Sign in to use agents",
+    "description": "Templates, your agents, and chat history are linked to your KoyoSIM account. Please sign in.",
+    "cta": "Sign in"
+  },
+  "unavailable": {
+    "title": "Creative Agent is temporarily unavailable",
+    "description": "User-owned sessions, generation billing, and saved results are still being connected. Please use the available image and video tools in Studio for now."
   }
 }

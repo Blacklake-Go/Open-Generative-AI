@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
+import { getUserFromRequest } from '@/lib/services/auth';
+import { guardMutation } from '@/lib/security/requestGuard';
+import { publicErrorMessage } from '@/lib/security/publicError';
+import { resolveProviderApiKey } from '@/lib/security/byok';
+import { PROXY_SCOPE } from '@/lib/security/legacyProxyPolicy';
+import { guardScopedProxyRequest } from '@/lib/security/scopedProxyGuard';
 
 const MUAPI_BASE = 'https://api.muapi.ai';
 
-function getApiKey(request) {
-    // Only accept x-api-key header. Cookie-based auth is removed for security:
-    // cookies without HttpOnly flag can be stolen by XSS (CWE-522).
-    const headerKey = request.headers.get('x-api-key');
-    return headerKey || null;
+async function getApiKey(request) {
+    // Client-supplied keys are accepted only when the explicit BYOK gate is open.
+    return resolveProviderApiKey(request);
 }
 
 function cleanHeaders(request) {
@@ -14,6 +18,8 @@ function cleanHeaders(request) {
     headers.delete('host');
     headers.delete('connection');
     headers.delete('cookie'); // CRITICAL: Stop forwarding browser cookies to MuAPI
+    headers.delete('authorization');
+    headers.delete('x-api-key');
     return headers;
 }
 
@@ -26,36 +32,60 @@ function buildTargetUrl(pathSegments, search) {
     return path ? `${base}/${path}${search}` : `${base}${search}`;
 }
 
+function isPublicAgentGet(pathSegments) {
+    if (!pathSegments || pathSegments.length === 0) return false;
+    const first = String(pathSegments[0]).toLowerCase();
+    const second = pathSegments.length > 1 ? String(pathSegments[1]).toLowerCase() : '';
+    if (first === 'templates' && second === 'agents') return true;
+    if (first === 'featured' && second === 'agents') return true;
+    if (first === 'by-slug' && pathSegments.length === 2) return true;
+    return false;
+}
+
 export async function GET(request, { params }) {
     const slug = await params;
     const pathSegments = slug.path || [];
+    const isPublic = isPublicAgentGet(pathSegments);
+    const user = await getUserFromRequest(request);
+    if (!user && !isPublic) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.AGENTS, pathSegments, method: 'GET', user });
+    if (denied) return denied;
     const { search } = new URL(request.url);
     const targetUrl = buildTargetUrl(pathSegments, search);
 
     const headers = cleanHeaders(request);
-    const apiKey = getApiKey(request);
-    // NOTE: credential logging removed for security (CWE-200)
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (apiKey?.key) {
+        headers.set('x-api-key', apiKey.key);
+    } else if (!isPublic) {
+        return NextResponse.json({ error: 'Agent 服务暂未配置或不可用' }, { status: 503 });
+    }
 
     try {
         const response = await fetch(targetUrl, { headers, method: 'GET' });
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Agent 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function POST(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 512 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.AGENTS, pathSegments, method: 'POST', user });
+    if (denied) return denied;
     const { search } = new URL(request.url);
     const targetUrl = buildTargetUrl(pathSegments, search);
 
     const headers = cleanHeaders(request);
-    const apiKey = getApiKey(request);
-    // NOTE: credential logging removed for security (CWE-200)
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Agent 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const body = await request.arrayBuffer();
@@ -63,38 +93,52 @@ export async function POST(request, { params }) {
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Agent 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function DELETE(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 32 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.AGENTS, pathSegments, method: 'DELETE', user });
+    if (denied) return denied;
     const { search } = new URL(request.url);
     const targetUrl = buildTargetUrl(pathSegments, search);
 
     const headers = cleanHeaders(request);
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Agent 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const response = await fetch(targetUrl, { method: 'DELETE', headers });
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Agent 请求暂时不可用') }, { status: 500 });
     }
 }
 
 export async function PUT(request, { params }) {
+    const user = await getUserFromRequest(request);
+    if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    const guarded = guardMutation(request, { maxBytes: 512 * 1024 });
+    if (guarded) return guarded;
     const slug = await params;
     const pathSegments = slug.path || [];
+    const denied = await guardScopedProxyRequest({ request, scope: PROXY_SCOPE.AGENTS, pathSegments, method: 'PUT', user });
+    if (denied) return denied;
     const { search } = new URL(request.url);
     const targetUrl = buildTargetUrl(pathSegments, search);
 
     const headers = cleanHeaders(request);
-    const apiKey = getApiKey(request);
-    if (apiKey) headers.set('x-api-key', apiKey);
+    const apiKey = await getApiKey(request);
+    if (!apiKey.ok || !apiKey.key) return NextResponse.json({ error: 'Agent 服务暂未配置或不可用' }, { status: 503 });
+    if (apiKey.key) headers.set('x-api-key', apiKey.key);
 
     try {
         const body = await request.arrayBuffer();
@@ -102,6 +146,6 @@ export async function PUT(request, { params }) {
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: publicErrorMessage(error, 'Agent 请求暂时不可用') }, { status: 500 });
     }
 }

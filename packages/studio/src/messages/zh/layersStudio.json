@@ -47,7 +47,9 @@
     "runLayerDecomposition": "运行图层分解",
     "backToTools": "返回工具",
     "closePanel": "关闭面板",
-    "regionalPromptPlaceholder": "在此输入提示词..."
+    "regionalPromptPlaceholder": "在此输入提示词...",
+    "promptPlaceholder": "描述如何编辑图像或拆分图层...",
+    "markedPromptPlaceholder": "为 {count} 个标记区域描述图层..."
   },
   "sample": {
     "clickToLoad": "点击加载此图层分解示例",

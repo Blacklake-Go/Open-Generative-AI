@@ -15,7 +15,11 @@
     "emptyState": "No uploads yet",
     "removeFromHistory": "Remove from history",
     "selectedCount": "{count} of {max} selected",
-    "useSelected": "Use Selected"
+    "useSelected": "Use Selected",
+    "imageName": "Image {n}",
+    "addReferenceLabel": "Add reference image",
+    "historyLabel": "Upload history",
+    "uploadUnknownFailed": "Upload failed, please try again"
   },
   "modelDropdown": {
     "categoryAll": "All",
@@ -24,7 +28,8 @@
     "allProviders": "All Providers",
     "searchPlaceholder": "Search models...",
     "modelsSuffix": "models",
-    "noModelsFound": "No models found"
+    "noModelsFound": "No models found",
+    "selectModelHeader": "Select Model"
   },
   "gallery": {
     "generatedImageAlt": "Generated image",
@@ -47,7 +52,8 @@
     "effectFallback": "Effect",
     "drawButton": "Draw",
     "generating": "Generating...",
-    "generateButton": "Generate"
+    "generateButton": "Generate",
+    "mentionTitle": "Mention"
   },
   "popovers": {
     "model": "Model",
@@ -64,5 +70,35 @@
   },
   "fullscreen": {
     "previewAlt": "Fullscreen Preview"
+  },
+  "mediaMenu": {
+    "image": "Image",
+    "imageDesc": "Generate realistic and stylized images",
+    "video": "Video",
+    "videoDesc": "Generate cinematic videos",
+    "script": "Script",
+    "scriptDesc": "Generate creative scripts and dialogue",
+    "audio": "Audio",
+    "audioDesc": "Generate sound effects and voiceovers"
+  },
+  "paramsPanel": {
+    "titleRatio": "Aspect Ratio",
+    "titleResolution": "Resolution",
+    "titleQuantity": "Generation Quantity",
+    "titleDimensions": "Dimensions",
+    "smartRatio": "Smart",
+    "standard15k": "Standard 1.5K",
+    "hd2k": "High Definition 2K ✦",
+    "ultra4k": "Ultra Definition 4K ✦",
+    "smartReference": "Smart Reference",
+    "addReference": "Add Reference",
+    "referenceCount": "Reference Images ({count}/{max})",
+    "autoSwitchedToI2I": "Switched to reference-compatible model: {model}",
+    "autoSwitchedToT2I": "Reverted to text-to-image model",
+    "modeImageGen": "Image Generation",
+    "modeImageToImage": "Image-to-Image",
+    "creditPerImage": "✦ {cost}/image",
+    "creditPerImageOriginal": "11/image",
+    "batchCountUnit": "{count} img"
   }
 }

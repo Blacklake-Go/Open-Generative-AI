@@ -927,7 +927,7 @@ async function main() {
 
 function parseArgs(argv) {
   const opts = {
-    baseUrl: (process.env.UI_AUDIT_BASE_URL || 'https://www.koyosim.com').replace(/\/$/, ''),
+    baseUrl: (process.env.UI_AUDIT_BASE_URL || 'https://www.Supdance.com').replace(/\/$/, ''),
     tiers: ['front', 'studio', 'admin'],
     viewports: ['desktop', 'mobile'],
     locales: [],

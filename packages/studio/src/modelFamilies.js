@@ -1,6 +1,7 @@
 import {
   i2iModels,
   i2vModels,
+  isModelActive,
   t2iModels,
   t2vModels,
   v2vModels,
@@ -86,7 +87,12 @@ const IMAGE_FAMILY_NAMES = {
   "grok-imagine": "Grok Imagine",
   "google-imagen4": "Google Imagen 4",
   "kling-o3": "Kling O3",
-  "seedream-5.0": "Seedream 5.0",
+  "seedream-5.0": "Seedream 5.0 专业版",
+  "gpt-image-2.5-flash": "GPT 图像 2.5 闪光",
+  "gpt-image-2.5-sunrise": "GPT 图像 2.5 旭日",
+  "gpt-image-2": "GPT 图像 2.0",
+  "gpt-image-1.5": "GPT 图像 1.5",
+  "nano-banana-pro": "Nano Banana Pro",
   "qwen-image-2.0": "Qwen Image 2.0",
   "qwen-plus": "Qwen Image Edit Plus",
   qwen3: "Qwen 3",
@@ -121,6 +127,8 @@ const PREFERRED_IMAGE_VARIANTS = {
   },
   "flux-dev": { t2i: "flux-dev" },
   "google-imagen4": { t2i: "google-imagen4" },
+  "gpt-image-2": { t2i: "gpt-image-2", i2i: "gpt-image-2-edit" },
+  "gpt-image-1.5": { t2i: "gpt-image-1.5", i2i: "gpt-image-1.5-edit" },
   gpt4o: { i2i: "gpt4o-image-to-image" },
   "midjourney-v7": { i2i: "midjourney-v7-image-to-image" },
   "nano-banana": { i2i: "nano-banana-edit" },
@@ -720,7 +728,7 @@ function buildModelPickerEntries(catalog, modes, aliases) {
         } else if (entryModes.length === 1 && entryModes[0] === "v2v") {
           entry.name = `${entry.name} Video`;
         } else {
-          entry.name = entry.defaultVariant.model.name;
+          entry.name = entry.defaultVariant?.model?.name ?? entry.name;
         }
       }
       if (normalizePickerName(entry.name) === normalizePickerName(family.name)) {
@@ -840,3 +848,12 @@ export const videoModelMenuEntryByVariantId = indexModelPickerEntries(
   videoModelMenuEntries,
   videoModelCatalog,
 );
+
+// Picker entries are frozen at module-evaluation time, so the in-place splice
+// done by applyActiveModelDirectory cannot reach them. Workbenches must apply
+// this filter at render time for the server directory to take effect.
+export function filterActiveModelEntries(entries) {
+  return entries.filter((entry) =>
+    [...(entry.variantIds || [])].some((id) => isModelActive(id)),
+  );
+}

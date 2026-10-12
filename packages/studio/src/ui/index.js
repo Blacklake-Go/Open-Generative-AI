@@ -6,3 +6,4 @@ export * from './Overlay';
 export * from './Surface';
 export * from './Feedback';
 export * from './Navigation';
+export * from './spatial';

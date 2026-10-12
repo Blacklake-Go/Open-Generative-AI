@@ -1,20 +1,11 @@
 /** @type {import('tailwindcss').Config} */
+const sharedConfig = require('../../tailwind.config.js');
+
 module.exports = {
-  content: ["./src/**/*.{js,jsx}"],
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ["Inter", "var(--font-inter)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-      },
-      colors: {
-        'app-bg': '#050505',
-        'panel-bg': '#0a0a0a',
-        'card-bg': '#111111',
-        primary: '#22d3ee',
-        secondary: '#a1a1aa',
-        muted: '#52525b',
-      },
-    },
-  },
-  plugins: [],
-}
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  // The root Tailwind config is the sole mapping from UI classes to the
+  // :root tokens in app/globals.css. Keeping this package on that same theme
+  // prevents its standalone stylesheet from reviving a second palette.
+  theme: sharedConfig.theme,
+  plugins: sharedConfig.plugins,
+};
