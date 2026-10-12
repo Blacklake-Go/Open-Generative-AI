@@ -224,6 +224,10 @@ export default function RechargeModal({
         const res = await fetch(`/api/billing/orders/${checkoutData.orderId}/status`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
+          // 若后台已解析出支付宝原生二维码，无缝升级为无损矢量 SVG
+          if (data.qrCode && !checkoutData?.qrUrl) {
+            setCheckoutData((current) => (current ? { ...current, qrUrl: data.qrCode } : current));
+          }
           if (data.status === 'paid') {
             clearTimers();
             setCheckoutData((current) => (current ? {
@@ -604,12 +608,12 @@ export default function RechargeModal({
                       <img
                         src={checkoutData.qrImgUrl}
                         alt="支付二维码"
-                        className="size-[190px] object-contain"
+                        className="size-[174px] object-contain"
                       />
                     ) : checkoutData.isPagePay && checkoutData.checkoutUrl ? (
                       <iframe
                         src={checkoutData.checkoutUrl}
-                        className="w-[190px] h-[190px] border-0 overflow-hidden bg-white"
+                        className="w-[174px] h-[178px] border-0 overflow-hidden bg-white"
                         scrolling="no"
                         title="支付宝收银台"
                       />

@@ -16,7 +16,7 @@ function addSecurityHeaders(response) {
     // font-src includes fonts.gstatic.com for actual font files
     response.headers.set(
         'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://muapi.ai https://*.muapi.ai; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://*.alipay.com https://openapi.alipay.com https://excashier.alipay.com;"
+        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://muapi.ai https://*.muapi.ai; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://*.alipay.com https://openapi.alipay.com https://excashier.alipay.com https://unitradeprod.alipay.com https://*.alipayobjects.com;"
     );
     // 强制 HTML 页面与动态 API 不被浏览器协商强缓存，防止版本发布后旧 HTML 错位
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
