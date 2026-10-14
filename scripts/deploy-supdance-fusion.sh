@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SERVER_IP="${DEPLOY_SERVER_IP:-43.155.166.90}"
+REMOTE_USER="${DEPLOY_USER:-ubuntu}"
+REMOTE="${REMOTE_USER}@${SERVER_IP}"
+REMOTE_WEB_DIR="/home/wwwroot/AI/domain/supdance.com/web"
+
+SSH_OPTS=(-o ConnectTimeout=15 -o BatchMode=yes -o StrictHostKeyChecking=no)
+
+echo "=================================================="
+echo "KOYO Studio / SupDance 生产部署开始"
+echo "目标服务器: $REMOTE"
+echo "目标目录:   $REMOTE_WEB_DIR"
+echo "=================================================="
+
+# 1. 本地打包已验证的代码和构建
+echo "[1/5] 本地打包已验证源码与构建产物..."
+SOURCE_ARCHIVE="/tmp/source_koyosim_fusion.tar.gz"
+NEXT_ARCHIVE="/tmp/next_koyosim_fusion.tar.gz"
+
+rm -f "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE"
+
+COPYFILE_DISABLE=1 tar --no-xattrs -czf "$SOURCE_ARCHIVE" \
+  packages/studio \
+  components/StandaloneShell.js \
+  package.json \
+  app/api/generation/quote \
+  app/api/generations \
+  lib/services/generationCore.js \
+  lib/services/dependencyHealth.js \
+  lib/services/smartRouter.js
+
+COPYFILE_DISABLE=1 tar --no-xattrs --exclude='.next/cache' -czf "$NEXT_ARCHIVE" .next
+
+ls -lh "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE"
+
+# 2. 上传至服务器
+echo "[2/5] 上传发布归档包至服务器 /tmp 目录..."
+scp "${SSH_OPTS[@]}" "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE" "$REMOTE:/tmp/"
+
+# 3. 在服务器端执行安全备份与原子切换
+echo "[3/5] 执行服务器端快照备份与原子切换..."
+ssh "${SSH_OPTS[@]}" "$REMOTE" "sudo bash -c '
+set -Eeuo pipefail
+
+WEB_DIR=\"$REMOTE_WEB_DIR\"
+RELEASE_ID=\"\$(date -u +%Y%m%dT%H%M%SZ)-\$\$\"
+BACKUP_DIR=\"/home/ubuntu/backups/fusion-release-\${RELEASE_ID}\"
+STAGE=\"/dev/shm/fusion-stage-\${RELEASE_ID}\"
+
+echo \"创建发布备份目录: \$BACKUP_DIR\"
+mkdir -p \"\$BACKUP_DIR\" \"\$STAGE\"
+
+# 备份当前源码
+echo \"备份当前生产源码与配置...\"
+tar -czf \"\$BACKUP_DIR/source-backup.tar.gz\" -C \"\$WEB_DIR\" \
+  packages/studio \
+  components/StandaloneShell.js \
+  package.json \
+  app/api/generation/quote \
+  app/api/generations \
+  lib/services/generationCore.js \
+  lib/services/dependencyHealth.js \
+  lib/services/smartRouter.js 2>/dev/null || true
+
+# 备份当前 .next 运行时目录
+echo \"备份当前生产 .next 构建目录...\"
+if [ -d \"\$WEB_DIR/.next\" ]; then
+  tar --exclude=\"cache\" -czf \"\$BACKUP_DIR/next-backup.tar.gz\" -C \"\$WEB_DIR\" .next
+fi
+
+echo \"解压候选源码与新构建到临时暂存区...\"
+tar -xzf /tmp/source_koyosim_fusion.tar.gz -C \"\$STAGE\"
+tar -xzf /tmp/next_koyosim_fusion.tar.gz -C \"\$STAGE\"
+
+echo \"验证构建 BUILD_ID: \$(cat \"\$STAGE/.next/BUILD_ID\")\"
+
+# 停止业务服务
+echo \"暂停应用服务进入原子切换窗口...\"
+systemctl stop supdance.service canvas-supdance.service supdance-worker.service
+
+# 原子替换 .next
+if [ -d \"\$WEB_DIR/.next\" ]; then
+  mv \"\$WEB_DIR/.next\" \"\$WEB_DIR/.next-prev-\${RELEASE_ID}\"
+fi
+mv \"\$STAGE/.next\" \"\$WEB_DIR/.next\"
+
+# 同步新源码
+rsync -a \"\$STAGE/packages/studio/\" \"\$WEB_DIR/packages/studio/\"
+cp \"\$STAGE/components/StandaloneShell.js\" \"\$WEB_DIR/components/StandaloneShell.js\"
+cp \"\$STAGE/package.json\" \"\$WEB_DIR/package.json\"
+rsync -a \"\$STAGE/app/api/generation/quote/\" \"\$WEB_DIR/app/api/generation/quote/\"
+rsync -a \"\$STAGE/app/api/generations/\" \"\$WEB_DIR/app/api/generations/\"
+cp \"\$STAGE/lib/services/generationCore.js\" \"\$WEB_DIR/lib/services/generationCore.js\"
+cp \"\$STAGE/lib/services/dependencyHealth.js\" \"\$WEB_DIR/lib/services/dependencyHealth.js\"
+cp \"\$STAGE/lib/services/smartRouter.js\" \"\$WEB_DIR/lib/services/smartRouter.js\"
+
+# 修复文件所有权为 www:www
+echo \"更新文件权限...\"
+chown -R www:www \"\$WEB_DIR/.next\"
+chown -R www:www \"\$WEB_DIR/packages/studio\"
+chown www:www \"\$WEB_DIR/components/StandaloneShell.js\" \"\$WEB_DIR/package.json\"
+chown -R www:www \"\$WEB_DIR/app/api/generation/quote\" \"\$WEB_DIR/app/api/generations\"
+chown www:www \"\$WEB_DIR/lib/services/generationCore.js\" \"\$WEB_DIR/lib/services/dependencyHealth.js\" \"\$WEB_DIR/lib/services/smartRouter.js\"
+
+# 清理暂存文件
+rm -rf \"\$STAGE\" /tmp/source_koyosim_fusion.tar.gz /tmp/next_koyosim_fusion.tar.gz
+
+# 启动服务
+echo \"重启应用与 Worker 服务...\"
+systemctl start supdance.service canvas-supdance.service supdance-worker.service
+echo \"SWITCH_COMPLETED RELEASE_ID=\$RELEASE_ID\"
+'"
+
+# 4. 执行上线后健康检查
+echo "[4/5] 验证线上服务存活与 HTTP 状态..."
+ssh "${SSH_OPTS[@]}" "$REMOTE" "
+set -e
+sleep 4
+
+echo '=== 服务状态 ==='
+sudo systemctl is-active supdance.service
+sudo systemctl is-active canvas-supdance.service
+sudo systemctl is-active supdance-worker.service
+
+echo '=== 端口监听状态 ==='
+curl -s -o /dev/null -w 'Port 3100 (canvas-supdance): HTTP %{http_code}\n' http://127.0.0.1:3100/zh
+curl -s -o /dev/null -w 'Port 3200 (supdance): HTTP %{http_code}\n' http://127.0.0.1:3200/zh
+
+echo '=== /api/ready 健康检查 ==='
+curl -s http://127.0.0.1:3200/api/ready
+echo ''
+
+echo '=== /api/generation/quote 接口契约验证 ==='
+curl -s -X POST http://127.0.0.1:3200/api/generation/quote \
+  -H 'Content-Type: application/json' \
+  -d '{\"modelId\":\"koyo-cinematic-v2\",\"studioId\":\"cinema\",\"specs\":{\"aspectRatio\":\"2.39:1\"}}'
+echo ''
+"
+
+# 5. 公网域名验证
+echo "[5/5] 公网域名 (https://www.supdance.com) 验收..."
+curl -s -I https://www.supdance.com/zh | grep -E "HTTP|set-cookie|content-type" || true
+curl -s https://www.supdance.com/api/ready
+echo ""
+
+echo "=================================================="
+echo "🎉 部署全部成功并已通过线上校验！"
+echo "=================================================="

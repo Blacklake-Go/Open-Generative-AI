@@ -395,7 +395,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
 
             <div className="pt-2 text-xs font-mono text-white/50 space-y-1">
               <div>support@Supdance.com</div>
-              <div>api.koyosim.com · High-Throughput Compute</div>
+              <div>api.supdance.com · High-Throughput Compute</div>
             </div>
           </div>
 
