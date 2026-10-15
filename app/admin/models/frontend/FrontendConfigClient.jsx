@@ -5,7 +5,8 @@ import {
   Eye, EyeOff, Star, StarOff, Search, ChevronDown, ChevronUp,
   Pencil, X, Save, Loader2, Image, Video, Music, Bot, Layers,
   Pin, CheckCircle2, XCircle, RefreshCw, Plus, Sparkles, Filter,
-  Check, ArrowUpDown, ShieldCheck, AlertTriangle, Zap
+  Check, ArrowUpDown, ShieldCheck, AlertTriangle, Zap,
+  Table, LayoutGrid, DollarSign, Coins, Edit3, ArrowRight
 } from 'lucide-react';
 import { Card, MetricCard, StatusBadge, Button } from '@/components/admin/AdminUi';
 import ModelRepositoryDrawer from './ModelRepositoryDrawer';
@@ -13,7 +14,9 @@ import StudioLivePreviewer from './StudioLivePreviewer';
 import UnroutedConfirmModal from './UnroutedConfirmModal';
 import SmartMatchModal from './SmartMatchModal';
 import ModelHygieneDrawer from './ModelHygieneDrawer';
+import ModelConfigDrawer from './ModelConfigDrawer';
 import BrandLogo from '@/components/admin/BrandLogo';
+import { BRANDS, resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
 
 const CATEGORY_OPTIONS = [
   { id: 'image', label: '图像模型', icon: Image, desc: '文生图、图生图' },
@@ -92,6 +95,8 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   const [models, setModels] = useState(initialModels);
   const [publicDirectory, setPublicDirectory] = useState(null);
   const [search, setSearch] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('all'); // 'all' | brand.id
+  const [viewMode, setViewMode] = useState('matrix'); // 'matrix' | 'cards'
   const [activeCategory, setActiveCategory] = useState('image'); // Default to image type
   const [subTypeFilter, setSubTypeFilter] = useState('all');
   const [visibilityFilter, setVisibilityFilter] = useState('blocked'); // blocked | core | visible | backup | all
@@ -100,6 +105,16 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   const [saving, setSaving] = useState(null);
   const [batchOperating, setBatchOperating] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Deep Config Drawer State
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerModel, setDrawerModel] = useState(null);
+  const [isDrawerNew, setIsDrawerNew] = useState(false);
+
+  // Quick Price Modal State
+  const [quickPriceModal, setQuickPriceModal] = useState(null); // { model, credits }
+  const [quickPriceInput, setQuickPriceInput] = useState('');
+  const [savingQuickPrice, setSavingQuickPrice] = useState(false);
 
   // Drawers & Modals
   const [repoDrawerOpen, setRepoDrawerOpen] = useState(false);
@@ -147,6 +162,54 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     setSubTypeFilter('all');
   }, []);
 
+  // Brand statistics & active brands for vendor filtering
+  const brandStats = useMemo(() => {
+    const counts = {};
+    models.forEach((m) => {
+      const b = resolveBrand(m);
+      counts[b.id] = (counts[b.id] || 0) + 1;
+    });
+    return counts;
+  }, [models]);
+
+  const activeBrands = useMemo(() => {
+    return BRANDS.filter((b) => (brandStats[b.id] || 0) > 0)
+      .sort((a, b) => (brandStats[b.id] || 0) - (brandStats[a.id] || 0));
+  }, [brandStats]);
+
+  // Compute profit margin metrics for model
+  const computeModelMargin = useCallback((model) => {
+    const costCny = model.min_cost_cny !== null && model.min_cost_cny !== undefined ? Number(model.min_cost_cny) : null;
+    const credits = Number(model.base_credits || 0);
+    const userPriceCny = credits * 0.1; // 1 credit = 0.1 CNY
+
+    if (costCny !== null && costCny > 0 && userPriceCny > 0) {
+      const marginCny = userPriceCny - costCny;
+      const rate = Number(((marginCny / userPriceCny) * 100).toFixed(1));
+      let status = 'healthy';
+      if (rate < 0) status = 'loss';
+      else if (rate < 30) status = 'low';
+      else if (rate > 50) status = 'high';
+
+      return {
+        hasData: true,
+        costCny: costCny.toFixed(3),
+        userPriceCny: userPriceCny.toFixed(2),
+        marginCny: marginCny.toFixed(2),
+        rate,
+        status,
+      };
+    }
+    return {
+      hasData: false,
+      costCny: null,
+      userPriceCny: userPriceCny.toFixed(2),
+      marginCny: null,
+      rate: null,
+      status: 'unknown',
+    };
+  }, []);
+
   // Category statistics
   const categoryStats = useMemo(() => {
     const stats = {
@@ -184,9 +247,14 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     return stats;
   }, [models, publicDirectory]);
 
-  // Current category models filtered by subtype, visibility, search
+  // Current category models filtered by brand, subtype, visibility, search
   const currentCategoryModels = useMemo(() => {
     let list = models;
+
+    // 0. Brand / Vendor Filter
+    if (selectedBrand !== 'all') {
+      list = list.filter((m) => resolveBrand(m).id === selectedBrand);
+    }
 
     // 1. Primary Category Filter
     if (activeCategory !== 'all') {
@@ -241,7 +309,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       if ((a.sort ?? 0) !== (b.sort ?? 0)) return (a.sort ?? 0) - (b.sort ?? 0);
       return String(a.created_at || '').localeCompare(String(b.created_at || ''));
     });
-  }, [models, activeCategory, subTypeFilter, visibilityFilter, search, publicDirectory]);
+  }, [models, selectedBrand, activeCategory, subTypeFilter, visibilityFilter, search, publicDirectory]);
 
   // Dropdown list for selecting a model in inline new form
   const modelPickerOptions = useMemo(() => {
@@ -527,6 +595,9 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   );
 
   const startEdit = useCallback((model) => {
+    setDrawerModel(model);
+    setIsDrawerNew(false);
+    setDrawerOpen(true);
     setEditingId(model.id);
     const initialCredits = Number(model.base_credits) > 0
       ? Number(model.base_credits)
@@ -583,6 +654,9 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   }, []);
 
   const startNew = useCallback(() => {
+    setDrawerModel(null);
+    setIsDrawerNew(true);
+    setDrawerOpen(true);
     setEditingId('__new__');
     setEditForm({
       model_id: '',
@@ -801,6 +875,104 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     }
   }, [canWrite, editForm, editingId, callAPI, showToast, refreshPublicDirectory]);
 
+  // Handle save from the deep configuration drawer
+  const handleDrawerSave = useCallback(
+    async (formData) => {
+      if (!canWrite) return;
+      const targetId = formData.model_id;
+      if (!targetId) return;
+
+      const isVisible = formData.is_visible !== undefined ? formData.is_visible : true;
+      const creditsPrice = Number(formData.credits);
+
+      setSaving(targetId);
+      try {
+        await callAPI({
+          action: 'update_model_tiering',
+          modelId: targetId,
+          displayName: formData.display_name,
+          description: formData.description,
+          badge: formData.badge || '',
+          subType: formData.sub_type || '',
+          sort: Number(formData.sort),
+          tier: formData.tier || (isVisible ? 'core' : 'backup'),
+          isFeatured: formData.is_featured,
+          isPinned: formData.is_pinned,
+          isVisible,
+          autoRouteEligible: isVisible ? true : undefined,
+          isActive: isVisible ? true : undefined,
+          creditsPrice,
+          supportedRatios: formData.supported_ratios,
+          supportedResolutions: formData.supported_resolutions,
+          supportedDurations: formData.supported_durations,
+          capabilities: formData.capabilities,
+        });
+
+        setModels((prev) => {
+          const idx = prev.findIndex((m) => m.id === targetId);
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = {
+              ...updated[idx],
+              display_name: formData.display_name,
+              description: formData.description,
+              badge: formData.badge,
+              sub_type: formData.sub_type,
+              sort: Number(formData.sort),
+              tier: formData.tier || (isVisible ? 'core' : 'backup'),
+              is_featured: formData.is_featured,
+              is_pinned: formData.is_pinned,
+              is_visible: isVisible,
+              base_credits: creditsPrice,
+              supported_ratios: formData.supported_ratios,
+              supportedResolutions: formData.supported_resolutions,
+              supported_durations: formData.supported_durations,
+              capabilities: formData.capabilities,
+            };
+            return updated;
+          }
+          return prev;
+        });
+
+        showToast(`模型【${formData.display_name || targetId}】前台配置已成功保存 ✓`);
+        refreshPublicDirectory();
+      } catch (err) {
+        showToast(`保存失败: ${err.message}`, 'error');
+        throw err;
+      } finally {
+        setSaving(null);
+      }
+    },
+    [canWrite, callAPI, showToast, refreshPublicDirectory]
+  );
+
+  // Quick price adjustment inline submission
+  const handleSaveQuickPrice = useCallback(async () => {
+    if (!quickPriceModal) return;
+    const model = quickPriceModal.model;
+    const credits = Number(quickPriceInput);
+    if (!Number.isInteger(credits) || credits <= 0) {
+      showToast('单次生成积分必须为大于0的正整数', 'error');
+      return;
+    }
+    setSavingQuickPrice(true);
+    try {
+      await callAPI({
+        action: 'update_model_tiering',
+        modelId: model.id,
+        creditsPrice: credits,
+      });
+      setModels((prev) => prev.map((m) => (m.id === model.id ? { ...m, base_credits: credits } : m)));
+      showToast(`模型【${model.display_name || model.name}】单次积分已调整为 ${credits} 积分 ✓`);
+      setQuickPriceModal(null);
+      refreshPublicDirectory();
+    } catch (err) {
+      showToast(`调价失败: ${err.message}`, 'error');
+    } finally {
+      setSavingQuickPrice(false);
+    }
+  }, [quickPriceModal, quickPriceInput, callAPI, showToast, refreshPublicDirectory]);
+
   // Batch action: hide all models with 0 approved routes
   const batchHideUnrouted = useCallback(async () => {
     if (!canWrite) return;
@@ -832,6 +1004,391 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   }, [canWrite, currentCategoryModels, callAPI, showToast]);
 
   const activeStats = categoryStats[activeCategory] || categoryStats.image;
+
+  // ─── High-Density Matrix Table Renderer (草稿图4核心大表实现) ───────────
+  function renderMatrixTable() {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-line-subtle bg-white/[0.02] text-ink-muted">
+              <th className="px-3 py-3 w-12 text-center font-medium font-mono">#</th>
+              <th className="px-3 py-3 font-medium min-w-[220px]">模型与厂商</th>
+              <th className="px-3 py-3 font-medium min-w-[110px]">类型场景</th>
+              <th className="px-3 py-3 font-medium min-w-[190px]">可用渠道与路由</th>
+              <th className="px-3 py-3 font-medium min-w-[180px]">支持能力规格</th>
+              <th className="px-3 py-3 font-medium min-w-[110px]">采购成本 (底价)</th>
+              <th className="px-3 py-3 font-medium min-w-[130px]">定价策略与毛利</th>
+              <th className="px-3 py-3 font-medium min-w-[130px]">前台售价</th>
+              <th className="px-3 py-3 font-medium min-w-[110px] text-center">前台展示</th>
+              <th className="px-3 py-3 font-medium min-w-[140px] text-right">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/[0.04]">
+            {currentCategoryModels.map((model, idx) => {
+              const isVisible = Boolean(model.is_visible);
+              const hasRoutes = (model.approved_routes ?? 0) > 0;
+              const availability = describeAvailability(model, publicDirectory);
+              const margin = computeModelMargin(model);
+              const brand = resolveBrand(model);
+              const ratios = Array.isArray(model.supported_ratios) ? model.supported_ratios : [];
+              const resolutions = Array.isArray(model.supported_resolutions) ? model.supported_resolutions : [];
+              const isSavingThis = saving === model.id;
+
+              return (
+                <tr
+                  key={model.id}
+                  className={`group transition-colors ${
+                    isVisible ? 'hover:bg-white/[0.02]' : 'bg-white/[0.005] opacity-75 hover:opacity-100'
+                  }`}
+                >
+                  {/* Col 1: # & Sorting */}
+                  <td className="px-3 py-3 text-center align-middle">
+                    <div className="flex flex-col items-center justify-center">
+                      {canWrite && idx > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => moveModel(model, 'up')}
+                          className="opacity-0 group-hover:opacity-100 text-ink-subtle hover:text-ink transition-opacity p-0.5"
+                          title="上移此模型"
+                        >
+                          <ChevronUp className="size-3" />
+                        </button>
+                      )}
+                      <span className="font-mono text-caption text-ink-subtle">{idx + 1}</span>
+                      {canWrite && idx < currentCategoryModels.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => moveModel(model, 'down')}
+                          className="opacity-0 group-hover:opacity-100 text-ink-subtle hover:text-ink transition-opacity p-0.5"
+                          title="下移此模型"
+                        >
+                          <ChevronDown className="size-3" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Col 2: 模型与厂商 */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="flex items-start gap-2.5">
+                      <BrandLogo model={model} size="sm" className="rounded-md shrink-0 mt-0.5" />
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(model)}
+                            className="font-bold text-ink hover:text-brand text-left truncate transition-colors text-body-sm"
+                            title="点击配置模型"
+                          >
+                            {model.display_name || model.name}
+                          </button>
+                          {model.badge && (
+                            <span className="rounded-full bg-brand/15 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/25">
+                              {model.badge}
+                            </span>
+                          )}
+                          {model.is_pinned && (
+                            <span className="rounded-full bg-amber-500/15 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5">
+                              <Pin className="size-2 fill-amber-300" /> 置顶
+                            </span>
+                          )}
+                          {model.is_featured && (
+                            <span className="rounded-full bg-yellow-500/15 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/25">
+                              推荐
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-caption font-mono text-ink-subtle">
+                          <span className="truncate max-w-[140px]">{model.id}</span>
+                          <span>·</span>
+                          <span className="text-[10px] text-ink-muted bg-white/[0.04] px-1.5 py-0.2 rounded">
+                            {brand.shortName}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Col 3: 类型场景 */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="space-y-1">
+                      <span className="inline-block rounded bg-white/[0.05] border border-white/10 px-2 py-0.5 text-[10px] text-ink-muted">
+                        {categoryLabel(model.category)}
+                      </span>
+                      {model.sub_type && (
+                        <div className="text-[10px] font-mono text-cyan-300/80">
+                          {model.sub_type.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Col 4: 可用渠道与路由 */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="space-y-1">
+                      {hasRoutes ? (
+                        model.healthy_routes > 0 ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="text-emerald-400 font-medium font-mono text-[11px]">
+                              {model.healthy_routes}/{model.approved_routes} 已审可用
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-amber-400 text-[11px]">
+                            <AlertTriangle className="size-3" />
+                            <span>{model.approved_routes} 已审待核验</span>
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span className="rounded-full bg-red-500/15 text-red-400 px-1.5 py-0.5 text-[10px] border border-red-500/25 flex items-center gap-1 font-bold">
+                            <AlertTriangle className="size-2.5" /> 无渠道
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSmartMatchTargetModel(model);
+                              setSmartMatchOpen(true);
+                            }}
+                            className="rounded-full bg-brand/15 hover:bg-brand/25 text-brand px-2 py-0.5 text-[10px] border border-brand/30 flex items-center gap-0.5 font-bold"
+                            title="智能匹配推荐供应商"
+                          >
+                            <Zap className="size-2.5" /> 推荐
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono text-ink-subtle">
+                        {Number(model.calls_24h || 0) > 0 ? (
+                          <span className="text-cyan-400/80">
+                            24h: {model.calls_24h}次 ({model.success_rate_24h}%)
+                          </span>
+                        ) : (
+                          <span>24h 0次</span>
+                        )}
+                        <span>·</span>
+                        <span className={`px-1 py-0.2 rounded text-[9px] ${
+                          availability.tone === 'success'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : availability.tone === 'warning'
+                            ? 'bg-amber-500/10 text-amber-300'
+                            : 'bg-white/5 text-ink-subtle'
+                        }`}>
+                          {availability.label}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Col 5: 支持能力规格 */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="space-y-1">
+                      {/* Ratios Preview */}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {ratios.slice(0, 3).map((r) => (
+                          <span key={r} className="rounded bg-white/[0.04] border border-white/5 px-1.5 py-0.2 text-[9px] font-mono text-ink-muted">
+                            {r}
+                          </span>
+                        ))}
+                        {ratios.length > 3 && (
+                          <span className="text-[10px] text-ink-subtle font-mono">
+                            +{ratios.length - 3}
+                          </span>
+                        )}
+                        {ratios.length === 0 && <span className="text-ink-subtle text-[11px]">—</span>}
+                      </div>
+
+                      {/* Resolution & Feature Tags */}
+                      <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
+                        {resolutions.length > 0 && (
+                          <span className="font-mono text-ink-muted text-[10px]">
+                            {resolutions[resolutions.length - 1]}
+                          </span>
+                        )}
+                        {model.capabilities?.hires_fix && (
+                          <span className="text-purple-300 bg-purple-500/10 px-1 py-0.2 rounded text-[9px]">
+                            高清
+                          </span>
+                        )}
+                        {model.capabilities?.camera_control && (
+                          <span className="text-brand bg-brand/10 px-1 py-0.2 rounded text-[9px]">
+                            运镜
+                          </span>
+                        )}
+                        {model.capabilities?.seed_control !== false && (
+                          <span className="text-cyan-300 bg-cyan-500/10 px-1 py-0.2 rounded text-[9px]">
+                            Seed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Col 6: 采购成本 (底价) */}
+                  <td className="px-3 py-3 align-middle">
+                    {model.min_cost_cny !== null && model.min_cost_cny !== undefined ? (
+                      <div>
+                        <span className="font-mono font-bold text-white text-body-sm">
+                          ¥{Number(model.min_cost_cny).toFixed(2)}
+                        </span>
+                        <span className="text-[10px] text-ink-subtle font-mono block">
+                          (${Number(model.min_cost_usd || (model.min_cost_cny / 7.2)).toFixed(3)})
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-ink-subtle font-mono text-[11px]">— (无底价)</span>
+                    )}
+                  </td>
+
+                  {/* Col 7: 定价策略与毛利 */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="space-y-1">
+                      <div className="text-[10px] text-ink-muted">
+                        {model.pricing_mode === 'manual' ? '手动锁价' : '自动倍率'}
+                      </div>
+                      {margin.hasData ? (
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
+                            margin.status === 'high'
+                              ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                              : margin.status === 'healthy'
+                              ? 'border border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                              : margin.status === 'low'
+                              ? 'border border-amber-500/30 bg-amber-500/10 text-amber-300'
+                              : 'border border-red-500/30 bg-red-500/15 text-red-300 animate-pulse'
+                          }`}
+                        >
+                          {margin.rate}%
+                        </span>
+                      ) : (
+                        <span className="text-ink-subtle font-mono text-[10px]">—</span>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Col 8: 前台售价 (积分) */}
+                  <td className="px-3 py-3 align-middle">
+                    <div className="flex items-center gap-1.5">
+                      <div>
+                        <span className="font-mono font-bold text-cyan-300 text-body">
+                          {model.base_credits || 0}
+                        </span>
+                        <span className="text-caption text-cyan-400/80 ml-0.5">积分</span>
+                        <span className="text-[10px] text-ink-muted font-mono block">
+                          ≈ ¥{((model.base_credits || 0) * 0.1).toFixed(2)}
+                        </span>
+                      </div>
+
+                      {canWrite && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuickPriceModal({ model, credits: model.base_credits || 10 });
+                            setQuickPriceInput(String(model.base_credits || 10));
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-ink-subtle hover:text-cyan-300 hover:bg-white/[0.06] rounded transition-all"
+                          title="快捷调整积分售价"
+                        >
+                          <Pencil className="size-3" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Col 9: 前台展示开关 */}
+                  <td className="px-3 py-3 align-middle text-center">
+                    {canWrite ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleVisibility(model)}
+                        disabled={isSavingThis}
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label font-medium transition-all border ${
+                          isVisible
+                            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25 shadow-elevation-1'
+                            : 'bg-white/[0.04] text-ink-subtle border-line-subtle hover:bg-white/[0.08] hover:text-ink'
+                        }`}
+                        title={isVisible ? '展示已开 (点击关闭)' : '展示已关 (点击开启)'}
+                      >
+                        {isSavingThis ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : isVisible ? (
+                          <>
+                            <Eye className="size-3 text-emerald-400" />
+                            <span>展示已开</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="size-3" />
+                            <span>展示已关</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <span className="text-ink-subtle text-caption">
+                        {isVisible ? '展示中' : '已隐藏'}
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Col 10: 操作 */}
+                  <td className="px-3 py-3 align-middle text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {canWrite && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => startEdit(model)}
+                            className="h-7 text-xs px-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-ink"
+                            title="打开模型深度配置抽屉"
+                          >
+                            配置详情
+                          </Button>
+
+                          <button
+                            type="button"
+                            onClick={() => togglePinned(model)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              model.is_pinned
+                                ? 'text-amber-400 bg-amber-400/15'
+                                : 'text-ink-subtle hover:bg-white/[0.06] hover:text-ink'
+                            }`}
+                            title={model.is_pinned ? '取消置顶' : '置顶在前台首位'}
+                          >
+                            <Pin className={`size-3.5 ${model.is_pinned ? 'fill-amber-400' : ''}`} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleFeatured(model)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              model.is_featured
+                                ? 'text-yellow-400 bg-yellow-400/15'
+                                : 'text-ink-subtle hover:bg-white/[0.06] hover:text-ink'
+                            }`}
+                            title={model.is_featured ? '取消推荐' : '标记为推荐'}
+                          >
+                            {model.is_featured ? (
+                              <Star className="size-3.5 fill-yellow-400" />
+                            ) : (
+                              <StarOff className="size-3.5" />
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -933,6 +1490,64 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </a>
       </div>
 
+      {/* ─── BRAND / VENDOR SELECTION BAR (草稿图4黄色厂商维度) ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-caption font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="size-3.5 text-amber-400" />
+            厂商 / 品牌维度筛选 (Brand / Vendor)
+          </label>
+          <span className="text-caption text-ink-muted">
+            已接入 <span className="font-semibold text-ink">{activeBrands.length}</span> 家主流模型厂商 · 支持横向快速切换
+          </span>
+        </div>
+
+        {/* Scrollable Brand Pills Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 custom-scrollbar">
+          <button
+            type="button"
+            onClick={() => setSelectedBrand('all')}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
+              selectedBrand === 'all'
+                ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
+                : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+            }`}
+          >
+            <span>全部厂商</span>
+            <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+              selectedBrand === 'all' ? 'bg-black/20 text-black' : 'bg-white/10 text-ink-subtle'
+            }`}>
+              {models.length}
+            </span>
+          </button>
+
+          {activeBrands.map((brand) => {
+            const isSelected = selectedBrand === brand.id;
+            const count = brandStats[brand.id] || 0;
+            return (
+              <button
+                key={brand.id}
+                type="button"
+                onClick={() => setSelectedBrand(brand.id)}
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
+                  isSelected
+                    ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
+                    : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                }`}
+              >
+                <BrandLogo brand={brand} size="xs" className="rounded shrink-0" />
+                <span>{brand.shortName}</span>
+                <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+                  isSelected ? 'bg-black/20 text-black' : 'bg-white/10 text-ink-subtle'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* TYPE-FIRST CATEGORY NAVIGATION (必须根据类型) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -1006,7 +1621,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       </div>
 
-      {/* Secondary Controls Bar: Sub-type chips, Visibility Filter, Search, Batch Actions */}
+      {/* Secondary Controls Bar: Sub-type chips, Visibility Filter, Search, View Switcher */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 rounded-xl bg-surface-raised border border-line-subtle">
         {/* Left: Sub-types & Visibility Toggle */}
         <div className="flex flex-wrap items-center gap-2">
@@ -1055,8 +1670,38 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           </div>
         </div>
 
-        {/* Right: Search Input & Batch Operations */}
-        <div className="flex items-center gap-2.5 flex-1 lg:max-w-md justify-end">
+        {/* Right: View Mode Toggle, Search Input & Batch Operations */}
+        <div className="flex items-center gap-2.5 flex-1 lg:max-w-xl justify-end">
+          {/* View Mode Switcher (矩阵大表 vs 卡片视图) */}
+          <div className="inline-flex rounded-full bg-well p-0.5 border border-line-subtle shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('matrix')}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label transition-all ${
+                viewMode === 'matrix'
+                  ? 'bg-surface-raised text-ink font-bold shadow-elevation-1 border border-line'
+                  : 'text-ink-muted hover:text-ink'
+              }`}
+              title="高密度综合矩阵大表（按草稿补全呈现）"
+            >
+              <Table className="size-3.5" />
+              <span>矩阵大表</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('cards')}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-label transition-all ${
+                viewMode === 'cards'
+                  ? 'bg-surface-raised text-ink font-bold shadow-elevation-1 border border-line'
+                  : 'text-ink-muted hover:text-ink'
+              }`}
+              title="卡片列表视图"
+            >
+              <LayoutGrid className="size-3.5" />
+              <span>卡片视图</span>
+            </button>
+          </div>
+
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-subtle" />
             <input
@@ -1092,7 +1737,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                   title="查看候选；需人工核实后审核映射"
                 >
                   <Zap className="size-3 mr-1" />
-                  查看候选 ({activeStats.unrouted})
+                  候选 ({activeStats.unrouted})
                 </Button>
               )}
               <Button
@@ -1110,31 +1755,38 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       </div>
 
-      {/* MODEL LIST CARD */}
-      <Card>
+      {/* MODEL LIST CARD (Matrix or Card View) */}
+      <Card className="overflow-hidden p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle bg-surface-raised rounded-t-xl">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle bg-surface-raised">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-ink text-card-title">{categoryLabel(activeCategory)} 列表</span>
+            <span className="font-semibold text-ink text-card-title">
+              {categoryLabel(activeCategory)} · {viewMode === 'matrix' ? '综合矩阵表' : '卡片清单'}
+            </span>
             <span className="rounded-full bg-brand/10 text-brand px-2 py-0.5 text-micro font-medium border border-brand/20">
               {currentCategoryModels.length} 个模型
             </span>
+            {selectedBrand !== 'all' && (
+              <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-micro text-ink-muted">
+                已过滤厂商: {resolveBrand({ id: selectedBrand }).shortName}
+              </span>
+            )}
           </div>
 
           <div className="text-caption text-ink-muted hidden sm:flex items-center gap-3">
             <span>置顶模型 📌 排在首位</span>
             <span>·</span>
-            <span>公开目录按服务端准入条件更新</span>
+            <span>可直接在表格中调整价格与前台可见性</span>
           </div>
         </div>
 
-        {/* New Model Creation Form Inline */}
-        {editingId === '__new__' && renderEditForm()}
+        {/* Inline Create Form if adding via inline fallback */}
+        {editingId === '__new__' && !drawerOpen && renderEditForm()}
 
-        {/* Model Rows */}
+        {/* View Mode Switching: Matrix Table vs Cards */}
         {currentCategoryModels.length === 0 && editingId !== '__new__' ? (
           <div className="px-4 py-16 text-center text-body-sm text-ink-muted space-y-3">
-            <p>{search ? '没有匹配的模型' : `当前 ${categoryLabel(activeCategory)} 下暂无上架模型`}</p>
+            <p>{search ? '没有匹配的模型' : `当前筛选条件下暂无模型`}</p>
             {canWrite && (
               <Button
                 variant="secondary"
@@ -1147,6 +1799,8 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               </Button>
             )}
           </div>
+        ) : viewMode === 'matrix' ? (
+          renderMatrixTable()
         ) : (
           currentCategoryModels.map((model, idx) => renderModelRow(model, idx))
         )}
@@ -1255,6 +1909,138 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           window.location.reload();
         }}
       />
+
+      {/* ─── Model Config Drawer (右侧抽屉式高级配置) ─────────────── */}
+      <ModelConfigDrawer
+        isOpen={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          setDrawerModel(null);
+        }}
+        model={drawerModel}
+        isNew={isDrawerNew}
+        allModels={models}
+        activeCategory={activeCategory}
+        canWrite={canWrite}
+        onSave={handleDrawerSave}
+        onSmartMatch={(m) => {
+          setSmartMatchTargetModel(m);
+          setSmartMatchOpen(true);
+        }}
+        onRunCheck={runCheck}
+      />
+
+      {/* ─── Quick Price Adjustment Modal (极速改价浮层) ─────────────── */}
+      {quickPriceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-surface-raised border border-line p-5 shadow-elevation-3 space-y-4">
+            <div className="flex items-center justify-between border-b border-line-subtle pb-3">
+              <div className="flex items-center gap-2">
+                <BrandLogo model={quickPriceModal.model} size="sm" className="rounded-md" />
+                <h3 className="text-body font-semibold text-ink">极速调整积分定价</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuickPriceModal(null)}
+                className="text-ink-subtle hover:text-ink p-1 rounded-md"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-body-sm font-medium text-ink">
+                  {quickPriceModal.model.display_name || quickPriceModal.model.name}
+                </p>
+                <p className="font-mono text-caption text-ink-subtle">
+                  {quickPriceModal.model.id}
+                </p>
+              </div>
+
+              {/* Reference Cost info */}
+              <div className="p-2.5 rounded-xl bg-well/60 border border-line-subtle flex items-center justify-between text-caption">
+                <span className="text-ink-muted">渠道基础成本参考</span>
+                <span className="font-mono text-ink">
+                  {Number(quickPriceModal.model.min_cost_cny) > 0
+                    ? `¥${Number(quickPriceModal.model.min_cost_cny).toFixed(3)}/次`
+                    : Number(quickPriceModal.model.min_cost_usd) > 0
+                    ? `$${Number(quickPriceModal.model.min_cost_usd).toFixed(4)}/次`
+                    : '暂无渠道成本报价'}
+                </span>
+              </div>
+
+              {/* Credits input */}
+              <div className="space-y-1.5">
+                <label className="text-label text-ink-muted block font-medium">
+                  用户单次调用扣除积分 (10 积分 = ¥1.00)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={quickPriceInput}
+                    onChange={(e) => setQuickPriceInput(e.target.value)}
+                    className="w-full rounded-xl bg-field border border-line-subtle px-3 py-2 text-body font-mono text-ink focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                    placeholder="输入积分数值，如 50"
+                    autoFocus
+                  />
+                  <span className="absolute right-3 top-2.5 text-caption text-ink-subtle font-mono">
+                    ≈ ¥{((Number(quickPriceInput) || 0) * 0.1).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Estimated Margin */}
+              {(() => {
+                const margin = computeModelMargin(quickPriceModal.model, Number(quickPriceInput));
+                if (margin === null) return null;
+                const isHealthy = margin >= 40;
+                const isLoss = margin < 0;
+                return (
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between text-caption ${
+                    isLoss
+                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                      : isHealthy
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                      : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                  }`}>
+                    <span>预估毛利率</span>
+                    <span className="font-mono font-bold">
+                      {margin.toFixed(1)}% {isLoss ? '(亏损警告)' : isHealthy ? '(健康)' : '(微利)'}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-line-subtle">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setQuickPriceModal(null)}
+                disabled={savingQuickPrice}
+              >
+                取消
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSaveQuickPrice}
+                disabled={savingQuickPrice}
+              >
+                {savingQuickPrice ? (
+                  <Loader2 className="size-3.5 mr-1 animate-spin" />
+                ) : (
+                  <Save className="size-3.5 mr-1" />
+                )}
+                确认调整
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

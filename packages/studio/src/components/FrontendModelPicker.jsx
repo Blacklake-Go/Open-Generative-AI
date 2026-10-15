@@ -24,6 +24,15 @@ import { applyActiveModelDirectory, isServerModelGenerationEligible } from "../m
  * Directly maps to backend database settings (display_name, badge, description, sort, is_pinned, is_visible).
  * Zero complexity: no bulky tabs, no agent switches, pure elegant model selection.
  */
+const STATIC_SORT_ORDERS = Object.freeze({
+  'seedream-5.0-pro': 1,
+  'seedream-5.0-flash': 2,
+  'image-aesthetic-v8.2': 3,
+  'seedream-5.0-lite': 4,
+  'seedream-4.5': 5,
+  'seedream-5.0': 1,
+});
+
 export default function FrontendModelPicker({
   studioType = "image", // "image" | "video"
   selectedModel,
@@ -121,8 +130,8 @@ export default function FrontendModelPicker({
       const bPinned = isModelPinned(bId);
       if (aPinned !== bPinned) return aPinned ? -1 : 1;
 
-      const aSort = getServerModelMeta(aId)?.sortOrder ?? 999;
-      const bSort = getServerModelMeta(bId)?.sortOrder ?? 999;
+      const aSort = getServerModelMeta(aId)?.sortOrder ?? STATIC_SORT_ORDERS[aId] ?? 999;
+      const bSort = getServerModelMeta(bId)?.sortOrder ?? STATIC_SORT_ORDERS[bId] ?? 999;
       if (aSort !== bSort) return aSort - bSort;
 
       return 0;
@@ -159,21 +168,21 @@ export default function FrontendModelPicker({
   );
 
   return (
-    <div className="flex flex-col w-full select-none overflow-hidden">
+    <div className="flex flex-col w-full select-none overflow-hidden bg-[#1c1c1e] rounded-2xl">
       {/* ─── Top Header (Matching user screenshot: "选择模型:  Seedream 5.0 Pro") ─── */}
-      <div className="px-3.5 pt-3 pb-2 shrink-0 select-none flex items-center gap-1.5 text-caption">
-        <span className="font-normal text-ink-subtle">
+      <div className="px-4 pt-3.5 pb-2.5 shrink-0 select-none flex items-center gap-2 text-[13px]">
+        <span className="font-normal text-[#8e8e93]">
           {locale?.startsWith("zh") ? "选择模型:" : "Select Model:"}
         </span>
-        <span className="font-medium text-ink truncate">
+        <span className="font-medium text-[#e5e5ea] truncate">
           {currentSelectedName || (locale?.startsWith("zh") ? "未选择" : "None")}
         </span>
       </div>
 
-      {/* ─── Model Cards List (Fig 2 Reference: Clean Vertical Stack) ─── */}
-      <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar p-1 max-h-[380px]">
+      {/* ─── Model Cards List (1:1 Screenshot Reference: Clean Vertical Stack) ─── */}
+      <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar p-2 max-h-[420px]">
         {modelList.length === 0 ? (
-          <div className="py-8 text-center text-ink-subtle text-caption">
+          <div className="py-8 text-center text-[#8e8e93] text-[13px]">
             {directoryError
               ? (locale?.startsWith("zh") ? "模型目录暂不可用" : "Model directory unavailable")
               : (locale?.startsWith("zh") ? "暂无可用模型" : "No models available")}
@@ -193,9 +202,7 @@ export default function FrontendModelPicker({
             const displayName = getModelDisplayName(modelKey, entry.name);
             const badge = getModelBadge(modelKey);
             const desc = getModelDescription(modelKey, locale);
-            const isPinned = isModelPinned(modelKey);
             const providerLogo = getProviderLogo(family?.provider || serverMeta?.provider, modelKey || entry.id);
-            const creditsPrice = serverMeta?.creditsPrice;
 
             return (
               <button
@@ -204,14 +211,14 @@ export default function FrontendModelPicker({
                 ref={isSelected ? activeItemRef : null}
                 onClick={() => handleItemClick(entry)}
                 aria-pressed={Boolean(isSelected)}
-                className={`group flex w-full items-center gap-3 px-3.5 py-2.5 text-left rounded-xl transition-colors cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${
+                className={`group flex w-full items-center gap-3.5 px-3.5 py-3 text-left rounded-xl transition-all cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500 ${
                   isSelected
-                    ? "bg-white/[0.08] border border-white/[0.08] shadow-elevation-1"
-                    : "bg-transparent border border-transparent hover:bg-white/[0.04] hover:border-white/[0.04]"
+                    ? "bg-white/[0.08]"
+                    : "bg-transparent hover:bg-white/[0.04]"
                 }`}
               >
-                {/* Left: Emblem Logo Container (size-10, rounded-xl) */}
-                <div className="size-10 rounded-xl bg-white/[0.06] border border-white/[0.06] flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                {/* Left: Emblem Logo Container (size-11, rounded-xl, #2c2c2e) */}
+                <div className="size-11 rounded-xl bg-[#2c2c2e] border border-white/[0.04] flex items-center justify-center p-2.5 shrink-0 overflow-hidden shadow-sm">
                   {providerLogo ? (
                     <img
                       src={providerLogo}
@@ -224,62 +231,43 @@ export default function FrontendModelPicker({
                       }}
                     />
                   ) : (
-                    <span className="text-body font-black text-ink-subtle uppercase">
+                    <span className="text-body font-bold text-white/70 uppercase">
                       {displayName.charAt(0) || "M"}
                     </span>
                   )}
                 </div>
 
                 {/* Middle: Title Line + Description Line */}
-                <div className="flex-1 min-w-0">
-                  {/* Title Line (Model Name + Badge + Credits + Pin) */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-body-sm font-bold text-ink truncate leading-tight">
+                <div className="flex-1 min-w-0 pr-1">
+                  {/* Title Line (Model Name + ✦ Badge) */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[15px] font-medium text-white tracking-tight leading-snug">
                       {displayName}
                     </span>
 
-                    {/* High-Contrast Badge / ✦ Sparkle */}
-                    {badge && (
-                      badge === "✦" ? (
-                        <span className="text-sky-400 font-bold text-xs select-none leading-none ml-0.5">✦</span>
-                      ) : (
-                        <span className={`rounded px-1.5 py-0.2 text-[10px] font-medium border shrink-0 leading-none ${
-                          badge === '最新'
-                            ? 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
-                            : badge === '经济'
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                            : 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
-                        }`}>
-                          {badge}
-                        </span>
-                      )
+                    {/* ✦ Sparkle Badge in Sky Blue */}
+                    {badge === "✦" && (
+                      <span className="text-[#38bdf8] text-[13px] font-bold select-none leading-none ml-1">✦</span>
                     )}
-
-                    {/* Credits Price Badge */}
-                    {creditsPrice !== undefined && creditsPrice !== null && Number(creditsPrice) > 0 && (
-                      <span className="rounded px-1.5 py-0.2 text-[10px] font-medium bg-white/[0.05] text-ink-muted border border-white/[0.08] shrink-0 leading-none">
-                        {creditsPrice} {locale?.startsWith("zh") ? "积分" : "cr"}
+                    {badge && badge !== "✦" && (
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-[#3b82f6]/20 text-[#60a5fa] border border-[#3b82f6]/30 shrink-0 leading-none ml-1">
+                        {badge}
                       </span>
-                    )}
-
-                    {/* Pin indicator */}
-                    {isPinned && (
-                      <Pin className="size-3 fill-amber-300 text-amber-300 shrink-0" />
                     )}
                   </div>
 
-                  {/* Description Line (Matching Fig 2 / user screenshot) */}
+                  {/* Subtitle Line (Exact screenshot matching) */}
                   {desc && (
-                    <p className="text-caption text-ink-muted leading-tight line-clamp-1 mt-0.5">
+                    <p className="text-[12px] text-[#8e8e93] leading-relaxed line-clamp-1 mt-0.5">
                       {desc}
                     </p>
                   )}
                 </div>
 
-                {/* Right: Selected checkmark matching Fig 2 */}
+                {/* Right: Selected checkmark matching screenshot */}
                 {isSelected && (
-                  <div className="shrink-0 size-5 rounded-full flex items-center justify-center text-white/90">
-                    <Check className="size-4 stroke-[2.5]" />
+                  <div className="shrink-0 size-6 flex items-center justify-center text-white pr-0.5">
+                    <Check className="size-5 stroke-[2.5]" />
                   </div>
                 )}
               </button>

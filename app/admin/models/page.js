@@ -26,7 +26,12 @@ async function getFrontendModels() {
         COALESCE(rc.healthy_count, 0)::int AS healthy_routes,
         COALESCE(rc.total_routes, 0)::int AS total_routes,
         COALESCE(rc.provider_ids, '[]'::jsonb) AS provider_ids,
+        rc.min_cost_usd,
+        rc.min_cost_cny,
         COALESCE(mp.base_credits, 0)::int AS base_credits,
+        COALESCE(mp.pricing_mode, 'auto') AS pricing_mode,
+        COALESCE(mp.pricing_type, 'fixed') AS pricing_type,
+        COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
         COALESCE(act.calls_24h, 0)::int AS calls_24h,
         CASE
           WHEN COALESCE(act.calls_24h, 0) > 0 THEN
@@ -40,7 +45,19 @@ async function getFrontendModels() {
           COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved')::int AS approved_count,
           COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved' AND p.enabled = TRUE)::int AS healthy_count,
           COUNT(*)::int AS total_routes,
-          jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids
+          jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids,
+          MIN(
+            CASE 
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+              ELSE (pm.cost_config->>'base_cost')::numeric
+            END
+          ) AS min_cost_usd,
+          MIN(
+            CASE 
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
+              ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+            END
+          ) AS min_cost_cny
         FROM ai_studio.provider_models pm
         LEFT JOIN ai_studio.ai_providers p ON p.id = pm.provider_id
         WHERE pm.model_id = m.id
@@ -79,7 +96,12 @@ async function getFrontendModels() {
         COALESCE(rc.approved_count, 0)::int AS healthy_routes,
         COALESCE(rc.total_routes, 0)::int AS total_routes,
         COALESCE(rc.provider_ids, '[]'::jsonb) AS provider_ids,
+        rc.min_cost_usd,
+        rc.min_cost_cny,
         COALESCE(mp.base_credits, 0)::int AS base_credits,
+        COALESCE(mp.pricing_mode, 'auto') AS pricing_mode,
+        COALESCE(mp.pricing_type, 'fixed') AS pricing_type,
+        COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
         0 AS calls_24h,
         100.0 AS success_rate_24h,
         0 AS avg_ms_24h
@@ -88,7 +110,19 @@ async function getFrontendModels() {
         SELECT
           COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved')::int AS approved_count,
           COUNT(*)::int AS total_routes,
-          jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids
+          jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids,
+          MIN(
+            CASE 
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+              ELSE (pm.cost_config->>'base_cost')::numeric
+            END
+          ) AS min_cost_usd,
+          MIN(
+            CASE 
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
+              ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+            END
+          ) AS min_cost_cny
         FROM ai_studio.provider_models pm WHERE pm.model_id = m.id
       ) rc ON TRUE
       LEFT JOIN ai_studio.model_pricing mp ON mp.model_id = m.id

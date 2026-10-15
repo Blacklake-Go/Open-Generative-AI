@@ -2492,7 +2492,7 @@ export default function ImageStudio({
                     {selectedModelDisplayName}
                   </span>
                   {getModelBadge(selectedModelId) === '✦' && (
-                    <span className="text-sky-400 font-bold text-xs select-none ml-0.5 leading-none">✦</span>
+                    <span className="text-[#38bdf8] font-bold text-xs select-none ml-1 leading-none">✦</span>
                   )}
                   <PromptChevronIcon />
                 </button>
@@ -2500,7 +2500,7 @@ export default function ImageStudio({
                 {dropdownOpen === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
+                    className="w-[calc(100vw-2rem)] sm:w-[410px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-white/[0.08] shadow-elevation-3 rounded-2xl bg-[#1c1c1e]"
                   >
                     <FrontendModelPicker
                       studioType="image"
