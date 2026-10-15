@@ -2,6 +2,7 @@ import { getUserFromRequest } from '@/lib/services/auth';
 import { listActiveModels } from '@/lib/services/models';
 import { getCanvasAllowedModelIds } from '@/lib/services/canvasModelConfig';
 import { isCanvasServerCapabilityEnabled } from '@/lib/canvas/capabilityPolicy';
+import { resolveBrand } from '@/lib/modelCenter/brandDictionary';
 import { canvasJson, canvasOriginGuard, canvasPreflight } from '@/lib/canvas/http';
 
 export const runtime = 'nodejs';
@@ -42,12 +43,22 @@ function publicModel(model) {
     const value = keys.map((key) => metadata[key]).find((entry) => typeof entry === 'boolean');
     return typeof value === 'boolean' ? value : false;
   };
+  const brand = resolveBrand({
+    id: model.id,
+    name: model.display_name || model.name,
+    capabilities: model.capabilities || metadata,
+    brand: model.brand || metadata.brand,
+  });
   return {
     id: model.id,
     slug: model.slug || model.id,
     name: model.display_name || model.name,
     capability,
     available: true,
+    brandId: brand.id,
+    brandName: brand.shortName,
+    brandBadge: brand.badge,
+    brandLogoUrl: brand.logoUrl,
     creditsPrice: Number.isFinite(Number(model.credits_price)) ? Number(model.credits_price) : null,
     pricingType: model.pricing_type || 'formula',
     inputSchema: publicSchema(metadata.input_schema || metadata.inputSchema),
