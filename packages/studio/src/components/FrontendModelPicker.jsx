@@ -15,7 +15,7 @@ import {
   getServerModelMeta,
 } from "../modelDescriptions.js";
 import { getProviderLogo, invertLogos } from "../providerLogos.js";
-import { applyActiveModelDirectory } from "../models.js";
+import { applyActiveModelDirectory, isServerModelGenerationEligible } from "../models.js";
 
 /**
  * Clean Dropdown Model Picker (Figure 2 Style)
@@ -33,26 +33,45 @@ export default function FrontendModelPicker({
   locale = "zh",
 }) {
   const activeItemRef = useRef(null);
+  const [directoryRevision, setDirectoryRevision] = useState(0);
+  const [directoryLoaded, setDirectoryLoaded] = useState(() =>
+    typeof globalThis !== 'undefined' && globalThis.__KOYOSIM_ACTIVE_MODEL_IDS__ instanceof Set);
+  const [directoryError, setDirectoryError] = useState(false);
 
   // Background sync with /api/models/active to reflect dynamic admin updates in real-time
   useEffect(() => {
     let isMounted = true;
+    const handleDirectoryUpdate = () => {
+      setDirectoryLoaded(true);
+      setDirectoryRevision((revision) => revision + 1);
+    };
+    window.addEventListener('koyosim-model-pricing-updated', handleDirectoryUpdate);
     fetch("/api/models/active?nocache=1")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (isMounted && Array.isArray(data?.models) && data.models.length > 0) {
-          applyActiveModelDirectory(data.models);
-        }
+      .then((res) => {
+        if (!res.ok) throw new Error('模型目录不可用');
+        return res.json();
       })
-      .catch(() => {});
+      .then((data) => {
+        if (!Array.isArray(data?.models)) throw new Error('模型目录格式无效');
+        if (!isMounted) return;
+        applyActiveModelDirectory(data.models);
+        setDirectoryError(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        applyActiveModelDirectory([]);
+        setDirectoryError(true);
+      });
 
     return () => {
       isMounted = false;
+      window.removeEventListener('koyosim-model-pricing-updated', handleDirectoryUpdate);
     };
   }, []);
 
   // Filter models strictly by studio type with active status
   const modelList = useMemo(() => {
+    if (!directoryLoaded) return [];
     const catalogEntries =
       studioType === "video"
         ? filterActiveModelEntries(videoModelPickerEntries)
@@ -66,8 +85,7 @@ export default function FrontendModelPicker({
         const cat = meta.category || meta.type || "image";
         if (
           cat === studioType &&
-          meta.isVisible !== false &&
-          meta.isActive !== false &&
+          isServerModelGenerationEligible(meta) &&
           !coveredIds.has(id) &&
           !coveredIds.has(meta.id)
         ) {
@@ -109,7 +127,7 @@ export default function FrontendModelPicker({
 
       return 0;
     });
-  }, [studioType]);
+  }, [studioType, directoryLoaded, directoryRevision]);
 
   // Current selected model display name for header
   const currentSelectedName = useMemo(() => {
@@ -157,7 +175,9 @@ export default function FrontendModelPicker({
       <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar p-1 max-h-[380px]">
         {modelList.length === 0 ? (
           <div className="py-8 text-center text-ink-subtle text-caption">
-            {locale?.startsWith("zh") ? "暂无可用模型" : "No models available"}
+            {directoryError
+              ? (locale?.startsWith("zh") ? "模型目录暂不可用" : "Model directory unavailable")
+              : (locale?.startsWith("zh") ? "暂无可用模型" : "No models available")}
           </div>
         ) : (
           modelList.map((entry) => {
@@ -178,11 +198,13 @@ export default function FrontendModelPicker({
             const creditsPrice = serverMeta?.creditsPrice;
 
             return (
-              <div
+              <button
+                type="button"
                 key={entry.id}
                 ref={isSelected ? activeItemRef : null}
                 onClick={() => handleItemClick(entry)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all cursor-pointer select-none ${
+                aria-pressed={Boolean(isSelected)}
+                className={`group flex w-full items-center gap-3 px-3 py-2.5 text-left rounded-xl transition-colors cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${
                   isSelected
                     ? "bg-white/[0.08] border border-white/[0.08] shadow-elevation-1"
                     : "bg-transparent border border-transparent hover:bg-white/[0.05] hover:border-white/[0.04]"
@@ -256,7 +278,7 @@ export default function FrontendModelPicker({
                     <Check className="size-3.5 stroke-[2.5]" />
                   </div>
                 )}
-              </div>
+              </button>
             );
           })
         )}

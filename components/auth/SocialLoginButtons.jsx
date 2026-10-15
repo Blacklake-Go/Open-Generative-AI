@@ -46,7 +46,7 @@ export default function SocialLoginButtons({
     if (isMobile || typeof window === 'undefined') {
       window.location.assign(url);
     } else {
-      const popup = window.open(url, 'koyosim-oauth', 'popup,width=520,height=720');
+      const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
       if (!popup) window.location.assign(url);
     }
   };

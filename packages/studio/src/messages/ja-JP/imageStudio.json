@@ -59,6 +59,7 @@
     "model": "モデル",
     "aspectRatio": "アスペクト比",
     "resolution": "解決",
+    "quality": "品質",
     "effectType": "エフェクトタイプ"
   },
   "errors": {
@@ -66,6 +67,7 @@
     "uploadReferenceFirst": "まずは参考画像をアップロードしてください。",
     "uploadSwapFaceFirst": "交換顔画像をアップロードしてください。",
     "enterPromptFirst": "イメージを生成するためのプロンプトを入力してください。",
+    "generationCapabilityUnavailable": "このモデルには、検証済みのサーバー生成能力がまだありません。",
     "generationFailed": "画像生成に失敗しました"
   },
   "fullscreen": {

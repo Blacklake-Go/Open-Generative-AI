@@ -8,14 +8,16 @@ import {
   BUTTON_VARIANTS,
   BUTTON_WEIGHT,
   CONTROL_BASE,
+  ICON_CONTROL_BASE,
   CONTROL_HEIGHT,
   controlClasses,
   withoutRadiusUtilities,
 } from "./tokens";
 
 /**
- * The only button in the product. `variant="primary"` is reserved for the
- * main action of a view — Generate, Create, Run, Submit.
+ * KOYO Studio Standard Button Primitive (packages/studio)
+ * Conforms to UI Design System v3.7.0 5-state machine.
+ * `variant="primary"` is reserved for the main action of a view — Generate, Create, Run, Submit.
  *
  * `asChild` hands the recipe to the caller's element (a Link, a Radix trigger)
  * instead of nesting one interactive node inside another. `icon*` sizes are the
@@ -55,15 +57,17 @@ export const Button = forwardRef(function Button(
       ref={ref}
       type={Component === "button" ? type : undefined}
       disabled={Component === "button" ? isDisabled : undefined}
+      aria-disabled={Component === Slot.Root && isDisabled ? true : undefined}
       aria-busy={loading || undefined}
       className={cn(
-        CONTROL_BASE,
+        icon ? ICON_CONTROL_BASE : CONTROL_BASE,
         controlClasses(controlSize, { icon, shape }),
-        BUTTON_WEIGHT[variantKey],
+        BUTTON_WEIGHT[variantKey] || "font-medium",
         BUTTON_VARIANTS[variantKey],
         "[&_svg]:pointer-events-none [&_svg]:shrink-0",
         fullWidth && "w-full",
         loading && "cursor-progress",
+        isDisabled && Component === Slot.Root && "pointer-events-none cursor-not-allowed opacity-40",
         withoutRadiusUtilities(className),
       )}
       {...props}
@@ -84,9 +88,10 @@ export const Button = forwardRef(function Button(
 /**
  * Icon-only button. The glyph may be 16px but the hit area always follows the
  * control height contract, so it is never smaller than 28px.
+ * Features instant 80ms active scale sink: active:scale-95.
  */
 export const IconButton = forwardRef(function IconButton(
-  { icon, size = "md", shape = "control", label, className, ...props },
+  { icon, size = "md", shape = "control", label, className, children, ...props },
   ref,
 ) {
   if (!label && process.env.NODE_ENV !== "production") {
@@ -101,14 +106,15 @@ export const IconButton = forwardRef(function IconButton(
       type="button"
       aria-label={label}
       className={cn(
-        CONTROL_BASE,
+        ICON_CONTROL_BASE,
         controlClasses(size, { icon: true, shape }),
         BUTTON_VARIANTS.tertiary,
+        "[&_svg]:size-4 [&_svg]:stroke-[1.8]",
         withoutRadiusUtilities(className),
       )}
       {...props}
     >
-      <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" />
+      {Icon ? <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" /> : children}
     </button>
   );
 });

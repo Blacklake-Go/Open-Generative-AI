@@ -7,8 +7,8 @@
 export function AuthModal(onSuccess) {
     if (typeof window === 'undefined') return null;
 
-    if (typeof window.__KOYOSIM_REQUIRE_ACCOUNT__ === 'function') {
-        window.__KOYOSIM_REQUIRE_ACCOUNT__()
+    if (typeof window.__SUPDANCE_REQUIRE_ACCOUNT__ === 'function') {
+        window.__SUPDANCE_REQUIRE_ACCOUNT__()
             .then((user) => {
                 if (user && typeof onSuccess === 'function') {
                     onSuccess(user);
@@ -19,7 +19,7 @@ export function AuthModal(onSuccess) {
     }
 
     try {
-        window.dispatchEvent(new CustomEvent('koyosim:open-auth', { detail: { mode: 'login' } }));
+        window.dispatchEvent(new CustomEvent('supdance:open-auth', { detail: { mode: 'login' } }));
     } catch {}
 
     const isZh = window.location.pathname.startsWith('/zh');

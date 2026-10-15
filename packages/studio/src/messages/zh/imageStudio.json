@@ -59,6 +59,7 @@
     "model": "模型",
     "aspectRatio": "宽高比",
     "resolution": "分辨率",
+    "quality": "质量",
     "effectType": "效果类型"
   },
   "errors": {
@@ -66,6 +67,7 @@
     "uploadReferenceFirst": "请先上传一张参考图片。",
     "uploadSwapFaceFirst": "请上传一张换脸图片。",
     "enterPromptFirst": "请输入提示词以生成图像。",
+    "generationCapabilityUnavailable": "该模型尚无已验证的服务端生成能力。",
     "generationFailed": "图像生成失败"
   },
   "fullscreen": {

@@ -42,7 +42,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
       className={cn(
-        "fixed inset-0 z-overlay bg-scrim backdrop-blur-sm transition-opacity duration-fast data-[state=closed]:pointer-events-none data-[state=open]:animate-fade-in",
+        "fixed inset-0 z-overlay bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter data-[state=closed]:pointer-events-none data-[state=open]:pointer-events-auto data-[state=open]:animate-fade-in",
         className
       )}
       {...props}
@@ -62,7 +62,7 @@ function AlertDialogContent({
         data-slot="alert-dialog-content"
         data-size={size}
         className={cn(
-          "group/alert-dialog-content fixed top-1/2 left-1/2 z-modal grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-line-strong bg-overlay p-4 text-ink shadow-elevation-4 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm data-[state=open]:animate-scale-in",
+          "group/alert-dialog-content fixed top-1/2 left-1/2 z-modal grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-line-strong bg-overlay p-6 text-ink shadow-elevation-4 outline-none duration-modal ease-enter data-[size=default]:max-w-md data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm data-[state=open]:animate-modal-enter data-[state=closed]:animate-modal-exit data-[state=closed]:pointer-events-none",
           withoutRadiusUtilities(className)
         )}
         {...props}
@@ -95,7 +95,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
+        "-mx-6 -mb-6 flex flex-col-reverse gap-2 rounded-b-2xl border-t border-line bg-well/50 p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end",
         withoutRadiusUtilities(className)
       )}
       {...props}
@@ -127,7 +127,7 @@ function AlertDialogTitle({
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
       className={cn(
-        "font-sans text-body font-medium sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
+        "text-section-title font-semibold leading-tight text-ink sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2",
         className
       )}
       {...props}
@@ -143,7 +143,7 @@ function AlertDialogDescription({
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
       className={cn(
-        "text-sm text-balance text-muted-foreground md:text-pretty *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        "text-body-sm text-balance text-ink-muted md:text-pretty *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-ink",
         className
       )}
       {...props}

@@ -30,10 +30,10 @@ import {
   PromptQualityIcon,
   PromptSegmentedControl,
   PromptSegmentOption,
-  PromptTextarea,
   promptControlClassName,
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import en from "../messages/en/lipSyncStudio.json";
 import zh from "../messages/zh/lipSyncStudio.json";
 import ja from "../messages/ja-JP/lipSyncStudio.json";
@@ -41,6 +41,83 @@ import ko from "../messages/ko-KR/lipSyncStudio.json";
 import zhTw from "../messages/zh-TW/lipSyncStudio.json";
 import es from "../messages/es-ES/lipSyncStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import VideoRelayMenu from "./VideoRelayMenu.jsx";
+
+const LIPSYNC_RELAY_COPY_EN = {
+  presetsTitle: "Audio Presets:",
+  relayPortraitToast: "Loaded relayed portrait!",
+  relayVideoToast: "Loaded relayed video!",
+  loadedPresetPrefix: "Loaded audio preset: ",
+  presets: [
+    { id: "female", label: "Female · Natural Anchor", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "High-definition intelligent lip-sync voice test with accurate facial micro-expressions and lip movement." },
+    { id: "male", label: "Male · Tech Narrator", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "Welcome to the future AI digital human workbench, experiencing ultra-natural audio-visual synchronization." },
+    { id: "ecom", label: "Live Host · Promo Pitch", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "Check out today's featured product—unbeatable quality and limited-time offer, grab yours now!" },
+    { id: "biz", label: "Global · Business Pitch", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+  ],
+};
+
+const LIPSYNC_RELAY_COPY_LOCALES = {
+  "zh-CN": {
+    presetsTitle: "示范音频:",
+    relayPortraitToast: "已自动载入接力人像！",
+    relayVideoToast: "已自动载入接力视频！",
+    loadedPresetPrefix: "已载入预设音频：",
+    presets: [
+      { id: "female", label: "女声 · 自然播报", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "这是一段高清智能对口型语音测试，能够精准还原面部微表情与唇齿动作。" },
+      { id: "male", label: "男声 · 科技解说", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "欢迎来到未来AI数字人工作台，体验极致自然的声画同步效果。" },
+      { id: "ecom", label: "带货口播 · 激情推荐", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "家人们看过来，今天这款产品真的是太惊喜了，手慢无赶紧冲！" },
+      { id: "biz", label: "英文 · 商业陈述", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+    ],
+  },
+  "ja-JP": {
+    presetsTitle: "サンプル音声:",
+    relayPortraitToast: "連携されたポートレートを読み込みました！",
+    relayVideoToast: "連携された動画を読み込みました！",
+    loadedPresetPrefix: "プリセット音声を読み込みました：",
+    presets: [
+      { id: "female", label: "女性 · ナチュラル報道", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "高精度AIリップシンクテスト、自然な表情と口元の動きを忠実に再現します。" },
+      { id: "male", label: "男性 · テック解説", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "次世代AIデジタルヒューマンスタジオへようこそ、自然な音声同期を体験してください。" },
+      { id: "ecom", label: "ライブ配信 · 情熱紹介", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "注目の新商品をご紹介します！驚きのクオリティをぜひ今すぐチェックしてください！" },
+      { id: "biz", label: "英語 · ビジネスピッチ", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+    ],
+  },
+  "ko-KR": {
+    presetsTitle: "샘플 오디오:",
+    relayPortraitToast: "연동된 인물 사진을 불러왔습니다!",
+    relayVideoToast: "연동된 영상을 불러왔습니다!",
+    loadedPresetPrefix: "프리셋 오디오 로드됨: ",
+    presets: [
+      { id: "female", label: "여성 · 자연스러운 브리핑", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "고화질 AI 립싱크 음성 테스트로 미세한 표정과 입모양을 정교하게 구현합니다." },
+      { id: "male", label: "남성 · 테크 해설", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "미래형 AI 디지털 휴먼 스튜디오에서 자연스러운 오디오·비디오 동기화를 경험하세요." },
+      { id: "ecom", label: "라이브 커머스 · 추천", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "오늘 소개해 드릴 특별한 제품, 놀라운 혜택을 지금 바로 만나보세요!" },
+      { id: "biz", label: "영어 · 비즈니스 피치", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+    ],
+  },
+  "zh-TW": {
+    presetsTitle: "示範音訊:",
+    relayPortraitToast: "已自動載入接力人像！",
+    relayVideoToast: "已自動載入接力影片！",
+    loadedPresetPrefix: "已載入預設音訊：",
+    presets: [
+      { id: "female", label: "女聲 · 自然播報", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "這是一段高畫質智慧對嘴語音測試，能夠精準還原臉部微表情與唇齒動作。" },
+      { id: "male", label: "男聲 · 科技解說", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "歡迎來到未來AI數位人工作台，體驗極致自然的聲畫同步效果。" },
+      { id: "ecom", label: "帶貨口播 · 激情推薦", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "大家快過來看，今天這款產品真的太驚喜了，手慢無趕緊衝！" },
+      { id: "biz", label: "英文 · 商業陳述", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+    ],
+  },
+  "es": {
+    presetsTitle: "Audios de muestra:",
+    relayPortraitToast: "¡Retrato recibido cargado automáticamente!",
+    relayVideoToast: "¡Video recibido cargado automáticamente!",
+    loadedPresetPrefix: "Audio predefinido cargado: ",
+    presets: [
+      { id: "female", label: "Voz Femenina · Presentación", url: "https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3", name: "female_explainer.mp3", text: "Prueba de sincronización labial inteligente de alta definición con expresiones faciales precisas." },
+      { id: "male", label: "Voz Masculina · Tecnología", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", name: "male_tech.mp3", text: "Bienvenido al estudio de humanos digitales IA, experimenta una sincronización audiovisual natural." },
+      { id: "ecom", label: "Locutor · Promo Comercial", url: "https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3", name: "ecommerce_host.mp3", text: "¡Descubre el producto estrella de hoy con una oferta exclusiva por tiempo limitado!" },
+      { id: "biz", label: "Inglés · Pitch de Negocios", url: "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3", name: "business_pitch.mp3", text: "Experience next-generation high-fidelity AI lip synchronization in real time." },
+    ],
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -140,9 +217,7 @@ function MediaPickerButton({
       onDrop={handleDrop}
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
-        className: isDragging
-          ? "ring-2 ring-[#e11d74] ring-offset-1 ring-offset-black scale-105"
-          : "",
+        className: `${isDragging ? "ring-2 ring-brand ring-offset-1 ring-offset-black scale-105" : ""} cursor-pointer`,
       })}
     >
       <input
@@ -182,10 +257,10 @@ function MediaPickerButton({
               fill="transparent"
               strokeDasharray={88}
               strokeDashoffset={88 - (88 * progress) / 100}
-              className="text-primary transition-all duration-300"
+              className="text-brand transition-[stroke-dashoffset] duration-300"
             />
           </svg>
-          <span className="absolute text-[9px] font-black text-primary leading-none">
+          <span className="absolute text-[9px] font-black text-brand leading-none">
             {progress}%
           </span>
         </div>
@@ -193,7 +268,7 @@ function MediaPickerButton({
 
       {/* Ready state */}
       {uploadState === UPLOAD_STATE.READY && (
-        <div className="flex flex-col items-center justify-center gap-1 w-full h-full absolute inset-0 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-all">
+        <div className="flex flex-col items-center justify-center gap-1 w-full h-full absolute inset-0 bg-brand-soft rounded-full group-hover:bg-brand-pressed transition-colors duration-fast ease-standard">
           {previewUrl ? (
             isVideo ? (
               <video
@@ -296,7 +371,7 @@ function HistoryThumb({ entry, isActive, onSelect, onDownload }) {
   return (
     <div
       onClick={onSelect}
-      className={`relative group/thumb cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+      className={`relative group/thumb cursor-pointer rounded-lg overflow-hidden border-2 transition-[border-color,box-shadow] duration-fast ease-standard ${
         isActive
           ? "border-primary shadow-glow"
           : "border-white/10 hover:border-white/30"
@@ -315,7 +390,7 @@ function HistoryThumb({ entry, isActive, onSelect, onDownload }) {
             e.stopPropagation();
             onDownload(entry);
           }}
-          className="p-1.5 bg-primary rounded-lg text-black hover:scale-110 transition-transform"
+          className="p-1.5 bg-brand text-ink-on-accent rounded-lg hover:bg-brand-hover active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           title="Download"
         >
           <svg
@@ -377,6 +452,7 @@ const VideoIcon = ({
 // ---------------------------------------------------------------------------
 export default function LipSyncStudio({
   apiKey,
+  initialPrompt = "",
   onGenerationStart,
   onGenerationEnd,
   onGenerationComplete,
@@ -387,6 +463,7 @@ export default function LipSyncStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const relayCopy = resolveCopy(LIPSYNC_RELAY_COPY_EN, LIPSYNC_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_lipsync_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -424,7 +501,10 @@ export default function LipSyncStudio({
   const [audioProgress, setAudioProgress] = useState(0);
 
   // ── Prompt ──────────────────────────────────────────────────────────────
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt);
+  }, [initialPrompt]);
 
   // ── Generation / UI state ───────────────────────────────────────────────
   const [isGenerating, setIsGenerating] = useState(false);
@@ -482,6 +562,43 @@ export default function LipSyncStudio({
       hasRestored.current = true;
     }
   }, []);
+
+  // ── Auto-fill media from relay or query parameter ────────────────────────────
+  useEffect(() => {
+    const handleRelay = (url) => {
+      if (!url) return;
+      const isImg = /\.(png|jpe?g|webp|gif|avif)($|\?)/i.test(url);
+      if (isImg) {
+        setInputMode("image");
+        setImageUrl(url);
+        setImageName("Relayed Portrait");
+        setImageState(UPLOAD_STATE.READY);
+        toast.success(relayCopy.relayPortraitToast);
+      } else {
+        setInputMode("video");
+        setVideoUrl(url);
+        setVideoName("Relayed Video");
+        setVideoState(UPLOAD_STATE.READY);
+        toast.success(relayCopy.relayVideoToast);
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryVideo = params.get("video_url");
+      if (queryVideo) {
+        handleRelay(queryVideo);
+      }
+
+      const listener = (e) => {
+        if (e.detail?.videoUrl) {
+          handleRelay(e.detail.videoUrl);
+        }
+      };
+      window.addEventListener("koyosim-relay-video", listener);
+      return () => window.removeEventListener("koyosim-relay-video", listener);
+    }
+  }, [relayCopy.relayPortraitToast, relayCopy.relayVideoToast]);
 
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
@@ -826,7 +943,7 @@ export default function LipSyncStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-xl hover:border-brand-line transition-[border-color,box-shadow,transform] duration-fast ease-standard active:scale-[0.99] flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -849,6 +966,11 @@ export default function LipSyncStudio({
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
                   />
+                  <VideoRelayMenu
+                    videoUrl={entry.url}
+                    currentTab="lipsync"
+                    locale={locale}
+                  />
                   <button
                     type="button"
                     title={copy.actions.download}
@@ -856,7 +978,7 @@ export default function LipSyncStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `lipsync-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -871,7 +993,7 @@ export default function LipSyncStudio({
                         setInternalHistory(prev => prev.filter((_, i) => i !== idx));
                       }
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-red-400 hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-danger hover:bg-danger hover:text-ink-on-accent active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="3 6 5 6 21 6" />
@@ -913,7 +1035,7 @@ export default function LipSyncStudio({
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-1 mt-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 whitespace-nowrap">
+                      <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line whitespace-nowrap">
                         {copy.badges.lipSync}
                       </span>
                       {entry.resolution && (
@@ -929,28 +1051,28 @@ export default function LipSyncStudio({
           <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-elevation-3 rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -961,7 +1083,7 @@ export default function LipSyncStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.hero.titleLine1}</span>
-              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.hero.titleLine2}
               </span>
             </h1>
@@ -1003,6 +1125,29 @@ export default function LipSyncStudio({
             </PromptSegmentedControl>
           </div>
 
+          {/* Audio Presets */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-rail py-1 px-1">
+            <span className="text-micro font-bold uppercase tracking-wider text-ink-subtle shrink-0 mr-1">
+              {relayCopy.presetsTitle}
+            </span>
+            {relayCopy.presets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  setAudioUrl(preset.url);
+                  setAudioName(preset.name);
+                  setAudioState(UPLOAD_STATE.READY);
+                  setPrompt(preset.text);
+                  toast.success(`${relayCopy.loadedPresetPrefix}${preset.label}`);
+                }}
+                className="rounded-full border border-line bg-wash px-2.5 py-0.5 text-micro font-medium text-ink-muted hover:border-brand-line hover:bg-wash-strong hover:text-ink transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer whitespace-nowrap shrink-0"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
           {/* Uploads row */}
           <div className="flex items-center gap-2 px-1">
             <div className="flex items-center gap-2">
@@ -1020,7 +1165,7 @@ export default function LipSyncStudio({
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
-                      className="text-white/40 group-hover:text-[#e11d74] transition-colors"
+                      className="text-white/40 group-hover:text-brand transition-colors"
                     >
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
@@ -1049,7 +1194,7 @@ export default function LipSyncStudio({
                   label={copy.media.videoLabel}
                   mediaCopy={copy.media}
                   icon={
-                    <VideoIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />
+                    <VideoIcon className="text-white/40 group-hover:text-brand transition-colors" />
                   }
                   onUpload={handleVideoPick}
                   onClear={() => {
@@ -1072,7 +1217,7 @@ export default function LipSyncStudio({
                 label={copy.media.audioLabel}
                 mediaCopy={copy.media}
                 icon={
-                  <MicIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />
+                  <MicIcon className="text-white/40 group-hover:text-brand transition-colors" />
                 }
                 onUpload={handleAudioPick}
                 onClear={() => {
@@ -1091,10 +1236,11 @@ export default function LipSyncStudio({
 
             {/* Prompt textarea */}
             <div className="flex-1 flex flex-col">
-              <PromptTextarea
+              <PromptInputField
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptInput}
+                onEnter={handleGenerate}
                 placeholder={copy.prompt.placeholder}
               />
             </div>
@@ -1114,11 +1260,11 @@ export default function LipSyncStudio({
                       openDropdown === "model" ? null : "model",
                     );
                   }}
-                  className={promptControlClassName({
+                  className={`${promptControlClassName({
                     active: openDropdown === "model",
-                  })}
+                  })} cursor-pointer`}
                 >
-                  <div className="w-3.5 h-3.5 bg-[#e11d74] rounded-sm flex items-center justify-center">
+                  <div className="w-3.5 h-3.5 bg-brand rounded-sm flex items-center justify-center">
                     <span className="text-[9px] font-black text-black">
                       S
                     </span>
@@ -1152,9 +1298,9 @@ export default function LipSyncStudio({
                         openDropdown === "resolution" ? null : "resolution",
                       );
                     }}
-                    className={promptControlClassName({
+                    className={`${promptControlClassName({
                       active: openDropdown === "resolution",
-                    })}
+                    })} cursor-pointer`}
                   >
                     <PromptQualityIcon />
                     <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1203,7 +1349,7 @@ export default function LipSyncStudio({
         >
           <button
             type="button"
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-[background-color,transform] duration-fast ease-standard active:scale-95 active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring border border-white/10"
             onClick={(e) => {
               e.stopPropagation();
               setFullscreenUrl(null);

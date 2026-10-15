@@ -9,7 +9,7 @@
     "modeGenerated": "✦ Generado",
     "download": "Descargar",
     "remixThis": "Remezclar esta generación",
-    "legacyRemixUnavailable": "Generación heredada: remezcla no disponible. Genera un nuevo gráfico en movimiento para habilitar la edición.",
+    "legacyRemixUnavailable": "No se puede remezclar hasta que la generación tenga un recurso privado del servidor y una ruta de edición de video revisada.",
     "delete": "Eliminar",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este elemento generado?",
     "noPrompt": "Sin prompt",
@@ -40,14 +40,19 @@
   },
   "controls": {
     "aspectRatio": "Relación de Aspecto",
+    "resolution": "Resolución",
     "duration": "Duración",
     "sourcePrefix": "Origen:",
     "pickSource": "Elegir origen…",
     "sourceGeneration": "Generación de Origen",
-    "shortcutHint": "Ctrl+Enter para ejecutar"
+    "shortcutHint": "Ctrl+Enter para ejecutar",
+    "model": "Modelo",
+    "pickModel": "Elige un modelo…",
+    "loadingModels": "Cargando modelos disponibles…",
+    "modelsUnavailable": "No hay modelos de texto a video con cotización disponible."
   },
   "errors": {
-    "staleEditUnavailable": "Esta generación no se puede remezclar: el código de animación no se guardó en el servidor. Primero genera un nuevo gráfico en movimiento y luego remezcla ese resultado.",
+    "staleEditUnavailable": "La edición de video no está disponible hasta que el servidor exponga un recurso propio del usuario y una ruta de edición revisada.",
     "generationFailed": "Error al generar Movimiento Vibe"
   },
   "generateButton": {
@@ -55,5 +60,11 @@
     "generating": "Generando...",
     "remix": "Remezclar",
     "generate": "Generar"
+  },
+  "history": {
+    "loading": "Cargando tu historial de Vibe Motion…",
+    "loadFailed": "No se pudo cargar el historial de generaciones. Inténtalo más tarde.",
+    "unavailable": "Este video privado no está disponible en este momento.",
+    "downloadUnavailable": "No se pudo descargar el video privado. Inténtalo más tarde."
   }
 }

@@ -16,6 +16,7 @@ import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
 import {
+  applyActiveModelDirectory,
   t2iModels,
   i2iModels,
   isModelActive,
@@ -42,6 +43,7 @@ import {
   getModelDescription,
   getModelBadge,
   getModelDisplayName,
+  getServerModelMeta,
 } from "../modelDescriptions.js";
 import FrontendModelPicker from "./FrontendModelPicker.jsx";
 import {
@@ -53,6 +55,12 @@ import {
   createModelParameterValues,
   getSupplementalModelInputs,
 } from "../modelParameters.js";
+import {
+  buildPublicImageParameters,
+  filterPublicProviderParameters,
+  findPublicImageCapability,
+  getPublicImageControlOptions,
+} from "../publicGenerationCapabilities.js";
 import {
   PROMPT_CONTROL_LABEL_CLASS,
   PromptAspectRatioIcon,
@@ -575,7 +583,7 @@ export function UploadButton({
                 <button
                   type="button"
                   onClick={handleDone}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-primary text-black rounded-xl text-xs font-black transition-all hover:scale-105"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-brand text-ink-on-accent rounded-xl text-xs font-semibold hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   {t.doneButton.replace("{count}", count)}
                 </button>
@@ -587,7 +595,7 @@ export function UploadButton({
                   setPanelOpen(false);
                   fileInputRef.current?.click();
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-full text-xs font-bold transition-all border border-primary/20"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-soft hover:bg-brand-pressed text-brand rounded-full text-xs font-medium active:scale-[0.98] active:duration-instant transition-[background-color,border-color,transform] duration-fast ease-standard border border-brand-line cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 <svg
                   width="11"
@@ -638,7 +646,7 @@ export function UploadButton({
                     key={entry.id}
                     title={entry.name}
                     onClick={() => entry.url && handleCellClick(entry)}
-                    className={`relative rounded-xl overflow-hidden border-2 cursor-pointer group/cell aspect-square transition-all ${
+                    className={`relative rounded-xl overflow-hidden border-2 cursor-pointer group/cell aspect-square transition-[border-color,box-shadow,opacity] duration-fast ease-standard ${
                       isSelected
                         ? "border-primary shadow-glow"
                         : "border-white/10 hover:border-white/30"
@@ -687,9 +695,9 @@ export function UploadButton({
                     )}
 
                     {isSelected && (
-                      <div className="absolute top-1 left-1 min-w-[20px] h-5 bg-primary rounded-full flex items-center justify-center px-1">
+                      <div className="absolute top-1 left-1 min-w-[20px] h-5 bg-brand text-ink-on-accent rounded-full flex items-center justify-center px-1">
                         {isMulti ? (
-                          <span className="text-[10px] font-black text-black">
+                          <span className="text-[10px] font-black text-ink-on-accent">
                             {selIdx + 1}
                           </span>
                         ) : (
@@ -698,7 +706,7 @@ export function UploadButton({
                             height="9"
                             viewBox="0 0 24 24"
                             fill="none"
-                            stroke="black"
+                            stroke="currentColor"
                             strokeWidth="4"
                           >
                             <polyline points="20 6 9 17 4 12" />
@@ -720,7 +728,7 @@ export function UploadButton({
               <button
                 type="button"
                 onClick={handleDone}
-                className="px-4 py-1.5 bg-primary text-black rounded-xl text-xs font-black transition-all hover:scale-105"
+                className="px-4 py-1.5 bg-brand text-ink-on-accent rounded-xl text-xs font-semibold hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {t.useSelected}
               </button>
@@ -803,7 +811,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy, locale = "en" }
         <button
           type="button"
           onClick={() => setSelectedProvider("all")}
-          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all flex-shrink-0 cursor-pointer ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-[background-color,color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring flex-shrink-0 cursor-pointer ${
             selectedProvider === "all"
               ? "bg-white/10 text-yellow-400 border-yellow-500/30 shadow-md scale-105"
               : "bg-white/[0.02] text-white/50 border-white/[0.03] hover:bg-white/5 hover:text-white"
@@ -824,7 +832,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy, locale = "en" }
               type="button"
               onClick={() => setSelectedProvider(p.id)}
               aria-pressed={isSelected}
-              className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-all cursor-pointer ${
+              className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-[background-color,color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 isSelected
                   ? `${style.bg} scale-105 shadow-md shadow-black/10`
                   : "bg-white/[0.02] text-white/40 border-white/[0.02] hover:bg-white/5 hover:text-white/80"
@@ -906,7 +914,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy, locale = "en" }
                 }}
                 className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors border ${
                   selectedCategory === category.id
-                    ? "bg-primary/15 text-primary border-primary/30"
+                    ? "bg-brand-soft text-brand border-brand-line font-medium"
                     : "bg-white/[0.02] text-white/50 border-white/[0.04] hover:bg-white/5 hover:text-white"
                 }`}
               >
@@ -945,7 +953,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy, locale = "en" }
                   onSelect(entry, activeCategory.id);
                   onClose();
                 }}
-                className={`flex items-center justify-between p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-all border border-transparent hover:border-white/5 ${
+                className={`flex items-center justify-between p-3 hover:bg-white/5 rounded-lg cursor-pointer transition-[background-color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant border border-transparent hover:border-white/5 ${
                   isSelected ? "bg-white/5 border-white/5" : ""
                 }`}
               >
@@ -970,7 +978,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy, locale = "en" }
                             ? "bg-blue-500/10 text-blue-400 border-blue-500/10"
                             : family.id.includes("effects")
                               ? "bg-purple-500/10 text-purple-400 border-purple-500/10"
-                              : "bg-primary/10 text-primary border-primary/10"
+                              : "bg-brand-soft text-brand border-brand-line"
                         } border rounded-full flex items-center justify-center font-bold text-xs shadow-inner uppercase`}
                       >
                         {entry.name.charAt(0)}
@@ -1080,6 +1088,35 @@ export default function ImageStudio({
   }, [PERSIST_KEY]);
 
   // ── Model state ─────────────────────────────────────────────────────────
+  const [modelDirectoryRevision, setModelDirectoryRevision] = useState(0);
+  useEffect(() => {
+    const refreshModelDirectory = () => setModelDirectoryRevision((revision) => revision + 1);
+    window.addEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+    if (window.__KOYOSIM_ACTIVE_MODEL_IDS__ instanceof Set) {
+      setModelDirectoryRevision(1);
+      return () => window.removeEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+    }
+
+    let mounted = true;
+    fetch("/api/models/active?nocache=1")
+      .then((response) => {
+        if (!response.ok) throw new Error("Active model directory unavailable");
+        return response.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (!Array.isArray(data?.models)) throw new Error("Active model directory is invalid");
+        applyActiveModelDirectory(data.models);
+      })
+      .catch(() => {
+        if (mounted) applyActiveModelDirectory([]);
+      });
+    return () => {
+      mounted = false;
+      window.removeEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+    };
+  }, []);
+
   const defaultModel = t2iModels.find((m) => isModelActive(m.id)) || t2iModels.find((m) => m.id === "gpt-image-2.5-flash") || t2iModels[0] || {};
   const initialFamily = imageModelCatalog.familyByVariantId.get(defaultModel.id);
   const [imageMode, setImageMode] = useState(false); // false=t2i, true=i2i
@@ -1338,17 +1375,35 @@ export default function ImageStudio({
   }, [droppedFiles, onFilesHandled, processDroppedImages]);
 
   // ── Derived: current model lists & helpers ───────────────────────────────
-  const currentAspectRatios = imageMode
-    ? getAspectRatiosForI2IModel(selectedModelId)
-    : getAspectRatiosForModel(selectedModelId);
-  const currentResolutions = imageMode
-    ? getResolutionsForI2IModel(selectedModelId)
-    : getResolutionsForModel(selectedModelId);
+  const currentMode = imageMode ? "i2i" : "t2i";
+  const selectedModelMeta = getServerModelMeta(selectedModelId);
+  const hasServerDirectory = Boolean(selectedModelMeta) || modelDirectoryRevision > 0;
   const currentQualityField = imageMode
     ? getQualityFieldForI2IModel(selectedModelId)
     : getQualityFieldForModel(selectedModelId);
+  const currentImageCapability = findPublicImageCapability(selectedModelMeta, currentMode);
+  const publicControlOptions = getPublicImageControlOptions(currentImageCapability, currentQualityField);
+  const currentAspectRatios = hasServerDirectory
+    ? publicControlOptions.aspectRatios
+    : imageMode
+    ? getAspectRatiosForI2IModel(selectedModelId)
+    : getAspectRatiosForModel(selectedModelId);
+  const currentResolutions = hasServerDirectory
+    ? publicControlOptions.choices
+    : imageMode
+    ? getResolutionsForI2IModel(selectedModelId)
+    : getResolutionsForModel(selectedModelId);
   const showQualityBtn = currentResolutions.length > 0;
-  const currentEffects = imageMode ? getEffectsForI2IModel(selectedModelId) : [];
+  const declaredParameters = new Set(
+    (Array.isArray(currentImageCapability?.parameters) ? currentImageCapability.parameters : [])
+      .filter((key) => typeof key === "string")
+      .map((key) => key.toLowerCase()),
+  );
+  const currentEffects = imageMode
+    ? getEffectsForI2IModel(selectedModelId).filter((effect) =>
+        !hasServerDirectory || declaredParameters.has("name"),
+      )
+    : [];
   const showEffectBtn = currentEffects.length > 0;
   const selectedFamily = imageModelCatalog.familyById.get(selectedFamilyId) || initialFamily;
   const selectedPickerEntry = imageModelPickerEntryByVariantId.get(selectedModelId);
@@ -1356,9 +1411,10 @@ export default function ImageStudio({
     selectedFamily.id,
     selectedPickerEntry?.name || selectedFamily.name
   );
-  const currentMode = imageMode ? "i2i" : "t2i";
   const selectedVariant = imageModelCatalog.variantById.get(selectedModelId);
-  const supplementalInputs = getSupplementalModelInputs(selectedVariant?.model);
+  const supplementalInputs = getSupplementalModelInputs(selectedVariant?.model).filter(({ key }) =>
+    !hasServerDirectory || declaredParameters.has(String(key).toLowerCase()),
+  );
   const referenceVariant = getImageReferenceVariant(
     imageModelCatalog,
     selectedFamily,
@@ -1367,6 +1423,16 @@ export default function ImageStudio({
   const referenceImageLimit = referenceVariant
     ? getModelMediaCapabilities(referenceVariant.model).image.maxItems
     : 1;
+
+  // Persistence and URL state can restore options that the live route no
+  // longer accepts. Clamp them as soon as the authoritative directory loads.
+  useEffect(() => {
+    if (!hasServerDirectory) return;
+    setSelectedAr((value) => currentAspectRatios.includes(value) ? value : (currentAspectRatios[0] || ""));
+    setSelectedQuality((value) => currentResolutions.includes(value) ? value : (currentResolutions[0] || null));
+    if (!currentEffects.includes(selectedEffect)) setSelectedEffect(currentEffects[0] || "");
+  }, [hasServerDirectory, modelDirectoryRevision, selectedModelId, currentMode,
+    currentAspectRatios.join("|"), currentResolutions.join("|"), currentEffects.join("|"), selectedAr, selectedQuality, selectedEffect]);
 
   const applySelectedVariant = useCallback((variant, mode, family) => {
     const model = variant.model;
@@ -1658,6 +1724,52 @@ export default function ImageStudio({
       }
     }
 
+    const publicImageParameters = hasServerDirectory
+      ? buildPublicImageParameters({
+          capability: currentImageCapability,
+          taskType: currentMode,
+          prompt,
+          aspectRatio: selectedAr,
+          qualityField: currentQualityField,
+          qualityValue: selectedQuality,
+        })
+      : null;
+    if (hasServerDirectory && !publicImageParameters) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+
+    const rawReferenceParams = buildReferenceParams(selectedVariant?.model, {
+      imageUrls: uploadedImageUrls,
+    });
+    if (imageMode && uploadedImageUrls.length > 0 && Object.keys(rawReferenceParams).length === 0) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const filteredReferenceParams = hasServerDirectory
+      ? filterPublicProviderParameters(rawReferenceParams, currentImageCapability)
+      : rawReferenceParams;
+    if (hasServerDirectory && Object.keys(rawReferenceParams).some((key) => !Object.hasOwn(filteredReferenceParams, key))) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const rawSupplementalParams = buildSupplementalInputPayload(
+      selectedVariant?.model,
+      modelParameterValues,
+    );
+    const filteredSupplementalParams = hasServerDirectory
+      ? filterPublicProviderParameters(rawSupplementalParams, currentImageCapability)
+      : rawSupplementalParams;
+    const publicParameters = hasServerDirectory ? {
+      ...publicImageParameters,
+      ...filteredSupplementalParams,
+      ...filteredReferenceParams,
+      ...(swapImageUrl && declaredParameters.has("swap_url") ? { swap_url: swapImageUrl } : {}),
+      ...(imageMode && selectedEffect && currentEffects.includes(selectedEffect) && declaredParameters.has("name")
+        ? { name: selectedEffect }
+        : {}),
+    } : null;
+
     onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
@@ -1672,6 +1784,7 @@ export default function ImageStudio({
                 selectedVariant?.model,
                 modelParameterValues,
               ),
+              ...rawReferenceParams,
               images_list: uploadedImageUrls,
               image_url: uploadedImageUrls[0],
               aspect_ratio: selectedAr,
@@ -1682,24 +1795,23 @@ export default function ImageStudio({
               genParams[currentQualityField] = selectedQuality;
             }
             if (showEffectBtn && selectedEffect) genParams.name = selectedEffect;
+            if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateI2I(apiKey, genParams);
           } else {
-            const referenceParams = buildReferenceParams(selectedVariant?.model, {
-              imageUrls: uploadedImageUrls,
-            });
             const genParams = {
               model: selectedModelId,
               ...buildSupplementalInputPayload(
                 selectedVariant?.model,
                 modelParameterValues,
               ),
-              ...referenceParams,
+              ...rawReferenceParams,
               prompt: prompt.trim(),
               aspect_ratio: selectedAr,
             };
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
+            if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateImage(apiKey, genParams);
           }
         })
@@ -1896,6 +2008,44 @@ export default function ImageStudio({
     const targetAr = batch.aspect_ratio || selectedAr;
     const targetRefImages = batch.referenceImages || [];
     const isTargetI2I = targetRefImages.length > 0;
+    const targetMode = isTargetI2I ? "i2i" : "t2i";
+    const targetVariant = imageModelCatalog.variantById.get(targetModelId);
+    const targetCapability = findPublicImageCapability(getServerModelMeta(targetModelId), targetMode);
+    const hasTargetServerDirectory = Boolean(getServerModelMeta(targetModelId)) || modelDirectoryRevision > 0;
+    const targetQualityField = isTargetI2I
+      ? getQualityFieldForI2IModel(targetModelId)
+      : getQualityFieldForModel(targetModelId);
+    const targetImageParameters = hasTargetServerDirectory
+      ? buildPublicImageParameters({
+          capability: targetCapability,
+          taskType: targetMode,
+          prompt: targetPrompt,
+          aspectRatio: targetAr,
+          qualityField: targetQualityField,
+          qualityValue: batch.quality,
+        })
+      : null;
+    if (hasTargetServerDirectory && !targetImageParameters) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const rawTargetReferences = buildReferenceParams(targetVariant?.model, {
+      imageUrls: targetRefImages,
+    });
+    if (hasTargetServerDirectory && isTargetI2I && Object.keys(rawTargetReferences).length === 0) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const filteredTargetReferences = hasTargetServerDirectory
+      ? filterPublicProviderParameters(rawTargetReferences, targetCapability)
+      : rawTargetReferences;
+    if (hasTargetServerDirectory && Object.keys(rawTargetReferences).some((key) => !Object.hasOwn(filteredTargetReferences, key))) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const publicParameters = hasTargetServerDirectory
+      ? { ...targetImageParameters, ...filteredTargetReferences }
+      : null;
 
     if (!targetPrompt && !isTargetI2I) {
       toast.error(copy.errors?.enterPromptFirst || "请输入提示词");
@@ -1910,8 +2060,7 @@ export default function ImageStudio({
 
     try {
       const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      const targetVariant = imageModelCatalog.variantById.get(targetModelId);
-      const curQualityField = getQualityFieldForModel(targetModelId);
+      const curQualityField = targetQualityField;
       const count = batch.items?.length || 1;
 
       const settledResults = await Promise.allSettled(
@@ -1919,6 +2068,7 @@ export default function ImageStudio({
           if (isTargetI2I) {
             const genParams = {
               model: targetModelId,
+              ...rawTargetReferences,
               images_list: targetRefImages,
               image_url: targetRefImages[0],
               aspect_ratio: targetAr,
@@ -1927,6 +2077,7 @@ export default function ImageStudio({
             if (curQualityField && batch.quality) {
               genParams[curQualityField] = batch.quality;
             }
+            if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateI2I(apiKey, genParams);
           } else {
             const referenceParams = buildReferenceParams(targetVariant?.model, {
@@ -1941,6 +2092,7 @@ export default function ImageStudio({
             if (curQualityField && batch.quality) {
               genParams[curQualityField] = batch.quality;
             }
+            if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateImage(apiKey, genParams);
           }
         })
@@ -1977,7 +2129,7 @@ export default function ImageStudio({
       setGenerating(false);
       onGenerationEnd?.();
     }
-  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, handleReEdit, locale]);
+  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, modelDirectoryRevision, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, handleReEdit, locale]);
 
   const placeholderText =
     uploadedImageUrls.length > 1
@@ -2008,14 +2160,14 @@ export default function ImageStudio({
                 {batches.map((batch) => (
                   <div
                     key={batch.id}
-                    className="rounded-2xl border border-white/10 bg-[#121418]/85 backdrop-blur-md p-4 sm:p-5 shadow-elevation-2 flex flex-col gap-4 transition-all hover:border-white/20"
+                    className="rounded-2xl border border-white/10 bg-[#121418]/85 backdrop-blur-md p-4 sm:p-5 shadow-elevation-2 flex flex-col gap-4 transition-[border-color,box-shadow] duration-fast ease-standard hover:border-white/20"
                   >
                     {/* Header Row: Prompt + Parameters + Actions (对标图1 & 图4) */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       {/* Left: Prompt & Meta Chips */}
                       <div className="flex-1 min-w-0 pr-2">
                         <p
-                          className="text-white/90 text-xs sm:text-sm leading-relaxed font-normal select-text break-words line-clamp-3 hover:line-clamp-none transition-all cursor-text mb-2.5"
+                          className="text-white/90 text-xs sm:text-sm leading-relaxed font-normal select-text break-words line-clamp-3 hover:line-clamp-none transition-[color] duration-fast ease-standard cursor-text mb-2.5"
                           title={batch.prompt}
                         >
                           “{batch.prompt || copy.gallery.noPrompt}”
@@ -2048,7 +2200,7 @@ export default function ImageStudio({
                         <button
                           type="button"
                           onClick={() => handleReEdit(batch)}
-                          className="h-8 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                          className="h-8 px-3 rounded-full bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-1.5 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1"
                           title={String(locale || "").startsWith("zh") ? "将此任务的提示词与参数回填到输入框" : "Load prompt & params into composer"}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2063,7 +2215,7 @@ export default function ImageStudio({
                           type="button"
                           onClick={() => handleReGenerate(batch)}
                           disabled={generating}
-                          className="h-8 px-3.5 rounded-full bg-brand hover:bg-brand-hover text-white text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-elevation-1 disabled:opacity-50"
+                          className="h-8 px-3.5 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-xs font-medium flex items-center gap-1.5 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1 disabled:opacity-50"
                           title={String(locale || "").startsWith("zh") ? "使用相同参数再生成一次" : "Generate again with same params"}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2077,7 +2229,7 @@ export default function ImageStudio({
                           <button
                             type="button"
                             onClick={() => setOpenBatchMenuId(openBatchMenuId === batch.id ? null : batch.id)}
-                            className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+                            className="h-8 w-8 rounded-full bg-surface hover:bg-surface-raised border border-line text-ink-muted hover:text-ink flex items-center justify-center transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                             title={String(locale || "").startsWith("zh") ? "更多操作" : "More"}
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -2088,7 +2240,7 @@ export default function ImageStudio({
                           </button>
 
                           {openBatchMenuId === batch.id && (
-                            <div className="absolute right-0 top-10 w-36 rounded-xl bg-[#1a1d23] border border-white/10 shadow-elevation-3 py-1.5 z-30 animate-fade-in flex flex-col">
+                            <div className="absolute right-0 top-10 w-36 rounded-xl bg-overlay border border-line shadow-elevation-3 py-1.5 z-30 animate-in fade-in duration-fast flex flex-col">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -2142,7 +2294,7 @@ export default function ImageStudio({
                           onClick={() => {
                             setActiveDetailItem({ item: entry, batch });
                           }}
-                          className="group relative rounded-xl overflow-hidden border border-white/10 bg-[#0a0b0d] hover:border-brand/60 hover:shadow-elevation-3 transition-all duration-300 cursor-pointer flex flex-col"
+                          className="group relative rounded-xl overflow-hidden border border-white/10 bg-[#0a0b0d] hover:border-brand/60 hover:shadow-elevation-3 transition-[border-color,box-shadow] duration-fast ease-standard cursor-pointer flex flex-col"
                         >
                           {failedImageUrls[entry.url] ? (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/60 p-4 text-center">
@@ -2167,7 +2319,7 @@ export default function ImageStudio({
                                 e.stopPropagation();
                                 handleUseAsReference(entry.url);
                               }}
-                              className="p-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-md text-white/90 hover:text-white border border-white/15 transition-all active:scale-90"
+                              className="p-1.5 rounded-full bg-overlay/80 hover:bg-surface-raised backdrop-blur-md text-ink border border-line transition-[background-color,color,transform] duration-fast ease-standard active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                             >
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -2180,9 +2332,9 @@ export default function ImageStudio({
                               title={String(locale || "").startsWith("zh") ? "下载图片" : "Download"}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                downloadImage(entry.url, `koyosim-${entry.id || imgIdx}.jpg`);
+                                downloadImage(entry.url, `supdance-${entry.id || imgIdx}.jpg`);
                               }}
-                              className="p-1.5 rounded-full bg-black/70 hover:bg-black/90 backdrop-blur-md text-white/90 hover:text-white border border-white/15 transition-all active:scale-90"
+                              className="p-1.5 rounded-full bg-overlay/80 hover:bg-surface-raised backdrop-blur-md text-ink border border-line transition-[background-color,color,transform] duration-fast ease-standard active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                             >
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -2292,6 +2444,7 @@ export default function ImageStudio({
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onEnter={handleGenerate}
               placeholder={placeholderText}
               mention={mention}
               mentionTitle={copy.promptBar.mentionTitle}
@@ -2419,6 +2572,7 @@ export default function ImageStudio({
                       selectedAr={selectedAr}
                       onSelectAr={(ar) => setSelectedAr(ar)}
                       resolutions={currentResolutions}
+                      qualityLabel={currentQualityField === "quality" ? copy.popovers.quality : copy.popovers.resolution}
                       selectedQuality={selectedQuality}
                       onSelectQuality={(q) => setSelectedQuality(q)}
                       showQuality={showQualityBtn}

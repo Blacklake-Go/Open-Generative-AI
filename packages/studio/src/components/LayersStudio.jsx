@@ -1377,7 +1377,7 @@ export default function LayersStudio({
   };
 
   return (
-    <div className="relative w-full h-full bg-[#121318] text-white flex overflow-hidden font-sans select-none">
+    <div className="relative w-full h-full bg-transparent text-white flex overflow-hidden font-sans select-none">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -1403,7 +1403,7 @@ export default function LayersStudio({
         <button
           onClick={() => fileInputRef.current?.click()}
           title={copy.tools.uploadOrChangeImage}
-          className="group relative w-12 h-14 rounded-2xl overflow-hidden bg-[#1a1c23] border border-white/10 flex items-center justify-center transition-all duration-200 hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.5)] ring-2 ring-[#e11d74]/80"
+          className="group relative w-12 h-14 rounded-2xl overflow-hidden bg-surface-glass/85 border border-white/10 flex items-center justify-center transition-[border-color,transform,box-shadow] duration-fast ease-standard hover:scale-105 active:scale-[0.98] active:duration-instant shadow-elevation-2 ring-1 ring-brand focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
         >
           {currentImageUrl ? (
             <img
@@ -1432,7 +1432,7 @@ export default function LayersStudio({
         {markedRegions.length > 0 && (
           <button
             onClick={() => setMarkedRegions([])}
-            className="px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 text-[10px] font-black rounded-lg border border-red-500/40 shadow-sm"
+            className="px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-300 text-[10px] font-black rounded-lg border border-red-500/40 shadow-sm transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             title={copy.tools.clearMarkedRegions}
           >
             Clear ({markedRegions.length})
@@ -1447,7 +1447,7 @@ export default function LayersStudio({
         onMouseMove={doPan}
         onMouseUp={stopPan}
         onMouseLeave={stopPan}
-        className={`flex-1 relative h-full flex flex-col items-center justify-center p-4 pb-28 overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1d2029] via-[#0f1015] to-[#08090c] ${
+        className={`flex-1 relative h-full flex flex-col items-center justify-center p-4 pb-28 overflow-hidden bg-transparent ${
           activeTool === "hand" ? "cursor-grab active:cursor-grabbing" : ""
         }`}
       >
@@ -1597,7 +1597,7 @@ export default function LayersStudio({
                   <button
                     onClick={handleRunRegionalEdit}
                     disabled={isProcessing}
-                    className="w-7 h-7 rounded-full bg-[#e11d74] hover:bg-[#e11d74] text-white flex items-center justify-center shadow-sm transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                    className="w-7 h-7 rounded-full bg-brand hover:bg-brand-hover text-ink-on-accent flex items-center justify-center shadow-sm transition-[background-color,transform] duration-fast ease-standard hover:scale-105 active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring flex-shrink-0 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                     title={copy.tools.runSelectionEdit}
                   >
                     <svg
@@ -1649,9 +1649,9 @@ export default function LayersStudio({
                           e.stopPropagation();
                           setCarouselIndex(idx);
                         }}
-                        className={`absolute inset-0 w-full h-full object-contain transition-all duration-200 cursor-pointer pointer-events-auto ${
+                        className={`absolute inset-0 w-full h-full object-contain transition-[opacity,box-shadow] duration-fast ease-standard cursor-pointer pointer-events-auto ${
                           isSelected
-                            ? "ring-2 ring-[#e11d74] drop-shadow-sm"
+                            ? "ring-2 ring-brand drop-shadow-sm"
                             : "hover:opacity-90"
                         }`}
                       />
@@ -1671,12 +1671,12 @@ export default function LayersStudio({
                     Processing Image...
                   </p>
                   <p className="text-xs text-white/50 mt-1 font-jost font-medium">
-                    koyosim Studio
+                    SupDance Studio
                   </p>
 
                   <div className="w-48 bg-white/10 h-1.5 rounded-full overflow-hidden mt-4">
                     <div
-                      className="bg-gradient-to-r from-[#e11d74] to-[#e11d74] h-full transition-all duration-300"
+                      className="bg-gradient-to-r from-brand to-brand-hover h-full transition-[width] duration-300 ease-standard"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -1690,10 +1690,10 @@ export default function LayersStudio({
               onDragLeave={handleDropzoneDragLeave}
               onDragOver={handleDropzoneDragOver}
               onDrop={handleDropzoneDrop}
-              className={`flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-3xl cursor-pointer transition-[border-color,background-color,transform] duration-fast ease-standard ${
                 isDropzoneDragging
-                  ? "border-[#e11d74] bg-[#e11d74]/10 scale-[1.02]"
-                  : "border-white/20 hover:border-[#e11d74]/60 bg-[#16181f]/50 hover:bg-[#16181f]/80"
+                  ? "border-brand bg-brand-soft scale-[1.02]"
+                  : "border-white/20 hover:border-brand-line bg-surface-glass/50 hover:bg-surface-glass/80"
               }`}
             >
               <div className="w-16 h-16 rounded-2xl bg-[#e11d74]/10 text-[#e11d74] flex items-center justify-center mb-4">
@@ -1728,9 +1728,9 @@ export default function LayersStudio({
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setActiveShape("line")}
-                  className={`p-1.5 rounded-lg border transition-all ${
+                  className={`p-1.5 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                     activeShape === "line"
-                      ? "bg-[#e11d74] text-white border-[#e11d74]"
+                      ? "bg-brand text-ink-on-accent border-brand-line"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.line}
@@ -1749,9 +1749,9 @@ export default function LayersStudio({
 
                 <button
                   onClick={() => setActiveShape("arrow")}
-                  className={`p-1.5 rounded-lg border transition-all ${
+                  className={`p-1.5 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                     activeShape === "arrow"
-                      ? "bg-[#e11d74] text-white border-[#e11d74]"
+                      ? "bg-brand text-ink-on-accent border-brand-line"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.arrow}
@@ -1771,9 +1771,9 @@ export default function LayersStudio({
 
                 <button
                   onClick={() => setActiveShape("rect")}
-                  className={`p-1.5 rounded-lg border transition-all ${
+                  className={`p-1.5 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                     activeShape === "rect"
-                      ? "bg-[#e11d74] text-white border-[#e11d74]"
+                      ? "bg-brand text-ink-on-accent border-brand-line"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.rectangle}
@@ -1792,9 +1792,9 @@ export default function LayersStudio({
 
                 <button
                   onClick={() => setActiveShape("circle")}
-                  className={`p-1.5 rounded-lg border transition-all ${
+                  className={`p-1.5 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                     activeShape === "circle"
-                      ? "bg-[#e11d74] text-white border-[#e11d74]"
+                      ? "bg-brand text-ink-on-accent border-brand-line"
                       : "text-white/70 hover:text-white border-transparent"
                   }`}
                   title={copy.tools.circle}
@@ -1819,7 +1819,7 @@ export default function LayersStudio({
                   <button
                     key={c}
                     onClick={() => setShapeColor(c)}
-                    className={`w-4 h-4 rounded-full border border-white/20 transition-all ${
+                    className={`w-4 h-4 rounded-full border border-white/20 transition-[transform,box-shadow] duration-fast ease-standard active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                       shapeColor === c
                         ? "scale-125 ring-2 ring-white shadow-md"
                         : "hover:scale-110"
@@ -1844,7 +1844,7 @@ export default function LayersStudio({
                     <button
                       key={c}
                       onClick={() => setBrushColor(c)}
-                      className={`w-5 h-5 rounded-full border border-white/20 transition-all ${
+                      className={`w-5 h-5 rounded-full border border-white/20 transition-[transform,box-shadow] duration-fast ease-standard active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                         brushColor === c
                           ? "scale-125 ring-2 ring-white shadow-md"
                           : "hover:scale-110"
@@ -1883,7 +1883,7 @@ export default function LayersStudio({
                 <button
                   onClick={handleUndo}
                   disabled={historyIndex < 0}
-                  className="p-1.5 text-white/70 hover:text-white disabled:opacity-30 rounded-lg hover:bg-white/5"
+                  className="p-1.5 text-white/70 hover:text-white disabled:opacity-30 rounded-lg hover:bg-white/5 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                   title={copy.tools.undoStroke}
                 >
                   ↶
@@ -1891,14 +1891,14 @@ export default function LayersStudio({
                 <button
                   onClick={handleRedo}
                   disabled={historyIndex >= historyStack.length - 1}
-                  className="p-1.5 text-white/70 hover:text-white disabled:opacity-30 rounded-lg hover:bg-white/5"
+                  className="p-1.5 text-white/70 hover:text-white disabled:opacity-30 rounded-lg hover:bg-white/5 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                   title={copy.tools.redoStroke}
                 >
                   ↷
                 </button>
                 <button
                   onClick={clearDrawingCanvas}
-                  className="p-1.5 text-rose-400 hover:text-rose-300 rounded-lg hover:bg-white/5 text-xs font-bold"
+                  className="p-1.5 text-rose-400 hover:text-rose-300 rounded-lg hover:bg-white/5 text-xs font-bold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                   title={copy.tools.clearDrawings}
                 >
                   Clear
@@ -1911,9 +1911,9 @@ export default function LayersStudio({
           <div className="flex items-center gap-1.5 px-3.5 py-2 bg-[#1b1e26]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_12px_35px_rgba(0,0,0,0.6)]">
             <button
               onClick={() => setActiveTool("pointer")}
-              className={`p-2 rounded-xl transition-all ${
+              className={`p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "pointer"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.selectPointerTool}
@@ -1930,9 +1930,9 @@ export default function LayersStudio({
 
             <button
               onClick={() => setActiveTool("hand")}
-              className={`p-2 rounded-xl transition-all ${
+              className={`p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "hand"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.panTool}
@@ -1956,9 +1956,9 @@ export default function LayersStudio({
               onClick={() =>
                 setActiveTool(activeTool === "lasso" ? "pointer" : "lasso")
               }
-              className={`group relative p-2 rounded-xl transition-all ${
+              className={`group relative p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "lasso"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.lassoEdit}
@@ -1988,9 +1988,9 @@ export default function LayersStudio({
                   activeTool === "regional-edit" ? "pointer" : "regional-edit",
                 )
               }
-              className={`group relative p-2 rounded-xl transition-all ${
+              className={`group relative p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "regional-edit"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.regionalEdit}
@@ -2022,9 +2022,9 @@ export default function LayersStudio({
               onClick={() =>
                 setActiveTool(activeTool === "draw" ? "pointer" : "draw")
               }
-              className={`p-2 rounded-xl transition-all ${
+              className={`p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "draw"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.highlightMarkerPen}
@@ -2046,9 +2046,9 @@ export default function LayersStudio({
               onClick={() =>
                 setActiveTool(activeTool === "eraser" ? "pointer" : "eraser")
               }
-              className={`p-2 rounded-xl transition-all ${
+              className={`p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "eraser"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.eraserTool}
@@ -2069,9 +2069,9 @@ export default function LayersStudio({
               onClick={() =>
                 setActiveTool(activeTool === "shapes" ? "pointer" : "shapes")
               }
-              className={`group relative p-2 rounded-xl transition-all ${
+              className={`group relative p-2 rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 activeTool === "shapes"
-                  ? "bg-[#e11d74] text-white shadow-sm"
+                  ? "bg-brand text-ink-on-accent shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/5"
               }`}
               title={copy.tools.shapes}
@@ -2096,20 +2096,20 @@ export default function LayersStudio({
 
             <button
               onClick={() => setZoomLevel((z) => Math.max(50, z - 10))}
-              className="px-1.5 py-1 text-white/60 hover:text-white text-xs font-bold"
+              className="px-1.5 py-1 text-white/60 hover:text-white text-xs font-bold rounded transition-[color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
               –
             </button>
             <button
               onClick={resetView}
-              className="text-xs font-semibold text-white/80 min-w-[36px] text-center hover:text-white"
+              className="text-xs font-semibold text-white/80 min-w-[36px] text-center hover:text-white rounded transition-[color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
               title={copy.tools.resetZoomPan}
             >
               {zoomLevel}%
             </button>
             <button
               onClick={() => setZoomLevel((z) => Math.min(200, z + 10))}
-              className="px-1.5 py-1 text-white/60 hover:text-white text-xs font-bold"
+              className="px-1.5 py-1 text-white/60 hover:text-white text-xs font-bold rounded transition-[color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
               +
             </button>
@@ -2119,7 +2119,7 @@ export default function LayersStudio({
           <div className="w-full relative flex items-center bg-[#15171e]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all mr-2 flex-shrink-0"
+              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring mr-2 flex-shrink-0 cursor-pointer"
               title={copy.tools.addImage}
             >
               <svg
@@ -2151,7 +2151,7 @@ export default function LayersStudio({
             <button
               onClick={() => handleDecompose()}
               disabled={isProcessing}
-              className="w-10 h-10 rounded-full bg-[#e11d74] hover:bg-[#e11d74] text-white flex items-center justify-center shadow-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ml-2 flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-brand hover:bg-brand-hover text-ink-on-accent flex items-center justify-center shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard hover:scale-105 active:scale-[0.98] active:duration-instant disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ml-2 flex-shrink-0 cursor-pointer"
               title={copy.tools.runLayerDecomposition}
             >
               <svg
@@ -2279,7 +2279,7 @@ export default function LayersStudio({
 
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white/40 hover:text-white flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                 title={copy.tools.closePanel}
               >
                 <svg
@@ -2302,7 +2302,7 @@ export default function LayersStudio({
                 {/* Hero Feature Card with 5 CDN Layers */}
                 <div
                   onClick={handleLoadSampleLayers}
-                  className="group w-full bg-[#f4f4f7] hover:bg-white rounded-3xl p-3 shadow-lg overflow-hidden border border-white/20 cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+                  className="group w-full bg-[#f4f4f7] hover:bg-white rounded-3xl p-3 shadow-lg overflow-hidden border border-white/20 cursor-pointer transition-[border-color,box-shadow,transform] duration-smooth ease-card-hover hover:scale-[1.01]"
                   title={copy.sample.clickToLoad}
                 >
                   <div className="flex items-center gap-2.5">
@@ -2332,7 +2332,7 @@ export default function LayersStudio({
                         {DEFAULT_SAMPLE_LAYERS.map((layerUrl, idx) => (
                           <div
                             key={idx}
-                            className="flex-shrink-0 w-11 h-16 rounded-xl overflow-hidden border border-white/10 relative flex items-center justify-center p-1 bg-[#1a1d26] shadow-sm hover:border-[#e11d74]/50 transition-all"
+                            className="flex-shrink-0 w-11 h-16 rounded-xl overflow-hidden border border-white/10 relative flex items-center justify-center p-1 bg-[#1a1d26] shadow-sm hover:border-brand-line transition-[border-color,transform] duration-fast ease-standard"
                             style={{
                               backgroundImage: `linear-gradient(45deg, #242733 25%, transparent 25%), linear-gradient(-45deg, #242733 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #242733 75%), linear-gradient(-45deg, transparent 75%, #242733 75%)`,
                               backgroundSize: "6px 6px",
@@ -2373,7 +2373,7 @@ export default function LayersStudio({
                         <button
                           key={res}
                           onClick={() => setResolution(res)}
-                          className={`py-2 text-xs font-extrabold rounded-xl transition-all ${
+                          className={`py-2 text-xs font-extrabold rounded-xl transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                             resolution === res
                               ? "bg-[#383c4a] text-white shadow-md border border-white/10"
                               : "text-white/40 hover:text-white"
@@ -2404,7 +2404,7 @@ export default function LayersStudio({
                         max="16"
                         value={layerCount}
                         onChange={(e) => setLayerCount(Number(e.target.value))}
-                        className="w-full accent-[#e2f924] cursor-pointer h-1.5 bg-white/10 rounded-lg"
+                        className="w-full accent-brand cursor-pointer h-1.5 bg-white/10 rounded-lg"
                       />
                       <span className="text-[10px] font-bold text-white/30">
                         16
@@ -2429,9 +2429,9 @@ export default function LayersStudio({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setIsSoloMode(!isSoloMode)}
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                             isSoloMode
-                              ? "bg-[#e11d74] text-white border-[#e11d74]"
+                              ? "bg-brand text-ink-on-accent border-brand-line"
                               : "bg-white/5 text-white/60 hover:text-white border-white/10"
                           }`}
                           title={copy.carousel.viewOnlyActive}
@@ -2440,7 +2440,7 @@ export default function LayersStudio({
                         </button>
                         <button
                           onClick={handleDownloadAll}
-                          className="text-xs text-[#e11d74] hover:underline font-semibold"
+                          className="text-xs text-brand hover:underline font-semibold transition-[color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                         >
                           {copy.carousel.downloadAll}
                         </button>
@@ -2459,7 +2459,7 @@ export default function LayersStudio({
                         <img
                           src={decomposedLayers[carouselIndex]}
                           alt={`Layer ${carouselIndex + 1}`}
-                          className="max-h-full max-w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-all duration-300 transform group-hover:scale-105"
+                          className="max-h-full max-w-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-[transform] duration-smooth ease-card-hover group-hover:scale-105"
                         />
 
                         <button
@@ -2468,7 +2468,7 @@ export default function LayersStudio({
                               prev > 0 ? prev - 1 : decomposedLayers.length - 1,
                             )
                           }
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#e11d74] text-white hover:text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-[background-color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-md cursor-pointer"
                           title={copy.carousel.previousLayer}
                         >
                           ‹
@@ -2480,7 +2480,7 @@ export default function LayersStudio({
                               prev < decomposedLayers.length - 1 ? prev + 1 : 0,
                             )
                           }
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-[#e11d74] text-white hover:text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-all shadow-md"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-brand text-white hover:text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-[background-color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-md cursor-pointer"
                           title={copy.carousel.nextLayer}
                         >
                           ›
@@ -2500,9 +2500,9 @@ export default function LayersStudio({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => toggleLayerVisibility(carouselIndex)}
-                            className={`p-1.5 rounded-lg border transition-all ${
+                            className={`p-1.5 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                               visibleLayers[carouselIndex]
-                                ? "bg-white/10 text-[#e11d74] border-white/10"
+                                ? "bg-white/10 text-brand border-white/10"
                                 : "text-white/30 border-transparent"
                             }`}
                             title={copy.carousel.toggleVisibility}
@@ -2517,7 +2517,7 @@ export default function LayersStudio({
                                 `layer_${carouselIndex + 1}.${outputFormat}`,
                               )
                             }
-                            className="px-2.5 py-1 rounded-lg bg-[#e11d74] hover:bg-[#e11d74] text-white font-extrabold text-xs flex items-center gap-1 shadow-md"
+                            className="px-2.5 py-1 rounded-lg bg-brand hover:bg-brand-hover text-ink-on-accent font-extrabold text-xs flex items-center gap-1 shadow-md transition-[background-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                             title={copy.carousel.downloadThisLayer}
                           >
                             <span>⬇</span>
@@ -2532,9 +2532,9 @@ export default function LayersStudio({
                         <button
                           key={idx}
                           onClick={() => setCarouselIndex(idx)}
-                          className={`relative flex-shrink-0 w-14 h-12 rounded-xl overflow-hidden border transition-all p-1 bg-surface-overlay ${
+                          className={`relative flex-shrink-0 w-14 h-12 rounded-xl overflow-hidden border transition-[border-color,opacity,transform] duration-fast ease-standard p-1 bg-surface-overlay active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                             carouselIndex === idx
-                              ? "border-[#e11d74] ring-2 ring-[#e11d74]/50 scale-105"
+                              ? "border-brand ring-1 ring-brand scale-105 opacity-100"
                               : "border-white/10 opacity-60 hover:opacity-100"
                           }`}
                         >
@@ -2564,7 +2564,7 @@ export default function LayersStudio({
                     </span>
                     <button
                       onClick={handleResetUpscale}
-                      className="flex items-center gap-1 text-[11px] font-bold text-white/50 hover:text-white transition-colors"
+                      className="flex items-center gap-1 text-[11px] font-bold text-white/50 hover:text-white transition-[color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                       title={copy.colorGrading.resetToDefault}
                     >
                       <svg
@@ -2587,7 +2587,7 @@ export default function LayersStudio({
                       onClick={() =>
                         setIsModelDropdownOpen(!isModelDropdownOpen)
                       }
-                      className="w-full bg-[#2d313d] hover:bg-[#343946] p-3 rounded-2xl border border-white/5 flex items-center justify-between text-left transition-all shadow-sm"
+                      className="w-full bg-[#2d313d] hover:bg-[#343946] p-3 rounded-2xl border border-white/5 flex items-center justify-between text-left transition-[background-color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-sm cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white flex-shrink-0">
@@ -2637,7 +2637,7 @@ export default function LayersStudio({
                               setUpscaleModel(opt.id);
                               setIsModelDropdownOpen(false);
                             }}
-                            className={`w-full p-2.5 rounded-xl text-left flex flex-col transition-all ${
+                            className={`w-full p-2.5 rounded-xl text-left flex flex-col transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                               upscaleModel === opt.id
                                 ? "bg-[#343946] text-white"
                                 : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -2674,7 +2674,7 @@ export default function LayersStudio({
                         <button
                           key={fac}
                           onClick={() => setTopazFactor(fac)}
-                          className={`py-2 text-xs font-extrabold rounded-lg transition-all ${
+                          className={`py-2 text-xs font-extrabold rounded-lg transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                             topazFactor === fac
                               ? "bg-[#383c4a] text-white shadow-md border border-white/10"
                               : "text-white/40 hover:text-white"
@@ -2703,7 +2703,7 @@ export default function LayersStudio({
                         <button
                           key={res}
                           onClick={() => setSeedvrResolution(res)}
-                          className={`py-2 text-xs font-extrabold uppercase rounded-lg transition-all ${
+                          className={`py-2 text-xs font-extrabold uppercase rounded-lg transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                             seedvrResolution === res
                               ? "bg-[#383c4a] text-white shadow-md border border-white/10"
                               : "text-white/40 hover:text-white"
@@ -3212,7 +3212,7 @@ export default function LayersStudio({
                                   bloom: { ...prev.bloom, blend: b },
                                 }))
                               }
-                              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                              className={`px-3 py-1 text-xs font-bold rounded-lg transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                                 colorGrading.bloom.blend === b
                                   ? "bg-[#383c4a] text-white shadow"
                                   : "text-white/40 hover:text-white"
@@ -3754,7 +3754,7 @@ export default function LayersStudio({
                                   filmGrain: { ...prev.filmGrain, size: sz },
                                 }))
                               }
-                              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                                 colorGrading.filmGrain.size === sz
                                   ? "bg-[#383c4a] text-white shadow"
                                   : "text-white/40 hover:text-white"
@@ -3949,7 +3949,7 @@ export default function LayersStudio({
                   <button
                     key={item.id}
                     onClick={() => setActiveSideTab(item.id)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-white/70 hover:text-white hover:bg-white/5"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-[background-color,color,transform] duration-fast ease-standard text-white/70 hover:text-white hover:bg-white/5 active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                   >
                     <div className="flex items-center gap-3">
                       <span>{item.label}</span>
@@ -3980,7 +3980,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("edit-text")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-[#e11d74] hover:bg-[#e11d74] text-white font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-bold text-xs uppercase rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {isProcessing ? copy.editText.processing : copy.editText.run}
                 </button>
@@ -3998,7 +3998,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("enhancer")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-[#e11d74] hover:bg-[#e11d74] text-white font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-bold text-xs uppercase rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {isProcessing ? copy.enhancer.processing : copy.enhancer.run}
                 </button>
@@ -4016,7 +4016,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("relight")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-[#e11d74] hover:bg-[#e11d74] text-white font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-bold text-xs uppercase rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {isProcessing ? copy.relight.processing : copy.relight.run}
                 </button>
@@ -4034,7 +4034,7 @@ export default function LayersStudio({
                 <button
                   onClick={() => handleExecuteSideTool("angles")}
                   disabled={isProcessing}
-                  className="w-full py-2 bg-[#e11d74] hover:bg-[#e11d74] text-white font-bold text-xs uppercase rounded-xl shadow-md"
+                  className="w-full py-2 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-bold text-xs uppercase rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {isProcessing ? copy.angles.processing : copy.angles.run}
                 </button>
@@ -4048,7 +4048,7 @@ export default function LayersStudio({
               <button
                 onClick={() => handleDecompose()}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-[#e2f924] hover:bg-[#d4ed1b] active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(226,249,36,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-semibold text-sm rounded-2xl border border-brand-line shadow-elevation-2 transition-[background-color,border-color,transform] duration-fast ease-standard flex items-center justify-center gap-2 tracking-tight disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
               >
                 {isProcessing ? (
                   <span>{copy.footer.decomposing.replace('{progress}', progress)}</span>
@@ -4070,7 +4070,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunUpscale}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-[#e2f924] hover:bg-[#d4ed1b] active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(226,249,36,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-semibold text-sm rounded-2xl border border-brand-line shadow-elevation-2 transition-[background-color,border-color,transform] duration-fast ease-standard flex items-center justify-center gap-2 tracking-tight disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
               >
                 {isProcessing ? (
                   <span>{copy.footer.upscaling.replace('{progress}', progress)}</span>
@@ -4097,7 +4097,7 @@ export default function LayersStudio({
               <div className="flex items-center gap-2.5 w-full">
                 <button
                   onClick={handleResetAllColorGrading}
-                  className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/15 text-white flex items-center justify-center transition-all border border-white/10 hover:border-white/20 flex-shrink-0"
+                  className="w-12 h-12 rounded-xl bg-well hover:bg-raised active:scale-95 active:duration-instant text-ink-muted hover:text-ink flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard border border-line flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                   title={copy.colorGrading.resetAll}
                 >
                   <svg
@@ -4115,7 +4115,7 @@ export default function LayersStudio({
 
                 <button
                   onClick={handleDownloadGradedImage}
-                  className="flex-1 py-3.5 bg-white/10 hover:bg-white/15 text-white font-extrabold text-sm rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2 shadow-md"
+                  className="flex-1 py-3.5 bg-well hover:bg-raised active:scale-[0.98] active:duration-instant text-ink font-bold text-sm rounded-xl border border-line transition-[background-color,color,transform] duration-fast ease-standard flex items-center justify-center gap-2 shadow-elevation-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   <svg
                     width="16"
@@ -4136,7 +4136,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunRemoveBg}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-[#e2f924] hover:bg-[#d4ed1b] active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(226,249,36,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-extrabold text-sm rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard flex items-center justify-center gap-2 tracking-tight disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {isProcessing ? (
                   <span>{copy.footer.removingBackground.replace('{progress}', progress)}</span>
@@ -4158,7 +4158,7 @@ export default function LayersStudio({
               <button
                 onClick={handleRunExpand}
                 disabled={isProcessing}
-                className="w-full py-3.5 bg-[#e2f924] hover:bg-[#d4ed1b] active:scale-[0.98] text-black font-extrabold text-sm rounded-2xl shadow-[0_4px_25px_rgba(226,249,36,0.35)] transition-all flex items-center justify-center gap-2 tracking-tight disabled:opacity-50"
+                className="w-full py-3.5 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-extrabold text-sm rounded-xl shadow-elevation-1 transition-[background-color,transform] duration-fast ease-standard flex items-center justify-center gap-2 tracking-tight disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {isProcessing ? (
                   <span>{copy.footer.expandingBorders.replace('{progress}', progress)}</span>

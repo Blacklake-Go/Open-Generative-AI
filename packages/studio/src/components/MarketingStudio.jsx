@@ -1,11 +1,99 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import toast from "react-hot-toast";
 import { uploadFile, generateMarketingStudioAd } from "../muapi.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
+import VideoRelayMenu from "./VideoRelayMenu.jsx";
+
+const MARKETING_RELAY_COPY_EN = {
+  presetsTitle: "Script Templates:",
+  relayLoadedToast: "Loaded relayed video as marketing format template!",
+  relayedFormatName: "Relayed Video Template",
+  presets: [
+    {
+      id: "3c",
+      label: "3C Gadget Review",
+      prompt: "Excited tech reviewer presenting the product on clean minimal studio desk. Hook: 'Wait, this changes everything!' Highlights sleek design, ultra-fast performance, and durable craftsmanship. Dynamic hands-on angles. Call to action: 'Get yours now before it sells out!'",
+    },
+    {
+      id: "beauty",
+      label: "Beauty & Skincare",
+      prompt: "Glowing beauty creator speaking directly to camera in naturally lit vanity room. Addresses tired skin issues, demonstrates silky texture application, before-and-after radiant glow finish. Warm confident tone. Call to action: 'Tap the link below to claim exclusive bundle!'",
+    },
+    {
+      id: "fashion",
+      label: "Fashion & Apparel",
+      prompt: "Stylish influencer showcasing outfit in bright urban street setting. Full-body walking spins, close-up on fabric texture, tailored fit, versatile styling tips. Upbeat vibrant aesthetic. Call to action: 'Shop the look today with limited promo!'",
+    },
+    {
+      id: "home",
+      label: "Home & Living",
+      prompt: "Cozy modern home environment, creator demonstrating instant daily problem solved by this clever gadget. Satisfying usage clip, clean aesthetic, family-friendly tone. Call to action: 'Upgrade your living space, click to order now!'",
+    },
+  ],
+};
+
+const MARKETING_RELAY_COPY_LOCALES = {
+  "zh-CN": {
+    presetsTitle: "带货文案模板:",
+    relayLoadedToast: "已载入接力视频作为营销参考视频！",
+    relayedFormatName: "接力参考视频",
+    presets: [
+      { id: "3c", label: "3C 数码爆款解说", prompt: MARKETING_RELAY_COPY_EN.presets[0].prompt },
+      { id: "beauty", label: "美妆护肤痛点拔草", prompt: MARKETING_RELAY_COPY_EN.presets[1].prompt },
+      { id: "fashion", label: "时尚服饰穿搭实测", prompt: MARKETING_RELAY_COPY_EN.presets[2].prompt },
+      { id: "home", label: "家居好物种草催单", prompt: MARKETING_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "zh-TW": {
+    presetsTitle: "帶貨文案模板:",
+    relayLoadedToast: "已載入接力影片作為行銷參考影片！",
+    relayedFormatName: "接力參考影片",
+    presets: [
+      { id: "3c", label: "3C 數位爆款解說", prompt: MARKETING_RELAY_COPY_EN.presets[0].prompt },
+      { id: "beauty", label: "美妝護膚痛點種草", prompt: MARKETING_RELAY_COPY_EN.presets[1].prompt },
+      { id: "fashion", label: "時尚服飾穿搭實測", prompt: MARKETING_RELAY_COPY_EN.presets[2].prompt },
+      { id: "home", label: "居家好物种草催單", prompt: MARKETING_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "ja-JP": {
+    presetsTitle: "広告スクリプトテンプレート:",
+    relayLoadedToast: "リレーされた動画をマーケティングテンプレートとして読み込みました！",
+    relayedFormatName: "リレー参照動画",
+    presets: [
+      { id: "3c", label: "ガジェットレビュー", prompt: MARKETING_RELAY_COPY_EN.presets[0].prompt },
+      { id: "beauty", label: "美容・スキンケア", prompt: MARKETING_RELAY_COPY_EN.presets[1].prompt },
+      { id: "fashion", label: "ファッション・コーデ", prompt: MARKETING_RELAY_COPY_EN.presets[2].prompt },
+      { id: "home", label: "ホーム＆リビング", prompt: MARKETING_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "ko-KR": {
+    presetsTitle: "마케팅 스크립트 템플릿:",
+    relayLoadedToast: "릴레이된 영상을 마케팅 참조 템플릿으로 불러왔습니다!",
+    relayedFormatName: "릴레이 참조 영상",
+    presets: [
+      { id: "3c", label: "IT 기기 리뷰", prompt: MARKETING_RELAY_COPY_EN.presets[0].prompt },
+      { id: "beauty", label: "뷰티 & 스킨케어", prompt: MARKETING_RELAY_COPY_EN.presets[1].prompt },
+      { id: "fashion", label: "패션 & 스타일링", prompt: MARKETING_RELAY_COPY_EN.presets[2].prompt },
+      { id: "home", label: "홈 & 리빙 추천", prompt: MARKETING_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "es": {
+    presetsTitle: "Plantillas de Guion:",
+    relayLoadedToast: "¡Video recibido cargado como plantilla de marketing!",
+    relayedFormatName: "Video de Referencia",
+    presets: [
+      { id: "3c", label: "Reseña de Gadgets", prompt: MARKETING_RELAY_COPY_EN.presets[0].prompt },
+      { id: "beauty", label: "Belleza y Cuidado", prompt: MARKETING_RELAY_COPY_EN.presets[1].prompt },
+      { id: "fashion", label: "Moda y Estilo", prompt: MARKETING_RELAY_COPY_EN.presets[2].prompt },
+      { id: "home", label: "Hogar y Vida", prompt: MARKETING_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+};
 import {
   PROMPT_CONTROL_LABEL_CLASS,
   PromptAspectRatioIcon,
@@ -20,10 +108,10 @@ import {
   PromptPopoverHeader,
   PromptDurationIcon,
   PromptQualityIcon,
-  PromptTextarea,
   promptControlClassName,
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import en from "../messages/en/marketingStudio.json";
 import zh from "../messages/zh/marketingStudio.json";
 import ja from "../messages/ja-JP/marketingStudio.json";
@@ -51,7 +139,7 @@ const SCROLLBAR_STYLE = `
 // ── Icons ────────────────────────────────────────────────────────────────────
 
 const CheckSvg = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e11d74" strokeWidth="4">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="text-brand">
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
@@ -204,8 +292,9 @@ function UploadSlot({ icon, url, progress, label, title, onUpload, onClear, mult
         {/* Clear Button (Single) */}
         {url && !multiple && (
           <button 
+            type="button"
             onClick={(e) => { e.stopPropagation(); onClear(); }}
-            className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity group-hover/slot:pointer-events-auto group-hover/slot:opacity-100 group-focus-within/slot:pointer-events-auto group-focus-within/slot:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 shadow-lg"
+            className="pointer-events-none absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-[opacity,transform] duration-fast ease-standard active:scale-90 active:duration-instant group-hover/slot:pointer-events-auto group-hover/slot:opacity-100 group-focus-within/slot:pointer-events-auto group-focus-within/slot:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-400 max-sm:pointer-events-auto max-sm:opacity-100 shadow-lg cursor-pointer"
           >
             <CloseSvg />
           </button>
@@ -240,7 +329,7 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
           <div 
             key={item.id}
             onClick={() => onSelect(item)}
-            className={`relative rounded overflow-hidden border-2 transition-all group cursor-pointer ${
+            className={`relative rounded overflow-hidden border-2 transition-[border-color,box-shadow] duration-fast ease-standard group cursor-pointer ${
               selectedId === item.id || selectedId === item.url ? 'border-primary shadow-glow' : 'border-white/5 hover:border-white/20'
             }`}
           >
@@ -252,7 +341,7 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
                   e.stopPropagation();
                   onPreview(item);
                 }}
-                className="pointer-events-none absolute left-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-[#e11d74] hover:text-white"
+                className="pointer-events-none absolute left-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-[opacity,background-color,color,transform] duration-fast ease-standard active:scale-95 active:duration-instant group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-brand hover:text-white cursor-pointer"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -264,15 +353,15 @@ function Dropdown({ isOpen, title, items, selectedId, onSelect, onClose, isVideo
             )}
 
             {isVideo ? (
-              <video src={item.url} autoPlay loop muted className="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-all duration-500" />
+              <video src={item.url} autoPlay loop muted className="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-fast ease-standard" />
             ) : (
-              <img src={item.url} className="w-full aspect-square object-cover group-hover:scale-105 transition-all duration-500" alt={item.name} />
+              <img src={item.url} className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-fast ease-standard" alt={item.name} />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <span className="text-[9px] font-black text-white uppercase tracking-tight">{item.name}</span>
             </div>
             {(selectedId === item.id || selectedId === item.url) && (
-              <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand text-ink-on-accent rounded-full flex items-center justify-center shadow-elevation-1">
                 <CheckSvg />
               </div>
             )}
@@ -321,6 +410,7 @@ function SimpleDropdown({ isOpen, title, options, selected, onSelect, onClose })
 
 export default function MarketingStudio({
   apiKey,
+  initialPrompt = "",
   droppedFiles,
   onFilesHandled,
   onGenerationStart,
@@ -331,13 +421,17 @@ export default function MarketingStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const relayCopy = resolveCopy(MARKETING_RELAY_COPY_EN, MARKETING_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_marketing_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
     migrateLegacyPersistKey(LEGACY_PERSIST_KEY, PERSIST_KEY);
   }, [PERSIST_KEY]);
   
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt);
+  }, [initialPrompt]);
   const [productImage, setProductImage] = useState(null);
   const [avatarImage, setAvatarImage] = useState(null);
   const [additionalImages, setAdditionalImages] = useState([]);
@@ -386,6 +480,38 @@ export default function MarketingStudio({
     }, 500);
     return () => clearTimeout(timer);
   }, [prompt, params, productImage, avatarImage, additionalImages, localHistory]);
+
+  // ── Relay Video Listener ──────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const relayedVideo = sp.get("video_url");
+      if (relayedVideo) {
+        setParams((prev) => ({
+          ...prev,
+          videoUrl: relayedVideo,
+          format: relayCopy.relayedFormatName,
+        }));
+        toast.success(relayCopy.relayLoadedToast);
+      }
+    } catch (_) {}
+
+    const handleRelay = (e) => {
+      const { videoUrl } = e.detail || {};
+      if (videoUrl) {
+        setParams((prev) => ({
+          ...prev,
+          videoUrl,
+          format: relayCopy.relayedFormatName,
+        }));
+        toast.success(relayCopy.relayLoadedToast);
+      }
+    };
+    window.addEventListener("koyosim-relay-video", handleRelay);
+    return () => window.removeEventListener("koyosim-relay-video", handleRelay);
+  }, [relayCopy]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -481,7 +607,7 @@ export default function MarketingStudio({
               <div
                 key={entry.id}
                 onClick={() => setFullscreenUrl(entry.url)}
-                className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-elevation-2 hover:border-brand-line transition-[border-color,box-shadow] duration-fast ease-standard flex flex-col cursor-pointer"
               >
                 <video 
                   src={entry.url} 
@@ -497,13 +623,18 @@ export default function MarketingStudio({
                   />
                    <button
                     onClick={(e) => { e.stopPropagation(); downloadFile(entry.url, `marketing-ad-${entry.id}.mp4`); }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                     title={copy.buttons.download}
                    >
                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
                      </svg>
                    </button>
+                   <VideoRelayMenu
+                     videoUrl={entry.url}
+                     currentTab="marketing"
+                     locale={locale}
+                   />
                    <button
                     type="button"
                     title={copy.buttons.delete}
@@ -515,7 +646,7 @@ export default function MarketingStudio({
                         }
                       }
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-red-400 hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-danger hover:bg-danger hover:text-ink-on-accent active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="3 6 5 6 21 6" />
@@ -554,7 +685,7 @@ export default function MarketingStudio({
 
                 <div className="p-3 bg-black/80 backdrop-blur-sm border-t border-white/5 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 uppercase tracking-tighter">
+                    <span className="text-[9px] font-black text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line uppercase tracking-tighter">
                       {copy.history.badge}
                     </span>
                     {entry.format && (
@@ -569,28 +700,28 @@ export default function MarketingStudio({
           <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "1")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "2")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-elevation-3 rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "3")}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt={copy.alt.creativeAsset.replace("{index}", "4")}
@@ -601,7 +732,7 @@ export default function MarketingStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -629,12 +760,30 @@ export default function MarketingStudio({
               ))}
             </div>
           )}
+          {/* Industry Script Template Pills */}
+          <div className="w-full flex items-center gap-1.5 overflow-x-auto scrollbar-rail py-1 mb-1">
+            <span className="text-micro font-bold uppercase tracking-wider text-ink-subtle shrink-0 mr-1">
+              {relayCopy.presetsTitle}
+            </span>
+            {relayCopy.presets.map((tmpl) => (
+              <button
+                key={tmpl.id}
+                type="button"
+                onClick={() => setPrompt(tmpl.prompt)}
+                className="rounded-full border border-line bg-wash px-2.5 py-0.5 text-micro font-medium text-ink-muted hover:border-brand-line hover:bg-wash-strong hover:text-ink transition-colors whitespace-nowrap shrink-0"
+              >
+                {tmpl.label}
+              </button>
+            ))}
+          </div>
+
           {/* Top Row: Full-width Textarea */}
           <div className="w-full relative">
-            <PromptTextarea
+            <PromptInputField
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onEnter={handleGenerate}
               placeholder={copy.prompt.placeholder}
             />
           </div>
@@ -690,8 +839,8 @@ export default function MarketingStudio({
                     active: dropdown === "format",
                   })}
                 >
-                  <div className="w-4 h-4 bg-primary/10 rounded flex items-center justify-center border border-primary/20">
-                    <span className="text-[8px] font-black text-primary uppercase">U</span>
+                  <div className="w-4 h-4 bg-brand-soft rounded flex items-center justify-center border border-brand-line">
+                    <span className="text-[8px] font-black text-brand uppercase">U</span>
                   </div>
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>{params.format}</span>
                   <PromptChevronIcon />
@@ -740,7 +889,7 @@ export default function MarketingStudio({
                     }}
                     className={promptControlClassName({
                       iconOnly: true,
-                      className: "text-white/40 hover:text-[#e11d74]",
+                      className: "text-white/40 hover:text-brand",
                     })}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -773,7 +922,7 @@ export default function MarketingStudio({
                       active: dropdown === key,
                       className:
                         dropdown === key
-                          ? "text-xs font-semibold text-[#e11d74]"
+                          ? "text-xs font-semibold text-brand"
                           : "text-xs font-semibold text-white/70",
                     })}
                   >
@@ -886,7 +1035,7 @@ export default function MarketingStudio({
           {previewAvatar.id !== "custom" && (
             <button
               type="button"
-              className="absolute left-6 p-4 bg-white/5 hover:bg-white/10 hover:text-primary rounded-full text-white transition-all border border-white/10 z-50"
+              className="absolute left-6 p-4 bg-white/5 hover:bg-white/10 hover:text-brand active:scale-95 active:duration-instant rounded-full text-white transition-[background-color,color,transform] duration-fast ease-standard border border-white/10 z-50 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               onClick={(e) => {
                 e.stopPropagation();
                 const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
@@ -907,7 +1056,7 @@ export default function MarketingStudio({
           {previewAvatar.id !== "custom" && (
             <button
               type="button"
-              className="absolute right-6 p-4 bg-white/5 hover:bg-white/10 hover:text-primary rounded-full text-white transition-all border border-white/10 z-50"
+              className="absolute right-6 p-4 bg-white/5 hover:bg-white/10 hover:text-brand active:scale-95 active:duration-instant rounded-full text-white transition-[background-color,color,transform] duration-fast ease-standard border border-white/10 z-50 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               onClick={(e) => {
                 e.stopPropagation();
                 const currentIndex = ASSETS.avatar.findIndex(a => a.id === previewAvatar.id);
@@ -938,7 +1087,7 @@ export default function MarketingStudio({
                     setPreviewAvatar(prevAvatar);
                   }
                 }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0f]/50"
+                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-[opacity,transform] duration-fast ease-standard cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface/50"
               >
                 <img
                   src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) - 1 + ASSETS.avatar.length) % ASSETS.avatar.length].url}
@@ -956,7 +1105,7 @@ export default function MarketingStudio({
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-[#0d0d0f] shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-surface shadow-2xl">
                 <img
                   src={previewAvatar.url}
                   alt={previewAvatar.name}
@@ -977,7 +1126,7 @@ export default function MarketingStudio({
                       setPreviewAvatar(null);
                       setDropdown(null);
                     }}
-                    className="bg-[#e11d74] text-white px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-95 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-[#e11d74]/20"
+                    className="bg-brand text-ink-on-accent px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring flex items-center justify-center gap-1.5 shadow-elevation-1 cursor-pointer"
                   >
                     <CheckSvg />
                     {copy.buttons.selectAvatar}
@@ -998,7 +1147,7 @@ export default function MarketingStudio({
                     setPreviewAvatar(nextAvatar);
                   }
                 }}
-                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-all duration-300 cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-[#0d0d0f]/50"
+                className="hidden md:flex flex-col items-center opacity-50 hover:opacity-60 scale-75 hover:scale-80 transition-[opacity,transform] duration-fast ease-standard cursor-pointer select-none max-w-[15vw] max-h-[50vh] rounded-xl overflow-hidden border border-white/5 bg-surface/50"
               >
                 <img
                   src={ASSETS.avatar[(ASSETS.avatar.findIndex(a => a.id === previewAvatar.id) + 1) % ASSETS.avatar.length].url}

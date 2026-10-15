@@ -291,9 +291,9 @@ export function Tooltip({ children, content, side = "top" }) {
 /* Modal / Dialog                                                      */
 /* ------------------------------------------------------------------ */
 
-function DialogCloseButton() {
+function DialogCloseButton({ onClick }) {
   return (
-    <Dialog.Close asChild>
+    <Dialog.Close asChild onClick={onClick}>
       <button type="button" aria-label="Close" className={DIALOG_CLOSE_BUTTON}>
         <X className="size-4" strokeWidth={1.8} aria-hidden="true" />
       </button>
@@ -351,22 +351,42 @@ export function ModalFooter({ children, className }) {
 
 export const Drawer = Dialog.Root;
 
-export function DrawerContent({ children, title, side = "right", className, ...props }) {
+export function DrawerContent({
+  children,
+  title,
+  side = "right",
+  className,
+  onClose,
+  onPointerDownOutside,
+  onEscapeKeyDown,
+  ...props
+}) {
   const sides = {
-    right: "right-0 top-0 h-full w-full max-w-md border-l",
-    left: "left-0 top-0 h-full w-full max-w-md border-r",
-    bottom: "bottom-0 left-0 w-full max-h-drawer border-t",
+    right:
+      "right-0 top-0 h-full w-full sm:w-panel max-w-full border-l rounded-l-2xl rounded-r-none data-[state=open]:animate-drawer-in-right data-[state=closed]:animate-drawer-out-right",
+    left:
+      "left-0 top-0 h-full w-full sm:w-panel max-w-full border-r rounded-r-2xl rounded-l-none data-[state=open]:animate-drawer-in-left",
+    bottom:
+      "bottom-0 left-0 w-full max-h-drawer border-t rounded-t-2xl rounded-b-none data-[state=open]:animate-drawer-in-bottom",
   };
   return (
     <Dialog.Portal>
-      <Dialog.Overlay className={SCRIM} />
+      <Dialog.Overlay className={SCRIM} onClick={onClose} />
       <Dialog.Content
         className={cn(SHEET_PANEL, sides[side] || sides.right, withoutRadiusUtilities(className))}
+        onPointerDownOutside={(e) => {
+          onClose?.();
+          onPointerDownOutside?.(e);
+        }}
+        onEscapeKeyDown={(e) => {
+          onClose?.();
+          onEscapeKeyDown?.(e);
+        }}
         {...props}
       >
         <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
           <Dialog.Title className={DIALOG_TITLE}>{title}</Dialog.Title>
-          <DialogCloseButton />
+          <DialogCloseButton onClick={onClose} />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
       </Dialog.Content>

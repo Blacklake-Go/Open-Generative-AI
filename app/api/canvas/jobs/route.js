@@ -9,7 +9,7 @@ import { getCanvasProject, linkCanvasProjectJob, listCanvasProjectJobs } from '@
 import { canvasSnapshotContainsNode } from '@/lib/canvas/projectSnapshot';
 import { getUserAssetDownload, syncCreationToAsset } from '@/lib/services/assets';
 import { findCreationById } from '@/lib/repositories/creations';
-import { getCanvasJobFailure, getCanvasJobResultStatus } from '@/lib/canvas/jobResultState';
+import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus } from '@/lib/canvas/jobResultState';
 import { publicErrorMessage } from '@/lib/security/publicError';
 import { canvasJson, canvasMutationGuard, canvasOriginGuard, canvasPreflight, readCanvasJson, canvasResponse } from '@/lib/canvas/http';
 import { getCanvasSessionOwnerConflict } from '@/lib/canvas/sessionOwner';
@@ -106,8 +106,7 @@ export async function GET(request) {
         createdAt: row.created_at,
         estimatedCredits: Number(row.credit_cost || 0),
         creditsUsed: row.task_status === 'succeeded' ? Number(row.credit_cost || 0) : 0,
-        actualCostUsd: row.actual_cost_usd === null ? null : Number(row.actual_cost_usd),
-        costStatus: row.actual_cost_usd === null ? 'pending_reconciliation' : 'provider_reported',
+        ...getCanvasJobCostMetadata(row.actual_cost_usd),
         result: {
           text: row.result_text || null,
           assetId: row.asset_object_key ? row.asset_id || null : null,

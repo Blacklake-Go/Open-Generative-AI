@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useRef } from "react";
 import { PromptTextarea } from "./PromptComposer.jsx";
 import { PromptMentionMenu } from "./PromptAttachments.jsx";
 
@@ -17,11 +17,25 @@ export const PromptInputField = forwardRef(function PromptInputField(
     onKeyUp,
     onClick,
     onBlur,
+    onCompositionStart,
+    onCompositionEnd,
     className = "relative",
     ...textareaProps
   },
   ref,
 ) {
+  const isComposingRef = useRef(false);
+
+  const handleCompositionStart = (event) => {
+    isComposingRef.current = true;
+    onCompositionStart?.(event);
+  };
+
+  const handleCompositionEnd = (event) => {
+    isComposingRef.current = false;
+    onCompositionEnd?.(event);
+  };
+
   const handleKeyDown = (event) => {
     mention?.onKeyDown?.(event);
     onKeyDown?.(event);
@@ -29,6 +43,8 @@ export const PromptInputField = forwardRef(function PromptInputField(
       onEnter &&
       event.key === "Enter" &&
       !event.shiftKey &&
+      !isComposingRef.current &&
+      event.keyCode !== 229 &&
       !event.nativeEvent?.isComposing &&
       !mention?.open &&
       !event.defaultPrevented
@@ -64,6 +80,8 @@ export const PromptInputField = forwardRef(function PromptInputField(
         onKeyUp={handleKeyUp}
         onClick={handleClick}
         onBlur={handleBlur}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         aria-label={textareaProps["aria-label"] || placeholder}
         placeholder={placeholder}
       />

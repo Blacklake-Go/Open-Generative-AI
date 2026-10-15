@@ -459,7 +459,7 @@ export default function RechargeModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[95] flex items-center justify-center overflow-hidden bg-scrim p-3 backdrop-blur-sm transition-opacity duration-base animate-fade-in cursor-pointer sm:p-6 lg:p-8"
+      className="fixed inset-0 z-[95] flex items-center justify-center overflow-hidden bg-scrim p-3 backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in cursor-pointer sm:p-6 lg:p-8"
       onClick={handleClose}
     >
       <div
@@ -473,7 +473,7 @@ export default function RechargeModal({
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 z-raised p-2.5 rounded-full text-ink-muted hover:text-ink hover:bg-wash active:scale-95 transition-[background-color,color,transform] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring cursor-pointer"
+          className="absolute top-4 right-4 z-raised p-2.5 rounded-full text-ink-muted hover:text-ink hover:bg-wash active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
           title="关闭 (Esc)"
           aria-label="关闭收银台"
         >
@@ -930,7 +930,7 @@ export default function RechargeModal({
       {/* 卡密兑换确认弹窗 */}
       {couponConfirmData && (
         <div
-          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-scrim backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-scrim backdrop-blur-xl animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !couponRedeeming) {
               setCouponConfirmData(null);
@@ -949,7 +949,7 @@ export default function RechargeModal({
               type="button"
               onClick={() => setCouponConfirmData(null)}
               disabled={couponRedeeming}
-              className="absolute top-4 right-4 p-2 rounded-full text-ink-muted hover:text-ink hover:bg-wash transition-colors cursor-pointer disabled:opacity-50"
+              className="absolute top-4 right-4 p-2 rounded-full text-ink-muted hover:text-ink hover:bg-wash active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               title="关闭"
               aria-label="关闭"
             >

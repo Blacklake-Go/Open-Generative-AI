@@ -25,8 +25,8 @@ function DropdownMenuContent({ className, sideOffset = 6, ...props }) {
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-dropdown max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-menu overflow-y-auto",
-          "rounded-lg border border-line bg-overlay-glass p-1 shadow-elevation-3 animate-fade-in",
+          "z-dropdown max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-menu overflow-y-auto custom-scrollbar",
+          "rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-1.5 shadow-elevation-3 animate-fade-in",
           withoutRadiusUtilities(className)
         )}
         {...props}
@@ -41,11 +41,12 @@ function DropdownMenuItem({ className, variant = "default", ...props }) {
       data-slot="dropdown-menu-item"
       data-variant={variant}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-body-sm outline-none select-none",
-        "transition-colors duration-fast data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+        "relative flex cursor-pointer select-none items-center gap-2 rounded-md px-2.5 py-1.5 text-body-sm outline-none bg-transparent",
+        "transition-[background-color,color] duration-fast data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+        "[&_*]:bg-transparent",
         variant === "danger"
-          ? "text-danger focus:bg-danger-soft"
-          : "text-ink-muted focus:bg-wash-strong focus:text-ink",
+          ? "text-danger hover:bg-danger-soft focus:bg-danger-soft data-[highlighted]:bg-danger-soft"
+          : "text-ink-muted hover:bg-wash-strong hover:text-ink focus:bg-wash-strong focus:text-ink data-[highlighted]:bg-wash-strong data-[highlighted]:text-ink",
         withoutRadiusUtilities(className)
       )}
       {...props}

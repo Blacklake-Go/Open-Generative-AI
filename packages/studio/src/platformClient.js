@@ -9,6 +9,7 @@ import { pollForGenerationResult } from './utils/generationLifecycle.js';
 import { getModelMediaCapabilities, mapReferenceParams } from './modelCapabilities.js';
 import { buildSupplementalInputPayload } from './modelParameters.js';
 import { getGroupedVideoConfiguration } from './groupedVideoModels.js';
+import { submitPlatformGeneration } from './platformGeneration.js';
 
 // In an http(s) browser we route through the host app's proxy (Next.js routes
 // under /api/* re-issue the call server-side) so api.platform.ai CORS is bypassed.
@@ -21,13 +22,13 @@ const FILE_UPLOAD_TIMEOUT_MS = 300_000;
 const FILE_UPLOAD_PENDING_PROGRESS = 99;
 
 async function uploadViaProviderProxy(apiKey, file, onProgress) {
-    let uploadKey = apiKey || (typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_API_KEY__
-        ? await window.__KOYOSIM_REQUIRE_API_KEY__()
+    let uploadKey = apiKey || (typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_API_KEY__
+        ? await window.__SUPDANCE_REQUIRE_API_KEY__()
         : null);
     if (!uploadKey && typeof document !== 'undefined') {
-        uploadKey = document.cookie.match(/koyosim_key=([^;]+)/)?.[1] || null;
+        uploadKey = document.cookie.match(/supdance_key=([^;]+)/)?.[1] || null;
     }
-    uploadKey ||= 'koyosim-account-session';
+    uploadKey ||= 'supdance-account-session';
 
     return new Promise((resolve, reject) => {
         const uploadEndpoint = (typeof window !== 'undefined' && window.location?.protocol?.startsWith('http'))
@@ -84,7 +85,7 @@ async function uploadViaProviderProxy(apiKey, file, onProgress) {
 function notifyAuthRequired(status, detail) {
     if (typeof window === 'undefined') return;
     if (status !== 401 && status !== 403) return;
-    window.dispatchEvent(new CustomEvent('koyosim:auth-required', { detail: { status, message: detail } }));
+    window.dispatchEvent(new CustomEvent('supdance:auth-required', { detail: { status, message: detail } }));
 }
 
 function assertRequiredPrompt(model, params) {
@@ -122,134 +123,127 @@ function normalizePredictionResult(submitData, result, outputUrl) {
     };
 }
 
-async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 60) {
+const VALID_STUDIO_IDS = new Set([
+    'home', 'image', 'video', 'cinema', 'vibemotion', 'recast',
+    'lipsync', 'marketing', 'clipping', 'motioncontrol', 'audio', 'layers', 'canvas', 'studio'
+]);
+
+export function resolveStudioId(explicitStudioId, fallbackStudioId = 'studio') {
+    if (explicitStudioId && typeof explicitStudioId === 'string' && explicitStudioId.trim() && explicitStudioId !== 'studio') {
+        return explicitStudioId.trim().toLowerCase();
+    }
+    if (typeof window !== 'undefined' && window.location) {
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            const tab = (params.get('tab') || '').trim().toLowerCase();
+            if (tab && VALID_STUDIO_IDS.has(tab)) return tab;
+            const pathParts = (window.location.pathname || '').split('/').filter(Boolean);
+            const studioIdx = pathParts.indexOf('studio');
+            if (studioIdx >= 0 && pathParts[studioIdx + 1]) {
+                const seg = pathParts[studioIdx + 1].toLowerCase().replace(/[-_]/g, '');
+                if (VALID_STUDIO_IDS.has(seg)) return seg;
+            }
+        } catch {}
+    }
+    return fallbackStudioId || 'studio';
+}
+
+export async function requestGenerationQuote(modelId, parameters = {}, options = {}) {
+    const idemKey = options.idempotencyKey
+        || `quote_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    const quoteRes = await fetch('/api/generation/quote', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': idemKey,
+        },
+        body: JSON.stringify({ modelId, parameters }),
+        signal: options.signal,
+    });
+    if (!quoteRes.ok) {
+        const errData = await quoteRes.json().catch(() => ({}));
+        const errMsg = errData.error || '获取服务端模型报价失败，请稍后重试';
+        if (quoteRes.status === 401) {
+            notifyAuthRequired(401, errMsg);
+            throw Object.assign(new Error('请先登录后再进行创作'), { code: 'UNAUTHENTICATED', status: 401 });
+        }
+        throw Object.assign(new Error(errMsg), {
+            code: errData.code || 'QUOTE_FAILED',
+            status: quoteRes.status,
+        });
+    }
+    const quote = await quoteRes.json();
+    const quoteId = quote.quoteId || quote.quote_id || null;
+    const credits = quote.creditsQuoted ?? quote.credits ?? null;
+    if (!quoteId) {
+        throw Object.assign(new Error('未获取到有效的服务端报价单 (quoteId)'), { code: 'QUOTE_REQUIRED' });
+    }
+    if (typeof window !== 'undefined' && credits != null) {
+        window.dispatchEvent(new CustomEvent('supdance:quote', {
+            detail: {
+                modelId,
+                credits,
+                quoteId,
+                expiresAt: quote.expiresAt || quote.expires_at || null,
+                pricingBreakdown: quote.pricingBreakdown || quote.pricing_breakdown || null,
+            },
+        }));
+    }
+    return {
+        quoteId,
+        quote_id: quoteId,
+        credits,
+        creditsQuoted: credits,
+        expiresAt: quote.expiresAt || quote.expires_at || null,
+        pricingBreakdown: quote.pricingBreakdown || quote.pricing_breakdown || null,
+    };
+}
+
+async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 60, studioId = 'studio') {
     // The shell opens the account dialog only when a model request is about
     // to consume quota. It resolves after login so the original request can
     // continue without making the user click Generate a second time.
-    const accountGate = typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_ACCOUNT__;
+    const accountGate = typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_ACCOUNT__;
     if (accountGate) {
         const user = await accountGate();
         if (!user) throw new Error('Generation cancelled: account login is required.');
     }
+    if (typeof window !== 'undefined' && BASE_URL === '/api') {
+        const resolvedStudioId = resolveStudioId(studioId);
+        return submitPlatformGeneration({
+            modelId: endpoint,
+            studioId: resolvedStudioId,
+            prompt: payload.prompt || '',
+            parameters: payload,
+            label: payload.label,
+            onRequestId,
+            maxAttempts,
+            intervalMs: 2_000,
+            onAuthRequired: notifyAuthRequired,
+            onPhase: (phase, requestId) => {
+                window.dispatchEvent(new CustomEvent('supdance:credits-updated', {
+                    detail: { phase, requestId, modelId: endpoint, studioId: resolvedStudioId },
+                }));
+            },
+        }).catch((error) => {
+            if (error.status === 402 || error.code === 'INSUFFICIENT_CREDITS') {
+                window.dispatchEvent(new CustomEvent('supdance:insufficient-credits', {
+                    detail: { message: error.message },
+                }));
+            }
+            throw error;
+        });
+    }
     let requestKey = key;
-    if (!requestKey && typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_API_KEY__) {
-        requestKey = await window.__KOYOSIM_REQUIRE_API_KEY__();
+    if (!requestKey && typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_API_KEY__) {
+        requestKey = await window.__SUPDANCE_REQUIRE_API_KEY__();
     }
     if (!requestKey) {
-        const cookieMatch = typeof document !== 'undefined' && document.cookie.match(/koyosim_key=([^;]+)/);
+        const cookieMatch = typeof document !== 'undefined' && document.cookie.match(/supdance_key=([^;]+)/);
         if (cookieMatch) requestKey = cookieMatch[1];
     }
     if (!requestKey) {
-        requestKey = 'koyosim-account-session';
-    }
-
-    const isBrowserApp = typeof window !== 'undefined' && BASE_URL === '/api';
-    if (isBrowserApp) {
-        const idempotencyKey = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-
-        // 生成前先获取防篡改报价（formula 定价 + 订阅阶梯折扣），并把 quote_id 随任务提交。
-        // 报价失败时静默回退，后端会按模型底价兜底计价，绝不阻塞生成。
-        let quoteId = null;
-        let quoteCredits = null;
-        try {
-            const quoteRes = await fetch('/api/generation/quote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `${idempotencyKey}:quote` },
-                body: JSON.stringify({ modelId: endpoint, parameters: payload }),
-            });
-            if (quoteRes.ok) {
-                const quote = await quoteRes.json();
-                quoteId = quote.quote_id || null;
-                quoteCredits = quote.credits ?? null;
-            }
-        } catch { /* 报价失败不阻塞生成 */ }
-
-        if (typeof window !== 'undefined' && quoteCredits != null) {
-            window.dispatchEvent(new CustomEvent('koyosim:quote', { detail: { modelId: endpoint, credits: quoteCredits, quoteId } }));
-        }
-
-        const genResponse = await fetch('/api/generations', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Idempotency-Key': idempotencyKey,
-            },
-            body: JSON.stringify({
-                modelId: endpoint,
-                studioId: 'studio',
-                prompt: payload.prompt || '',
-                parameters: payload,
-                quoteId: quoteId || undefined,
-            }),
-        });
-
-        if (!genResponse.ok) {
-            const errData = await genResponse.json().catch(() => ({}));
-            const errCode = errData.code || genResponse.status;
-            const errMsg = errData.error || '生成任务创建失败';
-
-            if (genResponse.status === 401) {
-                notifyAuthRequired(401, errMsg);
-                throw new Error('请先登录后再进行创作');
-            }
-            if (genResponse.status === 402 || errCode === 'INSUFFICIENT_CREDITS') {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('koyosim:insufficient-credits', { detail: { message: errMsg } }));
-                }
-                throw new Error(errMsg || '算力额度不足，请先充值或升级套餐');
-            }
-            if (genResponse.status !== 404) {
-                throw new Error(`生成服务请求失败: ${errMsg}`);
-            }
-            // 404 fallback to legacy upstream proxy below
-        } else {
-            const taskData = await genResponse.json();
-            const creation = taskData.creation || taskData;
-            const requestId = creation.id || taskData.creation_id || taskData.id;
-
-            // 任务创建成功（后端数据库已完成两阶段积分预扣 reserveCredits）
-            // 实时通知应用外壳联动刷新最新账户积分
-            if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
-                    detail: { phase: 'reserved', requestId, modelId: endpoint }
-                }));
-            }
-
-            if (onRequestId && requestId) onRequestId(requestId);
-
-            if (creation.status === 'succeeded' && creation.result_url) {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
-                        detail: { phase: 'completed', requestId, modelId: endpoint }
-                    }));
-                }
-                return {
-                    id: requestId,
-                    request_id: requestId,
-                    status: 'completed',
-                    url: creation.result_url,
-                    outputs: [creation.result_url],
-                };
-            }
-
-            try {
-                const result = await pollForResult(requestId, requestKey, maxAttempts);
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
-                        detail: { phase: 'completed', requestId, modelId: endpoint }
-                    }));
-                }
-                const outputUrl = result.outputs?.[0] || result.url || result.output?.url;
-                return normalizePredictionResult({ request_id: requestId }, result, outputUrl);
-            } catch (pollErr) {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('koyosim:credits-updated', {
-                        detail: { phase: 'failed_or_refunded', requestId, modelId: endpoint }
-                    }));
-                }
-                throw pollErr;
-            }
-        }
+        requestKey = 'supdance-account-session';
     }
 
     const url = `${BASE_URL}/api/v1/${endpoint}`;
@@ -291,7 +285,7 @@ export async function generateImage(apiKey, params) {
     }
     if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'));
 }
 
 export async function generateI2I(apiKey, params) {
@@ -323,7 +317,7 @@ export async function generateI2I(apiKey, params) {
     }
     if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'));
 }
 
 export async function decomposeLayers(apiKey, params) {
@@ -334,7 +328,7 @@ export async function decomposeLayers(apiKey, params) {
         resolution: params.resolution || 'auto',
         output_format: params.output_format || 'png'
     };
-    const result = await submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 300);
+    const result = await submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 300, resolveStudioId(params.studioId, 'image'));
     const rawImages = result.images || result.output?.images || result.outputs || (result.url ? [result.url] : []);
     const images = Array.isArray(rawImages) ? rawImages : [rawImages];
     return { ...result, images };
@@ -365,7 +359,7 @@ export async function generateVideo(apiKey, params) {
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     Object.assign(payload, serializeVideoToolOptions(modelInfo, params.options));
     payload = includeRequiredArrayDefaults(modelInfo, payload);
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'video'));
 }
 
 export async function generateI2V(apiKey, params) {
@@ -389,7 +383,7 @@ export async function generateI2V(apiKey, params) {
     if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     payload = includeRequiredArrayDefaults(modelInfo, payload);
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'video'));
 }
 
 export async function generateMarketingStudioAd(apiKey, params) {
@@ -401,7 +395,7 @@ export async function generateMarketingStudioAd(apiKey, params) {
         images_list: params.images_list || [],
         video_files: params.video_files || []
     };
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'marketing'));
 }
 
 export async function processV2V(apiKey, params) {
@@ -424,7 +418,7 @@ export async function processV2V(apiKey, params) {
         }
     }
     payload = includeRequiredArrayDefaults(modelInfo, payload);
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'video'));
 }
 
 export async function estimateV2VCost(params, signal) {
@@ -484,7 +478,7 @@ export async function processRecast(apiKey, params) {
     if (params.character_orientation) {
         payload.character_orientation = params.character_orientation;
     }
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'recast'));
 }
 
 export async function processMotionControl(apiKey, params) {
@@ -531,7 +525,7 @@ export async function processMotionControl(apiKey, params) {
         if (params.seed !== undefined && params.seed !== -1) payload.seed = Number(params.seed);
     }
 
-    return submitAndPoll(model, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(model, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'motion-control'));
 }
 
 export async function processLipSync(apiKey, params) {
@@ -544,7 +538,7 @@ export async function processLipSync(apiKey, params) {
     if (modelInfo?.hasPrompt) payload.prompt = params.prompt || '';
     if (params.resolution) payload.resolution = params.resolution;
     if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'lipsync'));
 }
 
 export async function generateAudio(apiKey, params) {
@@ -552,18 +546,18 @@ export async function generateAudio(apiKey, params) {
     const modelInfo = getAudioModelById(modelId);
     const endpoint = modelInfo?.endpoint || modelId;
     const payload = {};
-    const skipKeys = ['_modelId', 'onRequestId'];
+    const skipKeys = ['_modelId', 'onRequestId', 'studioId'];
     for (const key in params) {
         if (!skipKeys.includes(key) && params[key] !== undefined && params[key] !== null) {
             payload[key] = params[key];
         }
     }
-    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'audio'));
 }
 
 export async function uploadFile(apiKey, file, onProgress) {
     if (!file || typeof file.size !== 'number') throw new Error('请选择有效文件');
-    const accountGate = typeof window !== 'undefined' && window.__KOYOSIM_REQUIRE_ACCOUNT__;
+    const accountGate = typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_ACCOUNT__;
     if (accountGate) {
         const user = await accountGate();
         if (!user) throw new Error('LOGIN_CANCELLED');
@@ -681,7 +675,7 @@ export async function getPublishedWorkflows(apiKey) {
 
 function resolveAgentKey(apiKey) {
     if (apiKey) return apiKey;
-    if (typeof window !== 'undefined') return 'koyosim-account-session';
+    if (typeof window !== 'undefined') return 'supdance-account-session';
     return null;
 }
 
@@ -1252,7 +1246,7 @@ export async function runClipping(apiKey, params) {
         aspect_ratio: params.aspect_ratio || "9:16",
         return_coordinates_only: !!params.return_coordinates_only
     };
-    return submitAndPoll("ai-clipping", payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll("ai-clipping", payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, "clipping"));
 }
 
 export async function runMotionGraphics(apiKey, params) {
@@ -1261,7 +1255,7 @@ export async function runMotionGraphics(apiKey, params) {
         aspect_ratio: params.aspect_ratio || "16:9",
         duration_seconds: params.duration_seconds || 6,
     };
-    return submitAndPoll("motion-graphics", payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll("motion-graphics", payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, "vibe-motion"));
 }
 
 export async function runMotionGraphicsEdit(apiKey, params) {
@@ -1271,7 +1265,7 @@ export async function runMotionGraphicsEdit(apiKey, params) {
         aspect_ratio: params.aspect_ratio || "16:9",
         duration_seconds: params.duration_seconds || 6,
     };
-    return submitAndPoll("motion-graphics-edit", payload, apiKey, params.onRequestId, 900);
+    return submitAndPoll("motion-graphics-edit", payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, "vibe-motion"));
 }
 
 export async function upscaleImage(apiKey, { model, image_url, resolution, upscale_factor, onRequestId }) {

@@ -1,7 +1,7 @@
 {
-  "name": "koyosim",
-  "description": "KoyoSIM AI Studio - Next-Gen Generative AI Creative Platform",
-  "homepage": "https://www.Supdance.com",
+  "name": "supdance",
+  "description": "SupDance AI Studio - Next-Gen Generative AI Creative Platform",
+  "homepage": "https://www.supdance.com",
   "private": true,
   "version": "2.0.0",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "run-isolated-pg-tests": "node scripts/run-isolated-pg-tests.mjs",
     "migration:drill": "node scripts/migration-drill.mjs",
     "backup:restore:drill": "node scripts/backup-restore-drill.mjs",
-    "test:router": "node --test --env-file=.env.local --experimental-loader ./scripts/server-only-loader.mjs tests/router/*.test.mjs",
+    "test:router": "node --test --env-file=.env.local --experimental-loader ./scripts/server-only-loader.mjs tests/smart-router-scoring.test.mjs tests/model-pricing-routing.test.mjs",
     "test:billing": "node --test --env-file=.env.local --experimental-loader ./scripts/server-only-loader.mjs tests/p6/*.test.mjs",
     "test:storage": "node --test --experimental-loader ./scripts/server-only-loader.mjs tests/p5/unified-storage.test.mjs tests/p5/asset-storage.test.mjs tests/p5/sharp-variants.test.mjs",
     "test:all:isolated": "node scripts/run-all-tests-isolated.mjs",
@@ -39,7 +39,7 @@
     "test:content": "node --experimental-loader ./scripts/server-only-loader.mjs scripts/test-content-management.mjs",
     "backup:db": "node scripts/auto-backup-s3.mjs",
     "verify:admin": "node scripts/verify-phase1.mjs && node scripts/verify-phase2.mjs && node scripts/verify-phase3.mjs && node scripts/verify-phase4.mjs",
-    "build:studio": "npm run build -w studio",
+    "build:studio": "npm run build -w studio && rsync -a packages/studio/src/ node_modules/studio/src/ && rsync -a packages/studio/dist/ node_modules/studio/dist/",
     "build:workflow": "npm run build -w workflow-builder",
     "build:agent": "npm run build -w ai-agent",
     "build:design": "npm run build -w design-agent",
@@ -65,7 +65,7 @@
   },
   "build": {
     "appId": "ai.generative.open",
-    "productName": "koyosim",
+    "productName": "SupDance",
     "copyright": "Copyright © 2025",
     "directories": {
       "output": "release"
@@ -118,7 +118,7 @@
     "linux": {
       "icon": "public/banner.png",
       "category": "Utility",
-      "maintainer": "koyosim Team",
+      "maintainer": "SupDance Team",
       "extraFiles": [
         {
           "from": "build/linux/apparmor.profile",

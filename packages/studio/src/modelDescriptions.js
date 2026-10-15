@@ -193,7 +193,7 @@ export const MODEL_DESCRIPTIONS = {
   },
 };
 
-export const GLOBAL_SERVER_MODEL_META_KEY = '__KOYOSIM_SERVER_MODEL_META__';
+export const GLOBAL_SERVER_MODEL_META_KEY = '__SUPDANCE_SERVER_MODEL_META__';
 
 /**
  * Register dynamic model metadata received from backend /api/models/active.
@@ -201,10 +201,7 @@ export const GLOBAL_SERVER_MODEL_META_KEY = '__KOYOSIM_SERVER_MODEL_META__';
 export function setServerModelMeta(metaList) {
   if (!Array.isArray(metaList)) return;
   if (typeof globalThis === 'undefined') return;
-  if (!globalThis[GLOBAL_SERVER_MODEL_META_KEY]) {
-    globalThis[GLOBAL_SERVER_MODEL_META_KEY] = new Map();
-  }
-  const map = globalThis[GLOBAL_SERVER_MODEL_META_KEY];
+  const map = new Map();
   for (const m of metaList) {
     if (!m || !m.id) continue;
     const lower = String(m.id).toLowerCase();
@@ -215,6 +212,7 @@ export function setServerModelMeta(metaList) {
       if (!map.has(cleanId)) map.set(cleanId, m);
     }
   }
+  globalThis[GLOBAL_SERVER_MODEL_META_KEY] = map;
 }
 
 /**

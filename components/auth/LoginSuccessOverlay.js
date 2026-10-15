@@ -93,7 +93,7 @@ export default function LoginSuccessOverlay({ user, onComplete }) {
     () => getCreditExpiry(snapshot.entitlements, snapshot.wallet),
     [snapshot.entitlements, snapshot.wallet],
   );
-  const brandName = brand?.brandName || 'koyosim';
+  const brandName = brand?.brandName || 'supdance';
 
   const handleCheckIn = async () => {
     if (checkingIn || isCheckedIn) return;
@@ -116,9 +116,9 @@ export default function LoginSuccessOverlay({ user, onComplete }) {
   const handleContinue = () => onComplete?.(snapshot);
 
   return (
-    <div className="fixed inset-0 z-toast flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-md animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="login-welcome-title">
-      <div className="relative w-full max-w-[480px] overflow-hidden rounded-[28px] border border-white/[0.10] bg-surface p-6 shadow-[0_24px_80px_rgba(0,0,0,0.72)] sm:p-8">
-        <button type="button" onClick={handleContinue} aria-label="关闭欢迎面板" className="absolute right-5 top-5 flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60">
+    <div className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-6 backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="login-welcome-title">
+      <div className="relative w-full max-w-[480px] overflow-hidden rounded-2xl border border-line-strong bg-overlay p-6 sm:p-8 shadow-elevation-4 animate-scale-in text-ink">
+        <button type="button" onClick={handleContinue} aria-label="关闭欢迎面板" className="absolute right-5 top-5 flex size-8 items-center justify-center rounded-full text-ink-muted transition-[background-color,color,transform] duration-fast ease-standard hover:bg-wash hover:text-ink active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
           <X className="size-4" />
         </button>
 
@@ -126,42 +126,42 @@ export default function LoginSuccessOverlay({ user, onComplete }) {
           <div className="mb-5 flex items-center">
             <BrandLogo brand={brand} className="inline-flex items-center gap-2.5" />
           </div>
-          <div className="mb-3 flex items-center gap-2 text-sm font-medium text-emerald-300">
+          <div className="mb-3 flex items-center gap-2 text-sm font-medium text-emerald-400">
             <CheckCircle2 className="size-4" />
             <span>登录成功</span>
           </div>
-          <p className="mb-2 text-sm font-medium text-cyan-300">欢迎回来，{displayName}</p>
-          <h2 id="login-welcome-title" className="text-[28px] font-semibold tracking-[-0.03em] text-white sm:text-[32px]">今天也来创作点什么吧</h2>
-          <p className="mt-3 max-w-[38ch] text-sm leading-6 text-gray-400">{joinedDays ? `这是你加入 ${brandName} 创作的第 ${joinedDays} 天。` : `欢迎继续你的 ${brandName} 创作。`}</p>
+          <p className="mb-2 text-sm font-medium text-brand">欢迎回来，{displayName}</p>
+          <h2 id="login-welcome-title" className="text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">今天也来创作点什么吧</h2>
+          <p className="mt-3 max-w-[38ch] text-sm leading-6 text-ink-muted">{joinedDays ? `这是你加入 ${brandName} 创作的第 ${joinedDays} 天。` : `欢迎继续你的 ${brandName} 创作。`}</p>
         </div>
 
-        <div className="mt-7 overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-raised">
-          <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] px-4 py-4 sm:px-5">
+        <div className="mt-7 overflow-hidden rounded-xl border border-line bg-well">
+          <div className="flex items-center justify-between gap-4 border-b border-line-subtle px-4 py-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300"><Coins className="size-[18px]" /></div>
-              <div className="min-w-0"><p className="text-sm text-gray-300">当前剩余积分</p><p className="mt-1 text-xs text-gray-500">可用于图像、视频与其他创作任务</p></div>
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand"><Coins className="size-[18px]" /></div>
+              <div className="min-w-0"><p className="text-sm text-ink">当前剩余积分</p><p className="mt-1 text-xs text-ink-subtle">可用于图像、视频与其他创作任务</p></div>
             </div>
-            <span className="shrink-0 text-xl font-semibold tabular-nums text-white">{loading ? <Loader2 className="size-5 animate-spin text-gray-500" /> : credits == null ? '—' : Number(credits).toLocaleString('zh-CN')}</span>
+            <span className="shrink-0 text-xl font-semibold tabular-nums text-ink">{loading ? <Loader2 className="size-5 animate-spin text-ink-muted" /> : credits == null ? '—' : Number(credits).toLocaleString('zh-CN')}</span>
           </div>
           <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-gray-300"><CalendarDays className="size-[18px]" /></div>
-              <div className="min-w-0"><p className="text-sm text-gray-300">积分到期时间</p><p className="mt-1 text-xs text-gray-500">到期后未使用的周期积分将不再保留</p></div>
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-wash text-ink"><CalendarDays className="size-[18px]" /></div>
+              <div className="min-w-0"><p className="text-sm text-ink">积分到期时间</p><p className="mt-1 text-xs text-ink-subtle">到期后未使用的周期积分将不再保留</p></div>
             </div>
-            <span className="shrink-0 text-sm font-medium text-white">{loading ? '同步中…' : expiryDate}</span>
+            <span className="shrink-0 text-sm font-medium text-ink">{loading ? '同步中…' : expiryDate}</span>
           </div>
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-h-10 text-xs leading-5">
-            {feedback ? <span className="inline-flex items-center gap-1.5 text-emerald-300"><Check className="size-3.5" />{feedback}</span> : error ? <span className="text-amber-300">{error}</span> : <span className="text-gray-500">每日签到可领取 {CHECKIN_REWARD} 积分</span>}
+            {feedback ? <span className="inline-flex items-center gap-1.5 text-emerald-400"><Check className="size-3.5" />{feedback}</span> : error ? <span className="text-amber-400">{error}</span> : <span className="text-ink-subtle">每日签到可领取 {CHECKIN_REWARD} 积分</span>}
           </div>
-          <button type="button" onClick={handleCheckIn} disabled={loading || checkingIn || isCheckedIn} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-cyan-400/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60 disabled:cursor-not-allowed disabled:border-white/[0.08] disabled:bg-white/[0.04] disabled:text-gray-500">
+          <button type="button" onClick={handleCheckIn} disabled={loading || checkingIn || isCheckedIn} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-line bg-brand-soft px-5 text-sm font-semibold text-brand transition-[background-color,border-color,transform] duration-fast ease-standard hover:bg-brand-pressed active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:cursor-not-allowed disabled:border-line disabled:bg-wash disabled:text-ink-disabled">
             {checkingIn ? <Loader2 className="size-4 animate-spin" /> : isCheckedIn ? <Check className="size-4" /> : <Gift className="size-4" />}{isCheckedIn ? '今日已签到' : `签到领取 +${CHECKIN_REWARD}`}
           </button>
         </div>
 
-        <button type="button" onClick={handleContinue} className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-5 text-sm font-semibold text-[#071014] transition-colors duration-300 hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 active:bg-cyan-500"><span>进入创作</span><ArrowRight className="size-4" /></button>
+        <button type="button" onClick={handleContinue} className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-semibold text-ink-on-accent transition-[background-color,transform] duration-fast ease-standard hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"><span>进入创作</span><ArrowRight className="size-4" /></button>
       </div>
     </div>
   );

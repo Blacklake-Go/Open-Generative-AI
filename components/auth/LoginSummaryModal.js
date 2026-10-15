@@ -19,40 +19,40 @@ export default function LoginSummaryModal({ user, onComplete, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-toast flex items-center justify-center bg-black/80 px-4 py-5 backdrop-blur-md"
+      className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-5 backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-summary-title"
     >
-      <div className="relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-white/[0.10] bg-[#10131a] shadow-[0_24px_90px_rgba(0,0,0,0.72)]">
-        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-white/[0.08] px-5 py-5 sm:px-7">
+      <div className="relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-line-strong bg-overlay shadow-elevation-4 text-ink animate-scale-in">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line-subtle px-5 py-5 sm:px-7">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-300">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-400">
               <CheckCircle2 className="size-4" />
               <span>登录成功</span>
             </div>
-            <h2 id="login-summary-title" className="text-xl font-semibold tracking-[-0.02em] text-white sm:text-2xl">
+            <h2 id="login-summary-title" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
               你的创作账户概览
             </h2>
-            <p className="mt-1 text-xs text-gray-400">登录后数据直接来自账户接口，未同步的数据会明确显示为空状态。</p>
+            <p className="mt-1 text-xs text-ink-muted">登录后数据直接来自账户接口，未同步的数据会明确显示为空状态。</p>
           </div>
           <button
             type="button"
             onClick={onClose || finish}
             aria-label="关闭账户概览"
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl text-gray-500 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-[background-color,color,transform] duration-fast ease-standard hover:bg-wash hover:text-ink active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-white/[0.08] px-5 py-3 sm:px-7">
+        <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-line-subtle px-5 py-3 sm:px-7">
           {PANELS.map((panel) => (
             <button
               key={panel.id}
               type="button"
               onClick={() => setActivePanel(panel.id)}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-colors duration-300 ${activePanel === panel.id ? 'bg-cyan-400/15 text-cyan-200' : 'text-gray-400 hover:bg-white/[0.05] hover:text-white'}`}
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${activePanel === panel.id ? 'bg-brand-soft text-brand border border-brand-line shadow-elevation-1' : 'text-ink-muted hover:bg-wash hover:text-ink border border-transparent'}`}
             >
               {panel.id === 'activity' ? <BarChart3 className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
               {panel.label}
@@ -64,11 +64,11 @@ export default function LoginSummaryModal({ user, onComplete, onClose }) {
           {activePanel === 'activity' ? <ActivityTab user={user} /> : <UsageTab />}
         </div>
 
-        <div className="flex shrink-0 justify-end border-t border-white/[0.08] px-5 py-4 sm:px-7">
+        <div className="flex shrink-0 justify-end border-t border-line-subtle px-5 py-4 sm:px-7">
           <button
             type="button"
             onClick={finish}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-cyan-400 px-5 text-sm font-semibold text-[#071014] transition-colors duration-300 hover:bg-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-brand px-5 text-sm font-semibold text-ink-on-accent transition-[background-color,transform] duration-fast ease-standard hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           >
             进入创作
           </button>

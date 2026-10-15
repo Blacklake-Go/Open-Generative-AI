@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import { ToastHost as Toaster } from "../ui";
 import { generateAudio, uploadFile } from "../muapi.js";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import { audioModels, getAudioModelById } from "../models.js";
@@ -181,7 +182,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
           <button
             type="button"
             onClick={clearFile}
-            className="text-xs font-medium text-danger hover:text-danger-hover transition-colors uppercase tracking-wider flex items-center gap-1.5"
+            className="text-xs font-medium text-danger hover:text-danger-hover active:scale-[0.98] active:duration-instant transition-[color,transform] duration-fast ease-standard uppercase tracking-wider flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
           >
             <TrashIcon /> {copy.uploader.clear}
           </button>
@@ -194,7 +195,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`relative border rounded-xl p-4 transition-all duration-300 flex items-center gap-3.5 cursor-pointer backdrop-blur-md ${
+        className={`relative border rounded-xl p-4 transition-[background-color,border-color,box-shadow] duration-fast ease-standard flex items-center gap-3.5 cursor-pointer backdrop-blur-md ${
           isDragging
             ? "border-brand bg-brand-soft shadow-elevation-1"
             : uploadState === UPLOAD_STATE.READY
@@ -232,7 +233,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
                 <span>{progress}%</span>
               </div>
               <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-brand rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-brand rounded-full transition-[width] duration-base ease-standard" style={{ width: `${progress}%` }} />
               </div>
             </div>
           </div>
@@ -442,7 +443,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           {visualizerHeights.map((h, i) => (
             <div
               key={i}
-              className="w-1.5 rounded-full bg-gradient-to-t from-brand to-rose-400 transition-all duration-100"
+              className="w-1.5 rounded-full bg-gradient-to-t from-brand to-rose-400 transition-[height] duration-instant ease-standard"
               style={{ height: `${h}px` }}
             />
           ))}
@@ -469,7 +470,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
             className="flex-1 h-2 bg-white/10 hover:bg-white/15 rounded-full cursor-pointer relative group transition-colors"
           >
             <div 
-              className="absolute left-0 top-0 bottom-0 bg-brand rounded-full group-hover:bg-brand-hover transition-all"
+              className="absolute left-0 top-0 bottom-0 bg-brand rounded-full group-hover:bg-brand-hover transition-[background-color] duration-fast ease-standard"
               style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
             />
             <div 
@@ -489,7 +490,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           <div className="flex items-center gap-2 group/volume w-24">
             <button
               onClick={toggleMute}
-              className="p-2.5 bg-wash hover:bg-wash-strong border border-line rounded-xl text-ink-muted hover:text-ink transition-all"
+              className="p-2.5 bg-wash hover:bg-wash-strong active:scale-[0.98] active:duration-instant border border-line rounded-xl text-ink-muted hover:text-ink transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               title={copy.player.muteUnmute}
               type="button"
             >
@@ -509,7 +510,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           {/* Main Play/Pause Button */}
           <button
             onClick={togglePlay}
-            className="w-12 h-12 bg-brand hover:bg-brand-hover text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-elevation-brand"
+            className="w-12 h-12 bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent rounded-full flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-brand cursor-pointer"
             title={isPlaying ? copy.player.pause : copy.player.play}
             type="button"
           >
@@ -519,7 +520,7 @@ function PremiumAudioPlayer({ url, title, copy = en }) {
           {/* Download Button */}
           <button
             onClick={downloadAudio}
-            className="px-4 py-2 bg-wash hover:bg-wash-strong border border-line hover:border-brand-line rounded-xl text-xs font-semibold text-ink flex items-center gap-2 transition-all"
+            className="px-4 py-2 bg-wash hover:bg-wash-strong border border-line hover:border-brand-line rounded-xl text-xs font-semibold text-ink flex items-center gap-2 active:scale-[0.98] active:duration-instant transition-[background-color,border-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             title={copy.player.download}
             type="button"
           >
@@ -879,7 +880,7 @@ export default function AudioStudio({
               ref={modelBtnRef}
               type="button"
               onClick={() => setOpenDropdown(!openDropdown)}
-              className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-line/50 rounded-xl px-4 py-3.5 text-xs text-left font-bold text-white flex items-center justify-between transition-all backdrop-blur-md cursor-pointer"
+              className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] active:duration-instant border border-white/10 hover:border-brand-line/50 rounded-xl px-4 py-3.5 text-xs text-left font-bold text-white flex items-center justify-between transition-[background-color,border-color,transform] duration-fast ease-standard backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <span className="flex items-center gap-2 truncate">
                 {(() => {
@@ -916,7 +917,7 @@ export default function AudioStudio({
                         setSelectedModelId(model.id);
                         setOpenDropdown(false);
                       }}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all flex flex-col gap-1.5 border cursor-pointer ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-bold transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant flex flex-col gap-1.5 border cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                         model.id === selectedModelId ? "text-brand bg-brand-soft border-brand-line" : "text-zinc-200 border-transparent hover:bg-white/[0.06] hover:text-white"
                       }`}
                     >
@@ -990,7 +991,7 @@ export default function AudioStudio({
                             key={val}
                             type="button"
                             onClick={() => setParams(prev => ({ ...prev, [key]: val }))}
-                            className={`py-2 px-2 rounded-lg text-xs font-semibold text-center transition-all cursor-pointer ${
+                            className={`py-2 px-2 rounded-lg text-xs font-semibold text-center transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                               isSelected
                                 ? "bg-brand text-white shadow-elevation-1 font-bold"
                                 : "text-zinc-300 hover:text-white hover:bg-white/[0.06]"
@@ -1042,7 +1043,7 @@ export default function AudioStudio({
               // Boolean Toggles
               if (schema.type === "boolean") {
                 return (
-                  <div key={key} className="flex items-center justify-between bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-all hover:bg-white/[0.05] hover:border-white/20">
+                  <div key={key} className="flex items-center justify-between bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-[background-color,border-color] duration-fast ease-standard hover:bg-white/[0.05] hover:border-white/20">
                     <div className="flex-1 pr-4">
                       <span className="block text-xs font-bold text-white tracking-tight">
                         {fieldTitle}
@@ -1056,11 +1057,11 @@ export default function AudioStudio({
                     <button
                       type="button"
                       onClick={() => setParams(prev => ({ ...prev, [key]: !prev[key] }))}
-                      className={`w-11 h-6 rounded-full p-1 transition-all duration-300 relative shrink-0 cursor-pointer ${
+                      className={`w-11 h-6 rounded-full p-1 transition-[background-color] duration-fast ease-standard active:scale-[0.98] active:duration-instant relative shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                         params[key] ? "bg-brand shadow-elevation-brand" : "bg-white/10 hover:bg-white/15"
                       }`}
                     >
-                      <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-all duration-300 ${
+                      <div className={`w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-fast ease-standard ${
                         params[key] ? "translate-x-5" : "translate-x-0"
                       }`} />
                     </button>
@@ -1086,7 +1087,7 @@ export default function AudioStudio({
                             key={val}
                             type="button"
                             onClick={() => setParams(prev => ({ ...prev, [key]: val }))}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all cursor-pointer ${
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-center transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                               isSelected
                                 ? "bg-brand text-white shadow-elevation-1 font-bold"
                                 : "text-zinc-300 hover:text-white hover:bg-white/[0.06]"
@@ -1120,7 +1121,7 @@ export default function AudioStudio({
                         setOpenDropdown(false);
                         setOpenParamDropdown(isOpen ? null : key);
                       }}
-                      className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-xl px-4 py-3.5 text-xs text-left font-medium text-white flex items-center justify-between transition-all cursor-pointer backdrop-blur-md"
+                      className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] active:duration-instant border border-white/10 hover:border-white/20 rounded-xl px-4 py-3.5 text-xs text-left font-medium text-white flex items-center justify-between transition-[background-color,border-color,transform] duration-fast ease-standard cursor-pointer backdrop-blur-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                     >
                       <span>{fieldOptions[params[key]] || params[key] || copy.sidebar.selectOption}</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
@@ -1141,7 +1142,7 @@ export default function AudioStudio({
                                 setParams(prev => ({ ...prev, [key]: optionValue }));
                                 setOpenParamDropdown(null);
                               }}
-                              className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
+                              className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-medium transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                                 params[key] === optionValue
                                   ? "text-brand bg-brand-soft border-brand-line font-bold"
                                   : "text-zinc-200 border-transparent hover:bg-white/[0.06] hover:text-white"
@@ -1168,7 +1169,7 @@ export default function AudioStudio({
               if (isNumber && hasMinMax) {
                 const step = schema.step || (schema.type === "float" ? 0.05 : 1);
                 return (
-                  <div key={key} className="space-y-3 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-all hover:bg-white/[0.05] hover:border-white/20">
+                  <div key={key} className="space-y-3 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-[background-color,border-color] duration-fast ease-standard hover:bg-white/[0.05] hover:border-white/20">
                     <div className="flex items-center justify-between text-xs font-bold">
                       <span className="text-white tracking-tight">{fieldTitle}</span>
                       <span className="text-brand font-mono bg-brand-soft px-2 py-0.5 rounded-md border border-brand-line text-[11px]">
@@ -1184,7 +1185,7 @@ export default function AudioStudio({
                         step={step}
                         value={params[key] !== undefined ? params[key] : (schema.default || 0)}
                         onChange={(e) => setParams(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
-                        className="range flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand transition-all"
+                        className="range flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-brand transition-colors duration-fast"
                       />
                       <span className="text-[10px] text-zinc-400 font-medium w-6 text-left font-mono">{schema.maxValue}</span>
                     </div>
@@ -1205,10 +1206,10 @@ export default function AudioStudio({
                     <label className="block text-xs font-bold text-zinc-200 uppercase tracking-wider">
                       {fieldTitle || copy.sidebar.lyricsPromptLabel}
                     </label>
-                    <textarea
+                    <PromptInputField
                       value={params[key] || ""}
                       onChange={(e) => setParams(prev => ({ ...prev, [key]: e.target.value }))}
-                      className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl p-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-all min-h-[110px] resize-none leading-relaxed"
+                      className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl p-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-[border-color,box-shadow] duration-fast ease-standard min-h-[110px] resize-none leading-relaxed"
                       placeholder={fieldPlaceholder || copy.sidebar.promptPlaceholder}
                     />
                     {exampleText && (
@@ -1216,7 +1217,7 @@ export default function AudioStudio({
                         <button
                           type="button"
                           onClick={() => setParams(prev => ({ ...prev, [key]: exampleText }))}
-                          className="text-[11px] px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-brand-line hover:text-white rounded-full transition-all font-medium text-zinc-300 cursor-pointer"
+                          className="text-[11px] px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] active:duration-instant border border-white/10 hover:border-brand-line hover:text-white rounded-full transition-[background-color,border-color,color,transform] duration-fast ease-standard font-medium text-zinc-300 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                         >
                           "{exampleText.slice(0, 35)}..."
                         </button>
@@ -1240,7 +1241,7 @@ export default function AudioStudio({
                       const val = isNumber ? (e.target.value === "" ? "" : parseFloat(e.target.value)) : e.target.value;
                       setParams(prev => ({ ...prev, [key]: val }));
                     }}
-                    className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-white/20 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl px-4 py-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-all shadow-inner"
+                    className="w-full bg-white/[0.04] backdrop-blur-md border border-white/10 hover:border-white/20 focus:border-brand-line focus:ring-1 focus:ring-brand-ring rounded-xl px-4 py-3.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none transition-[border-color,box-shadow] duration-fast ease-standard shadow-inner"
                   />
                   {fieldDescription && (
                     <span className="block text-[11px] text-zinc-400 leading-normal">
@@ -1260,7 +1261,7 @@ export default function AudioStudio({
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || !selectedModel}
-            className="w-full py-3.5 bg-brand text-white text-sm font-bold rounded-xl hover:bg-brand-hover active:bg-brand-active transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale shadow-elevation-brand flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full py-3.5 bg-brand text-ink-on-accent text-sm font-bold rounded-xl hover:bg-brand-hover active:bg-brand-active transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 disabled:grayscale shadow-elevation-brand flex items-center justify-center gap-2.5 cursor-pointer"
           >
             {isGenerating ? (
               <>
@@ -1351,7 +1352,7 @@ export default function AudioStudio({
                 <div className="flex items-center justify-between px-1">
                   <button
                     onClick={handleNew}
-                    className="text-xs font-bold text-zinc-200 hover:text-white flex items-center gap-2 transition-all bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 px-4 py-2 rounded-full cursor-pointer shadow-elevation-1"
+                    className="text-xs font-bold text-zinc-200 hover:text-white flex items-center gap-2 active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 px-4 py-2 rounded-full cursor-pointer shadow-elevation-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                     type="button"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -1381,7 +1382,7 @@ export default function AudioStudio({
                   <div
                     key={entry.id || idx}
                     onClick={() => handleSelectHistory(entry, idx)}
-                    className={`p-3.5 bg-white/[0.03] backdrop-blur-md border rounded-xl cursor-pointer transition-all flex flex-col justify-between h-28 hover:bg-white/[0.07] hover:border-white/20 ${
+                    className={`p-3.5 bg-white/[0.03] backdrop-blur-md border rounded-xl cursor-pointer transition-[background-color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant flex flex-col justify-between h-28 hover:bg-white/[0.07] hover:border-white/20 ${
                       activeResultUrl === entry.url && view === "result"
                         ? "border-brand-line bg-brand-soft/20 shadow-elevation-1"
                         : "border-white/10"

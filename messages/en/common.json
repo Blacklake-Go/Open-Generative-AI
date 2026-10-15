@@ -51,7 +51,7 @@
     "studioSceneDesc": "Discover the most imaginative stories of the AI era"
   },
   "shell": {
-    "brand": "koyosim",
+    "brand": "SupDance",
     "studioFallback": "Studio",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
@@ -97,12 +97,12 @@
     "dismissNotification": "Dismiss notification",
     "ariaLabel": "Generation activity and notifications",
     "socialLogin": "Social Login",
-    "socialLoginSuccess": "Login successful, welcome to KoyoSIM AI Studio!",
+    "socialLoginSuccess": "Login successful, welcome to SupDance AI Studio!",
     "socialLoginFailed": "Social Login Failed",
     "socialLoginFailedDesc": "Authorization failed or cancelled, please retry"
   },
   "apiKeyModal": {
-    "title": "koyosim",
+    "title": "SupDance",
     "subtitlePrefix": "Enter your",
     "subtitleSuffix": "API key to start creating",
     "close": "Close",

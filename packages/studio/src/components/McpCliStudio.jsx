@@ -39,14 +39,14 @@ muapi image generate "a cyberpunk city" \\
     tag: 'Skills',
     title: 'Generative Media Skills',
     icon: FaStar,
-    code: `npx skills add @koyosim/media-skills --all`,
+    code: `npx skills add @supdance/media-skills --all`,
   },
 ];
 
 const QUICK_STEPS = [
   { id: 'installCli', num: '1', code: 'npm install -g muapi-cli' },
   { id: 'signIn', num: '2', code: 'muapi auth login' },
-  { id: 'addSkills', num: '3', code: 'npx skills add @koyosim/media-skills' },
+  { id: 'addSkills', num: '3', code: 'npx skills add @supdance/media-skills' },
 ];
 
 const EXAMPLES = [
@@ -70,7 +70,7 @@ export default function McpCliStudio({ locale = 'en' }) {
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-[#050505] text-white">
+    <div className="w-full h-full overflow-y-auto bg-transparent text-white">
       <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-12">
 
         {/* Hero */}

@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label} exceeds {limit}MB limit.",
     "labelUploadFailed": "{label} upload failed: {message}",
     "noPromptForModel": "Please enter a prompt for this model.",
+    "generationCapabilityUnavailable": "This model has no verified server generation capability yet.",
     "uploadVideoFirst": "Please upload a video first.",
     "uploadReferenceImageForMotion": "Please upload a reference image for motion control.",
     "uploadAtLeastOneReferenceImage": "Please upload at least one reference image first.",

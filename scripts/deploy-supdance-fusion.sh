@@ -24,13 +24,15 @@ rm -f "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE"
 
 COPYFILE_DISABLE=1 tar --no-xattrs -czf "$SOURCE_ARCHIVE" \
   packages/studio \
-  components/StandaloneShell.js \
+  app \
+  components \
+  lib \
+  messages \
+  middleware.js \
+  tailwind.config.js \
   package.json \
-  app/api/generation/quote \
-  app/api/generations \
-  lib/services/generationCore.js \
-  lib/services/dependencyHealth.js \
-  lib/services/smartRouter.js
+  docs/UI_DESIGN_SYSTEM.md \
+  docs/UI_COMPONENTS.md
 
 COPYFILE_DISABLE=1 tar --no-xattrs --exclude='.next/cache' -czf "$NEXT_ARCHIVE" .next
 
@@ -57,13 +59,11 @@ mkdir -p \"\$BACKUP_DIR\" \"\$STAGE\"
 echo \"备份当前生产源码与配置...\"
 tar -czf \"\$BACKUP_DIR/source-backup.tar.gz\" -C \"\$WEB_DIR\" \
   packages/studio \
-  components/StandaloneShell.js \
+  app/globals.css \
+  tailwind.config.js \
+  components \
   package.json \
-  app/api/generation/quote \
-  app/api/generations \
-  lib/services/generationCore.js \
-  lib/services/dependencyHealth.js \
-  lib/services/smartRouter.js 2>/dev/null || true
+  2>/dev/null || true
 
 # 备份当前 .next 运行时目录
 echo \"备份当前生产 .next 构建目录...\"
@@ -89,21 +89,28 @@ mv \"\$STAGE/.next\" \"\$WEB_DIR/.next\"
 
 # 同步新源码
 rsync -a \"\$STAGE/packages/studio/\" \"\$WEB_DIR/packages/studio/\"
-cp \"\$STAGE/components/StandaloneShell.js\" \"\$WEB_DIR/components/StandaloneShell.js\"
+mkdir -p \"\$WEB_DIR/node_modules/studio/src\" \"\$WEB_DIR/node_modules/studio/dist\"
+rsync -a \"\$STAGE/packages/studio/src/\" \"\$WEB_DIR/node_modules/studio/src/\"
+rsync -a \"\$STAGE/packages/studio/dist/\" \"\$WEB_DIR/node_modules/studio/dist/\"
+rsync -a \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
+rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
+rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
+rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
+cp \"\$STAGE/middleware.js\" \"\$WEB_DIR/middleware.js\"
+cp \"\$STAGE/app/globals.css\" \"\$WEB_DIR/app/globals.css\"
+cp \"\$STAGE/tailwind.config.js\" \"\$WEB_DIR/tailwind.config.js\"
 cp \"\$STAGE/package.json\" \"\$WEB_DIR/package.json\"
-rsync -a \"\$STAGE/app/api/generation/quote/\" \"\$WEB_DIR/app/api/generation/quote/\"
-rsync -a \"\$STAGE/app/api/generations/\" \"\$WEB_DIR/app/api/generations/\"
-cp \"\$STAGE/lib/services/generationCore.js\" \"\$WEB_DIR/lib/services/generationCore.js\"
-cp \"\$STAGE/lib/services/dependencyHealth.js\" \"\$WEB_DIR/lib/services/dependencyHealth.js\"
-cp \"\$STAGE/lib/services/smartRouter.js\" \"\$WEB_DIR/lib/services/smartRouter.js\"
 
 # 修复文件所有权为 www:www
 echo \"更新文件权限...\"
 chown -R www:www \"\$WEB_DIR/.next\"
 chown -R www:www \"\$WEB_DIR/packages/studio\"
-chown www:www \"\$WEB_DIR/components/StandaloneShell.js\" \"\$WEB_DIR/package.json\"
-chown -R www:www \"\$WEB_DIR/app/api/generation/quote\" \"\$WEB_DIR/app/api/generations\"
-chown www:www \"\$WEB_DIR/lib/services/generationCore.js\" \"\$WEB_DIR/lib/services/dependencyHealth.js\" \"\$WEB_DIR/lib/services/smartRouter.js\"
+chown -R www:www \"\$WEB_DIR/node_modules/studio\"
+chown -R www:www \"\$WEB_DIR/components\"
+chown -R www:www \"\$WEB_DIR/app\"
+chown -R www:www \"\$WEB_DIR/lib\"
+chown -R www:www \"\$WEB_DIR/messages\"
+chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/package.json\"
 
 # 清理暂存文件
 rm -rf \"\$STAGE\" /tmp/source_koyosim_fusion.tar.gz /tmp/next_koyosim_fusion.tar.gz

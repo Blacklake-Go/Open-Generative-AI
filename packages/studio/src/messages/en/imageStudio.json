@@ -59,6 +59,7 @@
     "model": "Model",
     "aspectRatio": "Aspect Ratio",
     "resolution": "Resolution",
+    "quality": "Quality",
     "effectType": "Effect Type"
   },
   "errors": {
@@ -66,6 +67,7 @@
     "uploadReferenceFirst": "Please upload a reference image first.",
     "uploadSwapFaceFirst": "Please upload a swap face image.",
     "enterPromptFirst": "Please enter a prompt to generate an image.",
+    "generationCapabilityUnavailable": "This model has no verified server generation capability yet.",
     "generationFailed": "Image generation failed"
   },
   "fullscreen": {

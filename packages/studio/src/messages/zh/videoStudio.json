@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label}超过 {limit}MB 限制。",
     "labelUploadFailed": "{label}上传失败：{message}",
     "noPromptForModel": "请为该模型输入提示词。",
+    "generationCapabilityUnavailable": "该模型尚无已验证的服务端生成能力。",
     "uploadVideoFirst": "请先上传视频。",
     "uploadReferenceImageForMotion": "请上传用于运动控制的参考图片。",
     "uploadAtLeastOneReferenceImage": "请先上传至少一张参考图片。",

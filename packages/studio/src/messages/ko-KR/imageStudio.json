@@ -59,6 +59,7 @@
     "model": "모델",
     "aspectRatio": "종횡비",
     "resolution": "해결",
+    "quality": "품질",
     "effectType": "효과 유형"
   },
   "errors": {
@@ -66,6 +67,7 @@
     "uploadReferenceFirst": "먼저 참조 이미지를 업로드해 주세요.",
     "uploadSwapFaceFirst": "교체 얼굴 이미지를 업로드해 주세요.",
     "enterPromptFirst": "이미지를 생성하려면 프롬프트를 입력하세요.",
+    "generationCapabilityUnavailable": "이 모델은 아직 검증된 서버 생성 기능이 없습니다.",
     "generationFailed": "이미지 생성 실패"
   },
   "fullscreen": {

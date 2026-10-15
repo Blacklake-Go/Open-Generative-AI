@@ -41,7 +41,7 @@ export const viewport = {
 
 export const metadata = {
   metadataBase: new URL('https://www.supdance.com'),
-  title: 'koyosim — Free AI Image & Video Studio',
+  title: 'SupDance — Free AI Image & Video Studio',
   description: 'Generate AI images and videos using 200+ models — Flux, Midjourney, Kling, Veo, Seedance and more.',
   icons: {
     icon: [

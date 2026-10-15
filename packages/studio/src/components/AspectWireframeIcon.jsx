@@ -69,18 +69,18 @@ export function AspectWireframeIcon({
     >
       <div
         style={boxStyle}
-        className={`border-[1.5px] transition-all flex items-center justify-center ${
+        className={`border-[1.5px] transition-[border-color,background-color] duration-fast ease-standard flex items-center justify-center ${
           isAuto ? "border-dashed" : "border-solid"
         } ${
           active
-            ? "border-primary bg-primary/20 shadow-[0_0_8px_rgba(225,29,116,0.25)]"
-            : "border-white/40 group-hover:border-white/80"
+            ? "border-brand bg-brand-soft"
+            : "border-line text-ink-muted group-hover:border-line-strong"
         } rounded-[3px]`}
       >
         {isAuto && (
           <span
             className={`text-[8.5px] font-black leading-none uppercase ${
-              active ? "text-primary" : "text-white/60"
+              active ? "text-brand" : "text-ink-subtle"
             }`}
           >
             A

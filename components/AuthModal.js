@@ -119,14 +119,14 @@ export default function AuthModal({
     };
 
     window.addEventListener('open-auth-modal', handleOpenAuth);
-    window.addEventListener('koyosim:open-auth', handleOpenAuth);
+    window.addEventListener('supdance:open-auth', handleOpenAuth);
     window.addEventListener('close-auth-modal', handleCloseAuth);
-    window.addEventListener('koyosim:close-auth', handleCloseAuth);
+    window.addEventListener('supdance:close-auth', handleCloseAuth);
     return () => {
       window.removeEventListener('open-auth-modal', handleOpenAuth);
-      window.removeEventListener('koyosim:open-auth', handleOpenAuth);
+      window.removeEventListener('supdance:open-auth', handleOpenAuth);
       window.removeEventListener('close-auth-modal', handleCloseAuth);
-      window.removeEventListener('koyosim:close-auth', handleCloseAuth);
+      window.removeEventListener('supdance:close-auth', handleCloseAuth);
     };
   }, [handleClose]);
 
@@ -152,7 +152,7 @@ export default function AuthModal({
     (user, isNew = false, provider = null) => {
       setAuthenticatedUser(user);
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('koyosim-auth-success', { detail: { user } }));
+        window.dispatchEvent(new CustomEvent('supdance-auth-success', { detail: { user } }));
       }
 
       if (user?.deletion_scheduled_at || user?.deletionScheduledAt) {
@@ -176,7 +176,7 @@ export default function AuthModal({
     if (!isOpen) return;
 
     const processAuthData = (data) => {
-      if (!data || data.type !== 'koyosim-auth-complete') return;
+      if (!data || data.type !== 'supdance-auth-complete') return;
       if (data.action === 'bind') return;
 
       const eventKey = data.eventId || `${data.provider}_${data.ok}_${data.isNew}`;
@@ -196,13 +196,13 @@ export default function AuthModal({
     let channel = null;
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-        channel = new BroadcastChannel('koyosim_auth_channel');
+        channel = new BroadcastChannel('supdance_auth_channel');
         channel.onmessage = (event) => processAuthData(event.data);
       }
     } catch {}
 
     const handleStorageChange = (event) => {
-      if ((event.key === 'koyosim_auth_event' || event.key === 'koyosim-oauth-sync') && event.newValue) {
+      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync') && event.newValue) {
         try {
           processAuthData(JSON.parse(event.newValue));
         } catch {}
@@ -210,7 +210,7 @@ export default function AuthModal({
     };
 
     const handleWindowMessage = (event) => {
-      if (event?.data?.type === 'koyosim-auth-complete') {
+      if (event?.data?.type === 'supdance-auth-complete') {
         processAuthData(event.data);
       }
     };
@@ -232,7 +232,7 @@ export default function AuthModal({
       window.location.assign(url);
       return;
     }
-    const popup = window.open(url, 'koyosim-oauth', 'popup,width=520,height=720');
+    const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
     if (!popup) window.location.assign(url);
   };
 
@@ -342,7 +342,7 @@ export default function AuthModal({
   // 浮窗弹窗模式：半透明毛玻璃背景 + 居中组件化卡片
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200 overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-modal flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in overflow-y-auto cursor-pointer"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           handleClose();

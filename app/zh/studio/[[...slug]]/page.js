@@ -7,7 +7,7 @@ import { getUserBySession } from '@/lib/services/auth';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Studio — koyosim',
+  title: 'Studio — SupDance',
 };
 
 export default async function ZhStudioPage({ params, searchParams }) {

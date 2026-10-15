@@ -1,7 +1,7 @@
 {
   "name": "studio",
   "version": "1.0.0",
-  "description": "koyosim studio components for Muapi",
+  "description": "SupDance studio components for Muapi",
   "main": "src/index.js",
   "module": "src/index.js",
   "exports": {

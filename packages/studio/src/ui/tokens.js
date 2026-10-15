@@ -104,10 +104,10 @@ export const PILL_SEGMENT_IDLE =
  * with a stronger ring rather than removed.
  */
 export const FOCUS_RING =
-  'outline-none focus-visible:ring-2 focus-visible:ring-brand-ring focus-visible:border-brand';
+  'outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base focus-visible:border-brand';
 
 export const FOCUS_RING_DANGER =
-  'outline-none focus-visible:ring-2 focus-visible:ring-danger-ring focus-visible:border-danger';
+  'outline-none focus-visible:ring-1 focus-visible:ring-danger-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base focus-visible:border-danger';
 
 /**
  * Shared base for anything that behaves as a control. Dimension-free and
@@ -117,10 +117,26 @@ export const FOCUS_RING_DANGER =
 export const CONTROL_BASE = [
   'inline-flex items-center justify-center gap-2 whitespace-nowrap select-none',
   'border text-ink',
-  'transition-[background-color,border-color,color,box-shadow]',
+  'transition-[background-color,border-color,color,box-shadow,transform]',
   'duration-fast ease-standard',
+  'active:scale-[0.98] active:duration-instant',
   FOCUS_RING,
   'disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed',
+  'aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed',
+].join(' ');
+
+/**
+ * Shared base for icon-only controls. Square hit-area with active:scale-95.
+ */
+export const ICON_CONTROL_BASE = [
+  'inline-flex items-center justify-center whitespace-nowrap select-none',
+  'border text-ink',
+  'transition-[background-color,border-color,color,box-shadow,transform]',
+  'duration-fast ease-standard',
+  'active:scale-95 active:duration-instant',
+  FOCUS_RING,
+  'disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed',
+  'aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed',
 ].join(' ');
 
 /**
@@ -131,6 +147,7 @@ export const CONTROL_BASE = [
 export const BUTTON_WEIGHT = {
   primary: 'font-semibold',
   secondary: 'font-medium',
+  ghost: 'font-medium',
   tertiary: 'font-medium',
   outline: 'font-medium',
   danger: 'font-medium',
@@ -149,9 +166,14 @@ export const BUTTON_VARIANTS = {
   secondary: [
     'bg-raised text-ink border-line',
     'hover:bg-overlay hover:border-line-strong',
-    'active:border-line-strong',
+    'active:border-line-strong active:bg-wash-press',
   ].join(' '),
   tertiary: [
+    'bg-transparent text-ink-muted border-transparent',
+    'hover:bg-wash hover:text-ink',
+    'active:bg-wash-press',
+  ].join(' '),
+  ghost: [
     'bg-transparent text-ink-muted border-transparent',
     'hover:bg-wash hover:text-ink',
     'active:bg-wash-press',
@@ -182,7 +204,7 @@ export const FIELD_BASE = [
 
 /** Floating layer (dropdown, popover, command menu). */
 export const OVERLAY_PANEL = [
-  'bg-overlay border border-line-strong rounded-lg shadow-elevation-3',
+  'bg-overlay-glass backdrop-blur-md border border-line-subtle rounded-xl shadow-elevation-3',
   'text-ink overflow-hidden',
 ].join(' ');
 
@@ -210,14 +232,21 @@ export const MENU_ITEM_INSET = 'pl-8 pr-2.5';
  * the app-side `components/ui/dialog` shell and the studio `ModalContent`
  * cannot end up with two different scrims (z-index ladder is fixed by tokens;
  * PART 24).
+ *
+ * Scrim Standard: bg-scrim + backdrop-blur-xl (20px diffuse blur), 400ms duration-modal,
+ * pointer-events safe (pointer-events-none on closed).
  */
-export const SCRIM = 'fixed inset-0 z-overlay bg-scrim backdrop-blur-sm';
+export const SCRIM =
+  'fixed inset-0 z-overlay bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter data-[state=closed]:pointer-events-none data-[state=open]:pointer-events-auto';
 
 export const MODAL_PANEL = [
   'fixed left-1/2 top-1/2 z-modal w-modal max-h-modal -translate-x-1/2 -translate-y-1/2',
   'overflow-y-auto rounded-2xl border border-line-strong bg-overlay text-ink',
-  'p-6 shadow-elevation-4 animate-scale-in',
+  'p-6 shadow-elevation-4 duration-modal ease-enter animate-modal-enter',
 ].join(' ');
+
+/** Canonical alias for consumers expecting MODAL_SHELL */
+export const MODAL_SHELL = MODAL_PANEL;
 
 /**
  * On a phone a centred dialog is the wrong object: it becomes a bottom sheet
@@ -231,9 +260,15 @@ export const MODAL_PANEL_MOBILE = [
   'max-md:rounded-sheet-top max-md:p-5',
 ].join(' ');
 
+/**
+ * Side sheet / Drawer base panel.
+ * Symmetrical radius `rounded-2xl` is intentionally omitted from base SHEET_PANEL
+ * so the drawer docking wrapper can apply asymmetric docking radii (e.g. rounded-l-2xl rounded-r-none).
+ * Uses 40px diffusion (backdrop-blur-2xl) and GPU translation acceleration.
+ */
 export const SHEET_PANEL = [
-  'fixed z-modal flex flex-col rounded-2xl border-line-strong bg-overlay text-ink shadow-elevation-4',
-  'animate-fade-in',
+  'fixed z-modal flex flex-col border-line-strong bg-overlay/95 backdrop-blur-2xl text-ink shadow-elevation-4',
+  'will-change-transform',
 ].join(' ');
 
 export const DIALOG_TITLE = 'text-section-title text-ink';
@@ -344,8 +379,8 @@ export const PROMPT_MEDIA_ACTIVE = 'border-brand-line bg-brand-soft text-brand';
 
 /** Parameter popover anchored above its trigger. */
 export const PROMPT_POPOVER = [
-  'min-w-44 max-h-popover rounded-lg border border-line-strong',
-  'bg-overlay-glass p-2.5 text-ink shadow-elevation-3 animate-fade-in overflow-y-auto',
+  'min-w-44 max-h-popover rounded-xl border border-line-strong',
+  'bg-overlay-glass backdrop-blur-md p-2.5 text-ink shadow-elevation-3 animate-fade-in overflow-y-auto',
 ].join(' ');
 
 export const PROMPT_POPOVER_ANCHOR = 'absolute bottom-full left-0 z-popover mb-2.5';

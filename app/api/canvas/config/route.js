@@ -8,15 +8,15 @@ export const dynamic = 'force-dynamic';
 function isAllowedCanvasOrigin(origin) {
   if (!origin) return false;
   const lower = String(origin).trim().toLowerCase();
-  return lower === 'https://www.supdance.com' || lower === 'https://supdance.com' || lower === 'https://canvas.supdance.com' || lower === 'https://canvas.koyosim.com';
+  return lower === 'https://www.supdance.com' || lower === 'https://supdance.com' || lower === 'https://canvas.supdance.com';
 }
 
 function getCorsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin': origin || 'https://www.Supdance.com',
+    'Access-Control-Allow-Origin': origin || 'https://www.supdance.com',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'X-SupDance-Canvas, X-KoyoSIM-Canvas, Content-Type',
+    'Access-Control-Allow-Headers': 'X-SupDance-Canvas, Content-Type',
     'Cache-Control': 'private, no-store',
     Vary: 'Origin',
   };
@@ -24,7 +24,7 @@ function getCorsHeaders(origin) {
 
 function allowed(request) {
   const origin = request.headers.get('origin');
-  const canvasHeader = request.headers.get('x-supdance-canvas') || request.headers.get('x-koyosim-canvas');
+  const canvasHeader = request.headers.get('x-supdance-canvas');
   return isAllowedCanvasOrigin(origin) && canvasHeader === 'infinite-canvas-v1';
 }
 

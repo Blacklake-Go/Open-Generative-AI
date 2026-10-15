@@ -24,18 +24,29 @@ export default function ModelPriceTag({
 }) {
   const copy = resolveCopy(en, { "zh-CN": zh, "ja-JP": ja, "ko-KR": ko, "zh-TW": zhTw, "es-ES": es }, locale).price;
   const [, setVersion] = useState(0);
+  const [liveQuote, setLiveQuote] = useState(null);
 
   useEffect(() => {
     const handleUpdate = () => setVersion((v) => v + 1);
+    const handleQuote = (event) => {
+      const detail = event?.detail;
+      if (!detail || !detail.modelId || !Number.isFinite(Number(detail.credits))) return;
+      const targetIds = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
+      if (targetIds.length === 1 && targetIds[0] === detail.modelId) {
+        setLiveQuote({ modelId: detail.modelId, credits: Number(detail.credits) });
+      }
+    };
     if (typeof window !== "undefined") {
       window.addEventListener("koyosim-model-pricing-updated", handleUpdate);
+      window.addEventListener("koyosim:quote", handleQuote);
     }
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("koyosim-model-pricing-updated", handleUpdate);
+        window.removeEventListener("koyosim:quote", handleQuote);
       }
     };
-  }, []);
+  }, [ids]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,7 +67,12 @@ export default function ModelPriceTag({
     }
   }, []);
 
-  const rawPrice = priceForIds(ids);
+  const targetIds = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
+  const shelfPrice = priceForIds(ids);
+  const rawPrice =
+    targetIds.length === 1 && liveQuote?.modelId === targetIds[0]
+      ? { kind: "exact", credits: liveQuote.credits }
+      : shelfPrice;
   const factor = Number.isFinite(multiplier) && multiplier > 1 ? multiplier : 1;
   const price =
     rawPrice.credits != null && factor > 1
@@ -69,7 +85,7 @@ export default function ModelPriceTag({
 
   return (
     <span
-      className={`text-[10px] font-normal text-zinc-400 ${className}`}
+      className={`text-micro font-normal text-ink-subtle ${className}`}
       data-model-price={price.kind === "missing" ? "" : String(price.credits)}
       data-model-price-kind={price.kind}
     >

@@ -5,7 +5,7 @@ import { normalizeLocale } from '@/lib/locales';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Workflow — koyosim',
+  title: 'Workflow — SupDance',
   robots: { index: false, follow: false },
 };
 

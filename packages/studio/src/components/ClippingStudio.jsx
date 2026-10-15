@@ -22,10 +22,10 @@ import {
   PromptPopover,
   PromptPopoverHeader,
   PromptDurationIcon,
-  PromptTextarea,
   promptControlClassName,
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import en from "../messages/en/clippingStudio.json";
 import zh from "../messages/zh/clippingStudio.json";
 import ja from "../messages/ja-JP/clippingStudio.json";
@@ -34,6 +34,71 @@ import zhTw from "../messages/zh-TW/clippingStudio.json";
 import es from "../messages/es-ES/clippingStudio.json";
 import { resolveCopy } from "../i18nUtils";
 import { isModelActive } from "../models.js";
+import VideoRelayMenu from "./VideoRelayMenu.jsx";
+
+const CLIPPING_RELAY_COPY_EN = {
+  presetsTitle: "Clip Templates:",
+  relayLoadedToast: "Loaded relayed video for AI clipping!",
+  presets: [
+    { id: "highlight", label: "Action Highlights", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+    { id: "quotes", label: "Key Quotes & Insights", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+    { id: "twist", label: "Plot Twist & Reactions", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+    { id: "viral", label: "Viral Short Pacing", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+  ],
+};
+
+const CLIPPING_RELAY_COPY_LOCALES = {
+  "zh-CN": {
+    presetsTitle: "切片模板:",
+    relayLoadedToast: "已自动载入接力视频进行AI切片！",
+    presets: [
+      { id: "highlight", label: "精彩高光快剪", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+      { id: "quotes", label: "金句重点摘录", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+      { id: "twist", label: "爆点反转切片", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+      { id: "viral", label: "短视频爆款节奏", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+    ],
+  },
+  "ja-JP": {
+    presetsTitle: "切り抜きテンプレート:",
+    relayLoadedToast: "AI切り抜き用に連携動画を読み込みました！",
+    presets: [
+      { id: "highlight", label: "ハイライト高速編集", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+      { id: "quotes", label: "名言・要点抜粋", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+      { id: "twist", label: "急展開・リアクション", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+      { id: "viral", label: "ショート動画バズリズム", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+    ],
+  },
+  "ko-KR": {
+    presetsTitle: "클립 템플릿:",
+    relayLoadedToast: "AI 클리핑을 위해 연동된 영상을 불러왔습니다!",
+    presets: [
+      { id: "highlight", label: "하이라이트 퀵컷", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+      { id: "quotes", label: "핵심 명언 발췌", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+      { id: "twist", label: "반전 & 리액션 클립", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+      { id: "viral", label: "숏폼 바이럴 템포", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+    ],
+  },
+  "zh-TW": {
+    presetsTitle: "切片模板:",
+    relayLoadedToast: "已自動載入接力影片進行AI切片！",
+    presets: [
+      { id: "highlight", label: "精彩高光快剪", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+      { id: "quotes", label: "金句重點摘錄", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+      { id: "twist", label: "爆點反轉切片", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+      { id: "viral", label: "短影音爆款節奏", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+    ],
+  },
+  "es": {
+    presetsTitle: "Plantillas de recorte:",
+    relayLoadedToast: "¡Video recibido cargado para recorte IA!",
+    presets: [
+      { id: "highlight", label: "Momentos Destacados", prompt: "Extract high-energy action climaxes, impactful moments, and peak dramatic tension" },
+      { id: "quotes", label: "Frases Clave", prompt: "Identify compelling quotes, key insights, punchlines, and meaningful dialogue remarks" },
+      { id: "twist", label: "Giros y Reacciones", prompt: "Detect dramatic emotional turns, surprising plot twists, and peak reaction shots" },
+      { id: "viral", label: "Ritmo Viral Corto", prompt: "Fast-paced hooks, dynamic visual transitions, optimal viral pacing under 15 seconds" },
+    ],
+  },
+};
 
 const MAX_VIDEO_SIZE_MB = 100;
 const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
@@ -55,7 +120,7 @@ const dismissErrorToast = (toastId) => {
 // ---------------------------------------------------------------------------
 // Inline SVG Icons
 // ---------------------------------------------------------------------------
-const ScissorsIcon = ({ className = "text-[#e11d74]" }) => (
+const ScissorsIcon = ({ className = "text-brand" }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <circle cx="6" cy="6" r="3" />
     <circle cx="6" cy="18" r="3" />
@@ -101,7 +166,7 @@ const CopyIcon = () => (
 
 const ErrorToast = ({ toastInstance, message, dismissLabel = "Dismiss notification" }) => (
   <div
-    className={`pointer-events-auto flex w-[340px] max-w-[calc(100vw-32px)] items-start gap-3 rounded-xl border border-red-400/40 bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.15)] transition-all duration-200 ${
+    className={`pointer-events-auto flex w-[340px] max-w-[calc(100vw-32px)] items-start gap-3 rounded-xl border border-red-400/40 bg-white px-3.5 py-3 text-[13px] text-zinc-900 shadow-elevation-3 transition-[opacity,transform] duration-fast ease-standard ${
       toastInstance.visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
     }`}
     role="alert"
@@ -127,7 +192,7 @@ const ErrorToast = ({ toastInstance, message, dismissLabel = "Dismiss notificati
     <button
       type="button"
       onClick={() => dismissErrorToast(toastInstance.id)}
-      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-300"
+      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-300 cursor-pointer"
       aria-label={dismissLabel}
     >
       <svg
@@ -216,6 +281,7 @@ const getAspectClass = (ar) => {
 // ---------------------------------------------------------------------------
 export default function ClippingStudio({
   apiKey,
+  initialPrompt = "",
   onGenerationStart,
   onGenerationEnd,
   onGenerationComplete,
@@ -225,6 +291,7 @@ export default function ClippingStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const relayCopy = resolveCopy(CLIPPING_RELAY_COPY_EN, CLIPPING_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_clipping_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -236,7 +303,10 @@ export default function ClippingStudio({
   const [numHighlights, setNumHighlights] = useState(3);
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [returnCoordinatesOnly, setReturnCoordinatesOnly] = useState(false);
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt);
+  }, [initialPrompt]);
   
   // ── Dropdowns state ──
   const [aspectDropdownOpen, setAspectDropdownOpen] = useState(false);
@@ -323,6 +393,31 @@ export default function ClippingStudio({
       console.warn("Failed to load ClippingStudio persistent state:", err);
     }
   }, []);
+
+  // ── Auto-fill video from relay or query parameter ────────────────────────────
+  useEffect(() => {
+    const handleRelay = (url) => {
+      if (!url) return;
+      setVideoUrl(url);
+      toast.success(relayCopy.relayLoadedToast);
+    };
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryVideo = params.get("video_url");
+      if (queryVideo) {
+        handleRelay(queryVideo);
+      }
+
+      const listener = (e) => {
+        if (e.detail?.videoUrl) {
+          handleRelay(e.detail.videoUrl);
+        }
+      };
+      window.addEventListener("koyosim-relay-video", listener);
+      return () => window.removeEventListener("koyosim-relay-video", listener);
+    }
+  }, [relayCopy.relayLoadedToast]);
 
   // ── Save Persistent State to localStorage ───────────────────────────────
   useEffect(() => {
@@ -601,28 +696,28 @@ export default function ClippingStudio({
           <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-elevation-3 rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -633,7 +728,7 @@ export default function ClippingStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.headings.startCreatingWith}</span>
-              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.headings.aiClippingStudio}
               </span>
             </h1>
@@ -661,7 +756,7 @@ export default function ClippingStudio({
                 <div
                   key={entry.id || idx}
                   onClick={() => handleSelectHistory(entry)}
-                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                  className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-elevation-2 hover:border-brand-line transition-[border-color,box-shadow] duration-fast ease-standard flex flex-col cursor-pointer"
                 >
                   <div className="aspect-video bg-zinc-950 flex items-center justify-center border-b border-white/5 relative overflow-hidden">
                     <video
@@ -680,6 +775,11 @@ export default function ClippingStudio({
                     
                     {/* Overlay actions */}
                     <div className="pointer-events-none absolute top-2 right-2 z-10 hidden flex-col gap-2 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 md:flex">
+                      <VideoRelayMenu
+                        videoUrl={entry.clips?.[0] || entry.videoUrl}
+                        currentTab="clipping"
+                        locale={locale}
+                      />
                       <button
                         type="button"
                         title={copy.buttons.deleteFromHistory}
@@ -687,7 +787,7 @@ export default function ClippingStudio({
                           e.stopPropagation();
                           setHistory((prev) => prev.filter((h) => h.id !== entry.id));
                         }}
-                        className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                        className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-red-500 hover:text-white active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-white/10 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                       >
                         <TrashIcon />
                       </button>
@@ -716,7 +816,7 @@ export default function ClippingStudio({
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20">
+                      <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line">
                         {entry.aspectRatio}
                       </span>
                       <span className="text-[10px] text-white/40">
@@ -738,7 +838,7 @@ export default function ClippingStudio({
               <button
                 type="button"
                 onClick={() => setResult(null)}
-                className="flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-white active:scale-[0.98] active:duration-instant transition-[color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="19" y1="12" x2="5" y2="12" />
@@ -747,7 +847,7 @@ export default function ClippingStudio({
                 {copy.headings.backToHistory}
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold text-brand bg-brand-soft border border-brand-line px-2.5 py-0.5 rounded">
                   {result.returnCoordinatesOnly ? copy.modes.timelineSeek : copy.modes.clipsGallery}
                 </span>
                 <span className="text-[10px] text-zinc-400 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded">
@@ -799,14 +899,14 @@ export default function ClippingStudio({
                               setActiveHighlightIndex(i);
                               seekToHighlight(start);
                             }}
-                            className={`w-full p-4 border rounded-lg text-left transition-all hover:bg-zinc-900/60 flex flex-col gap-2 group/hl ${
+                            className={`w-full p-4 border rounded-xl text-left transition-[background-color,border-color,box-shadow] duration-fast ease-standard flex flex-col gap-2 group/hl cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                               isActive 
-                                ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(225, 29, 116,0.03)]" 
-                                : "border-zinc-800 bg-zinc-900/30 hover:border-zinc-700"
+                                ? "border-brand-line bg-brand-soft shadow-elevation-1" 
+                                : "border-line bg-surface hover:border-line-strong hover:bg-wash"
                             }`}
                           >
                             <div className="flex items-center justify-between w-full">
-                              <span className={`text-xs font-bold transition-colors ${isActive ? "text-primary" : "text-white"}`}>
+                              <span className={`text-xs font-bold transition-colors ${isActive ? "text-brand" : "text-ink"}`}>
                                 {hl.label || copy.labels.highlightFallback.replace('{index}', i + 1)}
                               </span>
                               {hl.score && (
@@ -854,7 +954,7 @@ export default function ClippingStudio({
                       <div
                         key={i}
                         onClick={() => setFullscreenUrl(clipUrl)}
-                        className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                        className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-elevation-2 hover:border-brand-line transition-[border-color,box-shadow] duration-fast ease-standard flex flex-col cursor-pointer"
                       >
                         <div className="relative group/vid border-b border-white/5 overflow-hidden bg-black/40">
                           <video
@@ -877,6 +977,11 @@ export default function ClippingStudio({
                               prompt={result.prompt}
                               onCopyError={onGenerationError}
                             />
+                            <VideoRelayMenu
+                              videoUrl={clipUrl}
+                              currentTab="clipping"
+                              locale={locale}
+                            />
                             <button
                               type="button"
                               title={copy.buttons.copyLink}
@@ -884,7 +989,7 @@ export default function ClippingStudio({
                                 e.stopPropagation();
                                 copyToClipboard(clipUrl);
                               }}
-                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                              className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                             >
                               <CopyIcon />
                             </button>
@@ -895,7 +1000,7 @@ export default function ClippingStudio({
                                 e.stopPropagation();
                                 downloadVideo(clipUrl, `clip-${i + 1}.mp4`);
                               }}
-                              className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                              className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                             >
                               <DownloadIcon />
                             </button>
@@ -918,7 +1023,7 @@ export default function ClippingStudio({
                             ]}
                           />
 
-                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/5 text-[9px] uppercase font-black tracking-wider text-primary">
+                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded border border-white/5 text-[9px] uppercase font-black tracking-wider text-brand">
                             {copy.labels.clipIndex.replace('{index}', i + 1)}
                           </div>
                         </div>
@@ -931,7 +1036,7 @@ export default function ClippingStudio({
                           )}
                           <div className="flex items-center justify-between mt-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 whitespace-nowrap">
+                              <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line whitespace-nowrap">
                                 {copy.labels.aiClipping}
                               </span>
                               <span className="text-[10px] text-white/40">{result.aspectRatio || copy.labels.clipIndex.replace('{index}', i + 1)}</span>
@@ -964,7 +1069,7 @@ export default function ClippingStudio({
                 <button
                   type="button"
                   onClick={clearVideoUpload}
-                  className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 hover:bg-black rounded-full flex items-center justify-center text-white/85 hover:text-white text-[8px] border border-white/5"
+                  className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 hover:bg-black active:scale-95 active:duration-instant rounded-full flex items-center justify-center text-white/85 hover:text-white text-[8px] border border-white/5 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring transition-[background-color,color,transform] duration-fast ease-standard"
                   title={copy.buttons.clearVideo}
                 >
                   ×
@@ -972,6 +1077,26 @@ export default function ClippingStudio({
               </div>
             </div>
           )}
+
+          {/* Quick Clipping Presets */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-rail py-1 px-1">
+            <span className="text-micro font-bold uppercase tracking-wider text-ink-subtle shrink-0 mr-1">
+              {relayCopy.presetsTitle}
+            </span>
+            {relayCopy.presets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  setPrompt(preset.prompt);
+                  toast.success(preset.label);
+                }}
+                className="rounded-full border border-line bg-wash px-2.5 py-0.5 text-micro font-medium text-ink-muted hover:border-brand-line hover:bg-wash-strong hover:text-ink active:scale-[0.98] active:duration-instant transition-[background-color,border-color,color,transform] duration-fast ease-standard whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
 
           {/* Upper row: upload button & prompt field */}
           <div className="flex items-start gap-3 px-1">
@@ -996,7 +1121,8 @@ export default function ClippingStudio({
                 onDrop={handleVideoDrop}
                 className={`${promptMediaButtonClassName({
                   active: Boolean(videoUrl),
-                })}${isVideoDragging ? " ring-2 ring-primary border-primary bg-primary/10" : ""}`}
+                  className: "active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring",
+                })}${isVideoDragging ? " ring-2 ring-brand border-brand bg-brand-soft" : ""}`}
               >
                 {videoUploading ? (
                   <div className="flex flex-col items-center justify-center w-full h-full absolute inset-0 bg-black/85 z-20 backdrop-blur-[1px]">
@@ -1011,16 +1137,16 @@ export default function ClippingStudio({
                         fill="transparent"
                         strokeDasharray={88}
                         strokeDashoffset={88 - (88 * videoProgress) / 100}
-                        className="text-[#e11d74] transition-all duration-300"
+                        className="text-brand transition-[stroke-dashoffset] duration-fast ease-standard"
                       />
                     </svg>
-                    <span className={`absolute text-[8px] font-black text-[#e11d74] leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
+                    <span className={`absolute text-[8px] font-black text-brand leading-none ${videoProgress >= 100 ? "animate-pulse" : ""}`}>
                       {videoProgress >= 100 ? "..." : `${videoProgress}%`}
                     </span>
                   </div>
                 ) : null}
 
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40 group-hover:text-brand transition-colors">
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
@@ -1029,9 +1155,10 @@ export default function ClippingStudio({
 
             {/* Prompt textarea (supports direct URL pasting too) */}
             <div className="flex-1 flex flex-col gap-1">
-              <PromptTextarea
+              <PromptInputField
                 value={prompt}
                 onChange={handlePromptInput}
+                onEnter={handleGenerate}
                 placeholder={copy.placeholders.promptOrUrl}
               />
             </div>
@@ -1043,7 +1170,7 @@ export default function ClippingStudio({
               
               {/* Model Identifier (C) */}
               <div className={promptControlClassName()}>
-                <div className="w-4 h-4 bg-[#e11d74] rounded flex items-center justify-center shadow-lg shadow-[#e11d74]/10">
+                <div className="w-4 h-4 bg-brand rounded flex items-center justify-center shadow-lg shadow-brand/10">
                   <span className="text-[9px] font-bold text-black uppercase">C</span>
                 </div>
                 <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1058,6 +1185,7 @@ export default function ClippingStudio({
                   onClick={() => setAspectDropdownOpen(!aspectDropdownOpen)}
                   className={promptControlClassName({
                     active: aspectDropdownOpen,
+                    className: "cursor-pointer active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring",
                   })}
                 >
                   <PromptAspectRatioIcon />
@@ -1095,6 +1223,7 @@ export default function ClippingStudio({
                   onClick={() => setHighlightsDropdownOpen(!highlightsDropdownOpen)}
                   className={promptControlClassName({
                     active: highlightsDropdownOpen,
+                    className: "cursor-pointer active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring",
                   })}
                 >
                   <PromptDurationIcon />
@@ -1110,7 +1239,7 @@ export default function ClippingStudio({
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-white/60">{copy.popovers.limit}</span>
-                        <span className="text-xs font-black text-primary bg-primary/10 px-2.5 py-0.5 rounded">
+                        <span className="text-xs font-black text-brand bg-brand-soft border border-brand-line px-2.5 py-0.5 rounded">
                           {numHighlights}
                         </span>
                       </div>
@@ -1134,9 +1263,9 @@ export default function ClippingStudio({
                 onClick={() => setReturnCoordinatesOnly(!returnCoordinatesOnly)}
                 className={promptControlClassName({
                   active: returnCoordinatesOnly,
-                  className: returnCoordinatesOnly
-                    ? "text-[#e11d74]"
-                    : "text-white/70 hover:text-white",
+                  className: (returnCoordinatesOnly
+                    ? "text-brand"
+                    : "text-white/70 hover:text-white") + " cursor-pointer active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring",
                 })}
               >
                 <ScissorsIcon className="w-4 h-4 text-current" />

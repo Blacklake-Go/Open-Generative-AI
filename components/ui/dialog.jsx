@@ -32,7 +32,7 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     data-slot="dialog-overlay"
     className={cn(
-      "fixed inset-0 z-overlay bg-scrim backdrop-blur-sm transition-opacity data-[state=open]:animate-fade-in data-[state=closed]:pointer-events-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+      "fixed inset-0 z-overlay bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter data-[state=open]:animate-fade-in data-[state=closed]:pointer-events-none data-[state=open]:pointer-events-auto",
       className
     )}
     {...props}
@@ -47,15 +47,15 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
       ref={ref}
       data-slot="dialog-content"
       className={cn(
-        "fixed left-1/2 top-1/2 z-modal grid w-full max-w-lg max-h-modal -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-2xl border border-line-strong bg-overlay p-6 text-ink shadow-elevation-4 duration-base",
-        "data-[state=open]:animate-scale-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+        "fixed left-1/2 top-1/2 z-modal grid w-full max-w-lg max-h-modal -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-2xl border border-line-strong bg-overlay p-6 text-ink shadow-elevation-4 duration-modal ease-enter",
+        "data-[state=open]:animate-modal-enter data-[state=closed]:animate-modal-exit data-[state=closed]:pointer-events-none",
         "custom-scrollbar",
         withoutRadiusUtilities(className)
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 flex size-control-md items-center justify-center rounded-md text-ink-subtle transition-[background-color,color,opacity] hover:bg-wash hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring">
+      <DialogPrimitive.Close className="absolute right-4 top-4 flex size-control-md items-center justify-center rounded-md text-ink-subtle transition-[background-color,color,opacity] duration-fast ease-standard hover:bg-wash hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base">
         <XIcon className="size-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -88,7 +88,7 @@ const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
     data-slot="dialog-title"
-    className={cn("text-lg font-semibold leading-none tracking-tight text-white", className)}
+    className={cn("text-section-title font-semibold leading-tight text-ink", className)}
     {...props}
   />
 ));
@@ -98,7 +98,7 @@ const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
     data-slot="dialog-description"
-    className={cn("text-sm text-gray-400 leading-relaxed", className)}
+    className={cn("text-body-sm text-ink-muted leading-relaxed", className)}
     {...props}
   />
 ));

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 import { ToastHost as Toaster } from "../ui";
 import { generateImage } from "../muapi.js";
-import { isModelActive, applyActiveModelDirectory, getModelPricing } from "../models.js";
+import { applyActiveModelDirectory } from "../models.js";
 import { formatErrorMessage } from "../utils/formatError.js";
 import MobileGenerationActions, {
   GenerationCopyButtons,
@@ -18,9 +18,6 @@ import es from "../messages/es-ES/aiInfluencerStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
 const CDN = "https://cdn.muapi.ai/influencer";
-
-// ── Default fallback model ──────────────────────────────────────────────────
-const DEFAULT_FALLBACK_MODEL = "gpt-image-2.5-flash";
 
 const TABS_CONFIG = {
   face: {
@@ -374,7 +371,7 @@ function HoverPill({ label, img, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="h-6 px-2.5 rounded-full bg-wash hover:bg-wash-strong border border-line-subtle text-[11px] font-medium text-ink-muted hover:text-ink whitespace-nowrap transition-colors cursor-pointer"
+        className="h-6 px-2.5 rounded-full bg-wash hover:bg-wash-strong active:scale-[0.98] active:duration-instant border border-line-subtle text-[11px] font-medium text-ink-muted hover:text-ink whitespace-nowrap transition-[background-color,border-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
       >
         {label}
       </button>
@@ -400,7 +397,7 @@ export default function AiInfluencerStudio({
 
   // Dynamic active models state
   const [activeModels, setActiveModels] = useState([]);
-  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_FALLBACK_MODEL);
+  const [selectedModelId, setSelectedModelId] = useState(null);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const modelDropdownRef = useRef(null);
 
@@ -430,22 +427,15 @@ export default function AiInfluencerStudio({
     fetch("/api/models/active?nocache=1")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!isMounted || !Array.isArray(data?.models) || data.models.length === 0) return;
+        if (!isMounted || !Array.isArray(data?.models)) return;
         applyActiveModelDirectory(data.models);
         const imageModels = data.models.filter(
           (m) => (m.category === "image" || m.type === "image") && m.isActive !== false
+            && m.isVisible !== false && m.autoRouteEligible !== false && m.hasWorkingRoute !== false
         );
-        if (imageModels.length > 0) {
-          setActiveModels(imageModels);
-          setSelectedModelId((prev) => {
-            if (prev && imageModels.some((m) => m.id === prev)) return prev;
-            const preferred =
-              imageModels.find((m) => m.id === "gpt-image-2.5-flash") ||
-              imageModels.find((m) => isModelActive(m.id)) ||
-              imageModels[0];
-            return preferred?.id || DEFAULT_FALLBACK_MODEL;
-          });
-        }
+        setActiveModels(imageModels);
+        setSelectedModelId((prev) => imageModels.some((m) => m.id === prev)
+          ? prev : imageModels[0]?.id || null);
       })
       .catch(() => {});
 
@@ -469,15 +459,7 @@ export default function AiInfluencerStudio({
 
   // Selected model details
   const selectedModelMeta = useMemo(() => {
-    const found = activeModels.find((m) => m.id === selectedModelId);
-    if (found) return found;
-    const price = getModelPricing(selectedModelId);
-    return {
-      id: selectedModelId,
-      name: selectedModelId === "gpt-image-2.5-flash" ? "Seedream 4.5" : selectedModelId,
-      displayName: selectedModelId === "gpt-image-2.5-flash" ? "Seedream 4.5 极速绘图" : selectedModelId,
-      creditsPrice: price?.credits ?? (selectedModelId === "gpt-image-2.5-flash" ? 20 : 10),
-    };
+    return activeModels.find((m) => m.id === selectedModelId) || null;
   }, [activeModels, selectedModelId]);
 
   // ── Build prompt for Character Designer ───────────────────────────────────
@@ -534,20 +516,13 @@ export default function AiInfluencerStudio({
       return;
     }
 
-    // Determine working model: prefer selected, auto-fallback if inactive
-    let targetModel = selectedModelId;
-    if (!targetModel || !isModelActive(targetModel)) {
-      const activeFallback = activeModels.find((m) => isModelActive(m.id)) || activeModels[0];
-      if (activeFallback) {
-        targetModel = activeFallback.id;
-        setSelectedModelId(targetModel);
-      }
-    }
-
-    if (!targetModel) {
+    const workingModel = activeModels.find((model) => model.id === selectedModelId) || activeModels[0];
+    if (!workingModel) {
       setErrorMsg(copy.errors?.noActiveModels || "当前暂无可用的图像模型，请稍后重试。");
       return;
     }
+    const targetModel = workingModel.id;
+    if (targetModel !== selectedModelId) setSelectedModelId(targetModel);
 
     onGenerationStart?.();
     setIsGeneratingInternal(true);
@@ -631,7 +606,7 @@ export default function AiInfluencerStudio({
   const TAGS_VISIBLE = 7;
 
   return (
-    <div className="flex h-full bg-canvas text-ink overflow-hidden select-none font-sans">
+    <div className="flex h-full bg-transparent text-ink overflow-hidden select-none font-sans">
 
       {/* ════════════════════════════════════════════════════════════
           LEFT — Character Builder Panel
@@ -653,7 +628,7 @@ export default function AiInfluencerStudio({
               );
               return init;
             })())}
-            className="text-[11px] text-ink-muted hover:text-ink transition-colors font-medium cursor-pointer"
+            className="text-[11px] text-ink-muted hover:text-ink active:scale-[0.98] active:duration-instant transition-[color,transform] duration-fast ease-standard font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           >
             {copy.builder.reset}
           </button>
@@ -665,7 +640,7 @@ export default function AiInfluencerStudio({
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex-1 py-1.5 rounded-lg text-[12px] font-medium transition-colors cursor-pointer ${
+              className={`flex-1 py-1.5 rounded-lg text-[12px] font-medium transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                 activeTab === key
                   ? "bg-raised text-ink border border-line-subtle shadow-elevation-1"
                   : "text-ink-muted hover:text-ink hover:bg-wash"
@@ -690,7 +665,7 @@ export default function AiInfluencerStudio({
                     <button
                       key={opt.id}
                       onClick={() => handleOptionSelect(subcat.id, opt.id)}
-                      className={`group relative aspect-square rounded-xl overflow-hidden border transition-colors cursor-pointer ${
+                      className={`group relative aspect-square rounded-xl overflow-hidden border transition-[border-color,background-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                         sel
                           ? "border-brand-line ring-1 ring-brand-ring shadow-elevation-1"
                           : "border-line-subtle hover:border-line hover:bg-wash"
@@ -725,7 +700,7 @@ export default function AiInfluencerStudio({
       {/* ════════════════════════════════════════════════════════════
           CENTER — Character Workspace & Preview
       ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-canvas">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-transparent">
 
         {/* Center top bar: Aspect Ratio + Model Selector + Actions */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-line shrink-0 bg-base">
@@ -739,7 +714,7 @@ export default function AiInfluencerStudio({
                 key={r}
                 onClick={() => setAspectRatio(r)}
                 data-pill-segment-item="true"
-                className={`px-2.5 h-6.5 flex items-center rounded-full text-[11px] transition-colors cursor-pointer ${
+                className={`px-2.5 h-6.5 flex items-center rounded-full text-[11px] transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                   aspectRatio === r
                     ? "bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold"
                     : "text-ink-muted hover:text-ink font-medium"
@@ -756,11 +731,11 @@ export default function AiInfluencerStudio({
               <button
                 type="button"
                 onClick={() => setIsModelDropdownOpen((v) => !v)}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-surface border border-line hover:border-line-strong text-ink text-[12px] font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-surface border border-line hover:border-line-strong active:scale-[0.98] active:duration-instant text-ink text-[12px] font-medium transition-[background-color,border-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 <SparklesIcon className="w-3.5 h-3.5 text-brand" />
                 <span className="max-w-[130px] truncate">
-                  {selectedModelMeta?.displayName || selectedModelMeta?.name || selectedModelId}
+                  {selectedModelMeta?.displayName || selectedModelMeta?.name || copy.errors?.noActiveModels || "暂无可用模型"}
                 </span>
                 {selectedModelMeta?.creditsPrice != null && (
                   <span className="px-1.5 py-0.5 rounded-full bg-brand-soft text-brand text-[10px] font-mono font-medium">
@@ -778,13 +753,11 @@ export default function AiInfluencerStudio({
                   <div className="px-2 py-1 text-[10px] font-semibold text-ink-subtle uppercase tracking-wider">
                     {copy.toolbar?.model || "生图模型"}
                   </div>
-                  {(activeModels.length > 0
-                    ? activeModels
-                    : [
-                        { id: "gpt-image-2.5-flash", name: "Seedream 4.5 极速绘图", creditsPrice: 20 },
-                        { id: "bytedance-seedream-v3", name: "Seedream 3.0", creditsPrice: 10 },
-                      ]
-                  ).map((m) => {
+                  {activeModels.length === 0 ? (
+                    <div className="py-8 text-center text-ink-subtle text-caption">
+                      {copy.errors?.noActiveModels || "当前暂无可用的图像模型，请稍后重试。"}
+                    </div>
+                  ) : activeModels.map((m) => {
                     const isSelected = m.id === selectedModelId;
                     return (
                       <button
@@ -795,7 +768,7 @@ export default function AiInfluencerStudio({
                           setIsModelDropdownOpen(false);
                           setErrorMsg("");
                         }}
-                        className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-[12px] transition-colors cursor-pointer ${
+                        className={`flex items-center justify-between px-2.5 py-2 rounded-lg text-left text-[12px] transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                           isSelected
                             ? "bg-brand-soft text-brand font-medium"
                             : "hover:bg-wash-strong text-ink"
@@ -825,7 +798,7 @@ export default function AiInfluencerStudio({
             {/* Shuffle */}
             <button
               onClick={handleShuffle}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-surface border border-line hover:border-line-strong text-ink-muted hover:text-ink text-[12px] font-medium transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-surface border border-line hover:border-line-strong active:scale-[0.98] active:duration-instant text-ink-muted hover:text-ink text-[12px] font-medium transition-[background-color,border-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <ShuffleIcon />
               {copy.toolbar.shuffle}
@@ -834,8 +807,8 @@ export default function AiInfluencerStudio({
             {/* Generate Button (Brand Accent #e11d74) */}
             <button
               onClick={handleGenerate}
-              disabled={isGenerating}
-              className={`flex items-center gap-2 h-8 px-4 rounded-xl text-[12px] font-semibold transition-colors shadow-elevation-1 cursor-pointer ${
+              disabled={isGenerating || activeModels.length === 0}
+              className={`flex items-center gap-2 h-8 px-4 rounded-xl text-[12px] font-semibold transition-[background-color,color,transform] duration-fast ease-standard shadow-elevation-1 cursor-pointer active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                 isGenerating
                   ? "bg-brand/50 text-ink-on-accent/60 cursor-not-allowed"
                   : "bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent"
@@ -876,7 +849,7 @@ export default function AiInfluencerStudio({
                 {/* Download overlay button */}
                 <button
                   onClick={() => downloadImg(previewUrl)}
-                  className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-scrim backdrop-blur-md border border-line-subtle text-ink-on-accent text-[11px] font-medium hover:bg-black/90 transition-colors cursor-pointer"
+                  className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-scrim backdrop-blur-md border border-line-subtle text-ink-on-accent text-[11px] font-medium hover:bg-black/90 active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   <DownloadIcon />
                   {copy.preview.save}
@@ -919,7 +892,7 @@ export default function AiInfluencerStudio({
                 <button
                   type="button"
                   onClick={() => setShowAllTags((v) => !v)}
-                  className="h-6 px-2.5 rounded-full bg-wash hover:bg-wash-strong border border-line-subtle text-[11px] text-ink-subtle hover:text-ink whitespace-nowrap transition-colors cursor-pointer"
+                  className="h-6 px-2.5 rounded-full bg-wash hover:bg-wash-strong active:scale-[0.98] active:duration-instant border border-line-subtle text-[11px] text-ink-subtle hover:text-ink whitespace-nowrap transition-[background-color,color,border-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   {showAllTags ? copy.tags.hide : copy.tags.showMore}
                 </button>
@@ -934,7 +907,7 @@ export default function AiInfluencerStudio({
             <span>{errorMsg}</span>
             <button
               onClick={() => setErrorMsg("")}
-              className="text-[11px] underline opacity-80 hover:opacity-100 cursor-pointer"
+              className="text-[11px] underline opacity-80 hover:opacity-100 active:scale-[0.98] active:duration-instant transition-[opacity,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               ✕
             </button>
