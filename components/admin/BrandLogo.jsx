@@ -6,6 +6,7 @@ import { getBrandById, resolveBrand } from '@/lib/modelCenter/brandDictionary.js
 const SIZE_MAP = {
   xs: 'size-3.5',
   sm: 'size-5',
+  pill: 'w-[35px] h-[35px]',
   md: 'size-9',
   lg: 'size-12',
 };
@@ -64,7 +65,7 @@ export default function BrandLogo({
         className={`inline-flex shrink-0 items-center justify-center font-mono font-bold select-none border ${sizeClass} ${toneClass} ${className}`}
         title={brandObj.name}
       >
-        <span className="text-[10px] leading-none">
+        <span className={size === 'pill' || size === 'md' || size === 'lg' ? 'text-xs leading-none' : 'text-[10px] leading-none'}>
           {brandObj.iconText || brandObj.shortName?.slice(0, 2) || 'AI'}
         </span>
       </span>

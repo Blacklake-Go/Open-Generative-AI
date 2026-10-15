@@ -578,19 +578,21 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       </div>
 
-      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块) ─── */}
-      <div className="flex items-center gap-2 overflow-x-auto py-2 px-3 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1 custom-scrollbar">
+      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块: Logo 放大 250% + 图标化紧凑胶囊) ─── */}
+      <div className="flex flex-wrap items-center gap-2 py-2 px-3 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         <button
           type="button"
           onClick={() => handleBrandSelect('all')}
-          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
+          title={`全部厂商 · 共 ${models.length} 个模型`}
+          aria-label="全部厂商"
+          className={`inline-flex items-center gap-2 rounded-full px-3.5 h-[44px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
             selectedBrand === 'all'
               ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
               : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
           }`}
         >
           <span>全部厂商</span>
-          <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
             selectedBrand === 'all' ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
           }`}>
             {models.length}
@@ -600,20 +602,30 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         {activeBrands.map((brand) => {
           const isSelected = selectedBrand === brand.id;
           const count = brandStats[brand.id] || 0;
+          const isMonochrome = ['openai', 'bfl', 'midjourney', 'stability', 'anthropic', 'elevenlabs', 'deepseek'].includes(brand.id);
+
           return (
             <button
               key={brand.id}
               type="button"
               onClick={() => handleBrandSelect(brand.id)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
+              title={`${brand.name} (${brand.shortName}) · 共 ${count} 个模型`}
+              aria-label={`${brand.shortName} · ${count} 个模型`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 h-[44px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 group ${
                 isSelected
                   ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
                   : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
               }`}
             >
-              <BrandLogo brand={brand} size="xs" className="rounded shrink-0" />
-              <span>{brand.shortName}</span>
-              <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+              <BrandLogo
+                brand={brand}
+                size="pill"
+                className="rounded-full shrink-0"
+                imageClassName={`transition-transform duration-200 group-hover:scale-105 ${
+                  isSelected && isMonochrome ? 'invert' : ''
+                }`}
+              />
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
                 isSelected ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
               }`}>
                 {count}
