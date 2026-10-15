@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, Menu, X, ChevronRight, Crown } from 'lucide-react';
+import { ArrowLeft, Menu, X, ChevronRight, Crown, ExternalLink, Workflow } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AuthModal from '@/components/AuthModal';
 import UserOnboardingModal from '@/components/auth/UserOnboardingModal';
@@ -39,7 +39,7 @@ export function BrandMark({ compact = false, locale = null }) {
       href={logoHref}
       target={logoTarget}
       className="group inline-flex items-center gap-2.5 cursor-pointer shrink-0"
-      aria-label={`${brand?.brandName || 'koyosim'} Studio`}
+      aria-label={`${brand?.brandName || 'supdance'} Studio`}
     >
       <BrandLogo brand={brand} className="inline-flex items-center gap-2.5 [&>span:first-child]:group-hover:scale-105" />
     </Link>
@@ -48,7 +48,7 @@ export function BrandMark({ compact = false, locale = null }) {
 
 export function PageEyebrow({ children }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 text-xs font-medium text-cyan-400">
+    <span className="inline-flex items-center rounded-full border border-brand-line bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">
       {children}
     </span>
   );
@@ -75,7 +75,7 @@ export default function StudioHeader({
   const pathname = usePathname();
   const router = useRouter();
   const { brand } = useBranding();
-  const { user, credits, mutate } = useUserSession();
+  const { user, credits, entitlements, mutate } = useUserSession();
 
   const getCookieLocale = () => {
     if (typeof document === 'undefined') return null;
@@ -105,7 +105,7 @@ export default function StudioHeader({
   // 针对未完成新用户引导的登录用户，主动推送轻量资料设置与额度领取弹窗
   useEffect(() => {
     if (user && user.onboardingCompleted === false && !onboardingPromptedRef.current) {
-      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('koyosim_onboarding_dismissed');
+      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('supdance_onboarding_dismissed');
       if (!dismissed) {
         setShowOnboardingModal(true);
         onboardingPromptedRef.current = true;
@@ -239,6 +239,7 @@ export default function StudioHeader({
           <UserDropdownMenu
             user={user}
             credits={credits}
+            entitlements={entitlements}
             locale={activeLocale}
             onOpenSettings={() => {
               setAccountModalTab('settings');
@@ -297,10 +298,26 @@ export default function StudioHeader({
             <div className="space-y-4">
               <Link
                 href={studioHref}
+                onClick={() => setIsMobileOpen(false)}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-body-sm font-medium text-ink hover:bg-wash transition-colors"
               >
                 <NavIcon name="sparkles" className="size-4 text-brand" />
                 <span>创作工作台</span>
+              </Link>
+
+              {/* 无限画布 (独立二号白板工作台) */}
+              <Link
+                href="/canvas"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-body-sm font-medium text-ink hover:bg-wash transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Workflow className="size-4 text-brand" />
+                  <span>{activeLocale.startsWith('zh') ? '无限画布' : 'Infinite Canvas'}</span>
+                </div>
+                <ExternalLink className="size-3.5 text-ink-muted" />
               </Link>
 
               {/* 👑 VIP 会员与算力套餐 (移动端专属高亮入口) */}
@@ -331,6 +348,7 @@ export default function StudioHeader({
                       <Link
                         key={feat.id}
                         href={feat.href}
+                        onClick={() => setIsMobileOpen(false)}
                         className="flex items-center justify-between px-3 py-2 rounded-xl text-caption text-ink-muted hover:text-ink hover:bg-wash transition-colors"
                       >
                         <div className="flex items-center gap-2">
@@ -347,6 +365,7 @@ export default function StudioHeader({
               <div className="pt-2 border-t border-line-subtle space-y-1">
                 <Link
                   href={activeLocale.startsWith('zh') ? '/zh/community' : '/community'}
+                  onClick={() => setIsMobileOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-body-sm font-medium text-ink hover:bg-wash transition-colors"
                 >
                   <NavIcon name="flame" className="size-4 text-amber-400" />
@@ -354,6 +373,7 @@ export default function StudioHeader({
                 </Link>
                 <Link
                   href={activeLocale.startsWith('zh') ? '/zh/about' : '/about'}
+                  onClick={() => setIsMobileOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-body-sm font-medium text-ink hover:bg-wash transition-colors"
                 >
                   <NavIcon name="sparkles" className="size-4 text-sky-400" />
@@ -418,7 +438,7 @@ export default function StudioHeader({
           onClose={() => {
             setShowOnboardingModal(false);
             if (typeof window !== 'undefined') {
-              sessionStorage.setItem('koyosim_onboarding_dismissed', '1');
+              sessionStorage.setItem('supdance_onboarding_dismissed', '1');
             }
           }}
         />

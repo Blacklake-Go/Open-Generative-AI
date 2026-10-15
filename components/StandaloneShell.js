@@ -493,7 +493,7 @@ export default function StandaloneShell({
   const [showSettings, setShowSettings] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
-  const { user: sessionUser, credits: sessionCredits, mutate: mutateSession, refresh: refreshSession } = useUserSession(initialUser);
+  const { user: sessionUser, credits: sessionCredits, entitlements: sessionEntitlements, mutate: mutateSession, refresh: refreshSession } = useUserSession(initialUser);
   const [accountUser, setAccountUser] = useState(initialUser ?? sessionUser);
   const [accountChecked, setAccountChecked] = useState(true);
   const [accountCredits, setAccountCredits] = useState(initialUser?.credits ?? sessionCredits);
@@ -550,7 +550,7 @@ export default function StandaloneShell({
   // 针对未完成新用户设置的创作者，主动推送轻量入驻设置与额度领取弹窗
   useEffect(() => {
     if (accountUser && accountUser.onboardingCompleted === false && !onboardingPromptedRef.current) {
-      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('koyosim_onboarding_dismissed');
+      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('supdance_onboarding_dismissed');
       if (!dismissed) {
         setShowOnboardingModal(true);
         onboardingPromptedRef.current = true;
@@ -579,8 +579,8 @@ export default function StandaloneShell({
     const handleCreditsUpdated = () => {
       refreshAccount();
     };
-    window.addEventListener('koyosim:credits-updated', handleCreditsUpdated);
-    return () => window.removeEventListener('koyosim:credits-updated', handleCreditsUpdated);
+    window.addEventListener('supdance:credits-updated', handleCreditsUpdated);
+    return () => window.removeEventListener('supdance:credits-updated', handleCreditsUpdated);
   }, [refreshAccount]);
 
   // 路由回退/前进同步 model 与 tab 参数
@@ -651,21 +651,25 @@ export default function StandaloneShell({
       setShowAuthModal(true);
     };
     window.addEventListener('muapi:auth-required', handleAuthRequired);
-    return () => window.removeEventListener('muapi:auth-required', handleAuthRequired);
+    window.addEventListener('supdance:auth-required', handleAuthRequired);
+    return () => {
+      window.removeEventListener('muapi:auth-required', handleAuthRequired);
+      window.removeEventListener('supdance:auth-required', handleAuthRequired);
+    };
   }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      window.__KOYOSIM_REQUIRE_ACCOUNT__ = requireAccountGate;
-      window.__KOYOSIM_REQUIRE_API_KEY__ = async () => {
+      window.__SUPDANCE_REQUIRE_ACCOUNT__ = requireAccountGate;
+      window.__SUPDANCE_REQUIRE_API_KEY__ = async () => {
         const user = await requireAccountGate();
-        return user ? 'koyosim-account-session' : null;
+        return user ? 'supdance-account-session' : null;
       };
     }
     return () => {
       if (typeof window !== 'undefined') {
-        delete window.__KOYOSIM_REQUIRE_ACCOUNT__;
-        delete window.__KOYOSIM_REQUIRE_API_KEY__;
+        delete window.__SUPDANCE_REQUIRE_ACCOUNT__;
+        delete window.__SUPDANCE_REQUIRE_API_KEY__;
       }
     };
   }, [requireAccountGate]);
@@ -810,8 +814,8 @@ export default function StandaloneShell({
     window.addEventListener('open-subscription-modal', handleOpenSubscription);
     window.addEventListener('open-profile-modal', handleOpenProfile);
     window.addEventListener('close-profile-modal', handleCloseProfile);
-    window.addEventListener('koyosim:insufficient-credits', handleInsufficientCredits);
-    window.addEventListener('koyosim:open-recharge', handleOpenRecharge);
+    window.addEventListener('supdance:insufficient-credits', handleInsufficientCredits);
+    window.addEventListener('supdance:open-recharge', handleOpenRecharge);
     window.addEventListener('open-recharge-modal', handleOpenRecharge);
     return () => {
       window.removeEventListener('open-auth-modal', handleOpenAuth);
@@ -819,8 +823,8 @@ export default function StandaloneShell({
       window.removeEventListener('open-subscription-modal', handleOpenSubscription);
       window.removeEventListener('open-profile-modal', handleOpenProfile);
       window.removeEventListener('close-profile-modal', handleCloseProfile);
-      window.removeEventListener('koyosim:insufficient-credits', handleInsufficientCredits);
-      window.removeEventListener('koyosim:open-recharge', handleOpenRecharge);
+      window.removeEventListener('supdance:insufficient-credits', handleInsufficientCredits);
+      window.removeEventListener('supdance:open-recharge', handleOpenRecharge);
       window.removeEventListener('open-recharge-modal', handleOpenRecharge);
     };
   }, [pushNotification]);
@@ -947,10 +951,10 @@ export default function StandaloneShell({
         handleAuthSuccess(e.detail.user, e.detail.entitlements);
       }
     };
-    window.addEventListener('koyosim-auth-success', handleGlobalAuthSuccess);
+    window.addEventListener('supdance-auth-success', handleGlobalAuthSuccess);
 
     const handleAuthCompleteData = (data) => {
-      if (!data || data.type !== 'koyosim-auth-complete') return;
+      if (!data || data.type !== 'supdance-auth-complete') return;
       if (data.action === 'bind') return; // 个人中心绑定模式由 ProfileTab 处理
 
       const now = Date.now();
@@ -976,7 +980,7 @@ export default function StandaloneShell({
               type: 'success',
               category: 'auth',
               label: copy.notifications?.socialLogin || '快捷登录成功',
-              message: data.message || copy.notifications?.socialLoginSuccess || '登录成功，欢迎使用 KoyoSIM AI Studio！',
+              message: data.message || copy.notifications?.socialLoginSuccess || '登录成功，欢迎使用 SupDance AI Studio！',
             });
           } else {
             pushNotification({
@@ -1001,14 +1005,14 @@ export default function StandaloneShell({
     let bc = null;
     try {
       if (typeof BroadcastChannel !== 'undefined') {
-        bc = new BroadcastChannel('koyosim_auth_channel');
+        bc = new BroadcastChannel('supdance_auth_channel');
         bc.onmessage = (event) => handleAuthCompleteData(event.data);
       }
     } catch {}
 
     // 2. localStorage StorageEvent
     const handleStorage = (event) => {
-      if (event.key === 'koyosim_auth_event' && event.newValue) {
+      if (event.key === 'supdance_auth_event' && event.newValue) {
         try {
           const parsed = JSON.parse(event.newValue);
           handleAuthCompleteData(parsed);
@@ -1045,7 +1049,7 @@ export default function StandaloneShell({
                 type: 'success',
                 category: 'auth',
                 label: copy.notifications?.socialLogin || '快捷登录成功',
-                message: copy.notifications?.socialLoginSuccess || '登录成功，欢迎使用 KoyoSIM AI Studio！',
+                message: copy.notifications?.socialLoginSuccess || '登录成功，欢迎使用 SupDance AI Studio！',
               });
             } else {
               pushNotification({
@@ -1076,7 +1080,7 @@ export default function StandaloneShell({
     }
 
     return () => {
-      window.removeEventListener('koyosim-auth-success', handleGlobalAuthSuccess);
+      window.removeEventListener('supdance-auth-success', handleGlobalAuthSuccess);
       window.removeEventListener('storage', handleStorage);
       if (bc) {
         try { bc.close(); } catch {}
@@ -1269,7 +1273,20 @@ export default function StandaloneShell({
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+
+    const handleRelay = (e) => {
+      const { targetTab } = e.detail || {};
+      if (targetTab && TABS.some((t) => t.id === targetTab)) {
+        setActiveTab(targetTab);
+        setIsMobileOpen(false);
+      }
+    };
+    window.addEventListener('supdance-relay-video', handleRelay);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('supdance-relay-video', handleRelay);
+    };
   }, [locale]);
 
   const handleTabChange = useCallback((tabId) => {
@@ -1315,7 +1332,7 @@ export default function StandaloneShell({
       setIsMobileOpen(false);
 
       if (modelKey && typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('koyosim-select-model', { detail: { modelKey, modelId: modelKey, tabId } }));
+        window.dispatchEvent(new CustomEvent('supdance-select-model', { detail: { modelKey, modelId: modelKey, tabId } }));
       }
     }
   }, [studioPath]);
@@ -1447,7 +1464,7 @@ export default function StandaloneShell({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* KoyoSIM AI 空间光影视觉系统 (Studio 级静谧克制光场) */}
+      {/* SupDance AI 空间光影视觉系统 (Studio 级静谧克制光场) */}
       <SpatialBackground
         variant="studio"
         showAurora={motionConfig.ambientGlow}
@@ -1510,6 +1527,7 @@ export default function StandaloneShell({
               <UserDropdownMenu
                 user={accountUser}
                 credits={accountCredits}
+                entitlements={sessionEntitlements}
                 locale={locale}
                 onOpenSettings={() => {
                   setAccountModalTab('settings');
@@ -1647,7 +1665,7 @@ export default function StandaloneShell({
 
               <div className="mt-3 border-t border-line-subtle pt-3">
                 <Link
-                  href="https://www.Supdance.com/canvas"
+                  href="/canvas"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMobileOpen(false)}
@@ -1734,27 +1752,27 @@ export default function StandaloneShell({
           )}
         {activeTab === 'clipping' && (
             <StudioResourceBoundary studioId="clipping">
-          <ClippingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('clipping')} onGenerationEnd={makeGenerationEndCallback('clipping')} onGenerationComplete={makeSuccessCallback('clipping')} onGenerationError={makeErrorCallback('clipping')} />
+          <ClippingStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('clipping')} onGenerationEnd={makeGenerationEndCallback('clipping')} onGenerationComplete={makeSuccessCallback('clipping')} onGenerationError={makeErrorCallback('clipping')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'motion-control' && (
             <StudioResourceBoundary studioId="motion-control">
-          <MotionControlStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('motion-control')} onGenerationEnd={makeGenerationEndCallback('motion-control')} onGenerationComplete={makeSuccessCallback('motion-control')} onGenerationError={makeErrorCallback('motion-control')} />
+          <MotionControlStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('motion-control')} onGenerationEnd={makeGenerationEndCallback('motion-control')} onGenerationComplete={makeSuccessCallback('motion-control')} onGenerationError={makeErrorCallback('motion-control')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'vibe-motion' && (
             <StudioResourceBoundary studioId="vibe-motion">
-          <VibeMotionStudio apiKey={apiKey} locale={locale} onGenerationStart={makeGenerationStartCallback('vibe-motion')} onGenerationEnd={makeGenerationEndCallback('vibe-motion')} onGenerationComplete={makeSuccessCallback('vibe-motion')} onGenerationError={makeErrorCallback('vibe-motion')} />
+          <VibeMotionStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} onGenerationStart={makeGenerationStartCallback('vibe-motion')} onGenerationEnd={makeGenerationEndCallback('vibe-motion')} onGenerationComplete={makeSuccessCallback('vibe-motion')} onGenerationError={makeErrorCallback('vibe-motion')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'lipsync' && (
             <StudioResourceBoundary studioId="lipsync">
-          <LipSyncStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('lipsync')} onGenerationEnd={makeGenerationEndCallback('lipsync')} onGenerationComplete={makeSuccessCallback('lipsync')} onGenerationError={makeErrorCallback('lipsync')} />
+          <LipSyncStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('lipsync')} onGenerationEnd={makeGenerationEndCallback('lipsync')} onGenerationComplete={makeSuccessCallback('lipsync')} onGenerationError={makeErrorCallback('lipsync')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'body-swap' && (
             <StudioResourceBoundary studioId="body-swap">
-          <RecastStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('body-swap')} onGenerationEnd={makeGenerationEndCallback('body-swap')} onGenerationComplete={makeSuccessCallback('body-swap')} onGenerationError={makeErrorCallback('body-swap')} />
+          <RecastStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('body-swap')} onGenerationEnd={makeGenerationEndCallback('body-swap')} onGenerationComplete={makeSuccessCallback('body-swap')} onGenerationError={makeErrorCallback('body-swap')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'cinema' && (
@@ -1769,7 +1787,7 @@ export default function StandaloneShell({
           )}
         {activeTab === 'marketing' && (
             <StudioResourceBoundary studioId="marketing">
-          <MarketingStudio apiKey={apiKey} locale={locale} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('marketing')} onGenerationEnd={makeGenerationEndCallback('marketing')} onGenerationComplete={makeSuccessCallback('marketing')} onGenerationError={makeErrorCallback('marketing')} />
+          <MarketingStudio apiKey={apiKey} locale={locale} initialPrompt={currentRemixPrompt} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} onGenerationStart={makeGenerationStartCallback('marketing')} onGenerationEnd={makeGenerationEndCallback('marketing')} onGenerationComplete={makeSuccessCallback('marketing')} onGenerationError={makeErrorCallback('marketing')} />
             </StudioResourceBoundary>
           )}
         {activeTab === 'workflows' && (
@@ -2040,7 +2058,7 @@ export default function StandaloneShell({
           onClose={() => {
             setShowOnboardingModal(false);
             if (typeof window !== 'undefined') {
-              sessionStorage.setItem('koyosim_onboarding_dismissed', '1');
+              sessionStorage.setItem('supdance_onboarding_dismissed', '1');
             }
           }}
         />

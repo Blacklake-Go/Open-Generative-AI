@@ -130,10 +130,10 @@ export default function TopMegaNavigation({
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
               <Link
-                href={rootPath || '/'}
+                href="/"
                 prefetch={false}
                 className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
-                  pathname === '/' || pathname === '/zh' || (rootPath && pathname === rootPath) ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
+                  pathname === '/' || pathname === '/zh' || pathname === '/zh/' || (rootPath && pathname === rootPath) ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
                 }`}
               >
                 {tNav.home || (isChinese ? '首页' : 'Home')}
@@ -196,11 +196,11 @@ export default function TopMegaNavigation({
             );
           })}
 
-          {/* KoyoSIM 的第二创作工作台使用同一账号与业务 API。 */}
+          {/* SupDance 的第二创作工作台使用同一账号与业务 API。 */}
           <NavigationMenu.Item key="infinite-canvas">
             <NavigationMenu.Link asChild>
               <Link
-                href="https://www.Supdance.com/canvas"
+                href="/canvas"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}

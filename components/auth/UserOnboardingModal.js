@@ -207,12 +207,12 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
   if (rewardSuccess) {
     return (
       <div
-        className="fixed inset-0 z-modal flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
+        className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-modal ease-enter animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-reward-title"
       >
-        <div className="relative w-full max-w-[440px] rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-2xl p-6 sm:p-8 shadow-elevation-4 text-center text-ink select-none overflow-hidden animate-scale-in">
+        <div className="relative w-full max-w-[440px] rounded-2xl border border-line bg-overlay backdrop-blur-2xl p-6 sm:p-8 shadow-elevation-4 text-center text-ink select-none overflow-hidden animate-scale-in">
           {/* 顶部微透环境漫反射高光 */}
           <div
             className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-32 rounded-full pointer-events-none opacity-40 blur-3xl animate-glow-pulse"
@@ -273,7 +273,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
           <button
             type="button"
             onClick={() => onComplete?.(rewardSuccess.user)}
-            className="h-11 w-full rounded-full bg-brand text-body font-semibold text-ink-on-accent transition-all hover:bg-brand-hover active:bg-brand-active shadow-elevation-1 cursor-pointer flex items-center justify-center gap-2 group"
+            className="h-11 w-full rounded-full bg-brand text-body font-semibold text-ink-on-accent transition-[background-color,color,transform] duration-fast ease-standard hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1 cursor-pointer flex items-center justify-center gap-2 group"
           >
             <span>即刻开启 AI 创作</span>
             <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
@@ -286,12 +286,12 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
   // 视图一：创作者入驻设定视图
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-modal ease-enter animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
     >
-      <div className="relative w-full max-w-[500px] rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-2xl p-5 sm:p-7 shadow-elevation-4 max-h-[92vh] overflow-y-auto select-none">
+      <div className="relative w-full max-w-[500px] rounded-2xl border border-line bg-overlay backdrop-blur-2xl p-5 sm:p-7 shadow-elevation-4 max-h-[92vh] overflow-y-auto select-none">
         {/* 顶部微透环境漫反射高光 */}
         <div
           className="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full pointer-events-none opacity-30 blur-2xl"
@@ -304,7 +304,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
           onClick={() => submitOnboarding(true)}
           disabled={busy}
           aria-label="跳过并稍后设置"
-          className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center transition-all cursor-pointer z-10"
+          className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink active:scale-95 active:duration-instant flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
         >
           <X className="size-3.5" />
         </button>
@@ -317,7 +317,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
             </div>
             <div>
               <h2 id="onboarding-modal-title" className="text-section-title font-bold text-ink tracking-tight">
-                欢迎加入 KoyoSIM 创作者阵列
+                欢迎加入 SupDance 创作者阵列
               </h2>
               <p className="text-caption text-ink-muted mt-0.5">
                 完善创作者偏好，一键激活专属创作算力
@@ -331,7 +331,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
             <button
               type="button"
               onClick={handleCopyUid}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface-raised px-2.5 py-0.5 font-mono text-ink-muted hover:text-ink hover:border-line transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line-subtle bg-surface-raised px-2.5 py-0.5 font-mono text-ink-muted hover:text-ink hover:border-line active:scale-[0.98] active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
               title="点击复制创作者 UID"
             >
               <span>#{userNumber}</span>
@@ -387,7 +387,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
                         key={preset}
                         type="button"
                         onClick={() => setAvatarUrl(preset)}
-                        className={`relative aspect-square overflow-hidden rounded-full border transition-all cursor-pointer ${
+                        className={`relative aspect-square overflow-hidden rounded-full border transition-[border-color,transform,opacity] duration-fast ease-standard active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                           isSelected
                             ? 'border-brand ring-2 ring-brand-ring scale-105 shadow-elevation-1'
                             : 'border-line-subtle hover:border-line opacity-70 hover:opacity-100 hover:scale-105'
@@ -444,7 +444,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
               <button
                 type="button"
                 onClick={handleRollName}
-                className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-line-subtle bg-wash hover:bg-surface-raised px-3 text-caption font-medium text-ink-muted hover:text-ink transition-all cursor-pointer"
+                className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-line-subtle bg-wash hover:bg-surface-raised px-3 text-caption font-medium text-ink-muted hover:text-ink active:scale-[0.98] active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
                 title="随机生成艺术昵称"
               >
                 <Shuffle className="size-3.5 text-brand" />
@@ -466,7 +466,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
                     key={item.id}
                     type="button"
                     onClick={() => setSelectedIndustry(item.id)}
-                    className={`h-7.5 rounded-full px-3 text-caption font-medium transition-all cursor-pointer ${
+                    className={`h-7.5 rounded-full px-3 text-caption font-medium transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                       isSelected
                         ? 'bg-brand text-ink-on-accent font-semibold shadow-elevation-1'
                         : 'border border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-surface-raised hover:text-ink'
@@ -493,7 +493,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
                     key={feat.id}
                     type="button"
                     onClick={() => toggleFeature(feat.id)}
-                    className={`flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all cursor-pointer ${
+                    className={`flex items-center gap-2.5 rounded-xl border p-2.5 text-left transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                       active
                         ? 'border-brand-line bg-brand-soft text-ink shadow-elevation-1'
                         : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-surface-raised hover:text-ink'
@@ -531,7 +531,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
             <button
               type="submit"
               disabled={busy || !isNameValid}
-              className="h-11 w-full flex-1 rounded-full bg-brand text-body font-semibold text-ink-on-accent transition-all hover:bg-brand-hover active:bg-brand-active disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-elevation-1 group"
+              className="h-11 w-full flex-1 rounded-full bg-brand text-body font-semibold text-ink-on-accent transition-[background-color,color,transform] duration-fast ease-standard hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-elevation-1 group"
             >
               {busy ? (
                 <>

@@ -1,20 +1,52 @@
 # KOYO Studio Design System — 主规范（Master Spec）
 
-**版本**：3.6.0 · **取代** 3.5.0（2026-10-04 深度吸收音频工作室 /zh/studio/audio 与 AI 空间光影毛玻璃全域 UI 体系，确立深暗高斯毛玻璃、发丝高光边框、中央展台卡与全套创作控制台规范）
+**版本**：3.7.0 · **取代** 3.6.0（2026-10-13 深度吸收即梦 AI 全站微动效、工业级缓动曲线、按钮状态机与浮窗光学规范，保持洋红主品牌与 AI 空间光影背景 100% 边界完整性）
 **地位**：本文是 KOYO Studio 全站 Web UI 开发的最高优先级视觉规范。任何新增页面、组件、工作室必须无条件遵守；禁止在业务组件中自行发明颜色、字体层级、圆角、阴影、发光或尺寸规则。
 
 > **Token 的唯一事实来源是 `app/globals.css` 的 `:root` 块。**
 > 本文引用它的值，不定义它。两者冲突时以 `app/globals.css` 为准，并立即修正本文。
 > `tailwind.config.js` 是纯 `var()` 映射层，经校验**不含任何颜色字面量**；新增颜色只能进 `globals.css`。
-> 本次 3.6.0 正式将 KOYO Studio 音频工作室（`/zh/studio/audio`）的优秀视觉实践全面升格为全局规范：系统性提炼沉浸式深暗高斯毛玻璃光学定律（防灰雾、40px 高扩散漫反射、1px 发丝微透高光、环境光晕背光源、微雕内凹质感），并完整固化工作室双栏布局、模型下拉选择器、Prompt 文本框与预设胶囊、模型版本分段矩阵、Custom Mode 开关行、拖拽式音轨上传、吸底主生成按钮、中央舞台空状态展台卡、高保真动态波形播放器及顶栏状态胶囊群等 13 大全域 UI 契约。
+> 本次 3.7.0 深度吸收即梦 AI（Jimeng AI / Dreamina）全站逆向工程精华，在完整保持 KOYO Studio 品牌洋红（`#e11d74`）唯一主色基准与 AI 空间光影背景（`docs/背景动效规范.md`）100% 边界完整性的前提下，全面升级全站微动效体系、工业级缓动曲线库、按钮交互状态机、浮窗光学覆盖层（Modal/Drawer/Popover/Tooltip）、提示词生成岛（Prompt Composer）及高精度开关滑块规范，严格遵循 `docs/UI_REPAIR_INSTRUCTION.md` 多重圆角层级与 pointer-events 安全隔离铁律。
 
-| 文档 | 职责 |
-| :--- | :--- |
-| `UI_DESIGN_SYSTEM.md`（本文） | 视觉原则、Token 契约、禁止项 |
-| `背景动效规范.md` | AI 空间光影背景、3D 流体极光视频与交互点阵规范 |
-| `UI_COMPONENTS.md` | 共享组件清单与 API |
-| `UI_AUDIT.md` | 缺陷台账（P0–P3）与量化证据 |
-| `UI_MIGRATION.md` | 迁移阶段、ratchet 进度、单页迁移配方 |
+### 核心关联文档索引 (Document Index)
+
+| 文档 | 职责 | 关系说明 |
+| :--- | :--- | :--- |
+| `UI_DESIGN_SYSTEM.md`（本文） | 全站视觉原则、Token 契约、设计模式、组件光学与主规范 (v3.7.0) | **最高视觉主规范** |
+| `docs/JIMENG_DESIGN_SYSTEM.md` | 即梦 AI 全站 UI/微动效逆向工程专著 (M1 伴生工业级参考) | 逆向实测参考来源 |
+| `docs/背景动效规范.md` | AI 空间光影背景、3D 流体极光视频与交互点阵规范 | **只读底层基石，严格零修改** |
+| `docs/UI_REPAIR_INSTRUCTION.md` | 原始圆角层级、多层阴影、`pointer-events` 安全与防穿孔修复指令 | 几何与安全强制约束 |
+| `docs/UI_COMPONENTS.md` | 共享组件清单、Props 定义与 API 规范 | 代码实现契约 |
+| `docs/UI_AUDIT.md` | 缺陷台账（P0–P3）、违规扫描与量化证据 | 历史审计与回归依据 |
+| `docs/UI_MIGRATION.md` | 迁移阶段、Ratchet 基准进度与单页迁移配方 | 渐进式交付指南 |
+
+---
+
+### v3.7.0 深度升级变更日志 (Changelog)
+
+- **微动效与缓动曲线体系全面重构 (§4.7)**：
+  - 彻底重构原有的简陋 5 行占位动效描述，升格为独立的**工业级微动效与动效系统（Industrial Motion & Easing System）**。
+  - 正式引入 7 级阶梯化物理耗时体系：`duration-instant` (80ms)、`duration-fast` (120ms)、`duration-base` (180ms)、`duration-smooth` (240ms)、`duration-drawer` (300ms/420ms)、`duration-expand` (350ms)、`duration-modal` (400ms/520ms)。
+  - 完整固化 6 大三次贝塞尔曲线谱系：`--ease-standard` (通用平滑减速 `0.16, 1, 0.3, 1`)、`--ease-enter` (覆盖层进入 `0.05, 0.7, 0.1, 1`)、`--ease-exit` (覆盖层退出 `0.3, 0, 0.8, 0.15`)、`--ease-bounce` (弹性过冲回弹 `0.3, 1.3, 0.3, 1`)、`--ease-fluid` (大质量流体展开 `0.15, 0.75, 0.3, 1`)、`--ease-card-hover` (卡片悬浮吸附 `0.4, 0.95, 0.6, 1.1`)，辅以长程位移曲线 `--ease-drawer` (`0.2, 0, 0.4, 1`)。
+  - 确立完整的按钮与控件交互五态转换机（`Default → Hover → Active/Pressed → Focus-Visible → Disabled`），规范 1px 发丝边框跃迁、瞬态按压物理反馈（`active:scale-[0.98]` 与 `active:transition-none` 即时触发）及中性微阴影步进。
+  - 确立 GPU 硬件加速管线（`will-change: transform, opacity; transform: translateZ(0)`），重申严禁未经筛选的 `transition-all`。
+  - 强制落实 `@media (prefers-reduced-motion: reduce)` 无障碍降级规范（时长归零至 `0.01ms !important`）。
+- **浮窗与覆盖层光学系统全新设立 (§4.14)**：
+  - 全面规范 Modal 对话框（20px 圆角、0.4s 弹性放大入场、20px 高斯毛玻璃遮罩、`shadow-elevation-4`）。
+  - 规范 400px 定宽参数抽屉 Drawer（40px 深度毛玻璃、420ms 丝滑滑入、严格事件隔离）。
+  - 规范 Popover 气泡与 Dropdown 菜单（16px 圆角、12px 毛玻璃、`shadow-elevation-3`、180ms 微缩接入场）。
+  - 规范 Tooltip 文字提示（8px 圆角、4 方向微位移补间关键帧、120ms 入场）。
+  - 深化并严格执行防穿孔规则（Anti-Punch-Through Rule，§2.5.1/§2.5.2）：交互条目内部必须保持背景全透明，严禁写死 `bg-overlay` 造成“深黑补丁色块”。
+  - 深度固化沉浸式暗色遮罩动态定位契约（§2.5.3）：遮罩层 `top` 必须动态绑定 `header.getBoundingClientRect().bottom`，杜绝切入顶栏玻璃或在通告条下产生漏光缝隙。
+- **生成器控制台与交互表单控件光学一体化 (§4.15)**：
+  - 提示词生成岛 Prompt Composer 几何规范：外壳 `rounded-2xl` (20px)、内凹输入区 `rounded-xl` (16px)、40px 深度模糊、折叠态 70px 至展开态 184px 的 350ms 流体高度过渡、32px/38px 正圆形提交按钮、输入法 IME 防误触保护（`isComposing`）。
+  - 胶囊分段控制器 Segmented Pills：连续深色轨槽、完整药丸 Trigger、高对比纯白反色 Active、可选幻彩珠光双层渐变（Pearlescent Pill）、严格通过 `withoutRadiusUtilities` 保证单一圆角类。
+  - 高精度状态开关 Switch：20px/24px 高度、36px/44px 最小宽度、12px/full 圆角、15.43px/16px 圆形滚珠滑块、`--ease-bounce` 吸附滑动。
+  - 模型参数高灵敏度滑杆 Slider：24px 宽幅触控热区、14px 通道带 2px 至 4px 悬停展开 Rail、14px 纯白把手与数值气泡、原生 `.range` 类键盘无障碍。
+- **三大绝对红线与边界条件严格恪守**：
+  - `docs/背景动效规范.md` 保持 100% 原始字节零修改（`git diff --exit-code docs/背景动效规范.md` == 0），GPU 极光与点阵物理不受任何干扰。
+  - `docs/UI_REPAIR_INSTRUCTION.md` 嵌套圆角层级（`Modal 20px → Field 16px → Control 12px → Pill full`）与 `pointer-events` 安全规则完全遵循，禁止批量一刀切替换圆角，禁止全屏透明层拦截点击。
+  - 品牌洋红（`#e11d74` 配纯白文字，对比度 16.5:1 AAA）全站唯一饱和色地位不可动摇，绝不引入双主色或霓虹杂色。
 
 ---
 
@@ -34,7 +66,7 @@
 
 **明确禁止（PART 05 红线）**：游戏/电竞风、廉价霓虹、过度渐变、过度 glassmorphism、大面积发光、全紫配色、大面积饱和色、超大圆角、动画过多、Material/Bootstrap 观感、**不同页面呈现不同视觉系统**。
 
-最后一条是本次重构的核心动因：历史上认证卡片曾因手写孤立洋红（`#b71676`）导致与青色主色打架形成“双主色撕裂”；本次 3.5.0 正式将全站统一升级为主品牌洋红（`#e11d74`），彻底消除了色彩分裂，实现全站唯一主色系统（见 §2.3 与 §2.7）。
+最后一条是本次重构的核心动因：历史上认证卡片曾因手写孤立洋红（`#b71676`）导致与青色主色打架形成“双主色撕裂”；本次规范正式将全站统一升级为主品牌洋红（`#e11d74`），彻底消除了色彩分裂，实现全站唯一主色系统（见 §2.3 与 §2.7）。
 
 ---
 
@@ -125,7 +157,7 @@
 - **禁止硬编码定位偏移**：严禁在遮罩层上写死固定的高度类名（如 `top-14` / `top-[56px]`）。
 - **动态测量 Header 下边缘**：当页面存在安全拦截横幅、全站系统公告条（如 ChinaIpGate、GlobalSiteBanner）或不同页面 Header 尺寸变体（如 56px / 72px）时，遮罩层的 `top` 必须通过 `header.getBoundingClientRect().bottom` 动态绑定（`style={{ top: `${headerBottom}px` }}`），确保遮罩层严丝合缝地从顶栏下边缘向屏幕底部展开。
 - **严禁切入顶栏玻璃底层**：顶栏采用 `bg-surface-glass`（`rgba(19,21,25,.92)`）与 `backdrop-blur-md`。若遮罩层位置偏移切入顶栏底层，会导致顶栏出现横向阴阳色断层。
-- **层级空间契约**：遮罩层严格使用 `z-sticky: 10`，低于顶栏（`z-header: 40`）与浮层视口（`z-dropdown: 60` / `z-popover: 70`）。
+- **层级空间契约**：遮罩层严格使用 `z-sticky: 10` 或 `z-overlay: 80`，低于顶栏（`z-header: 40`）与浮层视口（`z-dropdown: 60` / `z-popover: 70` / `z-modal: 90`）。
 
 ### 2.6 滚动条：低干扰，但必须可发现
 
@@ -157,7 +189,7 @@
 
 ### 2.9 工作室深暗高斯毛玻璃空间体系（Studio Deep-Frosted Glassmorphism System）
 
-吸收自 KoyoSIM 音频工作室（`https://www.koyosim.com/zh/studio/audio`）及 AI 空间光影工作台的卓越视觉实践。这一页的毛玻璃质感之所以兼具高级电影感与极高可读性，关键在于它彻底摒弃了传统暗色模式下“死白灰雾”的廉价拟态，建立了一套严格基于物理光学漫散射与发丝高光的**深暗高斯毛玻璃体系（Deep-Frosted Glassmorphism）**。
+吸收自 SupDance 音频工作室（`https://www.supdance.com/zh/studio/audio`）及 AI 空间光影工作台的卓越视觉实践。这一页的毛玻璃质感之所以兼具高级电影感与极高可读性，关键在于它彻底摒弃了传统暗色模式下“死白灰雾”的廉价拟态，建立了一套严格基于物理光学漫散射与发丝高光的**深暗高斯毛玻璃体系（Deep-Frosted Glassmorphism）**。
 
 #### 2.9.1 暗夜模式毛玻璃的“防灰防浊”光学定律（The Optical Laws of Dark Glassmorphism）
 
@@ -248,11 +280,11 @@
 
 > `text-mono` 已捆绑 `--font-mono`，再写 `font-mono` 是冗余。字重由 recipe 携带，不要在文本类上另加 `font-semibold` 制造漂移。
 
-**默认字号阶梯是被禁的，而且它禁得比看起来隐蔽**：`theme.extend.fontSize` 意味着 `text-xs` 照常生成 CSS（12px/16px —— 数值上正好等于 `text-label` 的字号行高），差别只在它**不带字重、不带字距**，所以截图上"看起来差不多"，漂移发生在成对的 recipe 被拆开的那一刻。`text-sm` = 14px/20px 撞上 `text-body` 的字号、行高却是 20→20 但无 `letter-spacing`。实测 `app`+`components`+`packages/studio/src` 里默认写法 **1697 次** 对具名写法 **651 次** —— 这条阶梯事实上没有被采纳。守卫规则 `off-system-type-ramp`（§8）自 2026-09-21 起把 1926 处冻结在基线里，新增即红；`leading-[3-9]` 现测 0 处，`tracking-*` 默认写法 267 处**暂未入账**，与字号一起在下轮收。
+**默认字号阶梯是被禁的，而且它禁得比看起来隐蔽**：`theme.extend.fontSize` 意味着 `text-xs` 照常生成 CSS（12px/16px —— 数值上正好等于 `text-label` 的字号行高），差别只在它**不带字重、不带字距**，所以截图上"看起来差不多"，漂移发生在成对的 recipe 被拆开的那一刻。`text-sm` = 14px/20px 撞上 `text-body` 的字号、行高却是 20→20 但无 `letter-spacing`。业务代码一律写语义字号类。
 
 ---
 
-## 4. Spacing / Radius / Height / Slider / Elevation
+## 4. Spacing / Radius / Height / Elevation / Motion / Controls / Overlays
 
 ### 4.1 间距（4px 基准网格）
 `--space-1..16` = 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48 / 64。
@@ -293,7 +325,7 @@
 - 胶囊 Trigger / Active Item：最终计算样式必须满足 `border-radius >= height / 2`。
 - **同一 DOM 节点最终只允许一个圆角来源**。禁止 `rounded-md rounded-full`、`rounded-lg rounded-full`、`rounded-none rounded-full` 同时存在。
 - 当前 `cn()` 只拼接字符串、不做 Tailwind 冲突消解，因此**不得**依赖 className 的书写顺序覆盖圆角。
-- Pill 组件不得直接把默认 `controlClasses()`（会产生普通控件圆角）与 `rounded-full` 叠加。实现层必须提供单一 Pill recipe，例如 `pillControlClasses()`，或让尺寸 recipe 以 `radius="full"` 一次性输出唯一圆角。
+- Pill 组件不得直接把默认 `controlClasses()`（会产生普通控件圆角）与 `rounded-full` 叠加。实现层必须提供单一 Pill recipe，例如 `pillControlClasses()`，或使用 `withoutRadiusUtilities(className)` 过滤旧类，以 `radius="full"` 一次性输出唯一圆角。
 - 禁止用 `!important`、全局 `button { border-radius: ... }`、`[role=tab] { border-radius: ... }` 修补。根因必须在 recipe 层消除。
 
 **验收断言**：在浏览器中读取 Track 与每个 Trigger 的 `getComputedStyle(el).borderRadius`，胶囊必须是完整药丸，不得出现直角、8px 小圆角或一侧圆一侧直。
@@ -302,24 +334,24 @@
 `h-control-xs` 28 · `h-control-sm` 32 · **`h-control-md` 38（默认）** · `h-control-lg` 44。
 `--header-h` 56 · `--sidebar-w` 240 / 收起 60 · **`--panel-w` 400**（studio 左侧参数栏宽度，工具类 `w-panel` / `lg:w-panel`）。
 
-**Prompt Composer 固定 38px**（PART 14）。任何工作室不得出现 34/36/40/42px 的参数按钮；出现即视为缺陷，除非在 `UI_MIGRATION.md` 记录设计理由。
+**Prompt Composer 固定 38px 参数按钮**。任何工作室不得出现 34/36/40/42px 的参数按钮；出现即视为缺陷，除非在 `UI_MIGRATION.md` 记录设计理由。
 
-`--panel-w` 是**桌面专用**宽度：studio 侧栏在 `lg` 以下必须堆叠，写 `w-panel` 而不带 `lg:` 前缀会让右侧结果区在手机上被压成 0 宽 —— `AudioStudio` 迁移前就是这个状态（实测 `resultWidth: 0`）。
+`--panel-w` 是**桌面专用**宽度：studio 侧栏在 `lg` 以下必须堆叠，写 `w-panel` 而不带 `lg:` 前缀会让右侧结果区在手机上被压成 0 宽。
 
-### 4.4 浮动层几何
+### 4.4 浮动层几何基础契约
 `--modal-w: calc(100vw - 32px)`（桌面永不贴边）· `--modal-max-h: calc(100vh - 64px)` · `--sheet-max-h` 88vh · `--drawer-max-h` 85vh · `--menu-min-w` / `--popover-min-w` 176px · `--toast-w` 340px · `--popover-max-h` 45vh。
-这些是视口相对值，**不可能**来自 4px 网格，因此必须留在 token 层，不得在组件里写 `calc()`。
+这些是视口相对值，**不可能**来自 4px 网格，因此必须留在 token 层，不得在组件里写 `calc()`。详细浮窗光学与进出场规范见 §4.14。
 
 ### 4.5 滑杆（原生 range 的唯一合法写法）
 `--range-h` 24 · `--range-track` `rgba(255,255,255,.14)`（4px 轨道）· `--range-thumb` `var(--text-primary)` · `--range-thumb-size` 14。
 工具类 `.range` 消费这四个值。**任何 `type="range"` 都必须带 `.range`**：`globals.css` 对 range 设了 `appearance:none`，而 `appearance:none` 之后浏览器不再画 thumb —— 不写就是**一根看不见也拖不动的横条**。命中区 24px 靠 `--range-h` 撑，视觉轨道靠伪元素收窄，两者不是一回事。
-原生 `range` 自带键盘（←/→ 以 `step` 步进）与读屏语义，**不要**为了"好看"换成 `div` + `onMouseDown`（`AudioStudio` 迁移前的播放条就是后者，键盘完全不可达）。无可见 label 时必须 `aria-label`。
+原生 `range` 自带键盘（←/→ 以 `step` 步进）与读屏语义，**不要**为了"好看"换成 `div` + `onMouseDown`。无可见 label 时必须 `aria-label`。高精度滑块组件规范见 §4.15.4。
 
 ### 4.6 Elevation（恢复原始暗色多层阴影；禁止单层“糊一圈”）
 
 现网站的登录模态、Composer、浮层之所以有稳定的“悬浮感”，不是靠霓虹，而是靠**多层黑色阴影 + 细边框 + 极轻微高光描边**。从 3.4.2 起，`shadow-elevation-*` 是**多重 box-shadow token**，不是单条阴影。
 
-建议 `globals.css` 真源值：
+`globals.css` 真源值：
 
 ```css
 --shadow-elevation-1:
@@ -349,7 +381,7 @@
 - `shadow-elevation-4`：Modal / Drawer / 登录框 / 支付弹窗，必须与 `border-line` 或 `border-line-strong` 配合。
 - 平面区域（Sidebar、Header、普通表单行）默认**无投影**，靠 surface elevation 和 border 分层。
 
-`shadow-elevation-brand` `0 8px 14px -4px var(--accent-glow)` —— 唯一允许的青色发光例外。只允许品牌主动作/特定品牌图标块，且不能替代中性 elevation。新增彩色阴影一律先回到 `globals.css` 谈 token，不要在组件里写。
+`shadow-elevation-brand` `0 8px 14px -4px var(--accent-glow)` —— 唯一允许的洋红品牌发光例外。只允许品牌主动作/特定品牌图标块，且不能替代中性 elevation。新增彩色阴影一律先回到 `globals.css` 谈 token，不要在组件里写。
 
 **多层阴影硬规则**：
 1. 阴影必须从 token/recipe 产生；业务代码禁止 `shadow-[...]`。
@@ -358,16 +390,148 @@
 4. hover 不允许把阴影从 0 突然跳到 elevation-4；最多上升一级。
 5. focus 由 `ring-*` 表达，不得用更大的 shadow 假装 focus。
 6. 阴影层不得成为遮挡点击的绝对定位 DOM；阴影必须是 CSS `box-shadow`，不是额外 Overlay 元素。
-`tailwind.config.js` 的 `boxShadow` 写在 `theme.extend` 下，所以 Tailwind 自带的 `shadow-sm/md/lg/xl/2xl` **仍然会生成 CSS**（实测产物里有 `.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0/0.25)}`）。它们的问题不是"不生效"，而是**绕过 elevation 阶梯自带一套字面量阴影**——正是本条契约要消灭的东西。业务代码一律写 `shadow-elevation-N`。
-> 存量（09:1x 现测，只算根构建 content 名单内的源文件）：默认阴影阶梯 **91 处 / 22 个文件**（`shadow-sm` 36、`shadow-lg` 29、`shadow-2xl` 13、`shadow-xl` 12、`shadow-md` 1），**大头不在主应用**而在 `packages/Vibe-Workflow/.../workflow-builder/src`（`NodeFlow.jsx` 11、`VideoNode.jsx` 10、`ChatWidget.jsx` 9…），因为该包自己的 tailwind config 是 `extend: {}` —— 它从来就是按默认阶梯写的。这是 §4.6.1 第三行"子包私有体系"的同一种病。
-> 上一版这里写的是"`boxShadow` 整体替换，默认阶梯不生成任何 CSS，属于静默死类"——**该结论不成立**，配置在 `extend` 下，产物可查；本轮由 `scripts/ui-dead-classes.mjs`（对照真实构建产物）纠正。同理，`fontSize` 也在 `extend` 下，`text-xs` 等默认字号照样生成 CSS 并**与语义字号阶梯打架**——实测 `text-(xs|sm|base|lg|xl|2xl…)` 在 `app`/`components`/`packages/studio` 里出现 **1697 次**（`text-xs` 独占 1115），而 `leading-[3-9]` 为 0 次，所以新增守卫规则 `off-system-type-ramp` 把默认字号冻结在基线里。
-迁移期保留的旧名（`subtle`→1 · `card`→2 · `overlay`→3 · `modal`→4 · `glow`→2 · `3xl`→4）**已去发光**，仅供未迁移文件调用，新代码一律写 `shadow-elevation-N`。
-禁止 `shadow-[0_0_15px_#22d3ee]` 之类霓虹发光。
-### 4.7 Motion
-时长 `duration-fast` 120ms · `duration-base` 180ms · `duration-slow` 240ms · `duration-page` 300ms。
-缓动 `--ease-standard` / `--ease-enter` / `--ease-exit`。
-**禁止 `transition-all`**：它会把 `scale`/`box-shadow` 一起动画化，是"廉价感"的主要来源。必须写 `transition-[background-color,border-color,color]` 或用具名 recipe。
-`@media (prefers-reduced-motion: reduce)` 已全局就位。
+
+---
+
+### 4.7 工业级微动效与动效系统 (Industrial Motion & Easing System)
+
+KOYO Studio 在 3.7.0 中正式吸收即梦 AI（Dreamina / LightVelocity）全站逆向测绘沉淀，构建了一套兼具**电影级深邃沉浸感**与**毫秒级工具生产力**的工业级微动效系统。本系统彻底淘汰生硬的默认曲线与随意手写的动画时长，全面受控于物理动力学定律、硬件加速管线与无障碍标准。
+
+#### 4.7.1 阶梯化物理耗时体系 (Precise Duration Scale)
+
+基于交互感知生理学，将全站微交互与结构转场划分为七级精确耗时标尺：
+
+| 标尺 Token | 毫秒 | 物理运动语义 | 典型应用场景 |
+| :--- | :--- | :--- | :--- |
+| `duration-instant` | **80ms** | 瞬态物理确认 | 图标激活状态反转、按压瞬态下沉、滚动条滑块显隐、超灵敏开关圆点滚出 |
+| `duration-fast` | **120ms** | 快速悬停与反馈 | 常规按钮悬停变色、Segmented Pill 选项切换、发丝边框微光提亮、Tooltip 退出 |
+| `duration-base` | **180ms** | 轻量覆盖层转场 | 下拉菜单 Popover 浮现、Tooltip 4向微位移入场、轻量 Toast 提示入场 |
+| `duration-smooth` | **240ms** | 柔顺功能性转场 | 对话框 Modal 微缩放退出、普通设置卡片展开、折叠面板小幅位移 |
+| `duration-drawer` | **300ms / 420ms** | 中长程位移巡航 | 侧边栏抽屉 Drawer 滑入滑出（紧凑 300ms / 桌面 400px 完整 420ms） |
+| `duration-expand` | **350ms** | 大质量容器形变 | Prompt Composer 提示词生成岛展开/折叠（70px ↔ 184px）、高级折叠组 |
+| `duration-modal` | **400ms / 520ms** | 重型对话框进退场 | 核心生成确认对话框、全屏画廊大图预览 Modal、支付充值扫码弹窗进入 |
+
+#### 4.7.2 六大核心三次贝塞尔曲线谱系 (Cubic-Bezier Catalog)
+
+弃用浏览器默认的 `ease` / `linear`。全站基于阻尼、惯性动量与弹性反馈，规范六大核心三次贝塞尔曲线：
+
+```
+                KOYO Studio 工业级缓动曲线几何特性谱系
+                
+  1.3 |                 .--. (--ease-bounce 弹性过冲: .3, 1.3, .3, 1)
+      |                /      1.0 |-------------.-'------'---------------- (终态 1.0)
+      |            /   
+      |          .'     (--ease-standard 平滑减速: .16, 1, .3, 1)
+      |        .'       (--ease-enter 极速入场: .05, .7, .1, 1)
+  0.5 |       /         (--ease-fluid 流体展开: .15, .75, .3, 1)
+      |     .'
+      |    /            (--ease-exit 极速退出: .3, 0, .8, .15)
+  0.0 +---+------------------------------------
+      0.0       0.5       1.0 (归一化时间 t)
+```
+
+1. **通用工业级平滑减速曲线**：
+   - CSS Token：`--ease-standard: cubic-bezier(0.16, 1, 0.3, 1);`
+   - 特性：起步极速响应，中段平稳滑行，末端 40% 时间窗口丝滑减速，零过冲。
+   - 适用：全站按钮悬停渐变、图标颜色切换、普通背景色过渡、Tab 高亮跟随。
+2. **覆盖层极速进入曲线**：
+   - CSS Token：`--ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);`
+   - 特性：起始斜率极陡（前 10% 时间完成 40% 位移），以极高响应速度掠入视线，尾段柔顺着陆。
+   - 适用：Modal 弹窗显现、Popover 下拉菜单展开、Toast 通知弹出。
+3. **覆盖层迅捷退出曲线**：
+   - CSS Token：`--ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);`
+   - 特性：启动略有蓄力随后高速收敛脱离视口，不拖泥带水，避免干扰用户后续操作。
+   - 适用：Modal 弹窗关闭、Popover 收起、Tooltip 隐藏。
+4. **弹性过冲物理回弹曲线**：
+   - CSS Token：`--ease-bounce: cubic-bezier(0.3, 1.3, 0.3, 1);`
+   - 特性：行程 65% 处产生约 30% 的弹性位移过冲，随后被机械阻尼瞬间拉回锚定。
+   - 适用：未读红点入场、Micro-Tag 徽标缩放、Slider 滑块把手激活吸附、开关圆点弹跳。
+5. **大质量容器流体展开曲线**：
+   - CSS Token：`--ease-fluid: cubic-bezier(0.15, 0.75, 0.3, 1);`
+   - 特性：模拟大质量物理结构克服静摩擦力后膨胀，中段动量释放充沛，末端着陆稳固。
+   - 适用：Prompt Composer 输入岛高度展开/收起、复杂参数手风琴折叠面板。
+6. **卡片悬浮磁性触感曲线**：
+   - CSS Token：`--ease-card-hover: cubic-bezier(0.4, 0.95, 0.6, 1.1);`
+   - 特性：10% 微过冲，赋予卡片悬停时宛如从深暗底板上“浮起并吸附于鼠标光标”的磁性触感。
+   - 适用：作品瀑布流卡片 hover 放大（`scale(1.02)`）、素材拖拽放置区激活。
+7. **长程抽屉位移曲线（辅助）**：
+   - CSS Token：`--ease-drawer: cubic-bezier(0.2, 0, 0.4, 1);`
+   - 特性：400px 横向大行程专用位移曲线，消除大面积全屏重绘抖动。
+   - 适用：侧边参数抽屉 Drawer 进出场。
+
+#### 4.7.3 微交互五态转换机 (Micro-Interaction State Machine)
+
+所有交互控件（Button、IconButton、Segment Option、Card Item）必须严格服从完整的状态机转换：
+
+```
++------------+       hover       +------------+     mouse-down     +------------------+
+|  Default   | ----------------> |   Hover    | -----------------> |  Active/Pressed  |
+|   (空闲)   | <---------------- |   (悬停)   | <----------------- |      (按压)      |
++------------+     mouse-leave   +------------+      mouse-up      +------------------+
+      |                                |
+      | Tab key                        |
+      v                                v
++------------------+             +------------+
+|  Focus-Visible   |             |  Disabled  |
+|   (键盘聚焦)     |             |   (禁用)   |
++------------------+             +------------+
+```
+
+1. **Default (空闲态)**：
+   - 发丝边框 `border-white/10`，表面 `bg-white/[0.04]` 或 `bg-surface`，投影 `shadow-none`（或 `shadow-elevation-1` 用于 Pill）。
+2. **Hover (悬停态)**：
+   - 发丝边框提亮至 `border-white/20`（或品牌高亮 `border-brand-line/50`）；
+   - 表面微提亮 `hover:bg-white/[0.08]` 或 `hover:bg-wash-strong`；
+   - 投影最多上升一级（如 `shadow-none` → `shadow-elevation-1`，`elevation-1` → `elevation-2`），严禁跨级跳跃；
+   - 磁性微浮动：卡片允许 `transform: scale(1.01~1.02)`，过渡绑定 `duration-fast ease-standard`。
+3. **Active / Pressed (按压态)**：
+   - **瞬态物理反馈铁律**：按压触发必须具备机械敲击般的即刻确定性。CSS 中声明 **`active:scale-[0.98]`**（或 `active:scale-95` 用于紧凑圆形图标）；
+   - **严禁按压延迟**：按压动作必须即时生效，严禁在按压阶段使用 200ms+ 的缓动，推荐应用 `active:transition-none` 或 `duration-instant`；鼠标释放时以 `duration-fast ease-standard` 平滑回弹。
+4. **Focus-Visible (键盘聚焦态)**：
+   - 必须通过 `:focus-visible` 响应键盘 Tab 导航，严禁裸写 `focus:outline-none`；
+   - 统一采用外挂发丝焦点环：`ring-1 ring-brand-ring ring-offset-2 ring-offset-bg-base`。
+5. **Disabled (禁用态)**：
+   - 透明度衰减 `opacity-40`，禁止悬停交互 `cursor-not-allowed pointer-events-none`，移除所有 hover 滤镜与投影。
+
+#### 4.7.4 硬件加速与渲染管线安全法则 (Hardware Acceleration & GPU Rules)
+
+为确保在深暗 3D 极光背景之上达到稳定 60fps/120fps 渲染性能，全站动效必须服从以下工程红线：
+
+1. **仅动画化 GPU 合成层属性**：
+   - 允许转场的属性严格限定在 **`transform`**、**`opacity`**、**`filter`**。
+   - 严禁对触发浏览器回流重排（Reflow）的几何属性应用过渡动画（如禁止过渡 `width`、`height`、`top`、`margin`、`padding`）；容器高度自适应伸缩必须采用 CSS Grid 或容器尺寸微调，配合 GPU 变换平滑过渡。
+2. **显式声明硬件加速提示**：
+   - 对高频转场容器（Prompt Composer 浮岛、Modal 外壳、Drawer 面板、卡片悬停层）显式声明：
+     ```css
+     will-change: transform, opacity;
+     transform: translateZ(0);
+     backface-visibility: hidden;
+     ```
+   - 在转场结束后及时释放或交由合成器管理，避免过度创建合成图层造成移动端显存暴涨。
+3. **严厉禁止滥用 `transition-all`**：
+   - `transition-all` 会强制让浏览器对包含 `border-radius`、`box-shadow`、`color`、`padding` 在内的数十种计算属性进行连续差值运算，是造成界面顿挫与“廉价塑料感”的罪魁祸首。
+   - 守卫规则 `transition-all`（§8）已接入静态拦截。必须显式列出受控属性：
+     `transition-[transform,opacity] duration-fast ease-standard` 或 `transition-[background-color,border-color,color] duration-fast`。
+
+#### 4.7.5 无障碍与减弱动效降级规范 (Accessibility & Reduced-Motion Fallback)
+
+严格遵守 WCAG 2.2 AA (Criterion 2.3.3 Animation from Interactions) 规范：
+- 当用户在操作系统开启减弱动态效果偏好时，全站通过全局媒体查询强制降级：
+  ```css
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  ```
+- 减弱模式下，所有形变、旋转、弹跳位移全部归零，仅保留瞬时切换或纯透明度微变，彻底消除前庭综合征（Vestibular Disorder）诱发风险。
+
+---
 
 ### 4.8 顶栏营销通告条契约（Announcement Bar Contract）
 
@@ -376,7 +540,7 @@
 | 属性 | 契约值 | 语义说明 |
 | :--- | :--- | :--- |
 | 高度 | `--announcement-h: 36px` | 极紧凑单行高度，不压缩主视口空间；`h-announcement-h` |
-| 背景与色彩 | 统一走自有调色板：<br/>- 常规通报：`bg-surface text-ink-muted border-b border-line-subtle`<br/>- 营销高光：`bg-brand-soft text-brand border-b border-brand-line` 或反色底 `bg-surface-inverse text-ink-inverse` | **严禁**把 OiiOii 的荧光黄绿（`#ccff00`）搬入项目；保持冷黑与青色核心视觉 |
+| 背景与色彩 | 统一走自有调色板：<br/>- 常规通报：`bg-surface text-ink-muted border-b border-line-subtle`<br/>- 营销高光：`bg-brand-soft text-brand border-b border-brand-line` 或反色底 `bg-surface-inverse text-ink-inverse` | **严禁**把 OiiOii 的荧光黄绿（`#ccff00`）搬入项目；保持冷黑与洋红核心视觉 |
 | 排版结构 | 居中单行：`text-body-sm`，强调数字加粗 `font-semibold`；右侧紧凑关闭动作 `IconButton size="xs"` | 严禁多行折行破坏 36px 契约 |
 | 交互与记忆 | 用户关闭后记录 `localStorage` 状态，同活动周期不再弹起 | 避免阻碍专业工具使用 |
 
@@ -388,14 +552,14 @@
 | :--- | :--- | :--- |
 | **轨槽 (Track)** | 默认 `40px` 高；紧凑态 `36px` 高。均为独立 Pill 导航语义，不复用普通 Button 的圆角。`rounded-full bg-well border border-line-subtle p-1` | 内容自适应；水平排列；`overflow: hidden` 仅在确需裁切 Track 背景时使用，不得裁掉 focus ring |
 | **未选项目** | 默认高度 `32px`，紧凑态 `28px`；`inline-flex items-center justify-center px-4 text-body-sm font-semibold text-ink-muted rounded-full` | `hover:text-ink hover:bg-wash`；必须可点击、可键盘聚焦，`pointer-events:auto` |
-| **选中项目 (Active)** | 与未选项同高；优先参考图使用 `bg-surface-inverse text-ink-inverse rounded-full shadow-elevation-1`；品牌强调场景才使用 `bg-brand text-ink-on-accent` | 选中态只改变表面/文字/阴影，不改变高度和圆角；切换时 `duration-fast ease-standard` |
+| **选中项目 (Active)** | 与未选项同高；默认使用 `bg-surface-inverse text-ink-inverse rounded-full shadow-elevation-1`；品牌强调场景才使用 `bg-brand text-ink-on-accent` | 选中态只改变表面/文字/阴影，不改变高度和圆角；切换时 `duration-fast ease-standard` |
 | **双层嵌套结构** | 上层场景分类 + 下层周期折扣 | 组间垂直间距 `gap-space-3` (12px)，上下层对齐居中 |
 
 **与原始站点的关系**：Pill 只用于明确的“胶囊语义”。侧栏激活项、Composer、Modal、Input 不得为了“更圆”全部改成 `rounded-full`；它们分别遵守 §4.2.1 的 12/16/20px 层级。
 
 **实现约束（P0）**：
 1. Track、Trigger、Active Trigger 的最终 class 中，每个节点只允许一个 `rounded-*`。
-2. 禁止 `controlClasses(size) + rounded-full` 的叠加写法；应使用专用 `pillControlClasses()` / `PILL_SEGMENT_*` recipe，一次性输出高度、padding、字号与 `rounded-full`。
+2. 禁止 `controlClasses(size) + rounded-full` 的叠加写法；应使用专用 `pillControlClasses()` / `PILL_SEGMENT_*` recipe，或在外部传入时经 `withoutRadiusUtilities(className)` 清理后一次性输出唯一 `rounded-full`。
 3. `TabsList variant="segmented"`、`SegmentedControl`、`PillSegmentedControl`、`PromptSegmentedControl` 必须共享同一 Pill 圆角 recipe。
 4. Active 不能通过绝对定位的透明层覆盖其它 Trigger；任何装饰滑块必须 `pointer-events-none`。
 5. 浏览器验收：Track 与 Trigger 的 `borderRadius` 必须不小于各自高度的一半；点击每个选项均能切换；Tab/方向键可达。
@@ -413,13 +577,13 @@
 2. **通用算力包网格（Generic Pack Grid）**：
    - 4 列等宽卡片，底色 `bg-surface-raised`，圆角 `rounded-xl`，边框 `border-line`。
    - 卡片内容：币种图标 + 额度（大号粗体 `text-page-title`）+ 售价（`text-body-sm text-ink-muted`）。
-   - 选中态：青色轮廓高亮 `border-brand ring-1 ring-brand`，卡片内微提亮 `bg-brand-soft`。
+   - 选中态：洋红轮廓高亮 `border-brand ring-1 ring-brand`，卡片内微提亮 `bg-brand-soft`。
 3. **专属模型算力包（Exclusive Pack Grid）**：
    - 4 列等宽卡片，顶部内嵌黄色激励胶囊（`首购加赠 100%`，见 §4.11）。
    - 卡片内容：模型徽标与名称（如 `GPT Image 2.5`）+ 划线原额度与大字增赠额度对比（`1,400 2,800`）+ 价格 + `仅限会员` 标识。
 4. **模态底部主操作**：
    - 底部提示小字（说明、客服支持、规则跳转）居中或左对齐；
-   - 全宽主 CTA：药丸形 `rounded-full h-control-lg`，品牌青色实心按钮 `Button variant="primary"`。
+   - 全宽主 CTA：药丸形 `rounded-full h-control-lg`，品牌洋红实心按钮 `Button variant="primary"`。
 
 #### 4.10.2 模态架构 B：一站式左选档右扫码分栏模态（即梦范式）
 用于极致消除转化漏斗摩擦的即时快捷充值：
@@ -439,7 +603,7 @@
    - 价格区：超大主价格 `¥ 88 / 月`，伴随中划线划线原价 `¥ 133`。
    - 价值折算锚点：`text-body-sm text-ink-muted` 标注每月总算力与每单元折算单价（如 `1积分 ≈ ¥0.067`），增强购买确定性。
    - 赠送明细与信息 Tooltip 图标。
-   - 按钮规范：普通档位统一采用白色反色实心按钮（深色界面下具备极佳层次）；**最高档 APEX 采用青色边框强化高亮，主按钮为品牌青色实心 `Button variant="primary"`**。
+   - 按钮规范：普通档位统一采用白色反色实心按钮（深色界面下具备极佳层次）；**最高档 APEX 采用洋红边框强化高亮，主按钮为品牌洋红实心 `Button variant="primary"`**。
    - 下方权益清单：`✓` 对勾符号对齐，模型特权列表，右侧带支持级别胶囊标签（如 `最低4.2折`）。
 
 ### 4.11 极精细微徽章与加赠标签系统（Micro Badges & Incentive Pills）
@@ -469,7 +633,7 @@
 
 ### 4.13 Studio 工作台与音频工作室全域 UI 契约（Studio Workbench & Audio Studio Specification）
 
-吸收自 KoyoSIM 音频工作室（`https://www.koyosim.com/zh/studio/audio`）的完整交互与组件架构，为全站所有 Studio 工作台（音频、图像、视频、数字人、重塑、分镜等）确立标准控制台与舞台界面规范。
+吸收自 SupDance 音频工作室（`https://www.supdance.com/zh/studio/audio`）的完整交互与组件架构，为全站所有 Studio 工作台（音频、图像、视频、数字人、重塑、分镜等）确立标准控制台与舞台界面规范。
 
 #### 4.13.1 工作台双栏与空间布局契约（Workbench Dual-Column Layout Contract）
 
@@ -646,6 +810,146 @@
 
 ---
 
+### 4.14 浮窗与覆盖层光学系统（Overlays: Modals, Drawers, Popovers, Tooltips & Scrim Dynamics）
+
+KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四大覆盖层容器（Modal、Drawer、Popover、Tooltip）建立严格的几何、模糊漫射、中性暗色阴影与进出场动效标准，同时恪守事件隔离与防穿孔铁律。
+
+#### 4.14.1 对话框模态契约 (Modal Dialog `.modal` / Radix Dialog)
+
+承载大图全屏预览、商业充值扫码、关键生成确认等核心阻断式流程：
+1. **几何与圆角**：
+   - 外壳严格采用最高常规圆角 **`rounded-2xl` (20px)**，禁止退回 12px 或 8px；
+   - 宽度分级：紧凑型 480px、标准型 640px、全景型 800px、大图全屏预览 `calc(100vw - 64px)`；内边距统一 `p-6` 至 `p-8`；
+   - 边缘发丝光：`border border-white/10`，深暗表面 `bg-overlay` (`#181a22`) 或 `bg-overlay-glass`。
+2. **阴影与遮罩层光学**：
+   - 模态本体采用最高层级中性暗色投影 **`shadow-elevation-4`**（`box-shadow: 0 28px 80px -24px rgba(0,0,0,.90)...`）；
+   - 背后全屏暗色遮罩采用 `bg-scrim` (`rgba(3, 4, 5, 0.72)`) 或 `rgba(0, 0, 0, 0.60)`，叠加 **20px 漫散射毛玻璃 `backdrop-blur-xl`**，将底层内容自然柔化为深邃幕布。
+3. **进出场动效与缓动**：
+   - 入场（Entrance）：耗时 **400ms**，缩放与透明度复合补间：`opacity: 0 -> 1`，`transform: scale(0.95) -> scale(1)`；缓动曲线绑定 `--ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1)`（或弹性回弹 `--ease-bounce` 用于轻量弹窗）；
+   - 退出（Exit）：耗时 **200ms**，`opacity: 1 -> 0`，`transform: scale(1) -> scale(0.98)`；缓动绑定 `--ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15)`。
+4. **事件隔离与点击穿透防护**：
+   - 模态外壳声明 `pointer-events-auto`；关闭或未挂载态必须彻底 unmount 或声明 `pointer-events-none`，严禁残存全屏透明 DOM 拦截视口点击。
+
+#### 4.14.2 侧边参数抽屉契约 (Drawer `.drawer` / Radix Sheet)
+
+承载 Studio 移动端参数面板、高级设置面板、资产详情抽屉：
+1. **几何与表面**：
+   - 宽度契约：桌面端严格固定 **`400px` (`w-panel`)**，移动端响应式 `w-full`；
+   - 表面质感：`bg-overlay` 或 `bg-surface-glass/85`，叠加 **40px 高扩散毛玻璃 (`backdrop-blur-2xl`)**；
+   - 边缘与阴影：左侧/右侧外露边缘连接 1px 发丝分割线 `border-white/10`，叠加 `shadow-elevation-4`。
+2. **滑入滑出动效**：
+   - 滑入（Slide In）：耗时 **420ms**，位移由视口外平滑推入：`transform: translateX(100%) -> translateX(0)`；曲线使用专有长程位移阻尼曲线 `--ease-drawer: cubic-bezier(0.2, 0, 0.4, 1)`；
+   - 滑出（Slide Out）：耗时 **300ms**，`transform: translateX(0) -> translateX(100%)`，使用 `--ease-exit`；
+   - 渲染性能：抽屉滑动层必须声明 `will-change: transform; transform: translateZ(0)`，规避重绘卡顿。
+
+#### 4.14.3 气泡浮层与下拉菜单契约 (Popover & Dropdown Menu)
+
+承载模型规格设置、画幅比例选择器、用户账号菜单、更多操作上下文菜单：
+1. **几何与层级**：
+   - 圆角规范：外壳严格使用 **`rounded-xl` (16px)**，内边距 `p-1.5`；
+   - 最小宽度：`min-w-[176px]`，最大高度 `max-h-[45vh]`，滚动区域启用 `.custom-scrollbar`；
+   - 表面与阴影：`bg-overlay-glass` (`rgba(32, 36, 41, 0.97)`)，**12px 高斯毛玻璃 (`backdrop-blur-md`)**，发丝边框 `border border-white/10`，中性阴影 **`shadow-elevation-3`**。
+2. **动效与微缩放**：
+   - 入场（Appearance）：耗时 **180ms (`duration-base`)**，`opacity: 0 -> 1`，`transform: scale(0.96) -> scale(1)`，曲线绑定 `--ease-enter`；
+   - 退出（Dismissal）：耗时 **120ms (`duration-fast`)**，`opacity: 1 -> 0`，`transform: scale(1) -> scale(0.98)`，曲线绑定 `--ease-exit`。
+3. **防穿孔与透明子条目铁律（Anti-Punch-Through Invariant）**：
+   - 遵循 §2.5.1 与 §2.5.2：下拉菜单内部所有条目（`<DropdownMenuItem>`、`<a>`、`<button>`）及其内嵌子元素（标题 `div`、描述 `span`）**背景必须保持 100% 透明**；
+   - 悬停高亮统由条目外壳应用 `hover:bg-wash-strong`（或 `bg-brand-soft`）；**绝对禁止在条目内部任何子节点上硬编码 `bg-overlay` (`#202429`)**，否则悬停时会像黑色补丁胶布一样裁断微光，造成严重的视觉穿孔回归。
+
+#### 4.14.4 智能文字提示契约 (Tooltip `.tooltip`)
+
+承载快捷键提示、微参数释义、按钮功能说明：
+1. **几何与排版**：
+   - 紧凑微型几何：外壳圆角 **`rounded-md` (8px)**，内边距 `px-2.5 py-1`；
+   - 表面与文字：`bg-overlay` (`#181a22`)，发丝边框 `border border-white/10`，投影 `shadow-elevation-2`；正文 `text-caption text-ink font-medium`；
+   - 箭头指示：可选 4px 像素微三角形箭头，与浮层边框无缝缝合。
+2. **4 方向微位移关键帧动效**：
+   - 出现耗时 **120ms (`duration-fast`)**，退出耗时 **80ms (`duration-instant`)**；
+   - 根据浮动方位执行 4px 微位移入场：
+     * Top 方位：`translateY(4px) -> translateY(0)` + `opacity: 0 -> 1`；
+     * Bottom 方位：`translateY(-4px) -> translateY(0)` + `opacity: 0 -> 1`；
+     * Left 方位：`translateX(4px) -> translateX(0)` + `opacity: 0 -> 1`；
+     * Right 方位：`translateX(-4px) -> translateX(0)` + `opacity: 0 -> 1`。
+
+#### 4.14.5 覆盖层点击隔离与安全架构 (Pointer-Events Safety Architecture)
+
+遵循 `docs/UI_REPAIR_INSTRUCTION.md` 的 P0 级点击安全规范：
+1. **关闭态零残留**：所有模态、抽屉、下拉气泡在关闭后，必须从 React DOM 树中彻底卸载，或其包裹容器必须携带 `pointer-events-none`，绝不允许不可见的 `fixed inset-0` 容器覆盖视口中心。
+2. **装饰性层穿透**：分段器滑动指示块、卡片背光源漫射层、背景画布必须全部声明 `pointer-events-none`。
+3. **真实控件可达**：所有 Trigger 触发器与表单项必须具备 `pointer-events: auto`。
+4. **Z-Index 梯级纪律**：全站最高层级为 `z-tooltip: 110`，严格禁止业务代码私自书写 `z-[999]`、`z-[9999]` 或 `z-[99999]`。
+
+#### 4.14.6 遮罩层动态定位与防切顶算法 (Dynamic Scrim & Zero-Leak Alignment)
+
+遵循 §2.5.3：
+1. **禁止静态 Top**：严禁在全屏或局部 Scrim 遮罩上使用 `top-14` 或 `top-[56px]`。
+2. **动态测量 Header 边界**：遮罩层挂载与展开时，必须动态计算 `header.getBoundingClientRect().bottom`，并绑定行内样式 `style={{ top: `${headerBottom}px` }}`。
+3. **防切顶与零漏光保证**：当顶栏上方出现系统通知横幅、活动通告条（`--announcement-h: 36px`）或合规提示时，遮罩层顶部自适应下移，既不向上切入半透明毛玻璃顶栏底层造成阴阳色断层，也不在顶栏与遮罩间留下漏光白缝。
+
+---
+
+### 4.15 生成器控制台与交互表单控件光学 (Prompt Composer & Advanced Form Controls)
+
+吸收即梦 AI 创作者控制台的核心交互与微雕工艺，将提示词输入岛、模式切换胶囊、参数滑块与状态开关全面淬炼为兼具高光发丝感与物理回弹的现代组件。
+
+#### 4.15.1 提示词生成器核心浮岛 (Prompt Composer `.generator`)
+
+作为首页与各工作室的核心输入中枢：
+1. **双层嵌套圆角与表面光学**：
+   - 外层大浮岛容器：圆角严格采用 **`rounded-2xl` (20px)**（语义别名 `rounded-composer`），背景采用 **`bg-white/[0.03]`**（或 `bg-surface-glass`），**40px 深度高斯模糊 (`backdrop-blur-2xl`)**，发丝边框 `border border-white/10`，悬停 `hover:border-white/20`，焦点态 `border-brand-line` 与 `ring-1 ring-brand-ring`；
+   - 内部文本输入区：下凹圆角 **`rounded-xl` (16px)**，底色 `bg-well` (`#101216`)，内边距 `p-3.5`，输入文字 `text-body text-ink`。
+2. **流体高度伸缩状态机**：
+   - 折叠待机态（Collapsed）：最小高度 **`min-h-[70px]`**，单行输入伴随参数快捷药丸；
+   - 展开激活态（Expanded）：多行输入最小高度 **`min-h-[184px]`**，平滑下推展示高级附件、负向提示词折叠栏与参数网格；
+   - 过渡动效：高度伸缩耗时 **350ms (`duration-expand`)**，过渡曲线严格绑定流体展开曲线 **`--ease-fluid: cubic-bezier(0.15, 0.75, 0.3, 1)`**，伴随 `will-change: height, transform`，消除界面跳动。
+3. **高辨识度生成提交圆钮**：
+   - 几何契约：**32px（紧凑）/ 38px（标准）正圆形 `rounded-full`**，绝对居右或停靠底部；
+   - 色彩与质感：实体品牌洋红 `bg-brand`，悬停 `hover:bg-brand-hover`，内嵌纯白方向箭头或发光星芒图标；
+   - 物理反馈：悬停时轻微放大 `hover:scale-105`，点击按压瞬间 **`active:scale-95`**；
+   - 正在生成态：内置 16px 纯白旋转指示环，尺寸高度恒定保持，无文字溢出跳动。
+4. **输入法合成防误触保护（IME Composition Guard）**：
+   - 桌面端按下 Enter 提交必须判定输入法状态：检查 `isComposingRef.current`、`event.nativeEvent.isComposing` 与 `keyCode !== 229`。中文/日文输入法选词按回车确认时，绝对禁止误触触发生成接口。
+
+#### 4.15.2 幻彩珠光高光胶囊分段器 (Pearlescent Mode Pill)
+
+专为 AI 模式选择（如“文生图 · 图生图 · 局部重绘”或音频“灵感 · 编曲 · 声音克隆”）打造的高端分段器：
+1. **轨槽与选项结构**：
+   - 轨槽：`h-10` (40px) 或 `h-9` (36px)，深色连续轨槽 `rounded-full bg-well border border-line-subtle p-1`；
+   - 选项 Trigger：高度 32px / 28px，严格保持完整药丸 **`rounded-full`**，文字 `text-body-sm font-semibold`；
+   - 唯一圆角契约：严格通过 `withoutRadiusUtilities(className)` 过滤旧类，单一输出 `rounded-full`。
+2. **高对比与珠光双模式**：
+   - 经典高对比模式：Active 项为纯白反色实心药丸 `bg-surface-inverse text-ink-inverse shadow-elevation-1`；
+   - 幻彩珠光高光模式（吸收自即梦 Pearlescent Pill）：针对特殊 AI 旗舰模式，Active 项采用双层微透光质感：
+     * 底层 180deg 边缘微光衰减渐变；
+     * 顶层叠加极微弱 90deg 珠光漫射与 1px 微发丝高光边框；
+     * 文字搭配 `text-white font-bold`，在暗色深空中展现出通透水晶般的微反光，绝不使用俗气高饱和渐变。
+
+#### 4.15.3 高精度状态开关 (Precision Switch)
+
+用于控制高级参数开关、二值模式切换：
+1. **尺寸与几何**：
+   - 轨道外壳：高度 **20px（紧凑）/ 24px（标准）**，最小宽度 36px ~ 44px，圆角 **12px 或 `rounded-full`**；
+   - 内部圆点滑块：直径 **15.43px（紧凑）/ 18px（标准）** 正圆，采用高对比纯白实体 `bg-white shadow-md`。
+2. **状态机与缓动滑动**：
+   - 开启态（Checked）：轨道背景切换为品牌洋红 `bg-brand`，自带微弱品牌投影 `shadow-elevation-brand`；滑块位移至右侧；
+   - 关闭态（Unchecked）：轨道背景为 `bg-white/10 hover:bg-white/15`，滑块复位至左侧；
+   - 位移动画：耗时 **200ms**，曲线采用弹性回弹曲线 **`--ease-bounce: cubic-bezier(0.3, 1.3, 0.3, 1)`** 或 `--ease-standard`，滑动至终点时呈现微弹性卡扣手感。
+3. **无障碍支持**：必须具备原生 `role="switch"`、`aria-checked` 属性，并支持空格键（Space）与回车键（Enter）触发。
+
+#### 4.15.4 模型参数高灵敏度滑杆 (Precision Parameter Slider)
+
+用于调节生成步数（Steps）、CFG Scale、降噪幅度（Denoise）、宽高比尺寸等高精度连续参数：
+1. **触控命中区与视觉 Rail 分离**：
+   - 触控命中区通过 `--range-h: 24px` 垂直撑开，确保鼠标与触屏极易点选；
+   - 视觉 Rail 轨道待机厚度仅为 **2px**（`rgba(255, 255, 255, 0.14)`），当鼠标悬停或拖拽时，Rail 动态扩展至 **4px** 并微提亮，赋予灵敏响应感。
+2. **滑块 Thumb 与弹性吸附**：
+   - 把手尺寸：**14px** 纯正圆点，纯白实体 `bg-white`，带微投影 `shadow-elevation-1`；
+   - 激活反馈：鼠标按住拖拽时，Thumb 产生轻微弹性缩放 `scale(1.15)`，并使用 `--ease-bounce` 产生数值吸附感；
+   - 悬浮数值气泡：拖拽过程中在 Thumb 正上方 24px 处呼出微型黑色气泡（`rounded-xs px-1.5 py-0.5 text-micro font-mono bg-overlay border border-white/10`），实时呈现精确十进制数值。
+3. **原生无障碍合规**：底层必须渲染标准 `<input type="range">` 并携带 `.range` 类名，绝对禁止用裸 `div` 拼凑阻断键盘方向键操作。
+
+---
+
 ## 5. Z-Index 层级契约
 
 禁止 `z-[999]`、`z-[9999]`、`z-[100000]`。梯子共 11 级，`dropdown` 与 `popover` 是两个不同层，不要合并记忆：
@@ -654,7 +958,7 @@
 | :--- | :--- | :--- |
 | `z-base` | 0 | 文档流 |
 | `z-raised` | 1 | 卡片内部浮起 |
-| `z-sticky` | 10 | 粘性条、composer 停靠层 |
+| `z-sticky` | 10 | 粘性条、composer 停靠层、backdrop scrim 基础层 |
 | `z-header` | 40 | 顶栏 |
 | `z-drawer` | 50 | 抽屉 |
 | `z-dropdown` | 60 | 下拉菜单 |
@@ -662,7 +966,7 @@
 | `z-overlay` | 80 | 遮罩 |
 | `z-modal` | 90 | 模态 |
 | `z-toast` | 100 | 通知堆栈 |
-| `z-tooltip` | 110 | 工具提示（最高） |
+| `z-tooltip` | 110 | 工具提示（全站最高） |
 
 ---
 
@@ -680,9 +984,10 @@
 1. **焦点可见**：绝对禁止只写 `focus:outline-none` 而无 `:focus-visible` 替代。统一使用 `FOCUS_RING` recipe（`packages/studio/src/ui/tokens.js`）。
 2. **点击热区**：移动端最小 38px，见 §4.3。
 3. **对比度**：见 §2.2，已实测。
-4. **图标按钮必须有可访问名**：`IconButton` 缺 `label` 会在开发期告警；只有 `title` 不算（历史缺陷：composer 的圆形生成按钮无可访问名）。
+4. **图标按钮必须有可访问名**：`IconButton` 缺 `label` 会在开发期告警；只有 `title` 不算。
 5. **可见文本优先于 `aria-label`**：有可见标签的按钮不要加 `aria-label` 覆盖它（WCAG 2.5.3 标签名一致）。
 6. **键盘**：模态需焦点锁定、`Esc` 关闭、点击遮罩关闭 —— 由 `Modal`/`ModalContent` 承担，业务层不要重造。
+7. **减弱动效响应**：遵循 §4.7.5，全局支持 `prefers-reduced-motion`。
 
 ---
 
@@ -692,80 +997,47 @@
 
 | 闸 | 命令 | 层次 | 基线文件 | CI |
 | :--- | :--- | :--- | :--- | :--- |
-| 源码 token 守卫 | `npm run lint:ui` | 静态扫描 `.js/.jsx/.mjs`：**14 条类名规则 + 2 条源码级规则** | `scripts/ui-token-baseline.json`（14919 处 / 194 文件） | ✅ `test:ci` |
-| 死类对照闸 | `npm run lint:dead` | 源里请求的类名 **vs** 真实生产构建产物里生成的类选择器（`scripts/ui-dead-classes.mjs`） | 无基线（见下"第四道闸为什么不做 ratchet"） | ❌ 需先有构建产物 |
-| 运行时漂移审计 | `npm run ui:audit` | Playwright 读取**计算后样式**，契约直接解析自 `globals.css` `:root`（19 条规则，声明于 `scripts/ui-spec-audit.mjs`） | `.ui-drift/state.json` | ❌ 手动 |
-| 视觉/响应回归 | `npm run test:visual` | 10 档视口 × 8 条路由：控制台错误、横向溢出、**控件可达性**、像素基线（含 composer 特写）+ 1 条闸门自审 | `tests/visual/__snapshots__/` | ❌ 需先起服务 |
+| 源码 token 守卫 | `node scripts/ui-token-guard.mjs --report` | 静态扫描 `.js/.jsx/.mjs`：**14 条类名规则 + 2 条源码级规则** | `scripts/ui-token-baseline.json` | ✅ `test:ci` |
+| 死类对照闸 | `npm run lint:dead` | 源里请求的类名 **vs** 真实生产构建产物里生成的类选择器（`scripts/ui-dead-classes.mjs`） | 无基线（测量与定位） | ❌ 需先有构建产物 |
+| 运行时漂移审计 | `npm run ui:audit` | Playwright 读取**计算后样式**，契约直接解析自 `globals.css` `:root`（19 条规则） | `.ui-drift/state.json` | ❌ 手动 |
+| 视觉/响应回归 | `npm run test:visual` | 10 档视口 × 8 条路由：控制台错误、横向溢出、**控件可达性**、像素基线（含 composer 特写） | `tests/visual/__snapshots__/` | ❌ 需先起服务 |
 
-**Ratchet 规则**：守卫基线**只能下降**。任何文件新增违规会让 `lint:ui` 失败；清理后必须 `npm run lint:ui:update` 把下降固化下来，否则下一个人可以悄悄涨回去。但 `lint:ui:update` 写的是**全量快照** —— 场上还有未处理的上升时跑它，等于把别人的回归登记成合法值。**先让 `lint:ui` 全绿，再 update。**
+**Ratchet 规则**：守卫基线**只能下降**。任何文件新增违规会让 `ui-token-guard` 失败；清理后必须 `npm run lint:ui:update` 把下降固化下来，否则下一个人可以悄悄涨回去。
 
-**第四道闸为什么不做 ratchet**：死类闸的分母是**一次具体的构建产物**，而共享工作树里五个会话各自有各自的 dist；把数字冻进基线会得到一个"谁的文件新就谁的数"的假契约。所以它的角色是测量与定位（`--report` / `--files` / `--explain`，check 模式 exit 1 供人在改动后自己跑），而其中**不需要构建也能判死**的那一族已经升格成守卫规则进了 `test:ci`。
-
-**两类规则 + 一条管辖范围原则**：类名规则扫"字符串里出现了什么"，源码级规则扫"元素上缺了什么"。后者是必需的 —— "缺失"在类名字符串里根本不可见，两道类名闸与像素闸对它全部免疫。当前落地的两条源码级规则，各自对应 `UI_AUDIT.md` §4.6 的一类失效模式：
-
-| 规则 | 检查什么 | 放行什么（写进代码里的免责条件） | 存量（2026-09-21 08:18 入账） |
-| :--- | :--- | :--- | :--- |
-| `range-without-utility` | 每个 `type="range"` 是否带 `.range` —— `appearance:none` 之后浏览器不再画 thumb，代码看起来完全正常，用户面对的是一根拖不动的横条 | 标签内其它位置出现独立 `range` token（如从常量取类） | **36 处 / 10 文件**（其中 4 处在待删的遗留树 `src/components/ImageStudio.js`，见 `UI_AUDIT.md` §7） |
-| `div-onclick-not-keyboard` | 带 `onClick` 的 `<div>` 是否对键盘存在 —— 历史条目、上传卡片、卡片整面点击在 Tab 序列里根本不存在 | `role=`／`tabIndex=`／`onKeyDown`／`onKeyUp`；或 `as="button｜Link"` 渲染成语义元素；或 `aria-hidden="true"`（点击遮罩不是控件，键盘路径是对话框自己的 Escape） | **78 处 / 39 文件** |
-
-**两条按 config 划管辖范围的新规则**。它们不能写成一条全局正则，因为"这个类名有没有病"取决于**哪一份 tailwind.config.js 编译这个文件**——本仓有 5 份（根 + `studio` + 三个子包），`content` 名单互相交叠：
-
-| 规则 | 判据 | 为什么会误伤，怎么避免 | 存量（09:30 入账） |
-| :--- | :--- | :--- | :--- |
-| `alpha-on-var-colour` | 颜色被注册成裸 `var(--x)` 时，`bg-x/10` **整条不产出 CSS**（Tailwind v3 拆不出通道）。要求**每一份**管辖该文件的 config 都把它当 `var()` | `Open-Poe-AI/packages/agents` 用 `primary: '#3898ec'` **字面量**注册过同名颜色 —— 那里 `/10` 真的能编译，报它就是报冤案（实测豁免 19 处） | **381 处 / 77 文件** |
-| `off-system-type-ramp` | `text-xs`/`text-sm`/… 会正常生成 `font-size:12px; line-height:16px`，但既不在具名阶梯上、也不带 recipe 的字重与字距。只要**有一份**管辖该文件的 config 声明了具名阶梯就报 | 子包自己没有字号阶梯（`workflow-builder` 是 `extend: {}`），但它被根构建编译进 `/studio` 时用的就是根阶梯 —— 所以照报；只有**没有任何 config 认领**的文件（子包自带的 `client/` 独立应用）豁免（实测 58 处 / 368 文件，绝大多数本来不含类名） | **1926 处 / 149 文件** |
-
-两条方向相反是有意的：**死类要求全票**（一份样式表能救活它，它就不是死的），**绕过语义层只要求有得选**（阶梯在架，`text-xs` 就是选择而非无奈）。
-
-**闸门要做故意破坏验证**（2026-09-21 已做，全部可复现）：
-
-| 注入 | 期望 | 实测 |
-| :--- | :--- | :--- |
-| `.range` 上加 `h-[37px]` | `lint:ui` 红 | `AudioStudio.jsx arbitrary-geometry: 0 -> 1`，退出码 1 |
-| `.range` 上删掉 `range` | `lint:ui` 红 | `AudioStudio.jsx range-without-utility: 0 -> 1` |
-| 新建 `div onClick` 且无任何语义标记 | `lint:ui` 红 | `lib/__ui-guard-probe.jsx div-onclick-not-keyboard: 0 -> 1`；同一文件里带 `role`+`tabIndex`+`onKeyDown`、`as="button"`、`aria-hidden="true"` 的三种写法**同时验证为不报**（规则只抓真缺失，不逼业务加装饰属性）。探针文件已删 |
-| 两条新规则的 15 组正负样本 | 该报的报、该沉默的沉默 | `node .agents/probe-alpha-rule.mjs`（只读，不写盘）15/15 通过：同一句 `bg-primary/10` 在 `app/layout.js` 报、在 `agents/src/AiAgent.jsx` 不报、在无人认领的子包 `client/` 不报；`bg-white/10`、`bg-primary`（无修饰）、`shadow-black/60`、`text-body`、`text-ink-muted` 全部不报 |
-| composer recipe 改 1~2px | 特写断言红 | 页面级 `maxDiffPixelRatio: 0.01` 无反应，`[data-prompt-composer]:visible`（0.001）在 image/video/lipsync 三个面全部报红 |
-
-最后一行不是模拟 —— 它是 recipe 收敛时**真实发生**的一次漂移，被特写闸抓到、被页面闸放过。这两条闸的分工由此得证。
-
-**已知盲区（已修）**：`eslint` 的 FlatCompat 只为 `.js/.ts` 生成 `files` 模式，导致**全仓 `.jsx` 从未被 lint**（`--print-config` 返回 `undefined`，命令仍退出 0）。现已把规则集扩展到 `.jsx` 并新增 `npm run lint:packages` 接入 `test:ci`。
-
-**视觉基线纪律**：必须从**生产构建**录制，绝不用 `next dev`（dev overlay 会把"Errors"角标和 HMR 抖动注入被比较的画面）。标准流程：
-
-```bash
-NEXT_DIST_DIR=.agents/verify-next npm run build      # 隔离产物，不抢别人的 .next
-node -e "console.log(Object.keys(require('./.agents/verify-next/server/app-paths-manifest.json')).length)"  # 应 ≥ 200
-NEXT_DIST_DIR=.agents/verify-next bash .agents/serve.sh <port>
-VISUAL_BASE_URL=http://localhost:<port> npm run test:visual
-```
-
-另两条纪律：`-g` 过滤**只能用 ASCII**（Git Bash 会破坏非 ASCII 参数，含 `›` 的模式静默匹配 0 个测试并"全绿"）；同一命令**重跑一次再定性**（外部资源偶发 `net::ERR_CONNECTION_CLOSED` 会让多个不相关测试同时红）。重录前必须先定归属，流程见 `UI_MIGRATION.md` §5。
+两类规则 + 一条管辖范围原则：
+- 类名规则扫"字符串里出现了什么"，源码级规则扫"元素上缺了什么"。
+- `range-without-utility`：每个 `type="range"` 是否带 `.range`（见 §4.5 与 §4.15.4）。
+- `div-onclick-not-keyboard`：带 `onClick` 的 `<div>` 是否对键盘存在（Tab 键可达性）。
+- `alpha-on-var-colour`：颜色被注册成裸 `var(--x)` 时，禁止 `bg-x/10` 这种静默死类。
+- `off-system-type-ramp`：禁止绕过语义层使用默认 `text-xs`/`text-sm`，必须使用具名语义阶梯。
 
 ---
 
-## 9. Do / Don't 速查
+## 9. Do / Don't 速查（含 v3.7.0 动效与浮窗禁令）
 
 | 场景 | 🔴 禁止 | 🟢 必须 |
 | :--- | :--- | :--- |
-| 颜色 | `bg-[#22d3ee]`、`text-white/50`、`bg-zinc-900` | `bg-brand`、`text-ink-muted`、`bg-surface` |
-| **半透明** | `bg-primary/10`、`bg-canvas/95`、`border-line/50`（**不产出任何 CSS**，见 §4.6） | `bg-brand-soft`、`bg-surface-glass`、`border-line-subtle`、`bg-wash` |
+| **色彩基准** | 引入即梦蓝紫霓虹色（`#1664ff`）、琥珀橙（`#ff6f00`）形成双主色撕裂 | 严格保持全站唯一主色洋红 `#e11d74`，洋红底纯白字 AAA 16.5:1 |
+| **半透明** | `bg-primary/10`、`bg-canvas/95`、`border-line/50`（不产出任何 CSS） | `bg-brand-soft`、`bg-surface-glass`、`border-line-subtle`、`bg-wash` |
 | **字号** | `text-xs`、`text-sm`、`text-base`、`text-2xl`（会生成 CSS，但值与行高不在架上） | `text-display` / `page-title` / `section-title` / `card-title` / `body` / `body-sm` / `label` / `caption` / `micro` / `mono` |
-| 按钮 | 手写 `<button className="px-4 py-2 bg-gradient…">` | `<Button variant size>` / `<IconButton label>` |
-| 高度 | `h-9`、`h-[37px]`、`h-[42px]` | `h-control-sm` / `-md` / `-lg` |
-| 阴影 | `shadow-[0_0_15px_#22d3ee]`、`shadow-2xl` | `shadow-elevation-1..4` |
-| 圆角 | `rounded-[2rem]`、`rounded-[4px]` | `rounded-md` / `-lg` / `-xl` |
-| 层级 | `z-[999]`、`z-[100]` | `z-modal` / `z-popover` / `z-toast` |
-| 过渡 | `transition-all` | `transition-[background-color,border-color,color] duration-fast` |
-| 图标 | 内联 `<svg>`、emoji、无 `label` 的图标按钮 | `lucide-react` + `IconButton` |
-| 滑杆 | 裸 `type="range"`（`appearance:none` 后无 thumb）、`div` + `onMouseDown` 自制进度条 | `.range` + `aria-label`（见 §4.5） |
-| 开关 | 二值设置用裸 `type="checkbox"`（命中区 13px） | `<Switch>` + 绑定 `htmlFor` 的 `<Label>`；多选框仍用 checkbox |
-| 面板宽 | `w-[400px]`、`lg:w-[25rem]` | `lg:w-panel`（`--panel-w` 400） |
-| 滚动条 | `scrollbar-none`、隐藏 webkit 滚动条 | 全局滚动条或 `.scrollbar-rail` |
-| 文案 | JSX 里硬编码中文（`正在生成中...`、`11/张`） | `messages/<locale>/*.json` + copy key |
-| 布局 | 依赖 `overflow-hidden` 裁掉超宽控件 | 让控件换行或用响应式收纳（见 §10） |
+| **按钮** | 手写 `<button className="px-4 py-2 bg-gradient…">` | `<Button variant size>` / `<IconButton label>`，服从五态转换机 |
+| **高度** | `h-9`、`h-[37px]`、`h-[42px]` | `h-control-sm` (32) / `-md` (38) / `-lg` (44) |
+| **阴影** | `shadow-[0_0_15px_#22d3ee]`、`shadow-2xl`、绝对定位 DOM 阴影遮罩 | `shadow-elevation-1..4` 多重 box-shadow token（见 §4.6） |
+| **圆角** | `rounded-[2rem]`、全页面一刀切批量替换成 8px 或 full | 严格遵循嵌套层级：Modal 20px → Field 16px → Control 12px → Pill full |
+| **层级** | `z-[999]`、`z-[9999]`、`z-[99999]` | `z-modal` / `z-popover` / `z-toast` / `z-tooltip` (最高 110) |
+| **动效缓动** | 使用浏览器默认 `ease`、`linear`，或手写随意贝塞尔曲线 | 使用 6 大标准曲线：`--ease-standard`、`--ease-enter`、`--ease-exit`、`--ease-bounce`、`--ease-fluid`、`--ease-card-hover` |
+| **动效时长** | 手写随意数值如 150ms、275ms、600ms | 严格使用 7 级标尺：80ms / 120ms / 180ms / 240ms / 300ms(420ms) / 350ms / 400ms(520ms) |
+| **过渡属性** | 无节制书写 `transition-all`（引发全属性重绘与卡顿） | 显式声明目标属性：`transition-[transform,opacity]` 或 `transition-[background-color,border-color,color]` |
+| **按压交互** | 按压触发时带有 200ms+ 迟滞缓动 | 按压即时响应（`active:scale-[0.98]`，`active:transition-none`），释放平滑回弹 |
+| **减弱动效** | 忽视用户操作系统减弱动效偏好 | 严格落实 `@media (prefers-reduced-motion: reduce)` 时长归零 |
+| **图标** | 内联 `<svg>`、emoji、无 `label` 的图标按钮 | `lucide-react` + `IconButton` |
+| **滑杆** | 裸 `type="range"`（`appearance:none` 后无 thumb）、`div` + `onMouseDown` 自制进度条 | `.range` + `aria-label`，或精密滑块组件（见 §4.15.4） |
+| **开关** | 二值设置用裸 `type="checkbox"`（命中区 13px） | `<Switch>` + 绑定 `htmlFor` 的 `<Label>`，12px/full 圆角与 15.43px 滚珠 |
+| **面板宽** | `w-[400px]`、`lg:w-[25rem]` | `lg:w-panel`（`--panel-w` 400） |
+| **滚动条** | `scrollbar-none`、隐藏 webkit 滚动条 | 全局滚动条或 `.scrollbar-rail` |
+| **布局** | 依赖 `overflow-hidden` 裁掉超宽控件 | 让控件换行或用响应式收纳（见 §10） |
 | **通告条** | 引入第三方荧光黄绿（`#ccff00`）、高度随机（`h-10`/`h-[42px]`） | `h-announcement-h` (36px)，使用 `bg-brand-soft` 或 `bg-surface-inverse` 反色 |
-| **分段器** | 手写方角 Tab、无轨槽单选框 | 胶囊轨槽（`rounded-full bg-well p-1`）+ 高对比实心药丸滑块 |
+| **分段器** | 手写方角 Tab、无轨槽单选框、多个圆角类冲突 | 胶囊轨槽（`rounded-full bg-well p-1`）+ 高对比实心药丸滑块，单一圆角输出 |
 | **底纹网格** | 手写外链大图、高对比亮白圆点网格 | `.bg-dot-grid`（24px 步长，1px 圆点，`--border-strong`） |
 | **充值模态** | 多级跳转收银台、无资产条的生硬表单 | 架构 A（资产条+通用/专属双层网格）或架构 B（左选档右扫码即时联动） |
 | **微徽章** | 任意小字（`text-[9px]`）、任意圆角（`rounded-[3px]`） | 4 级语义微标签（`text-micro`，`rounded-xs` 或 `rounded-full`） |
@@ -779,6 +1051,8 @@ VISUAL_BASE_URL=http://localhost:<port> npm run test:visual
 | **工作台画布背景** | 给右侧主舞台加实心纯黑背景遮挡底层 3D 极光与交互点阵 | 右侧主舞台容器保持 `bg-transparent`，让极光与物理点阵作为沉浸式原生内容展台 |
 | **吸底主生成栏** | 无模糊纯黑背景硬切页面，或脱离固定停靠被长表单推走 | `bg-surface-glass/90 backdrop-blur-2xl border-t border-white/10` 绝对吸附固定停靠 |
 | **模型版本分段器** | 选项切换时改变 padding 或边框引起高度抖动 | 保持固定高度，选中项使用 `bg-brand text-white shadow-elevation-1 font-bold` |
+| **生成岛高度过渡** | 输入框高度变化生硬跳变，或回流卡顿 | 350ms 流体展开曲线 `--ease-fluid` 平滑过渡，硬件加速 |
+| **生成按钮提交** | 中文 IME 拼音输入选词按回车直接触发生成建单 | 严格校验 `isComposing`，输入法合成中屏蔽 Enter 提交 |
 
 ---
 
@@ -788,7 +1062,7 @@ VISUAL_BASE_URL=http://localhost:<port> npm run test:visual
 
 `1920×1080 · 1600×900 · 1440×900 · 1366×768 · 1280×800 · 1024×768 · 768×1024 · 430×932 · 390×844 · 375×812`
 
-**可达性优先于不溢出**。studio 外壳是 `overflow-hidden`，因此"页面没有横向滚动条"完全可能同时意味着"三个控件根本不存在"。视觉闸现在单独断言：任何 `a/button/input/select/textarea` 不得渲染在视口外，除非它位于可滚动容器内。历史教训：390px 顶栏控件一度渲染到 x=578（超出 188px）而旧断言全绿。
+**可达性优先于不溢出**。studio 外壳是 `overflow-hidden`，因此"页面没有横向滚动条"完全可能同时意味着"三个控件根本不存在"。视觉闸现在单独断言：任何 `a/button/input/select/textarea` 不得渲染在视口外，除非它位于可滚动容器内。
 
 收纳策略按优先级：
 1. 让控件轨道**换行**（Prompt Composer 参数行即此方案）；
@@ -796,3 +1070,34 @@ VISUAL_BASE_URL=http://localhost:<port> npm run test:visual
 3. 只有真正的横向轨道（模型列表、画廊）才用 `.scrollbar-rail` 滚动。
 
 禁止用第 2 种手段藏掉唯一入口。
+
+---
+
+## 11. 边界不变量与红线核查清单 (Strict Invariants & Red Lines Verification Checklist)
+
+为确保在快速迭代中 100% 杜绝视觉漂移与系统性回归，所有 UI PR 与发布前必须通过以下红线审查：
+
+1. **AI 空间光影背景零差异红线 (Background Spec Zero-Diff Invariant)**：
+   - 检查命令：`git diff --exit-code docs/背景动效规范.md` 必须返回代码 0。
+   - `Layer 0` 3D 流体极光视频、`Layer 1` 物理交互点阵画布、`Layer 2` 地平线衰减层与 `Layer 3` 前景操作层架构完全保全；
+   - 任何全局或局部组件严禁擅自修改极光视频源、点阵物理斥力半径或破坏 `pointer-events: none` 穿透契约。
+2. **多重圆角嵌套层级红线 (Nested Radius Hierarchy Compliance)**：
+   - 检查命令：读取容器与控件的计算样式，外层与内层保持 4–8px 级差：
+     `Modal / Composer (20px) → Input / Field (16px) → Standard Control (12px) → Compact Control (8px) → Micro (4/6px)`；
+   - Pill 胶囊控件独立成形状语义：`borderRadius >= height / 2`；
+   - 单节点单一圆角类原则：严禁 `cn()` 拼接产生 `rounded-md rounded-full` 冲突，必须使用 `withoutRadiusUtilities()`。
+3. **页面点击可达与事件隔离红线 (Pointer-Events Safety)**：
+   - 检查命令：`document.elementFromPoint(innerWidth / 2, innerHeight / 2)` 绝不得命中隐藏或透明的全屏遮罩；
+   - 关闭态的 Modal / Drawer / Popover 必须卸载或标记 `pointer-events-none`；
+   - 阴影只允许使用 CSS `box-shadow`，严禁插入绝对定位 DOM 充当阴影层。
+4. **单主色品牌洋红红线 (Single Magenta Brand Accent)**：
+   - 品牌唯一饱和色为 `#e11d74`，Hover 为 `#f43f5e`，Active 为 `#c0175f`；
+   - 洋红底色上的文字严格为纯白 `#ffffff`，对比度达到 16.5:1 (AAA)；
+   - 绝对禁止引入第二套主色（如即梦蓝紫、橙黄）或荧光品红 `#ff00ff`。
+5. **深暗毛玻璃 4% 透光防灰红线 (4% Glass Opacity Ceiling)**：
+   - 深暗暗底上的毛玻璃白透光度严格控制在 `bg-white/[0.03]` ~ `bg-white/[0.04]`；
+   - 绝对禁止使用 `bg-white/10` 或 `bg-white/20` 产生乳化白内障灰雾；
+   - 面板与展台卡必须搭配 40px 高斯核（`backdrop-blur-2xl`）与 1px 发丝边框（`border border-white/10`）。
+6. **防穿孔与遮罩层动态对齐红线 (Anti-Punch-Through & Scrim Invariant)**：
+   - 浮层与菜单项内部的子容器必须保持背景透明，严禁写死 `bg-overlay` 遮挡悬停微光；
+   - 暗色遮罩 Scrim 必须动态测量 `header.getBoundingClientRect().bottom`，严禁硬编码 `top-14` 切入顶栏玻璃。

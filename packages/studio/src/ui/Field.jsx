@@ -114,11 +114,11 @@ export const Switch = forwardRef(function Switch(
       disabled={disabled}
       aria-label={label}
       className={cn(
-        'inline-flex h-6 w-11 shrink-0 items-center rounded-full border p-1',
-        'transition-[background-color,border-color] duration-base ease-standard',
+        'inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border p-1',
+        'transition-[background-color,border-color,box-shadow] duration-base ease-standard',
         FOCUS_RING,
-        'border-line bg-well',
-        'data-[state=checked]:border-brand-line data-[state=checked]:bg-brand-soft',
+        'border-line-subtle bg-white/10 hover:bg-white/15',
+        'data-[state=checked]:border-brand data-[state=checked]:bg-brand data-[state=checked]:shadow-elevation-brand',
         'disabled:cursor-not-allowed disabled:opacity-40',
         withoutRadiusUtilities(className),
       )}
@@ -126,10 +126,9 @@ export const Switch = forwardRef(function Switch(
     >
       <RadixSwitch.Thumb
         className={cn(
-          'block size-4 translate-x-0 rounded-full',
+          'pointer-events-none block size-4 translate-x-0 rounded-full bg-white shadow-md',
           'transition-transform duration-base ease-standard',
-          'bg-ink-subtle',
-          'data-[state=checked]:translate-x-5 data-[state=checked]:bg-brand',
+          'data-[state=checked]:translate-x-5',
         )}
       />
     </RadixSwitch.Root>

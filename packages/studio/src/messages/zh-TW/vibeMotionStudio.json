@@ -9,7 +9,7 @@
     "modeGenerated": "✦ 已生成",
     "download": "下載",
     "remixThis": "混剪此生成結果",
-    "legacyRemixUnavailable": "舊版生成結果 — 暫不支援混剪。請先生成一個新的動態圖形以启用編輯功能。",
+    "legacyRemixUnavailable": "目前生成結果沒有伺服器私有素材參照或已審核的影片編輯路由，暫不支援混剪。",
     "delete": "刪除",
     "confirmDelete": "確定要刪除此生成項吗？",
     "noPrompt": "無提示詞",
@@ -40,14 +40,19 @@
   },
   "controls": {
     "aspectRatio": "長寬比",
+    "resolution": "解析度",
     "duration": "時長",
     "sourcePrefix": "來源：",
     "pickSource": "選取來源…",
     "sourceGeneration": "源生成結果",
-    "shortcutHint": "Ctrl+Enter 運行"
+    "shortcutHint": "Ctrl+Enter 運行",
+    "model": "模型",
+    "pickModel": "選擇模型…",
+    "loadingModels": "正在讀取可用模型…",
+    "modelsUnavailable": "目前沒有可報價的文生影片模型。"
   },
   "errors": {
-    "staleEditUnavailable": "此生成結果無法混剪 — 服務器未儲存動畫代碼。請先生成一個新的動態圖形，然後再對该結果進行混剪。",
+    "staleEditUnavailable": "伺服器尚未提供使用者私有素材參照和已審核的影片編輯路由，暫不支援影片編輯。",
     "generationFailed": "動感鏡頭運鏡生成失敗"
   },
   "generateButton": {
@@ -55,5 +60,11 @@
     "generating": "生成中...",
     "remix": "混剪",
     "generate": "生成"
+  },
+  "history": {
+    "loading": "正在載入 Vibe Motion 歷史記錄…",
+    "loadFailed": "無法載入生成歷史記錄，請稍後再試。",
+    "unavailable": "目前無法讀取這段私人影片。",
+    "downloadUnavailable": "無法下載私人影片，請稍後再試。"
   }
 }

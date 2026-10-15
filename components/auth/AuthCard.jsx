@@ -112,7 +112,7 @@ export default function AuthCard({
     } catch {}
 
     const handleOAuthEvent = (data) => {
-      if (!data || data.type !== 'koyosim-auth-complete') return;
+      if (!data || data.type !== 'supdance-auth-complete') return;
       if (data.action === 'bind') return;
       if (!data.ok && data.message) {
         setErrorMsg(data.message);
@@ -121,7 +121,7 @@ export default function AuthCard({
 
     const handleWindowMessage = (event) => handleOAuthEvent(event?.data);
     const handleStorageChange = (event) => {
-      if ((event.key === 'koyosim_auth_event' || event.key === 'koyosim-oauth-sync') && event.newValue) {
+      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync') && event.newValue) {
         try {
           handleOAuthEvent(JSON.parse(event.newValue));
         } catch {}
@@ -131,7 +131,7 @@ export default function AuthCard({
     let channel = null;
     try {
       if ('BroadcastChannel' in window) {
-        channel = new BroadcastChannel('koyosim_auth_channel');
+        channel = new BroadcastChannel('supdance_auth_channel');
         channel.onmessage = (event) => handleOAuthEvent(event.data);
       }
     } catch {}
@@ -409,7 +409,7 @@ export default function AuthCard({
 
   const containerClasses = embedded
     ? `w-full text-ink select-none ${className}`
-    : `relative w-full max-w-[450px] my-auto rounded-2xl bg-surface/90 backdrop-blur-2xl border border-line-subtle shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden ${className}`;
+    : `relative w-full max-w-[450px] my-auto rounded-2xl bg-overlay backdrop-blur-2xl border border-line-strong shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden ${className}`;
 
   return (
     <div
@@ -431,7 +431,7 @@ export default function AuthCard({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center transition-all cursor-pointer z-10"
+          className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           aria-label="关闭"
         >
           <X className="size-3.5" />
@@ -481,7 +481,7 @@ export default function AuthCard({
                 setLoginTab('email');
                 setErrorMsg('');
               }}
-              className={`flex-1 h-full rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`flex-1 h-full rounded-full text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 loginTab === 'email'
                   ? 'bg-wash text-ink shadow-elevation-1'
                   : 'text-ink-muted hover:text-ink'
@@ -495,7 +495,7 @@ export default function AuthCard({
                 setLoginTab('phone');
                 setErrorMsg('');
               }}
-              className={`flex-1 h-full rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`flex-1 h-full rounded-full text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 loginTab === 'phone'
                   ? 'bg-wash text-ink shadow-elevation-1'
                   : 'text-ink-muted hover:text-ink'

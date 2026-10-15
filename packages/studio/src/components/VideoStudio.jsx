@@ -16,7 +16,9 @@ import { VideoOptionControl, VideoSettingsControl } from "./VideoModelControls.j
 import MobileGenerationActions, {
   GenerationCopyButtons,
 } from "./MobileGenerationActions.jsx";
+import VideoRelayMenu from "./VideoRelayMenu.jsx";
 import {
+  applyActiveModelDirectory,
   t2vModels,
   getAspectRatiosForVideoModel,
   getDurationsForModel,
@@ -55,6 +57,13 @@ import {
   recordGenerationSource,
   shouldDisableVideoPrompt,
 } from "../modelCapabilities.js";
+import { getServerModelMeta } from "../modelDescriptions.js";
+import {
+  buildPublicVideoParameters,
+  filterPublicVideoProviderParameters,
+  findPublicVideoCapability,
+  getPublicVideoControlOptions,
+} from "../publicGenerationCapabilities.js";
 import {
   buildSupplementalInputPayload,
   createModelParameterValues,
@@ -101,6 +110,7 @@ import {
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
 import { PromptInputField } from "./prompt/PromptInputField.jsx";
+import { usePromptMention } from "./prompt/PromptAttachments.jsx";
 import usePromptMenu from "./prompt/usePromptMenu.js";
 import en from "../messages/en/videoStudio.json";
 import zh from "../messages/zh/videoStudio.json";
@@ -161,7 +171,7 @@ function ReferenceMediaLabel({ label, required = false }) {
     >
       {label}
       {required && (
-        <span className="ml-0.5 text-[#e11d74]" aria-hidden="true">
+        <span className="ml-0.5 text-brand" aria-hidden="true">
           *
         </span>
       )}
@@ -319,7 +329,7 @@ function ReferenceUploadButton({
         onDragOver={handleUploadDragOver}
         onDrop={handleUploadDrop}
         className={`${promptMediaButtonClassName()} disabled:cursor-not-allowed disabled:opacity-50${
-          isUploadDragging ? " ring-2 ring-primary border-primary bg-primary/10" : ""
+          isUploadDragging ? " ring-2 ring-brand border-brand bg-brand-soft" : ""
         }`}
       >
         {uploading ? (
@@ -335,24 +345,24 @@ function ReferenceUploadButton({
                 fill="transparent"
                 strokeDasharray={88}
                 strokeDashoffset={88 - (88 * progress) / 100}
-                className="text-[#e11d74] transition-all duration-300"
+                className="text-brand transition-[stroke-dashoffset] duration-fast ease-standard"
               />
             </svg>
-            <span className="absolute text-[9px] font-black text-[#e11d74] leading-none">{progress}%</span>
+            <span className="absolute text-[9px] font-black text-brand leading-none">{progress}%</span>
           </div>
         ) : type === "video" ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-white/40 group-hover:text-brand transition-colors">
             <polygon points="23 7 16 12 23 17 23 7" />
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
           </svg>
         ) : type === "audio" ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-brand transition-colors">
             <path d="M9 18V5l10-2v13" />
             <circle cx="6" cy="18" r="3" />
             <circle cx="16" cy="16" r="3" />
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-[#e11d74] transition-colors">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/40 group-hover:text-brand transition-colors">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -379,8 +389,9 @@ const CheckSvg = () => (
     height="16"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#e11d74"
+    stroke="currentColor"
     strokeWidth="4"
+    className="text-brand"
   >
     <polyline points="20 6 9 17 4 12" />
   </svg>
@@ -413,7 +424,7 @@ const VideoReadySvg = () => (
   >
     <polygon points="23 7 16 12 23 17 23 7" />
     <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-    <polyline points="7 10 10 13 15 8" stroke="#e11d74" strokeWidth="2.5" />
+    <polyline points="7 10 10 13 15 8" stroke="currentColor" strokeWidth="2.5" className="text-brand" />
   </svg>
 );
 
@@ -518,7 +529,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
     if (family.id.includes("kling")) return "bg-blue-500/10 text-blue-400 border-blue-500/10";
     if (family.id.includes("veo")) return "bg-purple-500/10 text-purple-400 border-purple-500/10";
     if (family.id.includes("sora")) return "bg-rose-500/10 text-rose-400 border-rose-500/10";
-    return "bg-primary/10 text-primary border-primary/10";
+    return "bg-brand-soft text-brand border-brand-line";
   };
 
   const renderItem = (entry, label = entry.name) => {
@@ -530,7 +541,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
       key={entry.id}
       aria-pressed={isSelected}
       ref={isSelected ? activeItemRef : null}
-      className={`flex w-full text-left items-center justify-between p-3.5 hover:bg-white/5 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isSelected ? "bg-white/5 border-white/5" : ""}`}
+      className={`flex w-full text-left items-center justify-between p-3.5 hover:bg-wash rounded-xl cursor-pointer transition-[background-color,border-color] duration-fast ease-standard border border-transparent hover:border-line-subtle focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${isSelected ? "bg-wash border-line-subtle" : ""}`}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(entry, activeCategory.id);
@@ -585,7 +596,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
         <button
           type="button"
           onClick={() => setSelectedProvider("all")}
-          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all flex-shrink-0 cursor-pointer ${
+          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-[background-color,color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring flex-shrink-0 cursor-pointer ${
             selectedProvider === "all"
               ? "bg-white/10 text-yellow-400 border-yellow-500/30 shadow-md scale-105"
               : "bg-white/[0.02] text-white/50 border-white/[0.03] hover:bg-white/5 hover:text-white"
@@ -606,7 +617,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
               type="button"
               onClick={() => setSelectedProvider(p.id)}
               aria-pressed={isSelected}
-              className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-all cursor-pointer ${
+              className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center overflow-hidden font-black text-[10px] border transition-[background-color,color,border-color,transform,box-shadow] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 isSelected
                   ? `${style.bg} scale-105 shadow-md shadow-black/10`
                   : "bg-white/[0.02] text-white/40 border-white/[0.02] hover:bg-white/5 hover:text-white/80"
@@ -688,7 +699,7 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
                 }}
                 className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors border ${
                   selectedCategory === category.id
-                    ? "bg-primary/15 text-primary border-primary/30"
+                    ? "bg-brand-soft text-brand border-brand-line font-medium"
                     : "bg-white/[0.02] text-white/50 border-white/[0.04] hover:bg-white/5 hover:text-white"
                 }`}
               >
@@ -758,6 +769,86 @@ function ModelDropdown({ selectedModel, onSelect, onClose, copy = en, locale = "
 
 // ── Main component ────────────────────────────────────────────────────────────
 
+const VIDEO_STUDIO_RELAY_COPY_EN = {
+  presetsTitle: "Video Presets:",
+  relayLoadedToast: "Loaded relayed video as reference for Video Studio!",
+  presets: [
+    {
+      id: "drone-vista",
+      label: "Cinematic Drone",
+      prompt: "Sweeping aerial FPV drone flight over misty mountain ridges at sunrise, volumetric golden light, crisp 4K cinematography",
+    },
+    {
+      id: "macro-slowmo",
+      label: "Macro Slow-Mo",
+      prompt: "Ultra-high-speed 1000fps phantom macro shot, shimmering water droplets colliding in mid-air, studio rim lighting, shallow depth of field",
+    },
+    {
+      id: "cyber-street",
+      label: "Cyberpunk Street",
+      prompt: "Rain-slicked neon cyberpunk alleyway at night, holographic reflections on wet pavement, smooth tracking camera movement",
+    },
+    {
+      id: "studio-product",
+      label: "Studio Product",
+      prompt: "Minimalist luxury product showcase on a rotating obsidian pedestal, dramatic softbox lighting, smooth orbital camera motion",
+    },
+  ],
+};
+
+const VIDEO_STUDIO_RELAY_COPY_LOCALES = {
+  "zh-CN": {
+    presetsTitle: "视频灵感预设:",
+    relayLoadedToast: "已载入接力视频作为视频生成参考！",
+    presets: [
+      { id: "drone-vista", label: "史诗航拍全景", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[0].prompt },
+      { id: "macro-slowmo", label: "微距升格慢镜", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[1].prompt },
+      { id: "cyber-street", label: "赛博霓虹街景", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[2].prompt },
+      { id: "studio-product", label: "影棚产品特写", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "zh-TW": {
+    presetsTitle: "影片靈感預設:",
+    relayLoadedToast: "已載入接力影片作為影片生成參考！",
+    presets: [
+      { id: "drone-vista", label: "史詩航拍全景", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[0].prompt },
+      { id: "macro-slowmo", label: "微距升格慢鏡", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[1].prompt },
+      { id: "cyber-street", label: "賽博霓虹街景", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[2].prompt },
+      { id: "studio-product", label: "影棚產品特寫", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "ja-JP": {
+    presetsTitle: "動画プリセット:",
+    relayLoadedToast: "リレーされた動画を参照として読み込みました！",
+    presets: [
+      { id: "drone-vista", label: "シネマティック空撮", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[0].prompt },
+      { id: "macro-slowmo", label: "マクロスローモーション", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[1].prompt },
+      { id: "cyber-street", label: "サイバーパンク街並み", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[2].prompt },
+      { id: "studio-product", label: "スタジオ商品撮影", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "ko-KR": {
+    presetsTitle: "비디오 프리셋:",
+    relayLoadedToast: "릴레이된 영상을 비디오 스튜디오 참조로 불러왔습니다!",
+    presets: [
+      { id: "drone-vista", label: "시네마틱 드론", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[0].prompt },
+      { id: "macro-slowmo", label: "매크로 슬로우모션", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[1].prompt },
+      { id: "cyber-street", label: "사이버펑크 거리", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[2].prompt },
+      { id: "studio-product", label: "스튜디오 제품 샷", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+  "es": {
+    presetsTitle: "Ajustes de Video:",
+    relayLoadedToast: "¡Video recibido cargado como referencia en Video Studio!",
+    presets: [
+      { id: "drone-vista", label: "Dron Cinematográfico", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[0].prompt },
+      { id: "macro-slowmo", label: "Macro Cámara Lenta", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[1].prompt },
+      { id: "cyber-street", label: "Calle Cyberpunk", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[2].prompt },
+      { id: "studio-product", label: "Producto en Estudio", prompt: VIDEO_STUDIO_RELAY_COPY_EN.presets[3].prompt },
+    ],
+  },
+};
+
 export default function VideoStudio({
   apiKey,
   initialModel = "",
@@ -773,6 +864,7 @@ export default function VideoStudio({
   locale = "en",
 }) {
   const copy = useMemo(() => resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale), [locale]);
+  const relayCopy = useMemo(() => resolveCopy(VIDEO_STUDIO_RELAY_COPY_EN, VIDEO_STUDIO_RELAY_COPY_LOCALES, locale), [locale]);
   const LEGACY_PERSIST_KEY = "hg_video_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -782,7 +874,33 @@ export default function VideoStudio({
   // ── generation state ──
   const [imageMode, setImageMode] = useState(false); // i2v
   const [v2vMode, setV2vMode] = useState(false);
+  const [modelDirectoryRevision, setModelDirectoryRevision] = useState(0);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState(null);
+
+  useEffect(() => {
+    const refreshModelDirectory = () => setModelDirectoryRevision((revision) => revision + 1);
+    window.addEventListener("supdance-model-pricing-updated", refreshModelDirectory);
+    return () => window.removeEventListener("supdance-model-pricing-updated", refreshModelDirectory);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.__SUPDANCE_ACTIVE_MODEL_IDS__ instanceof Set) return;
+    let mounted = true;
+    fetch("/api/models/active?nocache=1")
+      .then((response) => {
+        if (!response.ok) throw new Error("Active model directory unavailable");
+        return response.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        if (!Array.isArray(data?.models)) throw new Error("Active model directory is invalid");
+        applyActiveModelDirectory(data.models);
+      })
+      .catch(() => {
+        if (mounted) applyActiveModelDirectory([]);
+      });
+    return () => { mounted = false; };
+  }, []);
 
   // ── model / params ──
   const defaultModel = t2vModels.find((m) => m.id === "kling-v3.0-standard-text-to-video") ||
@@ -836,6 +954,28 @@ export default function VideoStudio({
     audioUploading || Boolean(workflowUploadSlotId);
   const uploadedImageUrl = uploadedImageUrls[0] || null;
   const uploadedVideoUrl = uploadedVideoUrls[0] || null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const relayedVideo = sp.get("video_url");
+      if (relayedVideo) {
+        setUploadedVideoUrls([relayedVideo]);
+        toast.success(relayCopy.relayLoadedToast);
+      }
+    } catch (_) {}
+
+    const handleRelay = (e) => {
+      const { videoUrl } = e.detail || {};
+      if (videoUrl) {
+        setUploadedVideoUrls([videoUrl]);
+        toast.success(relayCopy.relayLoadedToast);
+      }
+    };
+    window.addEventListener("supdance-relay-video", handleRelay);
+    return () => window.removeEventListener("supdance-relay-video", handleRelay);
+  }, [relayCopy]);
 
   // ── generation / canvas ──
   const [generating, setGenerating] = useState(false);
@@ -917,26 +1057,38 @@ export default function VideoStudio({
     }
   }, [historyItems, onDeleteHistoryItem]);
 
+  const getPublicVideoCapability = useCallback((id, taskType) =>
+    findPublicVideoCapability(getServerModelMeta(id), taskType),
+  [modelDirectoryRevision]);
+
   const getCurrentAspectRatios = useCallback(
-    (id) =>
-      imageMode
-        ? getAspectRatiosForI2VModel(id)
-        : getAspectRatiosForVideoModel(id),
-    [imageMode],
+    (id) => {
+      if (getServerModelMeta(id) || modelDirectoryRevision > 0) {
+        return getPublicVideoControlOptions(getPublicVideoCapability(id, imageMode ? "i2v" : "t2v")).aspectRatios;
+      }
+      return imageMode ? getAspectRatiosForI2VModel(id) : getAspectRatiosForVideoModel(id);
+    },
+    [imageMode, modelDirectoryRevision, getPublicVideoCapability],
   );
 
   const getCurrentDurations = useCallback(
-    (id) =>
-      imageMode ? getDurationsForI2VModel(id) : getDurationsForModel(id),
-    [imageMode],
+    (id) => {
+      if (getServerModelMeta(id) || modelDirectoryRevision > 0) {
+        return getPublicVideoControlOptions(getPublicVideoCapability(id, imageMode ? "i2v" : "t2v")).durations;
+      }
+      return imageMode ? getDurationsForI2VModel(id) : getDurationsForModel(id);
+    },
+    [imageMode, modelDirectoryRevision, getPublicVideoCapability],
   );
 
   const getCurrentResolutions = useCallback(
-    (id) =>
-      imageMode
-        ? getResolutionsForI2VModel(id)
-        : getResolutionsForVideoModel(id),
-    [imageMode],
+    (id) => {
+      if (getServerModelMeta(id) || modelDirectoryRevision > 0) {
+        return getPublicVideoControlOptions(getPublicVideoCapability(id, imageMode ? "i2v" : "t2v")).resolutions;
+      }
+      return imageMode ? getResolutionsForI2VModel(id) : getResolutionsForVideoModel(id);
+    },
+    [imageMode, modelDirectoryRevision, getPublicVideoCapability],
   );
 
   const getCurrentModel = useCallback(
@@ -958,8 +1110,20 @@ export default function VideoStudio({
     (modelId, isImageMode, isV2vMode) => {
       if (getGroupedVideoConfiguration(modelId)) {
         const model = videoModelCatalog.variantById.get(modelId)?.model;
-        const options = getVideoCommonOptions(model, commonParameterValuesRef.current);
-        const values = getVideoCommonValues(model, commonParameterValuesRef.current);
+        const serverMeta = getServerModelMeta(modelId);
+        const hasServerDirectory = Boolean(serverMeta) || modelDirectoryRevision > 0;
+        const capability = getPublicVideoCapability(modelId, isV2vMode ? "v2v" : isImageMode ? "i2v" : "t2v");
+        const rawOptions = getVideoCommonOptions(model, commonParameterValuesRef.current);
+        const options = hasServerDirectory
+          ? getPublicVideoControlOptions(capability)
+          : rawOptions;
+        const rawValues = getVideoCommonValues(model, commonParameterValuesRef.current);
+        const values = {
+          aspectRatio: options.aspectRatios.includes(rawValues.aspectRatio) ? rawValues.aspectRatio : options.aspectRatios[0],
+          duration: options.durations.find((value) => Number(value) === Number(rawValues.duration)) ?? options.durations[0],
+          resolution: options.resolutions.includes(rawValues.resolution) ? rawValues.resolution : options.resolutions[0],
+          quality: options.qualities.includes(rawValues.quality) ? rawValues.quality : options.qualities[0],
+        };
         setShowAr(options.aspectRatios.length > 0);
         setShowDuration(options.durations.length > 0);
         setShowResolution(options.resolutions.length > 0);
@@ -967,7 +1131,11 @@ export default function VideoStudio({
         setShowEffect(false);
         if (values.aspectRatio !== undefined) setSelectedAr(values.aspectRatio);
         if (values.duration !== undefined) setSelectedDuration(values.duration);
-        const resolution = values.resolution ?? getSeedanceEndpointResolution(modelId);
+        const candidateResolution = values.resolution ?? getSeedanceEndpointResolution(modelId);
+        const resolution = hasServerDirectory && candidateResolution
+          && !options.resolutions.includes(candidateResolution)
+          ? options.resolutions[0]
+          : candidateResolution;
         if (resolution !== undefined) setSelectedResolution(resolution);
         if (values.quality !== undefined) setSelectedQuality(values.quality);
         return;
@@ -982,8 +1150,14 @@ export default function VideoStudio({
       }
 
       const model = videoModelCatalog.variantById.get(modelId)?.model;
+      const modelMeta = getServerModelMeta(modelId);
+      const serverMeta = modelMeta || modelDirectoryRevision > 0;
+      const capability = getPublicVideoCapability(modelId, isV2vMode ? "v2v" : isImageMode ? "i2v" : "t2v");
+      const declaredOptions = getPublicVideoControlOptions(capability);
 
-      const ars = isImageMode
+      const ars = serverMeta
+        ? declaredOptions.aspectRatios
+        : isImageMode
         ? getAspectRatiosForI2VModel(modelId)
         : getAspectRatiosForVideoModel(modelId);
       if (ars.length > 0) {
@@ -993,17 +1167,22 @@ export default function VideoStudio({
         setShowAr(false);
       }
 
-      const durations = isImageMode
+      const durations = serverMeta
+        ? declaredOptions.durations
+        : isImageMode
         ? getDurationsForI2VModel(modelId)
         : getDurationsForModel(modelId);
       if (durations.length > 0) {
-        setSelectedDuration(model?.inputs?.duration?.default ?? durations[0]);
+        const defaultDuration = Number(model?.inputs?.duration?.default);
+        setSelectedDuration(durations.includes(defaultDuration) ? defaultDuration : durations[0]);
         setShowDuration(true);
       } else {
         setShowDuration(false);
       }
 
-      const resolutions = isImageMode
+      const resolutions = serverMeta
+        ? declaredOptions.resolutions
+        : isImageMode
         ? getResolutionsForI2VModel(modelId)
         : getResolutionsForVideoModel(modelId);
       if (resolutions.length > 0) {
@@ -1013,16 +1192,17 @@ export default function VideoStudio({
         setShowResolution(false);
       }
 
-      const qualities = model?.inputs?.quality?.enum || [];
+      const qualities = serverMeta ? declaredOptions.qualities : model?.inputs?.quality?.enum || [];
       if (qualities.length > 0) {
-        setSelectedQuality(model?.inputs?.quality?.default || qualities[0]);
+        const defaultQuality = model?.inputs?.quality?.default;
+        setSelectedQuality(qualities.includes(defaultQuality) ? defaultQuality : qualities[0]);
         setShowQuality(true);
       } else {
         setSelectedQuality("");
         setShowQuality(false);
       }
 
-      const effects = isImageMode ? getEffectsForI2VModel(modelId) : [];
+      const effects = !serverMeta && isImageMode ? getEffectsForI2VModel(modelId) : [];
       if (effects.length > 0) {
         setSelectedEffect(getDefaultEffectForI2VModel(modelId) || effects[0]);
         setShowEffect(true);
@@ -1031,12 +1211,42 @@ export default function VideoStudio({
         setShowEffect(false);
       }
     },
-    [],
+    [modelDirectoryRevision, getPublicVideoCapability],
   );
+
+  useEffect(() => {
+    if (modelDirectoryRevision > 0 && selectedModel) {
+      applyControlsForModel(selectedModel, imageMode, v2vMode);
+    }
+  }, [modelDirectoryRevision, selectedModel, imageMode, v2vMode, applyControlsForModel]);
 
   const selectedFamily =
     videoModelCatalog.familyById.get(selectedFamilyId) || defaultFamily;
   const currentFamilyMode = v2vMode ? "v2v" : imageMode ? "i2v" : "t2v";
+
+  // A saved studio draft can restore values after applyControlsForModel has
+  // applied the server directory. Re-clamp whenever the selected route or its
+  // declared capabilities change so persisted values cannot leak into quote/job.
+  useEffect(() => {
+    if (!selectedModel || (!getServerModelMeta(selectedModel) && modelDirectoryRevision === 0)) return;
+    const options = getPublicVideoControlOptions(
+      getPublicVideoCapability(selectedModel, currentFamilyMode),
+    );
+    if (options.aspectRatios.length && !options.aspectRatios.includes(selectedAr)) {
+      setSelectedAr(options.aspectRatios[0]);
+    }
+    if (options.resolutions.length && !options.resolutions.includes(selectedResolution)) {
+      setSelectedResolution(options.resolutions[0]);
+    }
+    if (options.durations.length && !options.durations.includes(Number(selectedDuration))) {
+      setSelectedDuration(options.durations[0]);
+    }
+    if (options.qualities.length && !options.qualities.includes(selectedQuality)) {
+      setSelectedQuality(options.qualities[0]);
+    }
+  }, [modelDirectoryRevision, selectedModel, currentFamilyMode, selectedAr,
+    selectedResolution, selectedDuration, selectedQuality, getPublicVideoCapability]);
+
   const workflowFamily = getVideoWorkflowFamily(selectedFamilyId);
   const selectedWorkflow = selectedWorkflowId
     ? workflowFamily?.workflowById.get(selectedWorkflowId) || null
@@ -1136,12 +1346,20 @@ export default function VideoStudio({
     const field = getGroupedVideoResolutionOptions(selectedFamilyId, selectedWorkflowId, selectedModel, selectedResolution, {
       aspectRatio: selectedAr, duration: selectedDuration, quality: selectedQuality,
     });
+    const hasServerDirectory = Boolean(getServerModelMeta(selectedModel)) || modelDirectoryRevision > 0;
+    const declaredResolutions = getPublicVideoControlOptions(
+      getPublicVideoCapability(selectedModel, currentFamilyMode),
+    ).resolutions;
+    const resolutionOptions = hasServerDirectory
+      ? field.options.filter((option) => option.value === "default"
+        || declaredResolutions.some((value) => String(value).toLowerCase() === String(option.resolution ?? option.value).toLowerCase()))
+      : field.options;
     return {
       ...field,
       key: "resolution",
       ...(groupCopyKey === "seedance" && !field.value && selectedWorkflowId !== "extend_uploaded_video"
         ? { label: groupCopy.defaultResolution } : {}),
-      options: field.options.map((option) => {
+      options: resolutionOptions.map((option) => {
         const adjustments = option.disabled ? [] : getGroupedVideoSelectionAdjustments({
           currentModelId: selectedModel, nativeResolution: selectedResolution,
           currentWorkflowId: selectedWorkflowId, media: activeWorkflowMediaDraft,
@@ -1151,12 +1369,16 @@ export default function VideoStudio({
         return { ...option, adjustmentDescription: describeSelectionAdjustments(adjustments) };
       }),
     };
-  }, [groupedConfiguration, selectedFamilyId, selectedWorkflowId, selectedModel, selectedResolution, selectedAr, selectedDuration, selectedQuality, modelParameterValues, describeSelectionAdjustments, groupCopy, groupCopyKey, activeWorkflowMediaDraft]);
+  }, [groupedConfiguration, selectedFamilyId, selectedWorkflowId, selectedModel, selectedResolution, selectedAr, selectedDuration, selectedQuality, modelParameterValues, describeSelectionAdjustments, groupCopy, groupCopyKey, activeWorkflowMediaDraft, currentFamilyMode, modelDirectoryRevision, getPublicVideoCapability]);
   const commonOptions = useMemo(
-    () => getVideoCommonOptions(selectedVariant?.model, {
-      ...modelParameterValues, aspectRatio: selectedAr, duration: selectedDuration,
-      resolution: selectedResolution, quality: selectedQuality,
-    }), [selectedVariant, modelParameterValues, selectedAr, selectedDuration, selectedResolution, selectedQuality],
+    () => {
+      const options = getVideoCommonOptions(selectedVariant?.model, {
+        ...modelParameterValues, aspectRatio: selectedAr, duration: selectedDuration,
+        resolution: selectedResolution, quality: selectedQuality,
+      });
+      if (!getServerModelMeta(selectedModel) && modelDirectoryRevision === 0) return options;
+      return getPublicVideoControlOptions(getPublicVideoCapability(selectedModel, currentFamilyMode));
+    }, [selectedVariant, selectedModel, modelParameterValues, selectedAr, selectedDuration, selectedResolution, selectedQuality, modelDirectoryRevision, getPublicVideoCapability, currentFamilyMode],
   );
   const aspectRatioHelp = groupCopy[selectedVariant?.model.inputs?.aspect_ratio?.descriptionKey];
   const groupedModes = useMemo(() => groupedConfiguration && workflowFamily
@@ -1187,7 +1409,13 @@ export default function VideoStudio({
   const currentModelCapabilities = getModelMediaCapabilities(selectedVariant?.model);
   const supplementalInputs = useMemo(
     () => {
-      const inputs = getSupplementalModelInputs(selectedVariant?.model);
+      let inputs = getSupplementalModelInputs(selectedVariant?.model);
+      const hasServerDirectory = Boolean(getServerModelMeta(selectedModel)) || modelDirectoryRevision > 0;
+      if (hasServerDirectory) {
+        const declaredParameters = new Set((getPublicVideoCapability(selectedModel, currentFamilyMode)?.parameters || [])
+          .map((name) => String(name).toLowerCase()));
+        inputs = inputs.filter(({ key }) => declaredParameters.has(key.toLowerCase()));
+      }
       return groupedConfiguration
         ? inputs.filter(({ key }) => key !== "omni_reference_task_type").map(({ key, schema }) => ({
             key, schema: {
@@ -1197,7 +1425,8 @@ export default function VideoStudio({
             },
           }))
         : inputs;
-    }, [selectedVariant, groupedConfiguration, selectedWorkflowId, groupCopy],
+    }, [selectedVariant, selectedModel, modelDirectoryRevision, currentFamilyMode,
+      getPublicVideoCapability, groupedConfiguration, selectedWorkflowId, groupCopy],
   );
   const handleModelParameterChange = useCallback((key, value) => {
     setModelParameterValues((values) => ({ ...values, [key]: value }));
@@ -1409,7 +1638,7 @@ export default function VideoStudio({
     }
   }, [initialPrompt]);
 
-  // ── Sync with global koyosim-select-model custom events ──────────────────
+  // ── Sync with global supdance-select-model custom events ──────────────────
   useEffect(() => {
     const handleSelectModelEvent = (e) => {
       const detail = e.detail;
@@ -1418,8 +1647,8 @@ export default function VideoStudio({
         applyModelSelection(modelKey);
       }
     };
-    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
-    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+    window.addEventListener("supdance-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("supdance-select-model", handleSelectModelEvent);
   }, [applyModelSelection]);
 
   // ── Persistence: Load ────────────────────────────────────────────────────
@@ -1960,6 +2189,25 @@ export default function VideoStudio({
     setPrompt(e.target.value);
   };
 
+  const mentionItems = useMemo(() => {
+    const activeImages = selectedWorkflowId
+      ? activeWorkflowMediaDraft?.imageUrls || []
+      : uploadedImageUrls;
+    return activeImages.filter(Boolean).map((url, index) => ({
+      id: url,
+      url,
+      name: `${copy.media?.image || "Image"} ${index + 1}`,
+    }));
+  }, [selectedWorkflowId, activeWorkflowMediaDraft, uploadedImageUrls, copy.media]);
+
+  const mention = usePromptMention({
+    textareaRef,
+    value: prompt,
+    onChange: (event) => setPrompt(event.target.value),
+    items: mentionItems,
+    enabled: mentionItems.length > 0 && !promptDisabled,
+  });
+
   // ── image upload ─────────────────────────────────────────────────────────
   const handleImageFileChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -2205,17 +2453,35 @@ export default function VideoStudio({
     }
     const currentModel = getCurrentModel();
     const grouped = getGroupedVideoConfiguration(selectedModel);
+    const generationTaskType = currentFamilyMode;
+    const publicVideoParameters = buildPublicVideoParameters({
+      capability: getPublicVideoCapability(selectedModel, generationTaskType),
+      taskType: generationTaskType,
+      prompt: promptDisabled ? "" : prompt,
+      aspectRatio: selectedAr,
+      resolution: selectedResolution,
+      duration: selectedDuration,
+      quality: selectedQuality,
+    });
+    if (!publicVideoParameters) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
     const activeParameterValues = createModelParameterValues(currentModel, modelParameterValues);
     const generationParameterValues = grouped && currentModel.inputs?.omni_reference_task_type
       ? { ...activeParameterValues, omni_reference_task_type: "auto" }
       : activeParameterValues;
-    const commonParams = grouped
+    const rawCommonParams = grouped
       ? buildVideoCommonPayload(currentModel, {
           ...generationParameterValues,
           aspectRatio: selectedAr, duration: selectedDuration,
           resolution: selectedResolution, quality: selectedQuality,
         })
       : {};
+    const commonParams = Object.fromEntries(Object.entries(rawCommonParams).filter(([key, value]) =>
+      publicVideoParameters[key] !== undefined
+      && String(publicVideoParameters[key]).toLowerCase() === String(value).toLowerCase(),
+    ));
     const groupedHistorySettings = grouped ? {
       ...currentModel.fixedParameters,
       ...commonParams,
@@ -2290,26 +2556,34 @@ export default function VideoStudio({
       }
     }
 
+    const rawReferenceParams = selectedWorkflowId
+      ? buildVideoWorkflowMediaParams(currentModel, selectedWorkflowId, workflowMedia)
+      : buildReferenceParams(currentModel, workflowMedia);
+    const videoCapability = getPublicVideoCapability(selectedModel, generationTaskType);
+    const referenceParams = filterPublicVideoProviderParameters(rawReferenceParams, videoCapability);
+    if (Object.keys(rawReferenceParams).some((key) => !Object.hasOwn(referenceParams, key))) {
+      toast.error(copy.errors.generationCapabilityUnavailable);
+      return;
+    }
+    const supplementalParams = filterPublicVideoProviderParameters(
+      buildSupplementalInputPayload(currentModel, generationParameterValues),
+      videoCapability,
+    );
+
     onGenerationStart?.();
     setGenerating(true);
     setGenerateError(null);
 
     try {
       let res;
-      const referenceParams = selectedWorkflowId
-        ? buildVideoWorkflowMediaParams(
-            currentModel,
-            selectedWorkflowId,
-            workflowMedia,
-          )
-        : buildReferenceParams(currentModel, workflowMedia);
 
       if (v2vMode) {
         // V2V: dedicated processV2V handles single-input tools (e.g. watermark
         // remover) and motion-control models (which take video + image + prompt)
         const v2vParams = {
           model: selectedModel,
-          ...buildSupplementalInputPayload(currentModel, generationParameterValues),
+          ...publicVideoParameters,
+          ...supplementalParams,
           ...commonParams,
           ...referenceParams,
         };
@@ -2339,18 +2613,12 @@ export default function VideoStudio({
       } else if (imageMode) {
         const i2vParams = {
           model: selectedModel,
-          ...buildSupplementalInputPayload(currentModel, generationParameterValues),
+          ...publicVideoParameters,
+          ...supplementalParams,
           ...commonParams,
           ...referenceParams,
         };
         if (trimmedPrompt) i2vParams.prompt = trimmedPrompt;
-        const aspectRatios = getAspectRatiosForI2VModel(selectedModel);
-        if (!grouped && aspectRatios.length > 0) i2vParams.aspect_ratio = selectedAr;
-        const durations = getDurationsForI2VModel(selectedModel);
-        if (!grouped && durations.length > 0) i2vParams.duration = selectedDuration;
-        const resolutions = getResolutionsForI2VModel(selectedModel);
-        if (!grouped && resolutions.length > 0) i2vParams.resolution = selectedResolution;
-        if (!grouped && selectedQuality) i2vParams.quality = selectedQuality;
         if (showEffect && selectedEffect) i2vParams.name = selectedEffect;
 
         res = await generateI2V(apiKey, i2vParams);
@@ -2366,8 +2634,10 @@ export default function VideoStudio({
           prompt: trimmedPrompt,
           model: selectedModel,
           ...(!grouped ? {
-            ...(aspectRatios.length > 0 ? { aspect_ratio: selectedAr } : {}),
-            duration: selectedDuration,
+            ...(publicVideoParameters.aspect_ratio ? { aspect_ratio: publicVideoParameters.aspect_ratio } : {}),
+            ...(publicVideoParameters.duration ? { duration: publicVideoParameters.duration } : {}),
+            ...(publicVideoParameters.resolution ? { resolution: publicVideoParameters.resolution } : {}),
+            ...(publicVideoParameters.quality ? { quality: publicVideoParameters.quality } : {}),
           } : {}),
           ...groupedHistorySettings,
           timestamp: new Date().toISOString(),
@@ -2384,7 +2654,8 @@ export default function VideoStudio({
         // T2V (including extend mode)
         const params = {
           model: selectedModel,
-          ...buildSupplementalInputPayload(currentModel, generationParameterValues),
+          ...publicVideoParameters,
+          ...supplementalParams,
           ...commonParams,
           ...referenceParams,
         };
@@ -2392,15 +2663,7 @@ export default function VideoStudio({
 
         if (isExtendMode) {
           params.request_id = requestSource.requestId;
-        } else if (!grouped) {
-          params.aspect_ratio = selectedAr;
         }
-
-        const durations = getDurationsForModel(selectedModel);
-        if (!grouped && durations.length > 0) params.duration = selectedDuration;
-        const resolutions = getResolutionsForVideoModel(selectedModel);
-        if (!grouped && resolutions.length > 0) params.resolution = selectedResolution;
-        if (!grouped && !selectedVeoTool && selectedQuality) params.quality = selectedQuality;
 
         res = await generateVideo(apiKey, params);
         if (!res?.url) throw new Error(copy.errors.noVideoUrlReturned);
@@ -2415,8 +2678,9 @@ export default function VideoStudio({
           prompt: trimmedPrompt,
           model: selectedModel,
           ...(!grouped && !selectedVeoTool ? {
-            aspect_ratio: selectedAr,
-            duration: selectedDuration,
+            ...(publicVideoParameters.aspect_ratio ? { aspect_ratio: publicVideoParameters.aspect_ratio } : {}),
+            ...(publicVideoParameters.duration ? { duration: publicVideoParameters.duration } : {}),
+            ...(publicVideoParameters.resolution ? { resolution: publicVideoParameters.resolution } : {}),
           } : {}),
           ...groupedHistorySettings,
           timestamp: new Date().toISOString(),
@@ -2467,6 +2731,8 @@ export default function VideoStudio({
     veoContinuation,
     mediaUploading,
     getCurrentModel,
+    getPublicVideoCapability,
+    currentFamilyMode,
     addToLocalHistory,
     onGenerationComplete,
     onGenerationEnd,
@@ -2624,7 +2890,7 @@ export default function VideoStudio({
               return (
                 <div
                   key={entry.id || idx}
-                  className="relative group rounded-lg overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                  className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-elevation-2 hover:border-brand-line transition-[border-color,box-shadow] duration-fast ease-standard flex flex-col cursor-pointer"
                   onClick={() => setFullscreenUrl(entry.url)}
                 >
                   {failedVideoUrls[entry.url] ? (
@@ -2661,6 +2927,11 @@ export default function VideoStudio({
                       prompt={entry.prompt}
                       onCopyError={onGenerationError}
                     />
+                    <VideoRelayMenu
+                      videoUrl={entry.url}
+                      currentTab="video"
+                      locale={locale}
+                    />
                     <button
                       type="button"
                       title={copy.gallery.download}
@@ -2668,7 +2939,7 @@ export default function VideoStudio({
                         e.stopPropagation();
                         downloadFile(entry.url, `video-${entry.id || idx}.mp4`);
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                      className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -2682,7 +2953,7 @@ export default function VideoStudio({
                           e.stopPropagation();
                           handleExtend(entry.id, entry.model);
                         }}
-                        className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                        className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M5 12h14M12 5l7 7-7 7" />
@@ -2700,7 +2971,7 @@ export default function VideoStudio({
                           });
                         }
                       }}
-                      className="p-2 bg-black/60 backdrop-blur-md rounded-full text-red-400 hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                      className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-danger hover:bg-danger hover:text-ink-on-accent active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <polyline points="3 6 5 6 21 6" />
@@ -2747,7 +3018,7 @@ export default function VideoStudio({
                     </p>
                     <div className="flex items-center justify-between mt-1 flex-wrap gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 whitespace-nowrap capitalize">
+                        <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line whitespace-nowrap capitalize">
                           {entry.model?.replace("-", " ") || copy.gallery.fallbackTitle}
                         </span>
                         <div className="flex gap-2">
@@ -2769,28 +3040,28 @@ export default function VideoStudio({
           <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt={copy.creativeAssets.asset1}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt={copy.creativeAssets.asset2}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-elevation-3 rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt={copy.creativeAssets.asset3}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt={copy.creativeAssets.asset4}
@@ -2801,7 +3072,7 @@ export default function VideoStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               {!selectedTool && !selectedVeoTool && <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.heading}</span>}
-              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {selectedTool || selectedVeoTool || selectedPickerEntry?.groupedVideo ? selectedPickerLabel : selectedFamily.name}
               </span>
             </h1>
@@ -3018,6 +3289,29 @@ export default function VideoStudio({
               )}
             </div>
 
+            {/* Quick Video Presets Pills */}
+            {!(selectedVeoTool && promptDisabled) && !promptDisabled && (
+              <div className="w-full flex items-center gap-1.5 overflow-x-auto scrollbar-rail py-1">
+                <span className="text-micro font-bold uppercase tracking-wider text-ink-subtle shrink-0 mr-1">
+                  {relayCopy.presetsTitle}
+                </span>
+                {relayCopy.presets.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() =>
+                      setPrompt((prev) =>
+                        prev ? `${prev.trim()}, ${preset.prompt}` : preset.prompt,
+                      )
+                    }
+                    className="rounded-full border border-line bg-wash px-2.5 py-0.5 text-micro font-medium text-ink-muted hover:border-brand-line hover:bg-wash-strong hover:text-ink transition-colors whitespace-nowrap shrink-0"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Prompt textarea */}
             <div className="flex-1 flex flex-col gap-1">
               {!(selectedVeoTool && promptDisabled) && (
@@ -3025,6 +3319,9 @@ export default function VideoStudio({
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptInput}
+                onEnter={handleGenerate}
+                mention={mention}
+                mentionTitle={copy.promptBar?.mentionTitle}
                 placeholder={promptPlaceholder}
                 disabled={promptDisabled}
                 className="relative"
@@ -3035,12 +3332,12 @@ export default function VideoStudio({
 
           {/* Extend banner */}
           {selectedVeoTool ? (
-            <div className="mx-3 rounded-lg border border-primary/10 bg-primary/5 px-3 py-2">
+            <div className="mx-3 rounded-xl border border-brand-line bg-brand-soft px-3 py-2">
               {selectedVeoSource ? (
                 <label className="flex min-w-0 items-center gap-3 text-xs text-white/70">
                   <span className="shrink-0">{copy.veo.sourceVideo}</span>
                   <select
-                    className="min-w-0 flex-1 rounded-lg border border-white/10 bg-[#17191c] px-2 py-2 text-xs text-white"
+                    className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-2 py-2 text-xs text-ink"
                     value={selectedVeoSource.requestId}
                     onChange={(event) => setSelectedVeoSourceId(event.target.value)}
                   >
@@ -3054,7 +3351,7 @@ export default function VideoStudio({
               )}
             </div>
           ) : isExtendMode && (
-            <div className="flex items-center gap-2 px-3 py-1.5 mx-3 bg-primary/5 border border-primary/10 rounded-lg text-[10px] text-primary/80 font-medium tracking-tight">
+            <div className="flex items-center gap-2 px-3 py-1.5 mx-3 bg-brand-soft border border-brand-line rounded-lg text-[10px] text-brand font-medium tracking-tight">
               <svg
                 width="13"
                 height="13"
@@ -3527,7 +3824,7 @@ export default function VideoStudio({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2.5"
-                    className="opacity-40 text-white group-hover:text-[#e11d74] transition-colors"
+                    className="opacity-40 text-white group-hover:text-brand transition-colors"
                   >
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />

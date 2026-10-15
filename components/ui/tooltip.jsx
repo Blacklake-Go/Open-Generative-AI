@@ -37,7 +37,7 @@ function TooltipTrigger({
 
 function TooltipContent({
   className,
-  sideOffset = 0,
+  sideOffset = 4,
   children,
   ...props
 }) {
@@ -47,13 +47,16 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-tooltip inline-flex w-fit max-w-xs origin-[var(--radix-tooltip-content-transform-origin)] items-center gap-1.5 rounded-lg border border-line-strong bg-overlay px-3 py-1.5 text-body-sm text-ink shadow-elevation-3 transition-[opacity,transform] duration-fast has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-tooltip **:data-[slot=kbd]:rounded-sm data-[state=delayed-open]:animate-fade-in data-[state=instant-open]:animate-fade-in",
+          "z-tooltip inline-flex w-fit max-w-xs origin-[var(--radix-tooltip-content-transform-origin)] items-center gap-1.5 select-none",
+          "rounded-md border border-line-subtle bg-overlay px-2.5 py-1 text-caption font-medium text-ink shadow-elevation-2",
+          "transition-[opacity,transform] duration-fast animate-fade-in",
+          "has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-tooltip **:data-[slot=kbd]:rounded-xs",
           withoutRadiusUtilities(className)
         )}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="z-tooltip size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-xs bg-overlay fill-overlay" />
+        <TooltipPrimitive.Arrow className="z-tooltip size-2 translate-y-[calc(-50%_-_1px)] rotate-45 rounded-xs bg-overlay fill-overlay" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )

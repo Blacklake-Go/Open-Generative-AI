@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label}가 {limit}MB 한도를 초과합니다.",
     "labelUploadFailed": "{label} 업로드 실패: {message}",
     "noPromptForModel": "이 모델에 대한 프롬프트를 입력하세요.",
+    "generationCapabilityUnavailable": "이 모델은 아직 검증된 서버 생성 기능이 없습니다.",
     "uploadVideoFirst": "먼저 영상을 올려주세요.",
     "uploadReferenceImageForMotion": "모션 제어를 위한 참조 이미지를 업로드해주세요.",
     "uploadAtLeastOneReferenceImage": "먼저 참조 이미지를 하나 이상 업로드하세요.",

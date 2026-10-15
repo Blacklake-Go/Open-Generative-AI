@@ -86,7 +86,7 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
     if (typeof window === 'undefined') return undefined;
 
     const handleOAuthEvent = (data) => {
-      if (!data || data.type !== 'koyosim-auth-complete') return;
+      if (!data || data.type !== 'supdance-auth-complete') return;
       if (data.action === 'bind') return;
       if (data.ok) {
         router.push(redirectUrl);
@@ -98,7 +98,7 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
 
     const handleWindowMessage = (event) => handleOAuthEvent(event?.data);
     const handleStorageChange = (event) => {
-      if ((event.key === 'koyosim_auth_event' || event.key === 'koyosim-oauth-sync') && event.newValue) {
+      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync') && event.newValue) {
         try {
           handleOAuthEvent(JSON.parse(event.newValue));
         } catch {}
@@ -108,7 +108,7 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
     let channel = null;
     try {
       if ('BroadcastChannel' in window) {
-        channel = new BroadcastChannel('koyosim_auth_channel');
+        channel = new BroadcastChannel('supdance_auth_channel');
         channel.onmessage = (event) => handleOAuthEvent(event.data);
       }
     } catch {}
@@ -132,7 +132,7 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
     if (isMobile || typeof window === 'undefined') {
       window.location.assign(url);
     } else {
-      const popup = window.open(url, 'koyosim-oauth', 'popup,width=520,height=720');
+      const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
       if (!popup) window.location.assign(url);
     }
   };

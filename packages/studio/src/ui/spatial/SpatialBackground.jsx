@@ -9,7 +9,7 @@ import PointerGlow from './PointerGlow';
 import NoiseOverlay from './NoiseOverlay';
 
 /**
- * SpatialBackground — KoyoSIM AI 空间光影视觉系统核心容器 (Stitch 原版高保真升级版)
+ * SpatialBackground — SupDance AI 空间光影视觉系统核心容器 (Stitch 原版高保真升级版)
  * 
  * 7 层原版流体光场与物理仿真引擎：
  * - Layer 0: Obsidian Deep Space (#050507) + Radial Space Vignette

@@ -97,6 +97,7 @@ export function ImageSpecPopover({
   selectedAr = "1:1",
   onSelectAr,
   resolutions = [],
+  qualityLabel = null,
   selectedQuality = "",
   onSelectQuality,
   showQuality = true,
@@ -129,16 +130,16 @@ export function ImageSpecPopover({
                 key={ratio}
                 type="button"
                 onClick={() => onSelectAr?.(ratio)}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all group ${
+                className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer group ${
                   isSelected
-                    ? "bg-primary/15 border-primary text-primary shadow-elevation-1"
+                    ? "bg-brand-soft border-brand-line text-brand shadow-elevation-1"
                     : "bg-wash/40 border-line text-ink-muted hover:border-line-strong hover:text-ink hover:bg-wash"
                 }`}
               >
                 <AspectWireframeIcon ratio={ratio} active={isSelected} />
                 <span
                   className={`text-[11px] mt-1.5 font-medium leading-none ${
-                    isSelected ? "text-primary font-semibold" : "text-white/70"
+                    isSelected ? "text-brand font-semibold" : "text-white/70"
                   }`}
                 >
                   {ratio}
@@ -153,12 +154,15 @@ export function ImageSpecPopover({
       {showQuality && resolutions.length > 0 && (
         <div>
           <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
-            <span>{t.titleResolution || "分辨率"}</span>
+            <span>{qualityLabel || t.titleResolution || "分辨率"}</span>
             <span className="text-[10px] text-ink-subtle font-normal">
               {selectedQuality || resolutions[0]}
             </span>
           </div>
-          <div className="grid grid-flow-col auto-cols-fr gap-1 p-1 rounded-xl bg-wash border border-line">
+          <div
+            data-pill-segmented
+            className="grid grid-flow-col auto-cols-fr gap-1 p-1 rounded-full bg-well border border-line-subtle"
+          >
             {resolutions.map((res) => {
               const isSelected =
                 selectedQuality === res ||
@@ -167,11 +171,12 @@ export function ImageSpecPopover({
                 <button
                   key={res}
                   type="button"
+                  data-pill-segment-item
                   onClick={() => onSelectQuality?.(res)}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all text-center ${
+                  className={`py-1.5 px-2 rounded-full text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer text-center ${
                     isSelected
                       ? "bg-surface-raised text-ink font-semibold shadow-elevation-1"
-                      : "text-ink-muted hover:text-ink"
+                      : "text-ink-muted hover:text-ink hover:bg-wash-strong"
                   }`}
                 >
                   {res}
@@ -192,18 +197,22 @@ export function ImageSpecPopover({
               : `${batchSize} 张`}
           </span>
         </div>
-        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-wash border border-line">
+        <div
+          data-pill-segmented
+          className="grid grid-cols-4 gap-1 p-1 rounded-full bg-well border border-line-subtle"
+        >
           {[1, 2, 3, 4].map((num) => {
             const isSelected = batchSize === num;
             return (
               <button
                 key={num}
                 type="button"
+                data-pill-segment-item
                 onClick={() => onChangeBatchSize?.(num)}
-                className={`py-1.5 rounded-lg text-xs font-medium transition-all text-center ${
+                className={`py-1.5 rounded-full text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer text-center ${
                   isSelected
                     ? "bg-surface-raised text-ink font-semibold shadow-elevation-1"
-                    : "text-ink-muted hover:text-ink"
+                    : "text-ink-muted hover:text-ink hover:bg-wash-strong"
                 }`}
               >
                 {num}

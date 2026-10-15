@@ -9,7 +9,7 @@
     "modeGenerated": "✦ Generated",
     "download": "Download",
     "remixThis": "Remix this generation",
-    "legacyRemixUnavailable": "Legacy generation — remix not available. Generate a new motion graphic to enable editing.",
+    "legacyRemixUnavailable": "Remix is unavailable until this generation has a server-owned asset reference and a reviewed video-edit route.",
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this generated item?",
     "noPrompt": "No prompt",
@@ -40,14 +40,19 @@
   },
   "controls": {
     "aspectRatio": "Aspect Ratio",
+    "resolution": "Resolution",
     "duration": "Duration",
     "sourcePrefix": "Source:",
     "pickSource": "Pick source…",
     "sourceGeneration": "Source Generation",
-    "shortcutHint": "Ctrl+Enter to run"
+    "shortcutHint": "Ctrl+Enter to run",
+    "model": "Model",
+    "pickModel": "Choose model…",
+    "loadingModels": "Loading available models…",
+    "modelsUnavailable": "No quoteable text-to-video model is currently available."
   },
   "errors": {
-    "staleEditUnavailable": "This generation can't be remixed — the animation code wasn't saved server-side. Generate a new motion graphic first, then remix that result.",
+    "staleEditUnavailable": "Video editing is unavailable until the server exposes an owned Asset reference and a reviewed video-edit route.",
     "generationFailed": "Vibe Motion generation failed"
   },
   "generateButton": {
@@ -55,5 +60,11 @@
     "generating": "Generating...",
     "remix": "Remix",
     "generate": "Generate"
+  },
+  "history": {
+    "loading": "Loading your Vibe Motion history…",
+    "loadFailed": "Generation history could not be loaded. Try again later.",
+    "unavailable": "This private video is currently unavailable.",
+    "downloadUnavailable": "The private video could not be downloaded. Try again later."
   }
 }

@@ -21,6 +21,7 @@ import ko from "../messages/ko-KR/agentStudio.json";
 import zhTw from "../messages/zh-TW/agentStudio.json";
 import es from "../messages/es-ES/agentStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function timeAgo(dateStr, copy) {
@@ -41,7 +42,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
     <div className="group relative aspect-[4/5] rounded-xl cursor-pointer">
       <div
         onClick={() => onClick(agent)}
-        className="absolute inset-0 rounded-xl overflow-hidden border border-white/5 bg-[#0a0a0a] transition-all group-hover:border-[#e11d74]/30 group-hover:scale-[1.02] shadow-2xl"
+        className="absolute inset-0 rounded-xl overflow-hidden border border-line bg-surface transition-[border-color,transform] duration-fast ease-standard group-hover:border-brand-line group-hover:scale-[1.02] shadow-elevation-2"
       >
         {agent.icon_url ? (
           <img
@@ -58,10 +59,10 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <div className="text-[10px] font-bold text-[#e11d74] uppercase tracking-wider mb-1 opacity-80">
+          <div className="text-[10px] font-bold text-brand uppercase tracking-wider mb-1 opacity-80">
             {agent.category || copy.card.defaultCategory}
           </div>
-          <h3 className="text-sm font-bold text-white truncate group-hover:text-[#e11d74] transition-colors">
+          <h3 className="text-sm font-bold text-white truncate group-hover:text-brand transition-colors">
             {agent.name || copy.card.unnamedAgent}
           </h3>
           {agent.owner_username && (
@@ -78,7 +79,7 @@ function AgentCard({ agent, onClick, onEdit, copy }) {
             e.stopPropagation();
             onEdit(agent);
           }}
-          className="pointer-events-none absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-[#e11d74] hover:text-white hover:scale-110"
+          className="pointer-events-none absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 text-white opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 max-sm:pointer-events-auto max-sm:opacity-100 hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -97,7 +98,7 @@ function ConversationCard({ conv, onClick, copy }) {
   return (
     <div
       onClick={() => onClick(agentSlug, conv.id)}
-      className="group flex flex-col gap-3 bg-white/[0.03] border border-white/5 rounded-xl p-4 hover:border-[#e11d74]/20 hover:bg-white/5 transition-all cursor-pointer"
+      className="group flex flex-col gap-3 bg-surface border border-line rounded-xl p-4 hover:border-brand-line hover:bg-wash transition-[border-color,background-color] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
     >
       <div className="flex items-center gap-3">
         <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-white/5 shrink-0">
@@ -112,7 +113,7 @@ function ConversationCard({ conv, onClick, copy }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-black text-[#e11d74] uppercase tracking-wider truncate">
+          <p className="text-[10px] font-bold text-brand uppercase tracking-wider truncate">
             {conv.agent_name || copy.card.unknownAgent}
           </p>
           <p className="text-sm font-bold text-white truncate" title={displayTitle}>
@@ -147,8 +148,8 @@ function ChatBubble({ message }) {
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? "bg-[#e11d74] text-white font-medium"
-            : "bg-white/[0.04] border border-white/5 text-white/90"
+            ? "bg-brand text-ink-on-accent font-medium"
+            : "bg-surface border border-line text-ink"
         }`}
       >
         {isUser ? (
@@ -173,7 +174,7 @@ const FALLBACK_TEMPLATES = [
     category: "AI 助手",
     welcome_message: "你好！准备好将你的创意转化为引人注目的文案了吗？",
     theme: "cosmic",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   },
   {
     id: "2ef7de87-d151-4622-b7e6-3c4fed3b274a",
@@ -184,7 +185,7 @@ const FALLBACK_TEMPLATES = [
     category: "AI 音乐",
     welcome_message: "嘿！准备好打磨你的下一首 Suno 歌曲了吗？告诉我你想要的氛围与风格。",
     theme: "light",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   },
   {
     id: "edfa0142-e03c-4006-8c7c-a1de05264a90",
@@ -195,7 +196,7 @@ const FALLBACK_TEMPLATES = [
     category: "趣味互动",
     welcome_message: "输入你的名字或角色，我来为你揭晓一个意想不到的未来片段。",
     theme: "cosmic",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   },
   {
     id: "08452be2-296a-4a41-8bf4-cb569343dad3",
@@ -206,7 +207,7 @@ const FALLBACK_TEMPLATES = [
     category: "营销创作",
     welcome_message: "准备好撰写引人入胜、促成转化的优质邮件了。今天想构思什么主题？",
     theme: "light",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   },
   {
     id: "394fd4dd-de6f-40a0-828e-e10c63b05840",
@@ -217,7 +218,7 @@ const FALLBACK_TEMPLATES = [
     category: "视觉叙事",
     welcome_message: "告诉我你的故事大纲或核心角色，我们一起来拆解镜头与视觉设定。",
     theme: "cosmic",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   },
   {
     id: "27bc8fb6-78c5-4545-988a-e7779e3a1492",
@@ -228,7 +229,7 @@ const FALLBACK_TEMPLATES = [
     category: "提示词工程",
     welcome_message: "把你的初步灵感发给我，我来帮你转换为专业级图像与视频提示词。",
     theme: "light",
-    owner_username: "KoyoSIM",
+    owner_username: "SupDance",
   }
 ];
 
@@ -248,7 +249,7 @@ export default function AgentStudio({
   const params = useParams();
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
 
-  const effectiveApiKey = apiKey || (signedIn ? 'koyosim-account-session' : null);
+  const effectiveApiKey = apiKey || (signedIn ? 'supdance-account-session' : null);
   const [selectedModel, setSelectedModel] = useState(() => {
     if (initialModel) return initialModel;
     if (typeof window !== "undefined") {
@@ -274,8 +275,8 @@ export default function AgentStudio({
         setSelectedModel(model);
       }
     };
-    window.addEventListener("koyosim-select-model", handleModelSelect);
-    return () => window.removeEventListener("koyosim-select-model", handleModelSelect);
+    window.addEventListener("supdance-select-model", handleModelSelect);
+    return () => window.removeEventListener("supdance-select-model", handleModelSelect);
   }, []);
 
   const [activeMainTab, setActiveMainTab] = useState("templates");
@@ -506,7 +507,7 @@ export default function AgentStudio({
         <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center gap-6 px-8 bg-black/40">
           <button
             onClick={() => router.push("/agents")}
-            className="flex items-center gap-2 text-xs font-bold text-white/50 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs font-bold text-white/50 hover:text-white active:scale-[0.98] active:duration-instant transition-[color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             type="button"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -514,7 +515,7 @@ export default function AgentStudio({
             </svg>
             {copy.buttons.back}
           </button>
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#e11d74]">{copy.headings.createAgent}</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-brand">{copy.headings.createAgent}</h2>
         </div>
 
         <form onSubmit={handleCreateSubmit} className="max-w-2xl w-full mx-auto p-8 space-y-6">
@@ -526,7 +527,7 @@ export default function AgentStudio({
               value={createForm.name}
               onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
               placeholder={copy.placeholders.name}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
+              className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:border-brand transition-[border-color,box-shadow] duration-fast ease-standard"
             />
           </div>
 
@@ -537,7 +538,7 @@ export default function AgentStudio({
               value={createForm.description}
               onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))}
               placeholder={copy.placeholders.description}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
+              className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:border-brand transition-[border-color,box-shadow] duration-fast ease-standard"
             />
           </div>
 
@@ -548,7 +549,7 @@ export default function AgentStudio({
               value={createForm.system_prompt}
               onChange={(e) => setCreateForm((f) => ({ ...f, system_prompt: e.target.value }))}
               placeholder={copy.placeholders.systemPrompt}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors min-h-[140px] resize-none"
+              className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:border-brand transition-[border-color,box-shadow] duration-fast ease-standard min-h-[140px] resize-none"
             />
           </div>
 
@@ -559,7 +560,7 @@ export default function AgentStudio({
               value={createForm.welcome_message}
               onChange={(e) => setCreateForm((f) => ({ ...f, welcome_message: e.target.value }))}
               placeholder={copy.placeholders.welcomeMessage}
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors"
+              className="w-full bg-well border border-line rounded-xl p-3 text-sm text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:border-brand transition-[border-color,box-shadow] duration-fast ease-standard"
             />
           </div>
 
@@ -570,7 +571,7 @@ export default function AgentStudio({
           <button
             type="submit"
             disabled={creating || !createForm.name.trim() || !createForm.system_prompt.trim()}
-            className="w-full py-4 bg-[#e11d74] text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all disabled:opacity-40 flex items-center justify-center gap-3"
+            className="w-full py-3.5 bg-brand text-ink-on-accent text-xs font-semibold uppercase tracking-[0.2em] rounded-xl hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard disabled:pointer-events-none disabled:opacity-40 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring flex items-center justify-center gap-3"
           >
             {creating ? (
               <>
@@ -593,7 +594,7 @@ export default function AgentStudio({
         <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center gap-4 px-8 bg-black/40">
           <button
             onClick={() => router.push("/agents")}
-            className="flex items-center gap-2 text-xs font-bold text-white/50 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs font-bold text-white/50 hover:text-white active:scale-[0.98] active:duration-instant transition-[color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             type="button"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -617,7 +618,7 @@ export default function AgentStudio({
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-4 max-w-3xl w-full mx-auto">
           {chatLoading ? (
             <div className="h-full flex items-center justify-center">
-              <div className="w-10 h-10 border-2 border-white/5 border-t-[#e11d74] rounded-full animate-spin" />
+              <div className="w-10 h-10 border-2 border-white/5 border-t-brand rounded-full animate-spin" />
             </div>
           ) : (
             <>
@@ -629,8 +630,8 @@ export default function AgentStudio({
               ))}
               {sending && (
                 <div className="flex justify-start">
-                  <div className="bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-3">
-                    <div className="w-4 h-4 border-2 border-white/10 border-t-[#e11d74] rounded-full animate-spin" />
+                  <div className="bg-surface border border-line rounded-2xl px-4 py-3">
+                    <div className="w-4 h-4 border-2 border-line-subtle border-t-brand rounded-full animate-spin" />
                   </div>
                 </div>
               )}
@@ -646,23 +647,18 @@ export default function AgentStudio({
             onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
             className="max-w-3xl w-full mx-auto flex items-end gap-3"
           >
-            <textarea
+            <PromptInputField
+              className="flex-1"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
+              onEnter={handleSendMessage}
               placeholder={copy.placeholders.chatInput}
               rows={1}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#e11d74]/50 transition-colors resize-none max-h-40"
             />
             <button
               type="submit"
               disabled={!chatInput.trim() || sending}
-              className="px-5 py-3 bg-[#e11d74] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white transition-all disabled:opacity-40"
+              className="px-5 py-3 bg-brand text-ink-on-accent text-xs font-semibold uppercase tracking-widest rounded-xl hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard disabled:pointer-events-none disabled:opacity-40 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1"
             >
               {copy.buttons.send}
             </button>
@@ -678,18 +674,20 @@ export default function AgentStudio({
       {/* Header */}
       <div className="flex-shrink-0 h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/40">
         <div className="flex items-center gap-6 h-full">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#e11d74]">
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-brand">
             {copy.headings.agents}
           </h2>
-          <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
+          <div className="flex gap-1 bg-well p-1 rounded-full border border-line-subtle" data-pill-segmented>
             {TABS.map((tab) => (
               <button
                 key={tab}
+                type="button"
+                data-pill-segment-item
                 onClick={() => setActiveMainTab(tab)}
-                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${
+                className={`px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest rounded-full transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
                   activeMainTab === tab
-                    ? "bg-white text-black shadow-xl"
-                    : "text-white/40 hover:text-white hover:bg-white/5"
+                    ? "bg-surface-raised text-ink shadow-elevation-1"
+                    : "text-ink-muted hover:text-ink hover:bg-wash"
                 }`}
               >
                 {copy.tabs[tab] || tab.replace(/-/g, " ")}
@@ -698,7 +696,7 @@ export default function AgentStudio({
           </div>
 
           {selectedModel && (
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand/10 border border-brand/25 text-brand text-[11px] font-mono tracking-tight">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-soft border border-brand-line text-brand text-[11px] font-mono tracking-tight">
               <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
               <span>{selectedModel === 'deepseek-r1' ? 'DeepSeek-R1' : selectedModel === 'gpt-4o' ? 'GPT-4o' : selectedModel === 'claude-3-7-sonnet' ? 'Claude 3.7 Sonnet' : selectedModel}</span>
             </div>
@@ -707,7 +705,7 @@ export default function AgentStudio({
 
         <button
           onClick={handleCreateAgent}
-          className="px-6 py-2 bg-[#e11d74] text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#f43f5e] active:bg-[#c0175f] transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+          className="px-5 py-2 bg-brand text-ink-on-accent text-[11px] font-semibold uppercase tracking-widest rounded-xl hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
         >
           <span className="text-sm">+</span>
           {copy.buttons.create}
@@ -718,24 +716,24 @@ export default function AgentStudio({
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         {loading ? (
           <div className="h-full flex items-center justify-center">
-            <div className="w-10 h-10 border-2 border-white/5 border-t-[#e11d74] rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-white/5 border-t-brand rounded-full animate-spin" />
           </div>
         ) : (!effectiveApiKey && (activeMainTab === "my-agents" || activeMainTab === "my-chats")) ? (
           <div className="h-full flex flex-col items-center justify-center p-8">
-            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#131519] p-8 text-center flex flex-col items-center gap-4 shadow-elevation-2">
-              <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#e11d74]">
+            <div className="w-full max-w-md rounded-2xl border border-line bg-overlay p-8 text-center flex flex-col items-center gap-4 shadow-elevation-4">
+              <div className="w-12 h-12 rounded-xl bg-brand-soft border border-brand-line flex items-center justify-center text-brand">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                 </svg>
               </div>
-              <h3 className="text-base font-bold text-white">{copy.auth?.heading || "登录以使用智能体"}</h3>
-              <p className="text-xs text-[#a0a4ab] leading-relaxed">
-                {copy.auth?.description || "模板、智能体配置与对话历史已同步至您的 KoyoSIM 账号。请先登录。"}
+              <h3 className="text-base font-bold text-ink">{copy.auth?.heading || "登录以使用智能体"}</h3>
+              <p className="text-xs text-ink-muted leading-relaxed">
+                {copy.auth?.description || "模板、智能体配置与对话历史已同步至您的 SupDance 账号。请先登录。"}
               </p>
               <button
                 type="button"
                 onClick={() => onRequireAuth?.()}
-                className="mt-2 px-6 py-2.5 bg-[#e11d74] hover:bg-[#f43f5e] active:bg-[#c0175f] text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-elevation-1 cursor-pointer"
+                className="mt-2 px-6 py-2.5 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent text-xs font-semibold uppercase tracking-wider rounded-xl transition-[background-color,transform] duration-fast ease-standard shadow-elevation-2 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {copy.auth?.cta || "立即登录"}
               </button>
@@ -752,7 +750,7 @@ export default function AgentStudio({
             <button
               type="button"
               onClick={() => setRetryCount((c) => c + 1)}
-              className="text-[10px] text-white/60 hover:text-white border border-white/10 hover:border-[#e11d74] px-4 py-2 rounded-lg transition-colors cursor-pointer"
+              className="text-[10px] text-ink-muted hover:text-ink border border-line hover:border-brand-line px-4 py-2 rounded-lg transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               {copy.buttons.retry}
             </button>
@@ -767,7 +765,7 @@ export default function AgentStudio({
               <p className="text-[10px] font-black uppercase tracking-[0.3em]">{copy.empty.noChats}</p>
               <button
                 onClick={() => setActiveMainTab("templates")}
-                className="text-[10px] text-[#e11d74] hover:text-white border border-[#e11d74]/20 hover:border-white/20 px-4 py-2 rounded-lg transition-colors"
+                className="text-[10px] text-brand hover:text-ink border border-brand-line hover:border-line px-4 py-2 rounded-lg transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {copy.buttons.browseTemplates}
               </button>

@@ -2,7 +2,7 @@
   "hero": {
     "badge": "Para desarrolladores y agentes de IA",
     "title": "Herramientas MCP y CLI",
-    "description": "Usa koyosim desde tu terminal, tu IDE o cualquier asistente compatible con MCP. Genera imágenes, videos y audios cinematográficos en más de 100 modelos — sin salir de tu flujo de trabajo."
+    "description": "Usa supdance desde tu terminal, tu IDE o cualquier asistente compatible con MCP. Genera imágenes, videos y audios cinematográficos en más de 100 modelos — sin salir de tu flujo de trabajo."
   },
   "quickStart": {
     "sectionLabel": "Inicio rápido",

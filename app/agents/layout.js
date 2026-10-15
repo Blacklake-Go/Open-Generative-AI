@@ -3,7 +3,7 @@
  * shell; this subtree must not mount a provider-backed standalone client.
  */
 export const metadata = {
-  title: "Agent Chat — koyosim",
+  title: "Agent Chat — SupDance",
 };
 
 export default function AgentsLayout({ children }) {

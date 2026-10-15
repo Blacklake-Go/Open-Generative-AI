@@ -141,6 +141,15 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
     }
   }, [apiKey]);
 
+  useEffect(() => {
+    if (!selectedApp) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedApp(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedApp]);
+
   const handleRequestAccess = async () => {
     if (!selectedApp || !apiKey) return;
     
@@ -173,7 +182,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
     return (
       <div 
         key={app.name}
-        className="group bg-[#0a0a0a] border border-white/5 rounded-lg flex flex-col overflow-hidden transition-all duration-300 hover:border-white/10 hover:bg-[#0f0f0f] hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1"
+        className="group bg-surface-glass/80 backdrop-blur-md border border-white/10 rounded-xl flex flex-col overflow-hidden transition-[border-color,background-color,box-shadow,transform] duration-smooth ease-card-hover hover:border-white/20 hover:bg-surface-glass/95 hover:shadow-elevation-3 hover:-translate-y-1"
       >
         {/* Thumbnail Section */}
         <div className="relative h-44 w-full overflow-hidden bg-white/5">
@@ -209,14 +218,14 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
           <div className="flex items-center gap-2 pt-2">
             <button
               onClick={() => setSelectedApp(app)}
-              className="flex-1 py-2 bg-white/5 text-white rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/10 transition-all border border-white/5 active:scale-95"
+              className="flex-1 py-2 bg-white/5 text-white rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard border border-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
               <FaRocket className="text-xs text-[#e11d74]" />
               {copy.card.getTemplate || '获取应用'}
             </button>
             <button
               onClick={() => setSelectedApp(app)}
-              className="flex-1 py-2 bg-[#e11d74]/10 text-[#e11d74] rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#e11d74]/20 transition-all border border-[#e11d74]/20 active:scale-95"
+              className="flex-1 py-2 bg-brand-soft text-brand rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-brand-pressed active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard border border-brand-line focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
               <FaExternalLinkAlt className="text-[9px]" />
               {copy.card.demo || '查看演示'}
@@ -228,7 +237,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col items-center bg-canvas overflow-y-auto custom-scrollbar relative">
+    <div className="h-full w-full flex flex-col items-center bg-transparent overflow-y-auto custom-scrollbar relative">
       <Toaster position="bottom-right" reverseOrder={false} />
       
       <div className="flex flex-col gap-10 items-center w-full max-w-7xl pt-12 pb-24 px-6">
@@ -254,7 +263,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
             { icon: FaCreditCard, step: "02", title: copy.steps.collect.title, body: copy.steps.collect.body },
             { icon: FaDollarSign, step: "03", title: copy.steps.keep.title, body: copy.steps.keep.body },
           ].map(({ icon: Icon, step, title, body }) => (
-            <div key={step} className="flex items-start gap-4 bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-colors">
+            <div key={step} className="flex items-start gap-4 bg-surface-glass/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-[border-color,background-color] duration-fast ease-standard">
               <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center text-[#e11d74] border border-white/5">
                 <Icon className="text-lg" />
               </div>
@@ -284,37 +293,46 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
 
       {/* Get Template Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 z-modal flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedApp(null)} />
-          <div className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-md rounded-2xl p-8 space-y-8 animate-scale-up shadow-2xl">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-20 h-20 rounded-[28px] bg-[#e11d74]/10 border border-[#e11d74]/20 flex items-center justify-center text-4xl text-[#e11d74] mb-2">
+        <div 
+          className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-scrim backdrop-blur-xl animate-in fade-in duration-modal ease-enter"
+          onClick={() => setSelectedApp(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="relative bg-overlay border border-line w-full max-w-md rounded-2xl p-6 sm:p-8 space-y-6 shadow-elevation-4 animate-scale-in text-ink"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-3xl text-brand mb-1">
                 <selectedApp.icon />
               </div>
-              <h2 className="text-2xl font-black text-white uppercase tracking-tight">
+              <h2 className="text-xl font-bold text-ink uppercase tracking-tight">
                 {copy.modal.deployTitle.replace('{appName}', selectedApp.name)}
               </h2>
-              <p className="text-sm font-medium text-white/40 leading-relaxed px-4">
+              <p className="text-xs text-ink-muted leading-relaxed px-2">
                 {copy.modal.body.split('{appName}').map((part, i, arr) => (
                   <React.Fragment key={i}>
                     {part}
-                    {i < arr.length - 1 && <b>{selectedApp.name}</b>}
+                    {i < arr.length - 1 && <b className="text-ink font-semibold">{selectedApp.name}</b>}
                   </React.Fragment>
                 ))}
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5 pt-2 border-t border-line">
               <button
+                type="button"
                 onClick={handleRequestAccess}
                 disabled={isRequesting}
-                className="w-full py-4 bg-[#e11d74] text-white rounded-md text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#e11d74]/90 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                className="w-full py-3 bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent font-semibold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-[background-color,transform] duration-fast ease-standard cursor-pointer shadow-elevation-1 disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {isRequesting ? copy.modal.sending : copy.modal.getTemplate}
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedApp(null)}
-                className="w-full py-4 bg-white/5 border border-white/10 text-white/60 rounded-md text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+                className="w-full py-2.5 bg-well hover:bg-raised border border-line text-ink-muted hover:text-ink rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               >
                 {copy.modal.maybeLater}
               </button>

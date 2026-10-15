@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getCommonCopy } from '@/lib/locales';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,15 @@ export default function ApiKeyModal({ onSave, onClose, overlay = false, title, s
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
   const copy = getCommonCopy(locale).apiKeyModal;
+
+  useEffect(() => {
+    if (!overlay || !onClose) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [overlay, onClose]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,18 +30,25 @@ export default function ApiKeyModal({ onSave, onClose, overlay = false, title, s
   };
 
   const wrapperClass = overlay
-    ? 'fixed inset-0 z-overlay bg-scrim backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in'
+    ? 'fixed inset-0 z-overlay bg-scrim backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in'
     : 'min-h-screen bg-canvas flex items-center justify-center p-4';
 
   return (
-    <div className={wrapperClass}>
-      <div className="w-full max-w-sm bg-surface-raised border border-white/[0.12] rounded-2xl p-8 shadow-2xl relative animate-scale-in">
+    <div
+      className={wrapperClass}
+      onClick={(e) => {
+        if (overlay && onClose && e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="w-full max-w-sm bg-overlay border border-line-strong rounded-2xl p-6 sm:p-8 shadow-elevation-4 relative animate-scale-in text-ink">
         {overlay && onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label={copy.close}
-            className="absolute top-4 right-4 w-8 h-8 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.08] transition-colors flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand/50"
+            className="absolute top-4 right-4 size-8 rounded-full text-ink-muted hover:text-ink hover:bg-wash active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard flex items-center justify-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -45,17 +61,17 @@ export default function ApiKeyModal({ onSave, onClose, overlay = false, title, s
               <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L12 17.25l-4.5-4.5L15.5 7.5z" />
             </svg>
           </div>
-          <h1 className="text-lg font-semibold text-white tracking-tight mb-1.5">
+          <h1 className="text-lg font-semibold text-ink tracking-tight mb-1.5">
             {title || copy.title}
           </h1>
-          <p className="text-gray-400 text-xs leading-relaxed px-2">
+          <p className="text-ink-muted text-xs leading-relaxed px-2">
             {subtitle || '系统已全面升级为服务端托管与多模型网关模式，无需手动输入自备密钥。'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-gray-400">
+            <label className="block text-xs font-medium text-ink-muted">
               {copy.label}
             </label>
             <Input
@@ -78,9 +94,9 @@ export default function ApiKeyModal({ onSave, onClose, overlay = false, title, s
             {copy.submit}
           </Button>
 
-          <p className="text-center text-xs text-gray-500 pt-1">
+          <p className="text-center text-xs text-ink-subtle pt-1">
             {copy.needKey}{' '}
-            <a href="https://muapi.ai/access-keys" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-brand transition-colors font-medium">
+            <a href="https://muapi.ai/access-keys" target="_blank" rel="noreferrer" className="text-ink-muted hover:text-brand transition-colors font-medium">
               {copy.getOneFree}
             </a>
           </p>

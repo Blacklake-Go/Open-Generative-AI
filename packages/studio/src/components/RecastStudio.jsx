@@ -26,10 +26,10 @@ import {
   PromptMenuList,
   PromptPopover,
   PromptPopoverHeader,
-  PromptTextarea,
   promptControlClassName,
   promptMediaButtonClassName,
 } from "./prompt/PromptComposer.jsx";
+import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import en from "../messages/en/recastStudio.json";
 import zh from "../messages/zh/recastStudio.json";
 import ja from "../messages/ja-JP/recastStudio.json";
@@ -37,6 +37,83 @@ import ko from "../messages/ko-KR/recastStudio.json";
 import zhTw from "../messages/zh-TW/recastStudio.json";
 import es from "../messages/es-ES/recastStudio.json";
 import { resolveCopy } from "../i18nUtils";
+import VideoRelayMenu from "./VideoRelayMenu.jsx";
+
+const RECAST_RELAY_COPY_EN = {
+  presetsTitle: "Style Presets:",
+  relayPortraitToast: "Loaded relayed target portrait!",
+  relayVideoToast: "Loaded relayed source video!",
+  presets: [
+    { id: "physique", label: "Physique Recast", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+    { id: "couture", label: "Haute Couture", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+    { id: "mecha", label: "Cyber Mecha Armor", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+    { id: "hanfu", label: "Silk Hanfu Robes", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+    { id: "cinema", label: "Cinema Realistic Face", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+  ],
+};
+
+const RECAST_RELAY_COPY_LOCALES = {
+  "zh-CN": {
+    presetsTitle: "风格预设:",
+    relayPortraitToast: "已自动载入接力目标人像！",
+    relayVideoToast: "已自动载入接力源视频！",
+    presets: [
+      { id: "physique", label: "体态重铸", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+      { id: "couture", label: "高级时尚换装", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+      { id: "mecha", label: "赛博机甲装甲", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+      { id: "hanfu", label: "古风汉服华裳", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+      { id: "cinema", label: "电影写实面孔", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+    ],
+  },
+  "ja-JP": {
+    presetsTitle: "スタイルプリセット:",
+    relayPortraitToast: "連携されたターゲット人物を読み込みました！",
+    relayVideoToast: "連携された元動画を読み込みました！",
+    presets: [
+      { id: "physique", label: "体型リキャスト", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+      { id: "couture", label: "オートクチュール衣装", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+      { id: "mecha", label: "サイバーメカ装甲", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+      { id: "hanfu", label: "伝統シルクローブ", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+      { id: "cinema", label: "シネマリアルフェイス", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+    ],
+  },
+  "ko-KR": {
+    presetsTitle: "스타일 프리셋:",
+    relayPortraitToast: "연동된 타겟 인물 사진을 불러왔습니다!",
+    relayVideoToast: "연동된 원본 영상을 불러왔습니다!",
+    presets: [
+      { id: "physique", label: "체형 리캐스트", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+      { id: "couture", label: "하이패션 의상 교체", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+      { id: "mecha", label: "사이버 메카 아머", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+      { id: "hanfu", label: "전통 실크 의복", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+      { id: "cinema", label: "시네마 리얼 페이스", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+    ],
+  },
+  "zh-TW": {
+    presetsTitle: "風格預設:",
+    relayPortraitToast: "已自動載入接力目標人像！",
+    relayVideoToast: "已自動載入接力源影片！",
+    presets: [
+      { id: "physique", label: "體態重鑄", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+      { id: "couture", label: "高級時尚換裝", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+      { id: "mecha", label: "賽博機甲裝甲", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+      { id: "hanfu", label: "古風漢服華裳", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+      { id: "cinema", label: "電影寫實面孔", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+    ],
+  },
+  "es": {
+    presetsTitle: "Estilos:",
+    relayPortraitToast: "¡Retrato objetivo recibido cargado!",
+    relayVideoToast: "¡Video de origen recibido cargado!",
+    presets: [
+      { id: "physique", label: "Reconstrucción Corporal", prompt: "Athletic cinematic proportions, natural organic muscle tone, flawless pose alignment, ultra-photorealistic" },
+      { id: "couture", label: "Alta Costura", prompt: "Haute couture high fashion designer wardrobe, luxurious silk and structured fabrics, runway aesthetic" },
+      { id: "mecha", label: "Armadura Cyber Mecha", prompt: "Futuristic sleek exoskeleton armor, glowing cybernetic fiber accents, polished carbon finish, cinematic lighting" },
+      { id: "hanfu", label: "Túnica Tradicional", prompt: "Traditional flowing silk hanfu robes, intricate golden embroidery, elegant ethereal ancient aesthetics" },
+      { id: "cinema", label: "Rostro Realista Cine", prompt: "Natural film grain, authentic micro facial expressions, skin pores, studio rim lighting, 8k resolution" },
+    ],
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -151,9 +228,7 @@ function MediaPickerButton({
       onDrop={handleDrop}
       className={promptMediaButtonClassName({
         active: uploadState === UPLOAD_STATE.READY,
-        className: isDragging
-          ? "border-[#e11d74] bg-[#e11d74]/10 ring-2 ring-[#e11d74]/50 scale-105"
-          : "",
+        className: `${isDragging ? "border-brand-line bg-brand/10 ring-2 ring-brand/50 scale-105" : ""} cursor-pointer`,
       })}
     >
       <input
@@ -193,10 +268,10 @@ function MediaPickerButton({
               fill="transparent"
               strokeDasharray={88}
               strokeDashoffset={88 - (88 * progress) / 100}
-              className="text-primary transition-all duration-300"
+              className="text-brand transition-[stroke-dashoffset] duration-300"
             />
           </svg>
-          <span className="absolute text-[9px] font-black text-primary leading-none">
+          <span className="absolute text-[9px] font-black text-brand leading-none">
             {progress}%
           </span>
         </div>
@@ -204,7 +279,7 @@ function MediaPickerButton({
 
       {/* Ready state */}
       {uploadState === UPLOAD_STATE.READY && (
-        <div className="flex flex-col items-center justify-center gap-1 w-full h-full absolute inset-0 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-all">
+        <div className="flex flex-col items-center justify-center gap-1 w-full h-full absolute inset-0 bg-brand-soft rounded-full group-hover:bg-brand-pressed transition-colors duration-fast ease-standard">
           {previewUrl ? (
             isVideo ? (
               <video
@@ -276,9 +351,9 @@ function AssetsDropdown({
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 text-center py-1 text-xs font-bold capitalize transition-colors ${
+            className={`flex-1 text-center py-1 text-xs font-bold capitalize transition-[color,border-color] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
               activeTab === tab
-                ? "text-[#e11d74] border-b border-[#e11d74]"
+                ? "text-brand border-b border-brand"
                 : "text-white/40 hover:text-white/80"
             }`}
           >
@@ -306,7 +381,7 @@ function AssetsDropdown({
                   onSelectResultAsVideo(item.url, item.name);
                 }
               }}
-              className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/5 hover:border-white/10 transition-all gap-2 group/item cursor-pointer"
+              className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/5 hover:border-white/10 transition-[background-color,border-color] duration-fast ease-standard gap-2 group/item cursor-pointer"
             >
               {/* Media Preview Thumbnail */}
               <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 flex-shrink-0 relative">
@@ -333,7 +408,7 @@ function AssetsDropdown({
                     e.stopPropagation();
                     setFullscreenUrl(item.url);
                   }}
-                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 transition-opacity group-hover/item:pointer-events-auto group-hover/item:opacity-100 group-focus-within/item:pointer-events-auto group-focus-within/item:opacity-100 hover:text-[#e11d74] focus-visible:ring-2 focus-visible:ring-brand-ring focus-visible:ring-inset"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 transition-opacity duration-fast ease-standard group-hover/item:pointer-events-auto group-hover/item:opacity-100 group-focus-within/item:pointer-events-auto group-focus-within/item:opacity-100 hover:text-brand cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="11" cy="11" r="8" />
@@ -358,7 +433,7 @@ function AssetsDropdown({
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  className="text-xs text-white font-black px-2.5 py-1 bg-[#e11d74] rounded-md hover:bg-[#e11d74]/90 transition-colors"
+                  className="text-xs text-ink-on-accent font-black px-2.5 py-1 bg-brand rounded-md hover:bg-brand-hover active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   {copy.buttons.use}
                 </button>
@@ -369,7 +444,7 @@ function AssetsDropdown({
                     e.stopPropagation();
                     onDeleteAsset(activeTab, item.url);
                   }}
-                  className="p-1.5 text-white/30 hover:text-red-500 rounded hover:bg-white/5 transition-colors"
+                  className="p-1.5 text-white/30 hover:text-red-500 rounded hover:bg-white/5 active:scale-95 active:duration-instant transition-[color,background-color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="3 6 5 6 21 6" />
@@ -485,6 +560,7 @@ const ImageIcon = ({
 // ---------------------------------------------------------------------------
 export default function RecastStudio({
   apiKey,
+  initialPrompt = "",
   onGenerationStart,
   onGenerationEnd,
   onGenerationComplete,
@@ -495,6 +571,7 @@ export default function RecastStudio({
   locale = "en",
 }) {
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const relayCopy = resolveCopy(RECAST_RELAY_COPY_EN, RECAST_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_recast_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -520,7 +597,10 @@ export default function RecastStudio({
   const [imageProgress, setImageProgress] = useState(0);
 
   // ── Prompt ────────────────────────────────────────────────────────────────
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt);
+  }, [initialPrompt]);
 
   // ── Character Orientation ─────────────────────────────────────────────────
   const [characterOrientation, setCharacterOrientation] = useState("image");
@@ -611,6 +691,41 @@ export default function RecastStudio({
       hasRestored.current = true;
     }
   }, []);
+
+  // ── Auto-fill media from relay or query parameter ────────────────────────────
+  useEffect(() => {
+    const handleRelay = (url) => {
+      if (!url) return;
+      const isImg = /\.(png|jpe?g|webp|gif|avif)($|\?)/i.test(url);
+      if (isImg) {
+        setImageUrl(url);
+        setImageName("Relayed Character");
+        setImageState(UPLOAD_STATE.READY);
+        toast.success(relayCopy.relayPortraitToast);
+      } else {
+        setVideoUrl(url);
+        setVideoName("Relayed Source Video");
+        setVideoState(UPLOAD_STATE.READY);
+        toast.success(relayCopy.relayVideoToast);
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryVideo = params.get("video_url");
+      if (queryVideo) {
+        handleRelay(queryVideo);
+      }
+
+      const listener = (e) => {
+        if (e.detail?.videoUrl) {
+          handleRelay(e.detail.videoUrl);
+        }
+      };
+      window.addEventListener("supdance-relay-video", listener);
+      return () => window.removeEventListener("supdance-relay-video", listener);
+    }
+  }, [relayCopy.relayPortraitToast, relayCopy.relayVideoToast]);
 
   // ── Save Assets ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -870,7 +985,7 @@ export default function RecastStudio({
             {history.map((entry, idx) => (
               <div
                 key={entry.id || idx}
-                className="relative group rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col cursor-pointer"
+                className="relative group rounded-2xl overflow-hidden border border-line bg-surface shadow-xl hover:border-brand-line transition-[border-color,box-shadow,transform] duration-fast ease-standard active:scale-[0.99] flex flex-col cursor-pointer"
                 onClick={() => setFullscreenUrl(entry.url)}
               >
                 <video
@@ -893,6 +1008,11 @@ export default function RecastStudio({
                     prompt={entry.prompt}
                     onCopyError={onGenerationError}
                   />
+                  <VideoRelayMenu
+                    videoUrl={entry.url}
+                    currentTab="body-swap"
+                    locale={locale}
+                  />
                   <button
                     type="button"
                     title={copy.buttons.download}
@@ -900,7 +1020,7 @@ export default function RecastStudio({
                       e.stopPropagation();
                       downloadFile(entry.url, `bodyswap-${entry.id || idx}.mp4`);
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-white hover:bg-primary hover:text-black transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-ink hover:bg-brand hover:text-ink-on-accent active:bg-brand-active active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -915,7 +1035,7 @@ export default function RecastStudio({
                         setInternalHistory(prev => prev.filter((_, i) => i !== idx));
                       }
                     }}
-                    className="p-2 bg-black/60 backdrop-blur-md rounded-full text-red-400 hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                    className="p-2 bg-overlay-glass backdrop-blur-md rounded-full text-danger hover:bg-danger hover:text-ink-on-accent active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard border border-line-subtle cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="3 6 5 6 21 6" />
@@ -956,7 +1076,7 @@ export default function RecastStudio({
                     </p>
                   )}
                   <div className="flex items-center justify-between flex-wrap gap-1 mt-1">
-                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded border border-primary/20 whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-brand px-2 py-0.5 bg-brand-soft rounded border border-brand-line whitespace-nowrap">
                       {copy.badges.bodySwap}
                     </span>
                   </div>
@@ -968,28 +1088,28 @@ export default function RecastStudio({
           <div className="flex flex-col items-center justify-center h-full animate-fade-in min-h-[50vh]">
             {/* Overlapping floating cards */}
             <div className="flex items-center justify-center gap-1.5 md:gap-3 mb-10 select-none scale-90 sm:scale-100">
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/sdxl-image.avif"
                   alt="Creative asset 1"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 -rotate-[4deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/chroma-image.avif"
                   alt="Creative asset 2"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-2xl rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-white/10 shadow-elevation-3 rotate-[6deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/neta-lumina.avif"
                   alt="Creative asset 3"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-2xl rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-all duration-300 overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
+              <div className="w-16 h-20 sm:w-24 sm:h-28 rounded-2xl border border-white/10 shadow-elevation-3 rotate-[12deg] transform hover:rotate-0 hover:scale-110 hover:z-20 transition-transform duration-fast ease-standard overflow-hidden bg-white/[0.01] -ml-3 sm:-ml-4 flex-shrink-0">
                 <img
                   src="https://d3adwkbyhxyrtq.cloudfront.net/webassets/videomodels/perfect-pony-xl.avif"
                   alt="Creative asset 4"
@@ -1000,7 +1120,7 @@ export default function RecastStudio({
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.titleLine1}</span>
-              <span className="text-[#e11d74] font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
+              <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
                 {copy.empty.titleLine2}
               </span>
             </h1>
@@ -1013,6 +1133,26 @@ export default function RecastStudio({
 
       {/* ── BOTTOM PROMPT BAR ── */}
       <PromptComposer>
+          {/* Quick Recast Presets */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-rail py-1 px-1">
+            <span className="text-micro font-bold uppercase tracking-wider text-ink-subtle shrink-0 mr-1">
+              {relayCopy.presetsTitle}
+            </span>
+            {relayCopy.presets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  setPrompt(preset.prompt);
+                  toast.success(preset.label);
+                }}
+                className="rounded-full border border-line bg-wash px-2.5 py-0.5 text-micro font-medium text-ink-muted hover:border-brand-line hover:bg-wash-strong hover:text-ink transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer whitespace-nowrap shrink-0"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
           {/* Uploads row */}
           <div className="flex items-center gap-2 px-1">
             <div className="flex items-center gap-2">
@@ -1020,7 +1160,7 @@ export default function RecastStudio({
               <MediaPickerButton
                 accept="video/*"
                 label={copy.labels.video}
-                icon={<VideoIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />}
+                icon={<VideoIcon className="text-white/40 group-hover:text-brand transition-colors" />}
                 onUpload={handleVideoPick}
                 onClear={() => {
                   setVideoUrl(null);
@@ -1039,7 +1179,7 @@ export default function RecastStudio({
               <MediaPickerButton
                 accept="image/*"
                 label={copy.labels.characterImage}
-                icon={<ImageIcon className="text-white/40 group-hover:text-[#e11d74] transition-colors" />}
+                icon={<ImageIcon className="text-white/40 group-hover:text-brand transition-colors" />}
                 onUpload={handleImageUpload}
                 onClear={() => {
                   setImageUrl(null);
@@ -1057,10 +1197,11 @@ export default function RecastStudio({
 
             {/* Prompt textarea */}
             <div className="flex-1 flex flex-col">
-              <PromptTextarea
+              <PromptInputField
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptInput}
+                onEnter={handleGenerate}
                 placeholder={copy.placeholders.prompt}
               />
             </div>
@@ -1078,11 +1219,11 @@ export default function RecastStudio({
                     e.stopPropagation();
                     setOpenDropdown(openDropdown === "model" ? null : "model");
                   }}
-                  className={promptControlClassName({
+                  className={`${promptControlClassName({
                     active: openDropdown === "model",
-                  })}
+                  })} cursor-pointer`}
                 >
-                  <div className="w-3.5 h-3.5 bg-[#e11d74] rounded-sm flex items-center justify-center">
+                  <div className="w-3.5 h-3.5 bg-brand rounded-sm flex items-center justify-center">
                     <span className="text-[9px] font-black text-black">R</span>
                   </div>
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1112,9 +1253,9 @@ export default function RecastStudio({
                       e.stopPropagation();
                       setOpenDropdown(openDropdown === "aspect" ? null : "aspect");
                     }}
-                    className={promptControlClassName({
+                    className={`${promptControlClassName({
                       active: openDropdown === "aspect",
-                    })}
+                    })} cursor-pointer`}
                   >
                     <PromptAspectRatioIcon />
                     <span className={PROMPT_CONTROL_LABEL_CLASS}>
@@ -1144,9 +1285,9 @@ export default function RecastStudio({
                       e.stopPropagation();
                       setOpenDropdown(openDropdown === "orientation" ? null : "orientation");
                     }}
-                    className={promptControlClassName({
+                    className={`${promptControlClassName({
                       active: openDropdown === "orientation",
-                    })}
+                    })} cursor-pointer`}
                   >
                     <span className="text-xs font-semibold text-current opacity-50 group-hover:opacity-100 transition-opacity">
                       {copy.labels.orientationPrefix}
@@ -1181,9 +1322,9 @@ export default function RecastStudio({
                     e.stopPropagation();
                     setOpenDropdown(openDropdown === "assets" ? null : "assets");
                   }}
-                  className={promptControlClassName({
+                  className={`${promptControlClassName({
                     active: openDropdown === "assets",
-                  })}
+                  })} cursor-pointer`}
                 >
                   <svg
                     width="14"
@@ -1192,12 +1333,12 @@ export default function RecastStudio({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="text-white/50 group-hover:text-[#e11d74] transition-colors"
+                    className="text-white/50 group-hover:text-brand transition-colors"
                   >
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                   </svg>
-                  <span className="text-xs font-semibold text-white/70 group-hover:text-[#e11d74] transition-colors">
+                  <span className="text-xs font-semibold text-white/70 group-hover:text-brand transition-colors">
                     {copy.labels.library}
                   </span>
                   <PromptChevronIcon />
@@ -1260,7 +1401,7 @@ export default function RecastStudio({
         >
           <button
             type="button"
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-[background-color,transform] duration-fast ease-standard active:scale-95 active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring border border-white/10"
             onClick={(e) => {
               e.stopPropagation();
               setFullscreenUrl(null);

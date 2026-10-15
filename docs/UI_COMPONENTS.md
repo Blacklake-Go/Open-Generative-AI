@@ -12,9 +12,16 @@
 | Prop | 类型 | 可选值 | 默认值 | 描述 |
 | :--- | :--- | :--- | :--- | :--- |
 | `variant` | `string` | `'primary' \| 'secondary' \| 'ghost' \| 'outline' \| 'danger'` | `'secondary'` | 按钮视觉变体 |
-| `size` | `string` | `'sm' \| 'md' \| 'lg' \| 'icon-sm' \| 'icon-md' \| 'icon-lg'` | `'md'` | 控件高度（sm: 32px, md: 38px, lg: 44px） |
+| `size` | `string` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'icon-xs' \| 'icon-sm' \| 'icon-md' \| 'icon-lg'` | `'md'` | 控件高度契约（xs: 28px, sm: 32px, md: 38px, lg: 44px） |
 | `loading` | `boolean` | `true \| false` | `false` | 加载状态，内置高质感 Spinner |
 | `disabled`| `boolean` | `true \| false` | `false` | 禁用状态，禁用点击热区与半透反馈 |
+
+### 微交互与物理状态机契约 (v3.7.0 对齐)
+Button 与 IconButton 严格遵守 3.7.0 微交互五态转换机：
+- **悬停态 (Hover)**：`duration-fast ease-standard`（120ms）平滑过渡背景与发丝边框微光提亮；
+- **按压态 (Active)**：瞬态下沉 `active:scale-[0.98]`（图标按压 `active:scale-95`），配合 `active:duration-instant`（80ms），释放时以 `ease-standard` 平滑回弹；
+- **键盘聚焦 (Focus-Visible)**：统一接入外挂发丝焦点环 `ring-1 ring-brand-ring ring-offset-2 ring-offset-bg-base`；
+- **禁用态 (Disabled)**：`opacity-40 pointer-events-none`，移除悬停微光与浮起。
 
 ### 代码示例
 ```jsx
@@ -163,7 +170,11 @@ import { Badge } from '@/components/ui/badge';
 
 **路径**：`components/ui/dialog.jsx`
 
-规范的全站弹窗基座，包含半透深黑遮罩、平滑缩放进入动画、右上角关闭热区、Esc 退出与 Focus Trap。
+规范的全站弹窗基座，对齐 3.7.0 浮窗覆盖层光学系统（§4.14）：
+- **外壳圆角与阴影**：严格遵循 20px 语义圆角 (`rounded-2xl`)，采用中性四级阴影 `shadow-elevation-4`；
+- **微弹簧缩放进退场**：400ms 入场 (`--ease-bounce` / `--ease-enter`，从 `scale-95` 弹入 `scale-100`)，200ms 迅捷退场 (`--ease-exit`)；
+- **沉浸式深黑磨砂遮罩 (Scrim)**：`bg-scrim` 配合 20px 模糊 (`backdrop-blur-xl`)，关闭时自动卸载，严禁透明遮罩常驻拦截页面交互；
+- **Dynamic Scrim 动态定位契约**：遮罩层动态捕获顶栏高度 `header.getBoundingClientRect().bottom`，防止遮罩层与固定顶栏发生错位或穿孔。
 
 ### 代码示例
 ```jsx
@@ -204,7 +215,10 @@ import { Button } from '@/components/ui/button';
 
 **路径**：`packages/studio/src/components/prompt/PromptComposer.jsx`
 
-全站 AI 创作的核心输入组件，统一封装了文本区自适应增高、媒体参考附件插槽、参数下拉选择器集成与主操作按钮。
+全站 AI 创作的核心输入组件，对齐 3.7.0 高阶生成器控件体系（§4.15.1）：
+- **几何与光学**：外层 20px 语义圆角 (`rounded-2xl`)，内凹输入框 16px (`rounded-xl`)，40px 高漫反射高斯毛玻璃 (`backdrop-blur-xl`)；
+- **流体自适应展开**：高度从默认折叠态（`min-h-[70px]`）到多行输入态（`min-h-[184px]`）采用 350ms 流体展开曲线（`--ease-fluid`）；
+- **圆形主生成按钮与 IME 输入法防护**：32px/38px 圆形主生成按钮，具备即刻按压反馈（`active:scale-95`）；内建输入法判定（`isComposing`），彻底消除中文回车打字误触提交。
 
 ### 代码示例
 ```jsx

@@ -61,8 +61,8 @@ export default function DeletionGracePeriodModal({
   };
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/30 bg-[#12141A] shadow-2xl p-6 text-white sm:p-8">
+    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-line bg-overlay shadow-elevation-4 p-6 text-white sm:p-8">
         {/* 背景光效 */}
         <div className="pointer-events-none absolute -top-24 -left-24 size-60 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-24 size-60 rounded-full bg-danger/10 blur-3xl" />
@@ -103,7 +103,7 @@ export default function DeletionGracePeriodModal({
               type="button"
               onClick={handleCancelDeletion}
               disabled={busy || success}
-              className="w-full h-11 bg-brand-primary text-black font-semibold hover:bg-brand-primary-hover shadow-lg shadow-brand-primary/20 cursor-pointer"
+              className="w-full h-11 bg-brand text-ink-on-accent font-semibold hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard shadow-elevation-2 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               {busy ? (
                 <>
@@ -120,7 +120,7 @@ export default function DeletionGracePeriodModal({
               variant="outline"
               onClick={handleKeepDeletionAndLogout}
               disabled={busy}
-              className="w-full h-10 border-white/10 bg-white/5 text-ink-muted hover:text-white hover:bg-white/10 cursor-pointer text-xs"
+              className="w-full h-10 border-line bg-surface text-ink-muted hover:text-ink hover:bg-wash active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <LogOut className="mr-1.5 size-3.5" />
               保持注销，退出登录

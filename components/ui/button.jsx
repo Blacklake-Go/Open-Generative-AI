@@ -9,38 +9,46 @@ import { cn } from "cn";
  * Sizes: sm (32px), md (38px), lg (44px), icon-sm (32px), icon-md (38px), icon-lg (44px)
  */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow] select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring focus-visible:border-brand disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  [
+    "inline-flex items-center justify-center font-medium whitespace-nowrap select-none",
+    "transition-[background-color,border-color,color,box-shadow,transform] duration-fast ease-standard",
+    "outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
+    "disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed",
+    "aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
         primary:
-          "bg-brand text-ink-on-accent font-semibold hover:bg-brand-hover active:bg-brand-active border border-brand-line",
+          "bg-brand text-ink-on-accent font-semibold border border-brand-line hover:bg-brand-hover hover:border-brand-hover active:bg-brand-active active:border-brand-active btn-spatial-glow",
         secondary:
-          "bg-raised text-ink hover:bg-overlay active:bg-wash-press border border-line",
+          "bg-raised text-ink border border-line hover:bg-overlay hover:border-line-strong active:bg-wash-press active:border-line-strong",
         ghost:
-          "text-ink-muted hover:text-ink hover:bg-wash active:bg-wash-press border border-transparent",
+          "bg-transparent text-ink-muted border border-transparent hover:bg-wash hover:text-ink active:bg-wash-press",
         tertiary:
-          "text-ink-muted hover:text-ink hover:bg-wash active:bg-wash-press border border-transparent",
+          "bg-transparent text-ink-muted border border-transparent hover:bg-wash hover:text-ink active:bg-wash-press",
         outline:
-          "bg-transparent text-ink hover:bg-wash border border-line hover:border-line-strong active:bg-wash-press",
+          "bg-transparent text-ink border border-line hover:bg-wash hover:border-line-strong active:bg-wash-press",
         danger:
-          "bg-danger-soft text-danger hover:bg-danger-hover active:bg-danger-pressed border border-danger-line",
+          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed focus-visible:ring-danger-ring",
         default:
-          "bg-raised text-ink hover:bg-overlay active:bg-wash-press border border-line",
+          "bg-raised text-ink border border-line hover:bg-overlay hover:border-line-strong active:bg-wash-press active:border-line-strong",
         destructive:
-          "bg-danger-soft text-danger hover:bg-danger-hover active:bg-danger-pressed border border-danger-line",
-        link: "text-brand underline-offset-4 hover:underline border border-transparent",
+          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed focus-visible:ring-danger-ring",
+        link: "text-brand underline-offset-4 hover:underline border border-transparent active:scale-100",
       },
       size: {
-        xs: "h-control-xs px-2 text-caption gap-1.5",
-        sm: "h-control-sm px-3 text-label gap-1.5",
-        md: "h-control-md px-4 text-body gap-2",
-        lg: "h-control-lg px-6 text-body gap-2.5",
-        default: "h-control-md px-4 text-body gap-2",
-        icon: "size-control-md p-0",
-        "icon-sm": "size-control-sm p-0",
-        "icon-md": "size-control-md p-0",
-        "icon-lg": "size-control-lg p-0",
+        xs: "h-control-xs px-2 text-caption gap-1.5 active:scale-[0.98] active:duration-instant",
+        sm: "h-control-sm px-3 text-label gap-1.5 active:scale-[0.98] active:duration-instant",
+        md: "h-control-md px-4 text-body gap-2 active:scale-[0.98] active:duration-instant",
+        lg: "h-control-lg px-6 text-body gap-2.5 active:scale-[0.98] active:duration-instant",
+        default: "h-control-md px-4 text-body gap-2 active:scale-[0.98] active:duration-instant",
+        icon: "size-control-md p-0 active:scale-95 active:duration-instant",
+        "icon-xs": "size-control-xs p-0 active:scale-95 active:duration-instant",
+        "icon-sm": "size-control-sm p-0 active:scale-95 active:duration-instant",
+        "icon-md": "size-control-md p-0 active:scale-95 active:duration-instant",
+        "icon-lg": "size-control-lg p-0 active:scale-95 active:duration-instant",
       },
     },
     defaultVariants: {
@@ -114,6 +122,7 @@ const Button = React.forwardRef(
           }),
           shape === "pill" ? "rounded-full" : SIZE_RADIUS[resolvedSize] || SIZE_RADIUS.md,
           fullWidth && "w-full",
+          loading && "cursor-progress",
           isDisabled && Component === Slot.Root && "pointer-events-none cursor-not-allowed opacity-40",
         )}
         {...props}
@@ -150,5 +159,67 @@ const Button = React.forwardRef(
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+/**
+ * KOYO Studio Accessible Icon-Only Button
+ * Enforces minimum 28px/32px/38px/44px touch targets and square geometry.
+ * Complies with WCAG 2.5.3 (label or aria-label required).
+ * Active press state: active:scale-95 (80ms instant mechanical feedback).
+ */
+const IconButton = React.forwardRef(
+  (
+    {
+      icon: Icon,
+      variant = "ghost",
+      size = "md",
+      shape = "control",
+      label,
+      "aria-label": ariaLabel,
+      className,
+      disabled = false,
+      loading = false,
+      children,
+      type = "button",
+      ...props
+    },
+    ref
+  ) => {
+    const accessibleLabel = label || ariaLabel;
+    if (!accessibleLabel && process.env.NODE_ENV !== "production") {
+      console.warn("[IconButton] `label` or `aria-label` is required for accessibility (WCAG 2.5.3).");
+    }
+
+    const sizeMap = {
+      xs: "icon-xs",
+      sm: "icon-sm",
+      md: "icon-md",
+      lg: "icon-lg",
+      icon: "icon-md",
+      "icon-xs": "icon-xs",
+      "icon-sm": "icon-sm",
+      "icon-md": "icon-md",
+      "icon-lg": "icon-lg",
+    };
+    const resolvedSize = sizeMap[size] || "icon-md";
+
+    return (
+      <Button
+        ref={ref}
+        type={type}
+        variant={variant}
+        size={resolvedSize}
+        shape={shape}
+        disabled={disabled}
+        loading={loading}
+        aria-label={accessibleLabel}
+        className={cn("[&_svg]:size-4 [&_svg]:stroke-[1.8]", className)}
+        {...props}
+      >
+        {Icon ? <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" /> : children}
+      </Button>
+    );
+  }
+);
+IconButton.displayName = "IconButton";
+
+export { Button, IconButton, buttonVariants, withoutRadiusUtilities };
 export default Button;

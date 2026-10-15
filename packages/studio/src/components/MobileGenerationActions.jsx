@@ -171,8 +171,8 @@ export function GenerationCopyButtons({
           title={copiedKind === "text" ? "Prompt copied" : "Copy prompt"}
           aria-label={copiedKind === "text" ? "Prompt copied" : "Copy prompt"}
           onClick={(event) => runCopy(event, "text")}
-          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-[#e11d74] hover:text-white ${
-            copiedKind === "text" ? "text-[#e11d74]" : "text-white"
+          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-[background-color,color,transform] duration-fast ease-standard hover:bg-brand hover:text-ink-on-accent active:scale-95 active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
+            copiedKind === "text" ? "text-brand" : "text-white"
           }`}
         >
           {copiedKind === "text" ? (
@@ -188,8 +188,8 @@ export function GenerationCopyButtons({
           title={copiedKind === "image" ? "Image copied" : "Copy image"}
           aria-label={copiedKind === "image" ? "Image copied" : "Copy image"}
           onClick={(event) => runCopy(event, "image")}
-          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-all hover:bg-[#e11d74] hover:text-white ${
-            copiedKind === "image" ? "text-[#e11d74]" : "text-white"
+          className={`flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-md transition-[background-color,color,transform] duration-fast ease-standard hover:bg-brand hover:text-ink-on-accent active:scale-95 active:duration-instant cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
+            copiedKind === "image" ? "text-brand" : "text-white"
           }`}
         >
           {copiedKind === "image" ? (

@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label} が {limit}MB 制限を超えています。",
     "labelUploadFailed": "{label} のアップロードに失敗しました: {message}",
     "noPromptForModel": "このモデルのプロンプトを入力してください。",
+    "generationCapabilityUnavailable": "このモデルには、検証済みのサーバー生成能力がまだありません。",
     "uploadVideoFirst": "まずはビデオをアップロードしてください。",
     "uploadReferenceImageForMotion": "モーションコントロール用の参考画像をアップロードしてください。",
     "uploadAtLeastOneReferenceImage": "最初に少なくとも 1 つの参照画像をアップロードしてください。",

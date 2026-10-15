@@ -31500,12 +31500,26 @@ const MODEL_DIRECTORY_ARRAYS = [
   recastModels,
   motionControlModels,
 ];
+const ORIGINAL_MODEL_DIRECTORY_ARRAYS = MODEL_DIRECTORY_ARRAYS.map((catalog) => [...catalog]);
 
-const GLOBAL_PRICING_MAP_KEY = '__KOYOSIM_MODEL_PRICING_MAP__';
-const GLOBAL_ACTIVE_IDS_KEY = '__KOYOSIM_ACTIVE_MODEL_IDS__';
+const GLOBAL_PRICING_MAP_KEY = '__SUPDANCE_MODEL_PRICING_MAP__';
+const GLOBAL_ACTIVE_IDS_KEY = '__SUPDANCE_ACTIVE_MODEL_IDS__';
 
 let activeModelIds = null;
 let modelPricingById = new Map();
+
+export function isServerModelGenerationEligible(row) {
+  const creditsPrice = Number(row?.creditsPrice);
+  return Boolean(
+    row?.id
+    && row.isActive === true
+    && row.isVisible === true
+    && row.autoRouteEligible === true
+    && row.hasWorkingRoute === true
+    && Number.isFinite(creditsPrice)
+    && creditsPrice > 0
+  );
+}
 
 export function isModelActive(modelId) {
   if (typeof globalThis !== 'undefined' && globalThis[GLOBAL_ACTIVE_IDS_KEY]) {
@@ -31529,26 +31543,22 @@ export function getModelPricing(modelId) {
 }
 
 export function applyActiveModelDirectory(rows) {
-  const list = Array.isArray(rows) ? rows : [];
-  if (list.length > 0) {
-    setServerModelMeta(list);
-  }
+  if (!Array.isArray(rows)) return { activeCount: activeModelIds?.size || 0, visibleCount: 0 };
+  const list = rows;
+  setServerModelMeta(list);
 
   const activeIds = new Set(
     list
-      .filter((row) => row && row.id && row.isActive !== false && row.isVisible !== false)
+      .filter(isServerModelGenerationEligible)
       .map((row) => String(row.id)),
   );
 
-  // If server returns valid models, use them. If server returns 0 models (e.g. initial boot/error),
-  // do not blind the UI; preserve existing catalog entries.
-  if (activeIds.size > 0) {
-    activeModelIds = activeIds;
-  }
+  // An empty successful server snapshot is authoritative: keep static fallback entries hidden.
+  activeModelIds = activeIds;
 
   modelPricingById = new Map(
     list
-      .filter((row) => row?.id && Number.isFinite(Number(row.creditsPrice)) && Number(row.creditsPrice) > 0)
+      .filter(isServerModelGenerationEligible)
       .map((row) => [String(row.id), {
         credits: Number(row.creditsPrice),
         formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
@@ -31557,23 +31567,18 @@ export function applyActiveModelDirectory(rows) {
 
   if (typeof globalThis !== 'undefined') {
     globalThis[GLOBAL_PRICING_MAP_KEY] = modelPricingById;
-    if (activeIds.size > 0) {
-      globalThis[GLOBAL_ACTIVE_IDS_KEY] = activeIds;
-    }
+    globalThis[GLOBAL_ACTIVE_IDS_KEY] = activeIds;
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('koyosim-model-pricing-updated', {
+      window.dispatchEvent(new CustomEvent('supdance-model-pricing-updated', {
         detail: { count: modelPricingById.size }
       }));
     }
   }
 
-  if (activeIds.size > 0) {
-    for (const catalog of MODEL_DIRECTORY_ARRAYS) {
-      const active = catalog.filter((model) => activeIds.has(String(model.id)));
-      if (active.length > 0) {
-        catalog.splice(0, catalog.length, ...active);
-      }
-    }
+  for (let index = 0; index < MODEL_DIRECTORY_ARRAYS.length; index += 1) {
+    const catalog = MODEL_DIRECTORY_ARRAYS[index];
+    const active = ORIGINAL_MODEL_DIRECTORY_ARRAYS[index].filter((model) => activeIds.has(String(model.id)));
+    catalog.splice(0, catalog.length, ...active);
   }
 
   return {

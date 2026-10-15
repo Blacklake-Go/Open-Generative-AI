@@ -89,6 +89,7 @@
     "model": "Modelo",
     "aspectRatio": "Relación de Aspecto",
     "resolution": "Resolución",
+    "quality": "Calidad",
     "effectType": "Tipo de Efecto"
   },
   "errors": {
@@ -96,6 +97,7 @@
     "uploadReferenceFirst": "Por favor, sube primero una imagen de referencia.",
     "uploadSwapFaceFirst": "Por favor, sube una imagen para el cambio de rostro.",
     "enterPromptFirst": "Por favor, introduce un prompt para generar una imagen.",
+    "generationCapabilityUnavailable": "Este modelo aún no tiene una capacidad de generación del servidor verificada.",
     "generationFailed": "Error al generar la imagen"
   },
   "fullscreen": {

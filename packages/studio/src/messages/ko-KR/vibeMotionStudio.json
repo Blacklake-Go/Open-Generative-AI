@@ -9,7 +9,7 @@
     "modeGenerated": "✦ 생성 완료",
     "download": "다운로드",
     "remixThis": "이 생성 결과 리믹스하기",
-    "legacyRemixUnavailable": "이전 버전 생성물 — 리믹스를 지원하지 않습니다. 새로 생성하여 편집 기능을 활성화하세요.",
+    "legacyRemixUnavailable": "이 생성물에는 서버 소유 에셋 참조와 검토된 동영상 편집 경로가 없어 리믹스를 사용할 수 없습니다.",
     "delete": "삭제",
     "confirmDelete": "이 생성 항목을 삭제하시겠습니까?",
     "noPrompt": "프롬프트 없음",
@@ -40,14 +40,19 @@
   },
   "controls": {
     "aspectRatio": "화면 비율",
+    "resolution": "해상도",
     "duration": "재생 시간",
     "sourcePrefix": "소스 원본:",
     "pickSource": "소스 선택…",
     "sourceGeneration": "소스 생성물",
-    "shortcutHint": "Ctrl+Enter 로 실행"
+    "shortcutHint": "Ctrl+Enter 로 실행",
+    "model": "모델",
+    "pickModel": "모델 선택…",
+    "loadingModels": "사용 가능한 모델을 불러오는 중…",
+    "modelsUnavailable": "현재 견적 가능한 텍스트-비디오 모델이 없습니다."
   },
   "errors": {
-    "staleEditUnavailable": "이 생성물은 리믹스할 수 없습니다 — 서버에 애니메이션 코드가 보존되지 않았습니다. 먼저 새 모션 그래픽을 생성한 뒤 리믹스해 보세요.",
+    "staleEditUnavailable": "서버 소유 에셋 참조와 검토된 동영상 편집 경로가 없어 동영상 편집을 사용할 수 없습니다.",
     "generationFailed": "바이브 모션 생성에 실패했습니다"
   },
   "generateButton": {
@@ -55,5 +60,11 @@
     "generating": "생성 중...",
     "remix": "리믹스 실행",
     "generate": "모션 생성"
+  },
+  "history": {
+    "loading": "Vibe Motion 기록을 불러오는 중…",
+    "loadFailed": "생성 기록을 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
+    "unavailable": "이 비공개 동영상을 현재 사용할 수 없습니다.",
+    "downloadUnavailable": "비공개 동영상을 다운로드하지 못했습니다. 나중에 다시 시도해 주세요."
   }
 }

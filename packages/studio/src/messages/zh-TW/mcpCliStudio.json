@@ -2,7 +2,7 @@
   "hero": {
     "badge": "對於開發者和人工智慧代理",
     "title": "MCP 和 CLI",
-    "description": "從您的終端、IDE 或任何與 MCP 相容的助手中使用 koyosim。無需離開您的工作流程即可產生 100 多個模型的影片影像、視訊和音訊。"
+    "description": "從您的終端、IDE 或任何與 MCP 相容的助手中使用 supdance。無需離開您的工作流程即可產生 100 多個模型的影片影像、視訊和音訊。"
   },
   "quickStart": {
     "sectionLabel": "快速啟動",

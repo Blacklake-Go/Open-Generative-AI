@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label} excede el límite de {limit}MB.",
     "labelUploadFailed": "Error al cargar {label}: {message}",
     "noPromptForModel": "Por favor ingrese un mensaje para este modelo.",
+    "generationCapabilityUnavailable": "Este modelo aún no tiene una capacidad de generación del servidor verificada.",
     "uploadVideoFirst": "Primero sube un vídeo.",
     "uploadReferenceImageForMotion": "Cargue una imagen de referencia para el control de movimiento.",
     "uploadAtLeastOneReferenceImage": "Primero cargue al menos una imagen de referencia.",

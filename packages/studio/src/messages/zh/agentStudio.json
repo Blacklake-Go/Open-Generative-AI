@@ -56,7 +56,7 @@
   },
   "auth": {
     "heading": "登录以使用智能体",
-    "description": "模板、智能体配置与对话历史已同步至您的 KoyoSIM 账号。请先登录。",
+    "description": "模板、智能体配置与对话历史已同步至您的 SupDance 账号。请先登录。",
     "cta": "立即登录"
   },
   "unavailable": {

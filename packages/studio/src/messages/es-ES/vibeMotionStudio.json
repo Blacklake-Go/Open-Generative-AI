@@ -9,7 +9,7 @@
     "modeGenerated": "✦ Generado",
     "download": "Descargar",
     "remixThis": "Remezcla esta generación",
-    "legacyRemixUnavailable": "Generación heredada: remezcla no disponible. Genere un nuevo gráfico en movimiento para permitir la edición.",
+    "legacyRemixUnavailable": "No se puede remezclar hasta que la generación tenga un recurso privado del servidor y una ruta de edición de video revisada.",
     "delete": "Borrar",
     "confirmDelete": "¿Está seguro de que desea eliminar este elemento generado?",
     "noPrompt": "Sin aviso",
@@ -40,14 +40,19 @@
   },
   "controls": {
     "aspectRatio": "Relación de aspecto",
+    "resolution": "Resolución",
     "duration": "Duración",
     "sourcePrefix": "Fuente:",
     "pickSource": "Elige fuente…",
     "sourceGeneration": "Generación de fuente",
-    "shortcutHint": "Ctrl+Entrar para ejecutar"
+    "shortcutHint": "Ctrl+Entrar para ejecutar",
+    "model": "Modelo",
+    "pickModel": "Elige un modelo…",
+    "loadingModels": "Cargando modelos disponibles…",
+    "modelsUnavailable": "No hay modelos de texto a video con cotización disponible."
   },
   "errors": {
-    "staleEditUnavailable": "Esta generación no se puede remezclar: el código de animación no se guardó en el servidor. Primero genere un nuevo gráfico en movimiento y luego remezcle ese resultado.",
+    "staleEditUnavailable": "La edición de video no está disponible hasta que el servidor exponga un recurso propio del usuario y una ruta de edición revisada.",
     "generationFailed": "La generación de Vibe Motion falló"
   },
   "generateButton": {
@@ -55,5 +60,11 @@
     "generating": "Generando...",
     "remix": "remezclar",
     "generate": "Generar"
+  },
+  "history": {
+    "loading": "Cargando tu historial de Vibe Motion…",
+    "loadFailed": "No se pudo cargar el historial de generaciones. Inténtalo más tarde.",
+    "unavailable": "Este video privado no está disponible en este momento.",
+    "downloadUnavailable": "No se pudo descargar el video privado. Inténtalo más tarde."
   }
 }

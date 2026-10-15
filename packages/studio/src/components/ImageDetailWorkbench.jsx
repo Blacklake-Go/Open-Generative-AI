@@ -214,7 +214,7 @@ export default function ImageDetailWorkbench({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col lg:flex-row bg-[#08090b]/95 backdrop-blur-2xl animate-fade-in text-white select-none overflow-hidden"
+      className="fixed inset-0 z-modal flex flex-col lg:flex-row bg-scrim backdrop-blur-xl animate-in fade-in duration-modal ease-enter text-ink select-none overflow-hidden"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.();
       }}
@@ -227,7 +227,7 @@ export default function ImageDetailWorkbench({
           <button
             type="button"
             onClick={onClose}
-            className="h-9 px-3.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-medium flex items-center gap-1.5 border border-white/10 transition-all active:scale-95 cursor-pointer shadow-elevation-1"
+            className="h-9 px-3.5 rounded-full bg-surface/80 hover:bg-surface-raised backdrop-blur-md text-ink text-xs font-medium flex items-center gap-1.5 border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -237,7 +237,7 @@ export default function ImageDetailWorkbench({
 
           {/* Navigation count badge */}
           {allHistoryItems.length > 1 && (
-            <div className="h-9 px-3 rounded-full bg-white/5 backdrop-blur-md text-white/70 text-xs font-mono flex items-center border border-white/10">
+            <div className="h-9 px-3 rounded-full bg-surface/50 backdrop-blur-md text-ink-muted text-xs font-mono flex items-center border border-line-subtle">
               {currentIndex + 1} / {allHistoryItems.length}
             </div>
           )}
@@ -247,10 +247,10 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={() => setComparisonActive(!comparisonActive)}
-              className={`h-9 px-3.5 rounded-full backdrop-blur-md text-xs font-medium flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer ${
+              className={`h-9 px-3.5 rounded-full backdrop-blur-md text-xs font-medium flex items-center gap-1.5 border transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
                 comparisonActive
-                  ? "bg-brand text-white border-brand-line shadow-elevation-1"
-                  : "bg-white/10 text-white/80 border-white/10 hover:bg-white/20"
+                  ? "bg-brand text-ink-on-accent border-brand-line shadow-elevation-1"
+                  : "bg-surface/80 text-ink-muted border-line hover:bg-surface-raised hover:text-ink"
               }`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -269,7 +269,7 @@ export default function ImageDetailWorkbench({
             type="button"
             onClick={() => onNavigate?.(-1)}
             disabled={currentIndex <= 0}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 disabled:opacity-20 disabled:hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center border border-white/10 transition-all active:scale-90 cursor-pointer shadow-elevation-2"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface/80 hover:bg-surface-raised disabled:opacity-20 backdrop-blur-md text-ink flex items-center justify-center border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-2"
             title={isZh ? "上一张 (← 键盘左键)" : "Previous (←)"}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -284,7 +284,7 @@ export default function ImageDetailWorkbench({
             type="button"
             onClick={() => onNavigate?.(1)}
             disabled={currentIndex >= allHistoryItems.length - 1}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 disabled:opacity-20 disabled:hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center border border-white/10 transition-all active:scale-90 cursor-pointer shadow-elevation-2"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-surface/80 hover:bg-surface-raised disabled:opacity-20 backdrop-blur-md text-ink flex items-center justify-center border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-2"
             title={isZh ? "下一张 (→ 键盘右键)" : "Next (→)"}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -301,7 +301,7 @@ export default function ImageDetailWorkbench({
           {comparisonActive && comparisonBeforeUrl && comparisonAfterUrl ? (
             /* Split View Comparison Mode (对标图3) */
             <div
-              className="relative max-w-full max-h-[82vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-ew-resize select-none"
+              className="relative max-w-full max-h-[82vh] rounded-2xl overflow-hidden shadow-elevation-4 border border-line cursor-ew-resize select-none"
               onMouseDown={handleMouseDown}
               onTouchStart={handleTouchStart}
             >
@@ -325,23 +325,23 @@ export default function ImageDetailWorkbench({
                   draggable={false}
                 />
                 {/* Before badge */}
-                <span className="absolute bottom-4 left-4 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-white/90 text-xs font-medium border border-white/10">
+                <span className="absolute bottom-4 left-4 px-2.5 py-1 rounded-md bg-overlay/80 backdrop-blur-md text-ink text-xs font-medium border border-line">
                   {isZh ? "高清前" : "Before"}
                 </span>
               </div>
 
               {/* After badge */}
-              <span className="absolute bottom-4 right-4 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-white/90 text-xs font-medium border border-white/10 pointer-events-none">
+              <span className="absolute bottom-4 right-4 px-2.5 py-1 rounded-md bg-overlay/80 backdrop-blur-md text-ink text-xs font-medium border border-line pointer-events-none">
                 {isZh ? "高清后" : "After"}
               </span>
 
               {/* Slider divider line */}
               <div
-                className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] pointer-events-none"
+                className="absolute top-0 bottom-0 w-0.5 bg-brand shadow-[0_0_10px_rgba(225,29,116,0.8)] pointer-events-none"
                 style={{ left: `${sliderPos}%` }}
               >
                 {/* Circular handle */}
-                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white text-black shadow-lg flex items-center justify-center font-bold text-xs">
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-surface-raised text-ink border border-line shadow-elevation-3 flex items-center justify-center font-bold text-xs">
                   ↔
                 </div>
               </div>
@@ -352,10 +352,10 @@ export default function ImageDetailWorkbench({
               <img
                 src={item.url}
                 alt={currentPrompt.slice(0, 30) || "Generated preview"}
-                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-elevation-4 border border-line"
               />
               {/* Subtle HD badge */}
-              <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[10px] font-mono text-white/80 border border-white/10">
+              <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-overlay/80 backdrop-blur-md text-[10px] font-mono text-ink-muted border border-line">
                 HD 2K
               </div>
             </div>
@@ -364,14 +364,14 @@ export default function ImageDetailWorkbench({
       </div>
 
       {/* ── RIGHT WORKBENCH PANEL (对标图3 一体化衍生创作中枢) ── */}
-      <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 bg-[#0f1115]/95 backdrop-blur-3xl border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col h-[45vh] lg:h-full overflow-y-auto custom-scrollbar p-5 sm:p-6 gap-5 shadow-elevation-4">
+      <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 bg-overlay border-t lg:border-t-0 lg:border-l border-line flex flex-col h-[45vh] lg:h-full overflow-y-auto custom-scrollbar p-5 sm:p-6 gap-5 shadow-elevation-4 text-ink">
         {/* Row 1: Primary Action Buttons */}
         <div className="flex items-center gap-2">
           {/* Download button */}
           <button
             type="button"
-            onClick={() => downloadImage(item.url, `koyosim-${item.id || Date.now()}.jpg`)}
-            className="flex-1 h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-95 cursor-pointer shadow-elevation-1"
+            onClick={() => downloadImage(item.url, `supdance-${item.id || Date.now()}.jpg`)}
+            className="flex-1 h-10 px-4 rounded-xl bg-surface hover:bg-surface-raised text-ink font-medium text-xs flex items-center justify-center gap-2 border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -390,10 +390,10 @@ export default function ImageDetailWorkbench({
                   : (isZh ? "已取消收藏" : "Removed from favorites")
               );
             }}
-            className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-all active:scale-95 cursor-pointer ${
+            className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
               isFavorited
-                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/40"
-                : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border-white/10"
+                ? "bg-amber-500/15 text-amber-400 border-amber-500/40"
+                : "bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink border-line"
             }`}
             title={isZh ? "收藏" : "Favorite"}
           >
@@ -407,7 +407,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-              className="h-10 w-10 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center border border-white/10 transition-all active:scale-95 cursor-pointer"
+              className="h-10 w-10 rounded-xl bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
               title={isZh ? "更多" : "More"}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -418,11 +418,11 @@ export default function ImageDetailWorkbench({
             </button>
 
             {moreMenuOpen && (
-              <div className="absolute right-0 top-12 w-44 rounded-xl bg-[#191c21] border border-white/10 shadow-elevation-3 py-1.5 z-30 animate-fade-in flex flex-col">
+              <div className="absolute right-0 top-12 w-44 rounded-xl bg-overlay border border-line shadow-elevation-3 py-1.5 z-30 animate-in fade-in duration-fast flex flex-col">
                 <button
                   type="button"
                   onClick={handleCopyImageUrl}
-                  className="px-3.5 py-2 text-left text-xs text-ink hover:bg-white/10 flex items-center gap-2 cursor-pointer transition-colors"
+                  className="px-3.5 py-2 text-left text-xs text-ink hover:bg-wash flex items-center gap-2 cursor-pointer transition-[background-color,color] duration-fast focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -436,7 +436,7 @@ export default function ImageDetailWorkbench({
                     setMoreMenuOpen(false);
                     onDelete?.(item);
                   }}
-                  className="px-3.5 py-2 text-left text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2 cursor-pointer transition-colors"
+                  className="px-3.5 py-2 text-left text-xs text-danger hover:bg-danger/10 flex items-center gap-2 cursor-pointer transition-[background-color,color] duration-fast focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6" />
@@ -452,13 +452,13 @@ export default function ImageDetailWorkbench({
         {/* Row 2: Prompt text block (图片提示词) */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white/90">
+            <span className="text-xs font-semibold text-ink">
               {isZh ? "图片提示词" : "Image Prompt"}
             </span>
             <button
               type="button"
               onClick={handleCopyPrompt}
-              className="text-[11px] text-brand hover:text-brand-hover font-medium flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-[11px] text-brand hover:text-brand-hover font-medium flex items-center gap-1 cursor-pointer transition-[color] duration-fast focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring rounded"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -467,19 +467,19 @@ export default function ImageDetailWorkbench({
               <span>{isZh ? "复制" : "Copy"}</span>
             </button>
           </div>
-          <div className="rounded-xl bg-black/40 border border-white/5 p-3 text-xs text-white/80 leading-relaxed font-normal max-h-32 overflow-y-auto custom-scrollbar select-text">
+          <div className="rounded-xl bg-well border border-line-subtle p-3 text-xs text-ink-muted leading-relaxed font-normal max-h-32 overflow-y-auto custom-scrollbar select-text">
             {currentPrompt || (isZh ? "无提示词" : "No prompt")}
           </div>
 
           {/* Model info tags */}
           <div className="flex items-center flex-wrap gap-1.5 mt-1">
-            <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/70 font-mono text-[10px]">
+            <span className="px-2 py-0.5 rounded-md bg-surface border border-line-subtle text-ink-subtle font-mono text-[10px]">
               {currentModel}
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/70 font-mono text-[10px]">
+            <span className="px-2 py-0.5 rounded-md bg-surface border border-line-subtle text-ink-subtle font-mono text-[10px]">
               {currentAr}
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white/70 font-mono text-[10px]">
+            <span className="px-2 py-0.5 rounded-md bg-surface border border-line-subtle text-ink-subtle font-mono text-[10px]">
               {currentQuality}
             </span>
           </div>
@@ -487,7 +487,7 @@ export default function ImageDetailWorkbench({
 
         {/* Row 3: Workflow Jump Shortcuts (快捷工作流 - 对标图3) */}
         <div className="flex flex-col gap-2.5">
-          <span className="text-xs font-semibold text-white/90">
+          <span className="text-xs font-semibold text-ink">
             {isZh ? "快捷工作流" : "Quick Workflows"}
           </span>
 
@@ -496,7 +496,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={handleJumpVideo}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-brand/40"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center justify-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-brand-line focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               title={isZh ? "以该图作为首帧直接生成视频" : "Generate video with this image"}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-brand">
@@ -510,7 +510,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={handleJumpCanvas}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-brand/40"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center justify-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-brand-line focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               title={isZh ? "发送到无限画布多层自由编辑" : "Edit in infinite canvas"}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-sky-400">
@@ -528,7 +528,7 @@ export default function ImageDetailWorkbench({
                 onUseAsReference?.(item.url);
                 onClose?.();
               }}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-brand/40"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center justify-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-brand-line focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
               title={isZh ? "载入下方输入框进行垫图创作" : "Use as reference image in composer"}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-400">
@@ -543,7 +543,7 @@ export default function ImageDetailWorkbench({
 
         {/* Row 4: AI Post-processing Tools (AI 后期工具箱 - 对标图3) */}
         <div className="flex flex-col gap-2.5">
-          <span className="text-xs font-semibold text-white/90">
+          <span className="text-xs font-semibold text-ink">
             {isZh ? "AI 后期工具箱" : "AI Tools Matrix"}
           </span>
 
@@ -553,7 +553,7 @@ export default function ImageDetailWorkbench({
               type="button"
               onClick={handleTriggerUpscale}
               disabled={upscaling}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               {upscaling ? (
                 <span className="animate-spin inline-block text-brand">◌</span>
@@ -572,7 +572,7 @@ export default function ImageDetailWorkbench({
                 onInpaint?.(item.url);
                 onClose?.();
               }}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-purple-400">
                 <path d="M12 19l7-7 3 3-7 7-3-3z" />
@@ -587,7 +587,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={handleTriggerUpscale}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-400">
                 <circle cx="12" cy="12" r="10" />
@@ -607,7 +607,7 @@ export default function ImageDetailWorkbench({
                 onInpaint?.(item.url);
                 onClose?.();
               }}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-rose-400">
                 <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
@@ -621,7 +621,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={handleJumpCanvas}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-teal-400">
                 <polyline points="15 3 21 3 21 9" />
@@ -636,7 +636,7 @@ export default function ImageDetailWorkbench({
             <button
               type="button"
               onClick={handleJumpLipSync}
-              className="h-10 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium flex items-center gap-2 transition-all active:scale-95 cursor-pointer hover:border-white/20"
+              className="h-10 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-line text-ink text-xs font-medium flex items-center gap-2 transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant cursor-pointer hover:border-line-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-pink-400">
                 <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -649,7 +649,7 @@ export default function ImageDetailWorkbench({
         </div>
 
         {/* Row 5: Bottom Sticky Actions (重新编辑 / 再次生成) */}
-        <div className="mt-auto pt-4 border-t border-white/10 flex items-center gap-2.5">
+        <div className="mt-auto pt-4 border-t border-line flex items-center gap-2.5">
           {/* 重新编辑 */}
           <button
             type="button"
@@ -657,7 +657,7 @@ export default function ImageDetailWorkbench({
               onReEdit?.(batch || item);
               onClose?.();
             }}
-            className="flex-1 h-10 px-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center justify-center gap-1.5 border border-white/10 transition-all active:scale-95 cursor-pointer"
+            className="flex-1 h-10 px-3.5 rounded-full bg-surface hover:bg-surface-raised text-ink text-xs font-medium flex items-center justify-center gap-1.5 border border-line transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -673,7 +673,7 @@ export default function ImageDetailWorkbench({
               onReGenerate?.(batch || item);
               onClose?.();
             }}
-            className="flex-1 h-10 px-3.5 rounded-full bg-brand hover:bg-brand-hover text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-elevation-1"
+            className="flex-1 h-10 px-3.5 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-xs font-medium flex items-center justify-center gap-1.5 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />

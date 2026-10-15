@@ -56,7 +56,7 @@
   },
   "auth": {
     "heading": "에이전트를 사용하려면 로그인하세요",
-    "description": "템플릿, 사용자 에이전트 및 대화 기록이 KoyoSIM 계정과 연동됩니다. 로그인해 주세요.",
+    "description": "템플릿, 사용자 에이전트 및 대화 기록이 SupDance 계정과 연동됩니다. 로그인해 주세요.",
     "cta": "로그인"
   },
   "unavailable": {

@@ -80,7 +80,7 @@ export default function DesignAgentStudio({
   }, [apiKey, userEmail, balance]);
 
   return (
-    <div className="h-full w-full bg-black overflow-hidden design-agent-studio">
+    <div className="h-full w-full bg-transparent overflow-hidden design-agent-studio">
       <CreativeCanvas 
         user={userData}
         unavailableCopy={copy.unavailable}

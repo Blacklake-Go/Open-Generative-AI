@@ -58,6 +58,7 @@ const LANGUAGE_LIST = SUPPORTED_LOCALES.map((code) => ({
 export default function UserDropdownMenu({
   user,
   credits = null,
+  entitlements = null,
   locale = 'zh',
   onOpenSettings,
   onOpenAccount,
@@ -69,14 +70,18 @@ export default function UserDropdownMenu({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [liveAvatar, setLiveAvatar] = useState(null);
-  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-  const [userEntitlements, setUserEntitlements] = useState(null);
-  const [notifications, setNotifications] = useState([]);
+  const [userEntitlements, setUserEntitlements] = useState(
+    entitlements || (typeof window !== 'undefined' ? (() => {
+      try {
+        const stored = localStorage.getItem('ko_entitlements');
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
+    })() : null)
+  );
   const [unreadCount, setUnreadCount] = useState(0);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [kcoins, setKcoins] = useState(0);
   const [dailyLoginClaimed, setDailyLoginClaimed] = useState(false);
-  const [showCoinPop, setShowCoinPop] = useState(false);
 
   const menuRef = useRef(null);
   const notifRef = useRef(null);
@@ -163,7 +168,7 @@ export default function UserDropdownMenu({
     fetchCoinStatus();
   }, [fetchCoinStatus]);
 
-  // 点击头像或金币胶囊时，自动检查/触发每日登录 1 枚 K 币奖励 (参考 B 站硬币：当天首次点击头像弹出增加动效)
+  // 点击头像或金币胶囊时，自动检查/触发每日登录 1 枚 K 币奖励
   const triggerDailyLoginReward = useCallback(async () => {
     if (!user || dailyLoginClaimed) return;
     try {
@@ -176,8 +181,6 @@ export default function UserDropdownMenu({
         if (data.isFirstToday) {
           setKcoins(Number(data.balance || 0));
           setDailyLoginClaimed(true);
-          setShowCoinPop(true);
-          setTimeout(() => setShowCoinPop(false), 3000);
         } else if (data.claimed) {
           setDailyLoginClaimed(true);
         }
@@ -185,10 +188,21 @@ export default function UserDropdownMenu({
     } catch {}
   }, [user, dailyLoginClaimed]);
 
-  // 加载当前用户订阅套餐方案与权益
+  // 同步外部传入的 entitlements 方案
+  useEffect(() => {
+    if (entitlements) {
+      setUserEntitlements(entitlements);
+    }
+  }, [entitlements]);
+
+  // 加载当前用户订阅套餐方案与权益（若外部已有则直接复用，避免重复网络调用与二次跳闪）
   useEffect(() => {
     if (!user) {
       setUserEntitlements(null);
+      return;
+    }
+    if (entitlements) {
+      setUserEntitlements(entitlements);
       return;
     }
     let cancelled = false;
@@ -203,7 +217,7 @@ export default function UserDropdownMenu({
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, entitlements]);
 
   // 全部标记已读
   const handleMarkAllAsRead = async () => {
@@ -364,7 +378,7 @@ export default function UserDropdownMenu({
 
           {/* 通知中心悬浮弹层 */}
           {isNotifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[310px] rounded-2xl border border-line bg-overlay p-3 text-ink shadow-elevation-3 z-popover animate-fade-in duration-fast">
+            <div className="absolute right-0 top-full mt-2 w-[310px] rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-3 text-ink shadow-elevation-3 z-popover animate-fade-in duration-fast">
               <div className="flex items-center justify-between border-b border-line-subtle pb-2 px-1">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
                   <Bell className="size-3.5 text-brand" />
@@ -379,7 +393,7 @@ export default function UserDropdownMenu({
                   <button
                     type="button"
                     onClick={handleMarkAllAsRead}
-                    className="flex items-center gap-1 text-[11px] text-zinc-400 hover:text-cyan-300 transition-colors"
+                    className="flex items-center gap-1 text-[11px] text-ink-muted hover:text-brand transition-colors cursor-pointer"
                   >
                     <Check className="size-3" />
                     <span>{t.markAllRead || 'Mark all read'}</span>
@@ -390,7 +404,7 @@ export default function UserDropdownMenu({
               {/* 消息列表 */}
               <div className="mt-2 max-h-72 overflow-y-auto space-y-1.5 pr-0.5">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-zinc-500">
+                  <div className="py-8 text-center text-xs text-ink-subtle">
                     {t.emptyNotifications || 'No notifications'}
                   </div>
                 ) : (
@@ -401,17 +415,17 @@ export default function UserDropdownMenu({
                       onClick={() => setIsNotifOpen(false)}
                       className={`block rounded-xl p-2.5 text-xs transition-colors ${
                         n.is_read
-                          ? 'bg-white/[0.02] text-zinc-400 hover:bg-white/[0.06] hover:text-white'
-                          : 'bg-gradient-to-r from-pink-500/10 to-purple-500/5 border border-pink-500/20 text-zinc-200 hover:from-pink-500/15'
+                          ? 'bg-white/[0.02] text-ink-muted hover:bg-white/[0.06] hover:text-ink'
+                          : 'bg-brand-soft border border-brand-line/40 text-ink hover:bg-brand-soft/80'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-1.5">
-                        <p className="font-semibold text-white/90 truncate">{n.title}</p>
+                        <p className="font-semibold text-ink truncate">{n.title}</p>
                         {!n.is_read && (
-                          <span className="size-1.5 shrink-0 rounded-full bg-pink-500 mt-1" />
+                          <span className="size-1.5 shrink-0 rounded-full bg-brand mt-1" />
                         )}
                       </div>
-                      <p className="mt-1 line-clamp-2 text-[11px] text-zinc-400 leading-relaxed">
+                      <p className="mt-1 line-clamp-2 text-[11px] text-ink-muted leading-relaxed">
                         {n.content}
                       </p>
                     </Link>
@@ -510,7 +524,7 @@ export default function UserDropdownMenu({
         {/* 语言选择下拉浮层 */}
         {isLangOpen && (
           <div
-            className="absolute right-0 top-full mt-2 w-44 rounded-2xl border border-line bg-overlay p-1.5 text-ink shadow-elevation-3 z-dropdown animate-fade-in duration-fast"
+            className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-1.5 text-ink shadow-elevation-3 z-dropdown animate-fade-in duration-fast"
             role="menu"
             aria-label={t.interfaceLanguage || 'Language'}
           >
@@ -563,15 +577,7 @@ export default function UserDropdownMenu({
         </Link>
       ) : (
         <div className="relative inline-block text-left" ref={menuRef}>
-          {/* 当天首次点击头像领到 1 K币时的高光升腾浮动动效 */}
-          {showCoinPop && (
-            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-3 py-1 text-xs font-black text-black shadow-[0_0_25px_rgba(245,158,11,0.95)] z-tooltip animate-bounce whitespace-nowrap">
-              <Coins className="size-4 text-black shrink-0" />
-              <span>{t.dailyBonusReceived || '+1 K-Coin received!'}</span>
-            </div>
-          )}
-
-          {/* 用户头像圆环触发按钮 (当天首次点击打卡自动领 1 枚 K 币) */}
+          {/* 用户头像圆环触发按钮 */}
           <button
             type="button"
             onClick={() => {
@@ -582,15 +588,13 @@ export default function UserDropdownMenu({
             aria-expanded={isMenuOpen}
             aria-haspopup="true"
             aria-label={t.displayNameFallback || 'User Menu'}
-            className={`group relative flex items-center gap-2 rounded-full p-0.5 transition-all duration-300 focus:outline-none ${
-              showCoinPop
-                ? 'ring-4 ring-amber-400/90 shadow-[0_0_30px_rgba(245,158,11,0.9)] scale-110'
-                : isMenuOpen
-                ? 'ring-2 ring-brand/80 shadow-[0_0_18px_rgba(225,29,116,0.35)] scale-105'
-                : 'hover:ring-2 hover:ring-white/30 hover:scale-105'
+            className={`group relative flex items-center gap-2 rounded-full p-0.5 transition-colors duration-fast focus:outline-none ${FOCUS_RING} ${
+              isMenuOpen
+                ? 'ring-2 ring-brand/80 shadow-elevation-2'
+                : 'hover:ring-2 hover:ring-white/30'
             }`}
           >
-            <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-8 shrink-0 bg-gradient-to-b from-[#1c1e28] to-[#121319] text-xs font-bold text-brand flex items-center justify-center shadow-inner">
+            <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-8 shrink-0 bg-surface-raised text-xs font-bold text-brand flex items-center justify-center">
               <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
                 <UserAvatar
                   src={avatarUrl}
@@ -606,7 +610,7 @@ export default function UserDropdownMenu({
           {/* 悬浮展开用户菜单面板 */}
           {isMenuOpen && (
             <div
-              className="absolute right-0 top-full mt-2.5 w-[292px] rounded-2xl border border-line bg-overlay p-3 text-ink shadow-elevation-3 transition-all z-popover animate-fade-in duration-fast ease-out"
+              className="absolute right-0 top-full mt-2.5 w-[292px] rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-3 text-ink shadow-elevation-3 transition-all z-popover animate-fade-in duration-fast ease-out"
               role="menu"
               aria-orientation="vertical"
             >
@@ -618,23 +622,23 @@ export default function UserDropdownMenu({
                   className="flex min-w-0 items-center gap-2.5 cursor-pointer group"
                   title={activeLocale.startsWith('zh') ? '进入个人主页' : 'Go to Profile'}
                 >
-                  <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-[#1b1c24] flex items-center justify-center text-base font-bold text-cyan-300 shadow-md">
+                  <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-surface-raised flex items-center justify-center text-base font-bold text-brand shadow-elevation-1">
                     <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
                       <UserAvatar
                         src={avatarUrl}
                         name={displayName}
                         className="size-full object-cover group-hover:scale-105 transition-transform"
-                        fallbackClassName="text-cyan-300 text-base"
+                        fallbackClassName="text-brand text-base"
                       />
                     </div>
                   </AvatarFrame>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="truncate text-xs font-bold text-white group-hover:text-cyan-300 transition-colors" title={displayName}>
+                      <p className="truncate text-xs font-bold text-ink group-hover:text-brand transition-colors" title={displayName}>
                         {displayName}
                       </p>
                       {isAdmin && (
-                        <span className="rounded bg-cyan-500/20 px-1 py-0.2 text-[9px] font-bold text-cyan-300 border border-cyan-400/30">
+                        <span className="rounded bg-brand-soft px-1.5 py-0.5 text-[9px] font-bold text-brand border border-brand-line">
                           ADMIN
                         </span>
                       )}
@@ -645,15 +649,15 @@ export default function UserDropdownMenu({
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleCopyUserNumber(userNumber, e);
+                          handleCopyUserNumber(userNumber || user?.id, e);
                         }}
-                        className="truncate text-[11px] text-zinc-400 font-mono hover:text-cyan-300 transition-colors cursor-pointer"
+                        className="truncate text-[11px] text-ink-muted font-mono hover:text-brand transition-colors cursor-pointer"
                         title={t.copyUid || 'Click to copy UID'}
                       >
-                        {userNumber ? `UID: ${userNumber}` : (user?.email || (t.displayNameFallback || 'Creator'))}
+                        {userNumber || user?.id ? `UID: ${userNumber || user.id}` : (user?.email || (t.displayNameFallback || 'Creator'))}
                       </button>
                       {copyFeedback && (
-                        <span className="text-[10px] text-emerald-400 font-medium animate-fade-in">
+                        <span className="text-[10px] text-brand font-medium animate-fade-in">
                           {t.copiedUid || 'Copied'}
                         </span>
                       )}
@@ -665,7 +669,7 @@ export default function UserDropdownMenu({
                 <button
                   type="button"
                   onClick={() => handleOpenAccountModal('settings')}
-                  className="group flex shrink-0 items-center gap-0.5 text-xs text-zinc-400 transition-colors hover:text-cyan-300 cursor-pointer"
+                  className="group flex shrink-0 items-center gap-0.5 text-xs text-ink-muted transition-colors hover:text-brand cursor-pointer"
                   title="修改个人用户名与头像"
                 >
                   <span className="text-[11px]">编辑资料</span>
@@ -687,15 +691,15 @@ export default function UserDropdownMenu({
                 {/* 算力卡片 (仅显示算力与充值/升级入口) */}
                 <div className="flex-1 flex items-center justify-between h-9 px-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all hover:border-white/15">
                   <div className="flex items-center gap-1.5">
-                    <Zap className="size-3.5 text-cyan-300 shrink-0" />
-                    <span className="text-xs font-bold font-mono text-cyan-300">{effectiveCredits}</span>
+                    <Zap className="size-3.5 text-brand shrink-0" />
+                    <span className="text-xs font-bold font-mono text-ink">{effectiveCredits}</span>
                   </div>
 
                   {/* 充值/升级方案入口 -> 直达会员订阅弹窗 */}
                   <button
                     type="button"
                     onClick={handleOpenSubscriptionModal}
-                    className="flex items-center rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold text-white transition-all hover:bg-amber-400 hover:text-black cursor-pointer active:scale-95 shadow-elevation-1"
+                    className="flex items-center rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold text-white transition-all hover:bg-amber-500/20 hover:text-amber-300 border border-transparent hover:border-amber-500/30 cursor-pointer active:scale-95 shadow-elevation-1"
                     title="查看个人订阅权益、积分充值与开通"
                   >
                     <span>{t.topUpUpgrade || '充值/升级'}</span>
@@ -709,13 +713,13 @@ export default function UserDropdownMenu({
                 <Link
                   href={profileUrl}
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
+                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="size-4 text-purple-400 transition-transform group-hover:scale-110" />
+                    <Sparkles className="size-4 text-brand transition-transform group-hover:scale-110" />
                     <span>{activeLocale.startsWith('zh') ? '个人主页' : 'Creator Profile'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400" />
+                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
                 </Link>
 
                 {/* 2. 账号与设置 (个人资料、头像、用户名、密码安全、绑定) */}
@@ -726,13 +730,13 @@ export default function UserDropdownMenu({
                     if (onOpenSettings) onOpenSettings();
                     else handleOpenAccountModal('settings');
                   }}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
+                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <UserRound className="size-4 text-cyan-400 transition-transform group-hover:scale-110" />
+                    <UserRound className="size-4 text-brand transition-transform group-hover:scale-110" />
                     <span>{t.accountSettings || '账号与设置'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400" />
+                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
                 </button>
 
                 {/* 3. 订阅与账单 (整合会员订阅与算力充值，直接跳转到订阅详情页) */}
@@ -742,13 +746,13 @@ export default function UserDropdownMenu({
                     setIsMenuOpen(false);
                     handleOpenAccountModal('billing');
                   }}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
+                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <Crown className="size-4 text-amber-400 transition-transform group-hover:scale-110" />
                     <span>订阅与账单</span>
                   </div>
-                  <span className="rounded-full bg-[#e6ff55] px-1.5 py-0.2 text-[9px] font-black text-black">
+                  <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">
                     VIP
                   </span>
                 </button>
@@ -758,13 +762,13 @@ export default function UserDropdownMenu({
                   <Link
                     href="/admin"
                     onClick={() => setIsMenuOpen(false)}
-                    className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-cyan-300 transition-all hover:bg-cyan-500/10 hover:text-cyan-200"
+                    className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-wash-strong hover:text-ink"
                   >
                     <div className="flex items-center gap-2.5">
-                      <ShieldCheck className="size-4 text-cyan-400 transition-transform group-hover:scale-110" />
+                      <ShieldCheck className="size-4 text-brand transition-transform group-hover:scale-110" />
                       <span>{t.adminConsole || 'Admin Console'}</span>
                     </div>
-                    <ChevronRight className="size-3.5 text-cyan-600 transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-400" />
+                    <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
                   </Link>
                 )}
 
@@ -772,13 +776,13 @@ export default function UserDropdownMenu({
                 <Link
                   href={getAuthRoutes(activeLocale).changePasswordUrl}
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-zinc-300 transition-all hover:bg-white/[0.06] hover:text-white cursor-pointer"
+                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <KeyRound className="size-4 text-cyan-400/90 transition-transform group-hover:scale-110" />
+                    <KeyRound className="size-4 text-ink-muted transition-transform group-hover:scale-110" />
                     <span>{getAuthRoutes(activeLocale).isChinese ? '修改密码' : 'Change Password'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400" />
+                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
                 </Link>
               </div>
 
@@ -788,9 +792,9 @@ export default function UserDropdownMenu({
               <button
                 type="button"
                 onClick={handleLogoutClick}
-                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-zinc-400 transition-all hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
               >
-                <LogOut className="size-4 text-zinc-500 transition-colors group-hover:text-red-400" />
+                <LogOut className="size-4 text-ink-subtle transition-colors group-hover:text-red-400" />
                 <span>{t.signOut || 'Sign out'}</span>
               </button>
             </div>

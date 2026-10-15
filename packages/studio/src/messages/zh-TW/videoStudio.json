@@ -81,6 +81,7 @@
     "labelExceedsLimit": "{label} 超過 {limit}MB 限制。",
     "labelUploadFailed": "{label} 上傳失敗：{message}",
     "noPromptForModel": "請輸入該型號的提示。",
+    "generationCapabilityUnavailable": "此模型尚無已驗證的伺服器生成能力。",
     "uploadVideoFirst": "請先上傳影片。",
     "uploadReferenceImageForMotion": "請上傳運動控制的參考影像。",
     "uploadAtLeastOneReferenceImage": "請先上傳至少一張參考圖片。",

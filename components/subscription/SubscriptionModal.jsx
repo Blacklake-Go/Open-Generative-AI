@@ -405,9 +405,9 @@ export default function SubscriptionModal({
 
   const contentInner = (
     <div
-      className={`relative w-full max-w-6xl mx-auto rounded-2xl border border-line bg-base p-4 sm:p-7 text-ink shadow-elevation-4 ${
-        isInline ? '' : 'my-auto'
-      }`}
+      className={`relative w-full max-w-6xl mx-auto rounded-2xl border border-line ${
+        isInline ? 'bg-surface' : 'bg-overlay my-auto'
+      } p-4 sm:p-7 text-ink shadow-elevation-4`}
       role={isInline ? 'region' : 'dialog'}
       aria-modal={isInline ? undefined : 'true'}
       aria-label="会员订阅方案"
@@ -419,7 +419,7 @@ export default function SubscriptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
+            className="flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink active:scale-95 active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             aria-label="关闭"
           >
             <X className="size-4" />
@@ -438,7 +438,7 @@ export default function SubscriptionModal({
         <button
           type="button"
           onClick={() => setBillingCycle('yearly')}
-          className="rounded-full bg-brand px-3.5 py-1 text-micro font-bold text-ink-on-accent hover:bg-brand-hover active:bg-brand-active transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-elevation-1"
+          className="rounded-full bg-brand px-3.5 py-1 text-micro font-bold text-ink-on-accent hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer shadow-elevation-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
         >
           立即抢购
         </button>
@@ -646,7 +646,7 @@ export default function SubscriptionModal({
                     type="button"
                     onClick={() => handleSubscribe(plan)}
                     disabled={isRechargeOpen && selectedPlanId === plan.id}
-                    className={`mt-4 w-full h-11 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-150 hover:scale-[1.03] active:scale-[0.98] cursor-pointer shadow-elevation-1 flex items-center justify-center gap-1.5 ${plan.btnBgClass}`}
+                    className={`mt-4 w-full h-11 rounded-full text-xs font-black uppercase tracking-wider transition-[background-color,color,transform] duration-fast ease-standard hover:opacity-90 active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1 flex items-center justify-center gap-1.5 ${plan.btnBgClass}`}
                   >
                     {isRechargeOpen && selectedPlanId === plan.id ? (
                       <>
@@ -911,7 +911,7 @@ export default function SubscriptionModal({
                 id: 'faq-5',
                 order: 5,
                 question: '订阅后切换套餐，算力及权益会怎么变化？',
-                answer: `KoyoSIM 提供灵活的月度、季度与年度订阅方案，每个方案都包含一定数量的算力，可用于图像生成、视频生成、音乐生成与编辑等功能。注：进行档位升级或延长时，暂不支持补差价升级方式，升级支付档位正常价格。具体分为以下六种情况：
+                answer: `SupDance 提供灵活的月度、季度与年度订阅方案，每个方案都包含一定数量的算力，可用于图像生成、视频生成、音乐生成与编辑等功能。注：进行档位升级或延长时，暂不支持补差价升级方式，升级支付档位正常价格。具体分为以下六种情况：
 
 (1) 月付套餐：从低档位升级到高档位
 • 剩余未使用的算力，会继续为您保留（有效期不变）
@@ -964,14 +964,14 @@ export default function SubscriptionModal({
               {
                 id: 'faq-9',
                 order: 9,
-                question: '我在 KoyoSIM 生成的内容归谁所有？',
-                answer: '在法律允许的最大范围内，您拥有在 KoyoSIM 上生成的所有内容的所有权。KoyoSIM 不会对用户创作的作品主张任何版权。这意味着您可以自由地发布、下载、分发和商用这些视频及图像。',
+                question: '我在 SupDance 生成的内容归谁所有？',
+                answer: '在法律允许的最大范围内，您拥有在 SupDance 上生成的所有内容的所有权。SupDance 不会对用户创作的作品主张任何版权。这意味着您可以自由地发布、下载、分发和商用这些视频及图像。',
               },
               {
                 id: 'faq-10',
                 order: 10,
                 question: '免责声明与联系方式',
-                answer: '上述内容仅供参考。KoyoSIM 会根据产品优化与用户体验需要，不断调整功能、价格、订阅方案及算力政策。如出现争议或不一致情况，将以后台系统记录与实际账单数据为准，最终解释权归 KoyoSIM 所有。其他相关细则详见《用户协议》与《隐私政策》。',
+                answer: '上述内容仅供参考。SupDance 会根据产品优化与用户体验需要，不断调整功能、价格、订阅方案及算力政策。如出现争议或不一致情况，将以后台系统记录与实际账单数据为准，最终解释权归 SupDance 所有。其他相关细则详见《用户协议》与《隐私政策》。',
               },
             ]).map((faq, idx) => {
               const isExpanded = expandedFaqIds.has(faq.id);
@@ -1042,7 +1042,7 @@ export default function SubscriptionModal({
           </div>
         ) : (
           <div
-            className="fixed inset-0 z-modal overflow-y-auto bg-black/80 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200"
+            className="fixed inset-0 z-modal overflow-y-auto bg-scrim backdrop-blur-xl p-3 sm:p-6 animate-in fade-in duration-modal ease-enter"
             onClick={(e) => {
               if (e.target === e.currentTarget) onClose?.();
             }}

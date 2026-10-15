@@ -48,7 +48,7 @@ export async function pollForGenerationResult({
       response = await fetchImpl(pollUrl, {
         headers: {
           "Content-Type": "application/json",
-          ...(apiKey && apiKey !== 'koyosim-account-session' ? { "x-api-key": apiKey } : {}),
+          ...(apiKey && apiKey !== 'supdance-account-session' ? { "x-api-key": apiKey } : {}),
         },
         credentials: "include",
       });
