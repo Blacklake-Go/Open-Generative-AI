@@ -75,7 +75,6 @@ export const CANONICAL_GROUPS = [
     baseCredits: 15,
     preferredProvider: 'byteplus',
     aliases: [
-      'seedream-5.0-edit',
       'bytedance-seedream-5.0-pro',
       'bytedance-seedream-5.0-pro-edit',
       'bytedance-seedream-v5.0',
@@ -83,15 +82,24 @@ export const CANONICAL_GROUPS = [
     ],
   },
   {
+    targetId: 'seedream-5.0-edit',
+    name: 'Seedream 5.0 Edit',
+    category: 'image',
+    display_name: '字节跳动 Seedream 5.0 智能改图重绘',
+    sort: 2,
+    baseCredits: 15,
+    preferredProvider: 'volcengine',
+    aliases: [],
+  },
+  {
     targetId: 'seedream-4.5',
     name: 'Seedream 4.5',
     category: 'image',
     display_name: '字节跳动 Seedream 4.5',
-    sort: 2,
+    sort: 3,
     baseCredits: 12,
     preferredProvider: 'byteplus',
     aliases: [
-      'seedream-4.0',
       'seedream-3.0',
       'bytedance-seedream-v4.5',
       'bytedance-seedream-v4.5-edit',
@@ -100,6 +108,16 @@ export const CANONICAL_GROUPS = [
       'bytedance-seedream-edit-v4',
       'bytedance-seedream-v3'
     ],
+  },
+  {
+    targetId: 'seedream-4.0',
+    name: 'Seedream 4.0',
+    category: 'image',
+    display_name: '字节跳动 Seedream 4.0',
+    sort: 4,
+    baseCredits: 10,
+    preferredProvider: 'volcengine',
+    aliases: [],
   },
   {
     targetId: 'seedance-2.0',
@@ -184,6 +202,16 @@ export const CANONICAL_GROUPS = [
 
   // === 阿里百炼 / DashScope (Wan 万相 & 通义千问) ===
   {
+    targetId: 'wan2.1-text-to-image',
+    name: '阿里 万相 2.1 生图',
+    category: 'image',
+    display_name: '阿里 万相 2.1 (通义万相极速生图)',
+    sort: 10,
+    baseCredits: 15,
+    preferredProvider: 'alibaba',
+    aliases: ['wanx2.1-t2i-turbo'],
+  },
+  {
     targetId: 'wan-2.1',
     name: '阿里 万相 2.1',
     category: 'video',
@@ -191,7 +219,7 @@ export const CANONICAL_GROUPS = [
     sort: 11,
     baseCredits: 26,
     preferredProvider: 'alibaba',
-    aliases: ['wan2.1-text-to-image', 'wan2.1-image-to-video', 'wan2.1-t2v-14b', 'wan2.1-i2v-14b', 'wanx2.1-t2v-plus'],
+    aliases: ['wan2.1-image-to-video', 'wan2.1-t2v-14b', 'wan2.1-i2v-14b', 'wanx2.1-t2v-plus'],
   },
   {
     targetId: 'wan-2.2',
