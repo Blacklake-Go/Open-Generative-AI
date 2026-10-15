@@ -1,4 +1,3 @@
-import { PageHeader } from '@/components/admin/AdminUi';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany } from '@/lib/db/index';
@@ -147,17 +146,12 @@ export default async function ModelsPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="AI 模型中心"
-        title="模型管理中心"
-        description="统一管理模型资产、前台展示、规格能力与定价利润。"
-      />
+    <div className="pt-1">
       <FrontendConfigClient
         initialModels={JSON.parse(JSON.stringify(models))}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
       />
-    </>
+    </div>
   );
 }
 
