@@ -533,7 +533,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── ROW 1: 顶层业务三位一体导航 (微信规范下划线选项卡: 严格对标截图1) ─── */}
+      {/* ─── ROW 1: 顶层业务三位一体切换卡片组 (模型管理 / 供应商管理 / 模型定价) ─── */}
       <ModelNavTabs
         modelCount={models.length}
         rightAction={
@@ -542,7 +542,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               variant="primary"
               size="sm"
               onClick={() => setRepoDrawerOpen(true)}
-              className="text-xs font-semibold shadow-elevation-2"
+              className="inline-flex items-center justify-center gap-1.5 h-[42px] px-4 rounded-xl text-xs font-semibold shadow-elevation-2 shrink-0"
             >
               <Plus className="size-3.5 mr-1" />
               从模型库引入
@@ -551,14 +551,14 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         }
       />
 
-      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块: Logo 放大 250% + 图标化紧凑胶囊) ─── */}
-      <div className="flex flex-wrap items-center gap-2 py-2 px-3 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
+      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块: Logo 放大 250% + 统一高度 h-[42px]) ─── */}
+      <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         <button
           type="button"
           onClick={() => handleBrandSelect('all')}
           title={`全部厂商 · 共 ${models.length} 个模型`}
           aria-label="全部厂商"
-          className={`inline-flex items-center gap-2 rounded-full px-3.5 h-[44px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
+          className={`inline-flex items-center gap-2 rounded-full px-3.5 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
             selectedBrand === 'all'
               ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
               : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
@@ -584,7 +584,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               onClick={() => handleBrandSelect(brand.id)}
               title={`${brand.name} (${brand.shortName}) · 共 ${count} 个模型`}
               aria-label={`${brand.shortName} · ${count} 个模型`}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 h-[44px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 group ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 group ${
                 isSelected
                   ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
                   : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
@@ -608,10 +608,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         })}
       </div>
 
-      {/* ─── ROW 3: 业务任务场景单行过滤条 (草稿图4第3行绿色模块) ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2 rounded-2xl bg-surface-raised border border-line-subtle">
+      {/* ─── ROW 3: 业务任务场景单行过滤条 (草稿图4第3行绿色模块: 统一高度 h-[42px]) ─── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         {/* Left: Task Scene Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
           {TASK_SCENES.map((scene) => {
             const isActive = activeScene === scene.id;
             const count = sceneCounts[scene.id] || 0;
@@ -620,10 +620,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                 key={scene.id}
                 type="button"
                 onClick={() => setActiveScene(scene.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 h-[42px] text-xs font-medium whitespace-nowrap transition-all border shrink-0 ${
                   isActive
-                    ? 'bg-brand text-white font-bold shadow-elevation-1'
-                    : 'text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                    ? 'bg-brand text-white font-bold border-brand shadow-elevation-1'
+                    : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
                 }`}
               >
                 <span>{scene.label}</span>
@@ -642,29 +642,29 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-line-subtle bg-well px-2.5 py-1.5 text-xs text-ink outline-none cursor-pointer focus:border-brand"
+            className="rounded-xl border border-line bg-well px-3 h-[42px] text-xs text-ink outline-none cursor-pointer focus:border-brand"
           >
             <option value="all">全部展示状态</option>
             <option value="visible">仅看展示已开</option>
             <option value="hidden">仅看展示已关</option>
           </select>
 
-          <div className="relative w-48 sm:w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-ink-subtle" />
+          <div className="relative w-48 sm:w-56 h-[42px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-subtle" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜索模型名称或ID..."
-              className="w-full rounded-xl border border-line-subtle bg-well pl-7 pr-6 py-1.5 text-xs text-ink placeholder:text-ink-subtle outline-none focus:border-brand"
+              className="w-full rounded-xl border border-line bg-well pl-8 pr-7 h-[42px] text-xs text-ink placeholder:text-ink-subtle outline-none focus:border-brand"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink"
               >
-                <X className="size-3" />
+                <X className="size-3.5" />
               </button>
             )}
           </div>

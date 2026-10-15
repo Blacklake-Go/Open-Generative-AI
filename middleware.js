@@ -94,9 +94,9 @@ export async function middleware(request) {
 
     // 0.5. 无限画布 (/canvas 或 /:locale/canvas) 属于独立子站点，规范重定向至 https://canvas.supdance.com
     if (pathname === '/canvas' || pathname.startsWith('/canvas/') || pathname.match(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\/canvas(?:\/.*)?$/)) {
-        const tail = pathname.replace(/^(?:\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?)?\/canvas/, '') || '/';
+        const canvasPath = pathname.replace(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?(?=\/|$)/, '') || '/canvas';
         const canvasOrigin = 'https://canvas.supdance.com';
-        const redirectUrl = new URL(`${tail}${url.search}`, canvasOrigin);
+        const redirectUrl = new URL(`${canvasPath}${url.search}`, canvasOrigin);
         return addSecurityHeaders(NextResponse.redirect(redirectUrl, 308));
     }
 

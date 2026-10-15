@@ -7,6 +7,21 @@ import { createCanvasProject, listCanvasProjects } from '@/lib/repositories/canv
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function projectPayload(project) {
+  if (!project) return null;
+  const snapshot = typeof project.snapshot_json === 'string' ? JSON.parse(project.snapshot_json) : (project.snapshot_json || project.snapshot || {});
+  return {
+    id: project.id,
+    ownerUserId: project.owner_user_id || project.ownerUserId,
+    name: project.name,
+    thumbnailAssetId: project.thumbnail_asset_id || project.thumbnailAssetId || null,
+    snapshot,
+    version: Number(project.version),
+    createdAt: project.created_at || project.createdAt,
+    updatedAt: project.updated_at || project.updatedAt,
+  };
+}
+
 export function OPTIONS(request) {
   return canvasPreflight(request, 'GET, POST, OPTIONS');
 }
@@ -46,7 +61,7 @@ export async function POST(request) {
       return canvasJson(request, { error: '迁移标识无效', code: 'INVALID_MIGRATION_ID' }, { status: 422 });
     }
     const result = await createCanvasProject(user.id, { name, snapshot, migrationId });
-    return canvasJson(request, { project: result.project, idempotent: result.idempotent }, { status: result.idempotent ? 200 : 201 });
+    return canvasJson(request, { project: projectPayload(result.project), idempotent: result.idempotent }, { status: result.idempotent ? 200 : 201 });
   } catch (error) {
     const status = error.code === 'BODY_TOO_LARGE' || error.code === 'PROJECT_SNAPSHOT_TOO_LARGE' ? 413
       : error.code === 'INLINE_MEDIA_UPLOAD_REQUIRED' ? 422

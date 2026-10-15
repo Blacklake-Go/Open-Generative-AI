@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/admin/AdminUi';
+import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { getProviderSecretsMetadata } from '@/lib/application/dataAccess.js';
@@ -48,13 +48,9 @@ export default async function ProvidersAdminPage() {
   );
 
   return (
-    <>
-      <PageHeader
-        eyebrow="AI 模型中心"
-        title="模型渠道与健康"
-        description="统一管理平台各 AI 供应商驱动连接、API Key 与路由优先级，实时监控通道成功率、延迟及断路器熔断状态。"
-      />
+    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+      <ModelNavTabs activeTab="providers" />
       <ProvidersManagerClient initialChannels={channels} />
-    </>
+    </div>
   );
 }
