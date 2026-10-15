@@ -22,13 +22,14 @@ NEXT_ARCHIVE="/tmp/next_supdance_fusion.tar.gz"
 
 rm -f "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE"
 
-COPYFILE_DISABLE=1 tar --no-xattrs -czf "$SOURCE_ARCHIVE" \
+COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCHIVE" \
   packages/studio \
   app \
   components \
   lib \
   messages \
   scripts \
+  public \
   middleware.js \
   tailwind.config.js \
   package.json \
@@ -98,6 +99,9 @@ rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
 rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
 rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
+if [ -d \"\$STAGE/public\" ]; then
+  rsync -a --exclude=\"uploads\" \"\$STAGE/public/\" \"\$WEB_DIR/public/\"
+fi
 cp \"\$STAGE/middleware.js\" \"\$WEB_DIR/middleware.js\"
 cp \"\$STAGE/app/globals.css\" \"\$WEB_DIR/app/globals.css\"
 cp \"\$STAGE/tailwind.config.js\" \"\$WEB_DIR/tailwind.config.js\"
@@ -113,7 +117,12 @@ chown -R www:www \"\$WEB_DIR/app\"
 chown -R www:www \"\$WEB_DIR/lib\"
 chown -R www:www \"\$WEB_DIR/messages\"
 chown -R www:www \"\$WEB_DIR/scripts\"
+chown -R www:www \"\$WEB_DIR/public\"
 chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/package.json\"
+
+# 执行数据库版本迁移
+echo \"执行数据库版本迁移 (058 等)...\"
+sudo -u www node --env-file=/etc/supdance.env \"\$WEB_DIR/scripts/migrate.mjs\"
 
 # 清理暂存文件
 rm -rf \"\$STAGE\" /tmp/source_supdance_fusion.tar.gz /tmp/next_supdance_fusion.tar.gz
@@ -143,6 +152,11 @@ echo '=== /api/ready 健康检查 ==='
 curl -s http://127.0.0.1:3200/api/ready
 echo ''
 
+echo '=== SEO / Sitemap / Robots 接口校验 ==='
+curl -s -o /dev/null -w 'Sitemap.xml: HTTP %{http_code}\n' http://127.0.0.1:3200/sitemap.xml
+curl -s -o /dev/null -w 'Robots.txt: HTTP %{http_code}\n' http://127.0.0.1:3200/robots.txt
+curl -s -o /dev/null -w 'IndexNow Key: HTTP %{http_code}\n' http://127.0.0.1:3200/api/seo/indexnow-key
+
 echo '=== /api/models/active 接口校验 ==='
 curl -s http://127.0.0.1:3200/api/models/active | jq -c '{success, models_count: (.models | length)}'
 echo ''
@@ -157,6 +171,9 @@ echo ''
 # 5. 公网域名验证
 echo "[5/5] 公网域名 (https://www.supdance.com) 验收..."
 curl -s -I https://www.supdance.com/zh | grep -E "HTTP|set-cookie|content-type" || true
+curl -s -I https://www.supdance.com/sitemap.xml | grep -E "HTTP|content-type" || true
+echo '=== 线上 robots.txt 预览 ==='
+curl -s https://www.supdance.com/robots.txt | head -n 6 || true
 curl -s https://www.supdance.com/api/ready
 echo ""
 
