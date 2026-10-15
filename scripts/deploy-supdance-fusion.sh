@@ -122,7 +122,7 @@ chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$W
 
 # 执行数据库版本迁移
 echo \"执行数据库版本迁移 (058 等)...\"
-sudo -u www node --env-file=/etc/supdance.env \"\$WEB_DIR/scripts/migrate.mjs\"
+(cd \"\$WEB_DIR\" && sudo -u www node --env-file=/etc/supdance.env scripts/migrate.mjs)
 
 # 清理暂存文件
 rm -rf \"\$STAGE\" /tmp/source_supdance_fusion.tar.gz /tmp/next_supdance_fusion.tar.gz
