@@ -57,8 +57,8 @@ export default async function ModelRoutingPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
-      <ModelNavTabs activeTab="routing" />
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
+      <ModelNavTabs activeTab="providers" />
       <RoutingClient
         initialSnapshot={JSON.parse(JSON.stringify(snapshot))}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
