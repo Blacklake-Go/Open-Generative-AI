@@ -1,9 +1,10 @@
 import pg from 'pg';
 
-const { Pool } = pg;
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres@127.0.0.1:5432/koyosim_ai',
-});
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is required');
+}
+const pool = new Pool({ connectionString });
 
 async function main() {
   const client = await pool.connect();

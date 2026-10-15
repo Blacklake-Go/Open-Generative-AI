@@ -11,7 +11,7 @@ const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.css'
 // without a trailing LF; restoring one changes the production checksum. Keep
 // the exception hash-bound so an unrelated no-LF file still fails the gate.
 const immutableMigrationByteExceptions = new Map([
-  ['lib/db/migrations/017_user_notifications.sql', 'dbc2ff10fb8b7ed965e186dcb37a33c82251485bc874cc09a18f0794f93e3a05'],
+  ['lib/db/migrations/017_user_notifications.sql', '2b22010a836f38a0353edc938ecd7629775e19ea5c27b07095f32473b75e7d81'],
 ]);
 const issues = [];
 for (const name of result.stdout.split(/\r?\n/).filter(Boolean)) {

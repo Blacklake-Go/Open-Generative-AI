@@ -281,33 +281,14 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
-        <div className="flex items-center gap-3">
-          <a
-            href="https://analytics.google.com/analytics/web/#/realtime"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
-          >
-            <span>实时访客看版</span>
-            <ExternalLink className="size-3" />
-          </a>
-          <a
-            href="https://analytics.google.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-          >
-            <span>控制台首页</span>
-            <ExternalLink className="size-3" />
-          </a>
-        </div>
         <a
-          href="https://support.google.com/analytics/answer/9304153"
+          href="https://analytics.google.com/analytics/web/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
         >
-          官方获取文档 ↗
+          <span>Google Analytics 控制台</span>
+          <ExternalLink className="size-3" />
         </a>
       </div>
     </Card>

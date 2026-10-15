@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ShieldCheck, Save, CheckCircle2, ExternalLink, HelpCircle } from 'lucide-react';
+import { ShieldCheck, Save, CheckCircle2, ExternalLink } from 'lucide-react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
 import { normalizeVerificationTag } from '@/lib/services/seoCore';
 
@@ -10,28 +10,28 @@ const VERIFICATION_PLATFORMS = [
     id: 'google',
     name: 'Google Search Console',
     metaTag: 'google-site-verification',
-    placeholder: '支持粘贴纯 Token 或整段 <meta name="google-site-verification" content="..." />',
+    placeholder: '粘贴 Token 或 <meta> 标签',
     consoleUrl: 'https://search.google.com/search-console',
   },
   {
     id: 'baidu',
     name: '百度搜索资源平台',
     metaTag: 'baidu-site-verification',
-    placeholder: '支持粘贴纯 Token 或整段 <meta name="baidu-site-verification" content="..." />',
+    placeholder: '粘贴 Token 或 <meta> 标签',
     consoleUrl: 'https://ziyuan.baidu.com/site',
   },
   {
     id: 'bing',
     name: '必应 Bing Webmaster Tools',
     metaTag: 'msvalidate.01',
-    placeholder: '支持粘贴纯 Token 或整段 <meta name="msvalidate.01" content="..." />',
+    placeholder: '粘贴 Token 或 <meta> 标签',
     consoleUrl: 'https://www.bing.com/webmasters',
   },
   {
     id: 'yandex',
     name: 'Yandex Webmaster',
     metaTag: 'yandex-verification',
-    placeholder: '支持粘贴纯 Token 或整段 <meta name="yandex-verification" content="..." />',
+    placeholder: '粘贴 Token 或 <meta> 标签',
     consoleUrl: 'https://webmaster.yandex.com',
   },
 ];
@@ -93,10 +93,7 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-sm">各大搜索引擎站长平台站内验证</h3>
-              <span className="mt-0.5 inline-block text-[11px] text-gray-400">
-                HTML 标签智能清洗与自动注入
-              </span>
+              <h3 className="font-semibold text-white text-sm">站长平台所有权验证</h3>
             </div>
           </div>
           <StatusBadge tone={configuredCount > 0 ? 'good' : 'neutral'}>
@@ -104,15 +101,12 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
           </StatusBadge>
         </div>
 
-        <p className="text-xs leading-5 text-gray-300">
-          配置站长所有权验证代码，前台将在首屏 HTML 自动输出对应的 Meta 标签。支持直接粘贴整段 HTML 标签代码，系统将自动清洗提取纯 Token。
-        </p>
-
         {/* Platform Verification Inputs */}
         <div className="space-y-3">
           {VERIFICATION_PLATFORMS.map((platform) => {
             const currentToken = tokens[platform.id] || '';
             const isConfigured = Boolean(currentToken);
+
 
             return (
               <div

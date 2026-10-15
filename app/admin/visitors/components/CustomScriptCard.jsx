@@ -23,23 +23,15 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-amber-400">
-              <Code2 className="size-5" />
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-amber-400">
+              <Code2 className="size-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-sm">自定义统计代码与第三方探针</h3>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-400">
-                  高级扩展
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-gray-400">
-                支持加载自建分析平台（如 Umami, Plausible）或第三方在线客服、监测探针代码。
-              </p>
+              <h3 className="font-semibold text-white text-sm">自定义统计代码与第三方探针</h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <StatusBadge tone={custom.enabled ? 'good' : 'neutral'}>
               {custom.enabled ? '已启用' : '未启用'}
             </StatusBadge>
@@ -64,7 +56,7 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-2">
+        <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/30 p-3.5 space-y-2">
           <div className="flex items-center justify-between">
             <label htmlFor="custom-script-input" className="text-xs font-medium text-gray-300">
               JavaScript 埋点代码或完整 &lt;script&gt; 标签
@@ -84,7 +76,7 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
             value={code}
             onChange={handleCodeChange}
             placeholder="<!-- 粘贴第三方服务商提供的完整 <script> 埋点代码，或纯 JS 函数逻辑 -->"
-            className={`w-full font-mono text-xs rounded-xl border px-3.5 py-2.5 text-gray-200 placeholder-white/20 outline-none transition-colors ${
+            className={`w-full font-mono text-xs rounded-xl border px-3 py-2 text-gray-200 placeholder-white/20 outline-none transition-colors ${
               isOverLimit
                 ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
                 : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
@@ -98,47 +90,6 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
               </span>
             </p>
           )}
-          <div className="flex items-start gap-1.5 text-[11px] text-amber-400/90 leading-4">
-            <ShieldAlert className="size-3.5 shrink-0 text-amber-400 mt-0.5" />
-            <span>
-              安全提示：脚本将通过客户端隔离组件动态注入执行，严禁粘贴来历不明的未授权脚本，以保障前台数据与会话安全。
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] pt-4">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
-          <span>常用隐私合规方案参考：</span>
-          <a
-            href="https://cloud.umami.is/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
-          >
-            <span>Umami</span>
-            <ExternalLink className="size-3" />
-          </a>
-          <span className="text-white/20">·</span>
-          <a
-            href="https://plausible.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
-          >
-            <span>Plausible</span>
-            <ExternalLink className="size-3" />
-          </a>
-          <span className="text-white/20">·</span>
-          <a
-            href="https://www.51.la/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
-          >
-            <span>51LA</span>
-            <ExternalLink className="size-3" />
-          </a>
         </div>
       </div>
     </Card>

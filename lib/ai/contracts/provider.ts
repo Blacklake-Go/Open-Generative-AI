@@ -1,6 +1,6 @@
 /**
  * Standard Model Provider Gateway Contract
- * All downstream AI providers (OpenAI, Kling, Volcengine, Minimax, RunningHub, MuAPI, etc.)
+ * All downstream AI providers (OpenAI, Kling, Volcengine, Minimax, RunningHub, BytePlus, etc.)
  * must implement this contract to decouple provider-specific formats from core generation dispatch.
  */
 
@@ -54,7 +54,7 @@ export interface ParameterValidationResult {
 }
 
 export interface IModelProvider {
-  /** Unique provider identity (e.g. 'openai', 'volcengine', 'kling', 'runninghub', 'muapi') */
+  /** Unique provider identity (e.g. 'openai', 'volcengine', 'kling', 'runninghub', 'byteplus') */
   readonly providerId: string;
 
   /**

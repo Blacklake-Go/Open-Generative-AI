@@ -64,17 +64,10 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
             </div>
             <div>
               <h3 className="font-semibold text-white text-sm">全局 TDK 与社交分享元数据</h3>
-              <span className="mt-0.5 inline-block text-[11px] text-gray-400">
-                Title / Description / Keywords / OpenGraph
-              </span>
             </div>
           </div>
           <StatusBadge tone="good">已生效</StatusBadge>
         </div>
-
-        <p className="text-xs leading-5 text-gray-300">
-          配置站点的默认标题模版、全局元描述、关键词列表及规范链接 (Canonical Base)，并在前台动态注入到页面 Head 中。
-        </p>
 
         {/* Inputs */}
         <div className="space-y-3">
@@ -99,7 +92,6 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
                 placeholder="%s | SupDance AI Studio"
                 className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
               />
-              <span className="block text-[10px] text-gray-400">%s 会被子页面标题自动替换</span>
             </div>
 
             <div className="rounded-xl border border-white/[0.06] bg-black/30 p-3 space-y-1.5">
@@ -126,7 +118,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
           </div>
 
           <div className="rounded-xl border border-white/[0.06] bg-black/30 p-3 space-y-1.5">
-            <label className="text-[11px] font-medium text-gray-300">关键词 (Keywords，以英文或中文逗号隔开)</label>
+            <label className="text-[11px] font-medium text-gray-300">关键词 (Keywords)</label>
             <input
               type="text"
               value={formData.keywords}
@@ -137,7 +129,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
           </div>
 
           <div className="rounded-xl border border-white/[0.06] bg-black/30 p-3 space-y-1.5">
-            <label className="text-[11px] font-medium text-gray-300">OpenGraph 社交卡片分享封面 (OG Image URL)</label>
+            <label className="text-[11px] font-medium text-gray-300">社交分享封面 (OG Image URL)</label>
             <input
               type="text"
               value={formData.ogImage}

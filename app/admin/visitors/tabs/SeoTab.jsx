@@ -2,15 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Globe,
-  FileText,
-  Zap,
-  ShieldCheck,
   RotateCw,
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import { Card, StatusBadge } from '@/components/admin/AdminUi';
+
 import SeoMetadataCard from '../seo/SeoMetadataCard';
 import SearchVerificationCard from '../seo/SearchVerificationCard';
 import SitemapRobotsCard from '../seo/SitemapRobotsCard';
@@ -145,20 +141,20 @@ export default function SeoTab() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-2xl bg-white/[0.03]" />
-          ))}
-        </div>
         <div className="h-96 animate-pulse rounded-2xl bg-white/[0.03]" />
       </div>
     );
   }
 
-  const verifiedCount = Object.values(seoConfig?.verification || {}).filter(Boolean).length;
-
   return (
     <div className="space-y-6">
+      {/* 顶部标题栏 */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-white tracking-[-0.01em]">SEO 与各大搜索引擎链接</h2>
+        </div>
+      </div>
+
       {/* Notice Banner */}
       {notice && (
         <div
@@ -177,55 +173,6 @@ export default function SeoTab() {
         </div>
       )}
 
-      {/* 核心 SEO 与推送概览 Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">
-              动态站点地图
-            </span>
-            <FileText className="size-4 text-cyan-400" />
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-white">/sitemap.xml</p>
-          <p className="mt-1 text-xs text-gray-400">全站公开路由自动索引聚合</p>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">
-              网络爬虫协议
-            </span>
-            <Globe className="size-4 text-cyan-400" />
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-white">/robots.txt</p>
-          <p className="mt-1 text-xs text-gray-400">规范爬虫抓取边界与 Sitemap 声明</p>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">
-              搜索引擎主动推送
-            </span>
-            <Zap className="size-4 text-amber-400" />
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-amber-400">IndexNow + 百度</p>
-          <p className="mt-1 text-xs text-gray-400">毫秒级通知搜索引擎蜘蛛收录</p>
-        </Card>
-
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">
-              站长平台验证状态
-            </span>
-            <ShieldCheck className="size-4 text-blue-400" />
-          </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-white">
-            {verifiedCount > 0 ? `${verifiedCount} / 4 平台已激活` : '4 大平台待配置'}
-          </p>
-          <p className="mt-1 text-xs text-gray-400">Google / 百度 / 必应 / Yandex</p>
-        </Card>
-      </div>
-
       {/* SEO 功能模块分区 */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* 模块 1：全局 TDK 与社交分享元数据 */}
@@ -233,6 +180,7 @@ export default function SeoTab() {
           config={seoConfig}
           onSave={handleSaveSeo}
           isSaving={isSavingSeo}
+
         />
 
         {/* 模块 2：站长平台验证代码管理 */}

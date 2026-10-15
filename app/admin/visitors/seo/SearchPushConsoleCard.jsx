@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import {
   Send,
   Zap,
@@ -163,9 +163,6 @@ export default function SearchPushConsoleCard({
             </div>
             <div>
               <h3 className="font-semibold text-white text-sm">搜索引擎实时主动推送控制台</h3>
-              <span className="mt-0.5 inline-block text-[11px] text-gray-400">
-                IndexNow 协议（必应 / Yandex）· 百度搜索资源平台主动推送
-              </span>
             </div>
           </div>
 
@@ -322,18 +319,15 @@ export default function SearchPushConsoleCard({
           <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-medium text-white">
-                待推送页面 URL 清单 (每行一条绝对路径)
+                待推送 URL 清单
               </label>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleQuickFillUrls}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 underline"
-                >
-                  快速填充主要公开路由
-                </button>
-                <span className="text-[11px] text-gray-400">| 单次上限 100 条</span>
-              </div>
+              <button
+                type="button"
+                onClick={handleQuickFillUrls}
+                className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+              >
+                快速填充主要公开路由
+              </button>
             </div>
 
             <textarea
@@ -447,7 +441,7 @@ export default function SearchPushConsoleCard({
                     const logUrls = Array.isArray(log.urls) ? log.urls : (log.urls_json || []);
 
                     return (
-                      <tbody key={log.id}>
+                      <Fragment key={log.id}>
                         <tr className="hover:bg-white/[0.02] transition-colors">
                           <td className="py-2.5 px-3.5 text-gray-300 font-mono text-[11px]">
                             {log.created_at ? new Date(log.created_at).toLocaleString() : '刚刚'}
@@ -518,7 +512,7 @@ export default function SearchPushConsoleCard({
                             </td>
                           </tr>
                         )}
-                      </tbody>
+                      </Fragment>
                     );
                   })}
                 </tbody>

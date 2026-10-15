@@ -30,29 +30,17 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
             </div>
             <div>
               <h3 className="font-semibold text-white text-sm">动态 Sitemap 与 Robots 爬虫协议</h3>
-              <span className="mt-0.5 inline-block text-[11px] text-gray-400">
-                /sitemap.xml · /robots.txt
-              </span>
             </div>
           </div>
           <StatusBadge tone="good">动态路由已就绪</StatusBadge>
         </div>
 
-        <p className="text-xs leading-5 text-gray-300">
-          基于全站路由表动态生成符合 sitemaps.org 标准的 XML 索引地图，并输出规范的 Robots.txt 爬虫指引协议，自动屏蔽管理后台与敏感私有接口。
-        </p>
-
         {/* Dynamic Endpoints Access */}
         <div className="space-y-3">
           <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/30 p-3.5">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-white">动态站点地图</span>
-                <span className="font-mono text-[11px] text-cyan-400">/sitemap.xml</span>
-              </div>
-              <p className="mt-1 text-[11px] text-gray-400">
-                自动收录首页、创作工作台、AI 模型库、社区等 14+ 公开主要路由，过滤后台与私有路径
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-white">动态站点地图</span>
+              <span className="font-mono text-[11px] text-cyan-400">/sitemap.xml</span>
             </div>
             <a
               href="/sitemap.xml"
@@ -66,14 +54,9 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
           </div>
 
           <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/30 p-3.5">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-white">爬虫抓取协议</span>
-                <span className="font-mono text-[11px] text-cyan-400">/robots.txt</span>
-              </div>
-              <p className="mt-1 text-[11px] text-gray-400">
-                声明爬虫白名单与屏蔽规则（/admin/、/api/ 等），并在末尾显式指向 sitemap.xml
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-white">爬虫抓取协议</span>
+              <span className="font-mono text-[11px] text-cyan-400">/robots.txt</span>
             </div>
             <a
               href="/robots.txt"
@@ -88,12 +71,9 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
 
           {/* Custom Robots.txt Rules */}
           <div className="rounded-xl border border-white/[0.06] bg-black/30 p-3.5 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-medium text-gray-300">
-                Robots.txt 自定义补充规则 (Custom Rules)
-              </label>
-              <span className="text-[10px] text-gray-400">保存后自动与 public/robots.txt 同步</span>
-            </div>
+            <label className="text-[11px] font-medium text-gray-300 block">
+              Robots.txt 自定义补充规则 (Custom Rules)
+            </label>
             <textarea
               rows={3}
               value={customRules}
