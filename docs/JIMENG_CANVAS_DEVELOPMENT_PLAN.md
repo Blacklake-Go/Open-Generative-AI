@@ -1,5 +1,13 @@
 # 即梦创作流程 × KoyoSIM Canvas 完整开发方案
 
+## 2026-10-15 执行方向修正（覆盖下方历史路径和顺序）
+
+当前运行中的 KoyoSIM、Worker 与 Supdance 服务共用 `/home/wwwroot/AI/domain/supdance.com/web`；`/home/wwwroot/AI/domain/koyosim.com/web` 已不是主站 Git 源码树。执行前只在实际生产写入或发布边界确认这一路径、当前构建和漂移；下方旧路径、HEAD、脏文件数、BUILD_ID、备份匹配结论均为历史快照。Canvas 静态客户端仍须单独确认其实际站点目录。
+
+先只推进图片 P0 的**下一个具体缺口**：指定模型的合法路由、真实成本/终态 → 图生图成功与失败释放 → 结果节点、云资产、历史和下载 → 幂等及账户隔离。已有的文生图记录可复用，不重复收费；其 Provider task ID、成本对账及独立下载证据未补齐前，不把该动作整体标为 `Verified`。视频、音频和扩展动作随后逐项开放。
+
+每轮只做一次与当前缺口直接相关的代码改动和定向验证；状态未变时不重复全量盘点、重跑同一构建、重构无关模块或重报旧结论。生产状态变化及发布边界保留必要的短检查。构建必须使用冻结源的独立目录，不删除或占用共用服务正在使用的 `.next`。先在有恢复点的隔离入口发布候选以完成真实账户验收；图片 P0 的终态、资产、历史、下载和积分通过后，才逐模型向普通用户开放。收费任务沿用已授权的单笔 30 积分、累计 300 积分上限；状态不明时查原任务，绝不盲目重发。
+
 状态：**截至 2026-10-11 21:40（Asia/Taipei）的只读线上复核，完整融合仍未完成。生产 HEAD `39c02816ae2a71530177e64fce5d14ac580efa45`，`git status --short` 578 行，BUILD_ID `RPf47wofgu89YhaGdRdwV`，运行 Canvas API 路由 11 条；`/api/ready=503`，Provider unhealthy；44 个 active model 中 2 个 `autoRouteEligible`。Canvas 线上 JS/CSS 与客户端当前 `web/dist` 字节一致，但认证后的生成、资产、历史、付款和积分闭环仍未验收。10 月 9 日备份及构建匹配结论仅适用于当时快照；当前备份清单对只读 SSH 账号不可读，不能认定与现行 BUILD_ID 匹配。**
 
 ## 2026-10-11 完整融合剩余执行计划
@@ -14,22 +22,22 @@
 
 | 顺序 | 工作包 | 必须交付并验收 |
 | --- | --- | --- |
-| 0 | 冻结生产事实与恢复点 | 以 `/home/wwwroot/AI/domain/koyosim.com/web` 的完整脏树为权威，记录 HEAD、状态清单、源码摘要、BUILD_ID、11 条路由和服务/数据库/对象状态。核验当前源码、配置、数据库、对象、运行构建五类新鲜备份及隔离恢复；冻结对应快照，在独立 Linux x64 环境生成可溯源候选和回滚包。备份目录存在本身不算通过。 |
+| 0 | 冻结生产事实与恢复点 | 以当前运行服务指向的 `/home/wwwroot/AI/domain/supdance.com/web` 完整工作树为权威；仅在生产写入/发布边界核对 HEAD、漂移、BUILD_ID、路由和五类备份/恢复证据。冻结对应快照，在独立 Linux x64 目录生成可溯源候选和回滚包，不触碰运行中的 `.next`。备份目录存在本身不算通过。 |
 | 1 | Provider、模型与真实价格 | 对所有拟对外开放的图片/视频/音频/文本模型逐项核对内部 ID、官方或获授权 Provider 产品、endpoint/参数、凭据状态、健康、成本单位、有效价格和路由；先修复或下架导致 Provider unhealthy 的可见模型，使 `/api/ready=200`。采用受控测试入口验证真实成功/失败，普通用户白名单只在通过后开放；成本未知记待对账，不能按 0 结算。 |
 | 2 | 同一账户的商业 API | 登录后 Canvas 与 Studio 的 user ID、订阅、可用积分一致；Session、Cookie/CORS、写请求校验、报价、变价重报、幂等 job、owner 拒绝和登出清理均在线验证。隔离身份按明确消费上限逐项验证对外开放的订阅、充值和支付方式到账；未验收的支付入口保持关闭，结账不可用时商业 READY 保持失败。 |
 | 3 | 云项目、引用素材与历史 | Server Mode 的项目/节点/连线先持久化再允许生成；409 冲突不覆盖内容。素材上传取得服务端 Asset ID，图生图引用仅使用当前用户资产；归档、历史和下载均按 owner 授权。验收刷新、跨设备、同用户多标签、账户 A/B 隔离、切号中的异步响应及故障恢复。 |
 | 4 | 图片 P0 真实交易 | 文生图和图生图都从服务端 quote → 同一幂等 job → Router/Provider → 终态 → 私有 Asset → 结果节点/连线 → 历史/下载 → 积分账本完成。分别覆盖成功、失败、取消、超时、重复提交、断网恢复、报价过期和余额不足；追查原任务 ID，不以新任务或空节点伪装恢复。 |
 | 5 | 视频、音频、文本与扩展动作 | 在图片 P0 通过后，逐动作重复模型身份、参数、报价、Provider 终态、资产、历史、积分和失败释放验收。全景、三视图、打光、智能改图、镜头设计、Agent 只在各自有真实服务端执行与权限证据后开放；无法取得合法路由的项目保留未完成状态及明确阻断原因。 |
-| 6 | 安全发布与公开域名验收 | 先发布主站 API，再发布 Canvas 静态客户端，最后逐模型开放；切换前校验冻结源、五类备份/恢复、候选 BUILD_ID 与 11 路由，切换后校验 `/api/ready=200`、浏览器网络只走 KoyoSIM 商业 API、真实任务及账本。保留旧构建和回滚路径，发现越权、丢资产、双扣或 Provider 终态不明即关闭对应入口并按原任务对账。 |
+| 6 | 受控测试发布与最终开放 | 图片 P0 线上验收前，先将独立候选部署到有恢复点的隔离测试入口，再用授权账户验证真实任务；图片 P0 验收后才逐模型向普通用户开放。切换前校验冻结源、五类备份/恢复、候选 BUILD_ID 与 Canvas 路由；切换后检查 readiness、服务端交易及账本。保留旧构建和回滚路径，发现越权、丢资产、双扣或 Provider 终态不明即关闭对应入口并按原任务对账。 |
 
 每个工作包报告 `Verified / Candidate / Unknown / Disabled`、线上 BUILD_ID、变更文件和发布批次。真实交易证据至少包含去敏的账号 ID、quoteId、jobId、Provider task ID、projectId/nodeId、assetId、对象读取、账本记录、前后积分与历史/下载结果；只读页面、Mock、构建通过和旧记录不可替代。只有工作包 0–6 全部通过且目标动作均为 `Verified`，才标记“完全融合”。
 
 ### 可复制 AI 编程提示词
 
 ```text
-请执行《JIMENG_CANVAS_DEVELOPMENT_PLAN.md》“2026-10-11 完整融合剩余执行计划”，持续推进到全部工作包真实验收。先读主站与 canvas-web 的 AGENTS.md；改 UI 前读主站 docs/UI_DESIGN_SYSTEM.md、docs/UI_REPAIR_INSTRUCTION.md。生产权威源树是 /home/wwwroot/AI/domain/koyosim.com/web，本地主站 /Users/seelucency/Documents/dev/sol im 与 Canvas 客户端 /Users/seelucency/Documents/dev/canvas-web 是候选；SSH/本地地址绕过代理直连。保护生产脏树，先核对当前 HEAD/BUILD_ID/漂移、五类可恢复备份与独立构建候选。
+请执行《JIMENG_CANVAS_DEVELOPMENT_PLAN.md》顶部“2026-10-15 执行方向修正”及“完整融合剩余执行计划”。先读主站与 canvas-web 的 AGENTS.md；改 UI 前读主站 docs/UI_DESIGN_SYSTEM.md、docs/UI_REPAIR_INSTRUCTION.md。当前主站生产权威源树为 /home/wwwroot/AI/domain/supdance.com/web，本地主站 /Users/seelucency/Documents/dev/sol im 与 Canvas 客户端 /Users/seelucency/Documents/dev/canvas-web 是候选；SSH/本地地址绕过代理直连。保护生产脏树，只在生产写入或发布边界核对当前 HEAD/BUILD_ID/漂移、五类可恢复备份与独立构建候选。
 
-按依赖顺序完成 Provider/模型/真实价格与 ready=200 → 同一身份、付款/权益、余额和 Canvas API → 云项目/素材/历史/双账号隔离 → 文生图及图生图 quote/job/Provider/Asset/一次积分结算和失败释放 → 视频、音频、文本及各扩展动作逐项真实验收 → 安全发布、回滚和公网复核。线上 Server Mode 的付费入口只能调用 KoyoSIM；无合法路由或未验收的动作保持 Disabled，不能伪造价格、结果或 Ready。先集中解决 P0，验收后继续 P1/P2；每批汇报线上证据、变更、费用、发布及回滚状态，不用页面 200、Mock 或本地构建宣称完成。需要验证码、付款或收费生成时明确指出具体用户动作和最高消费额；未取得消费上限前继续无收费工作。最终提交逐动作证据表，包含去敏的 quote/job/Provider/Asset/账本 ID、终态、历史/下载和余额前后值；有阻断则列出精确缺口并保持未完成。
+先集中解决图片 P0 的具体阻断：指定模型的合法 Provider 路由与成本 → 独立候选及受控测试发布 → 图生图成功/失败释放、资产/历史/下载、幂等与账户隔离。不要重发已完成或状态不明的任务；文生图缺 Provider ID、成本或下载证据时保留待验收。每轮交付一个直接推进缺口的改动，运行一次定向验证；状态未变时不重复全量盘点、同一构建或无关重构。线上 Server Mode 的付费入口只能调用 KoyoSIM；无合法路由或未验收动作保持 Disabled。图片 P0 达标后再逐项处理视频、音频、文本及扩展动作，并完成普通用户开放和公网复核。沿用单笔 30、累计 300 积分上限；密码、验证码和付款由用户操作。每批简报具体交付、原始证据、费用和下一阻断，不能用页面 200、Mock 或本地构建宣称完成。
 ```
 
 ## 2026-10-09 09:31 UTC 当前生产状态备份通过

@@ -16,6 +16,19 @@ const fieldBase = 'h-10 w-full border border-line bg-well px-3 text-body text-in
 const inputClass = `${fieldBase} rounded-xl`;
 const selectClass = `${fieldBase} rounded-lg`;
 
+const PREFERRED_DEFAULTS = {
+  image: 'seedream-4.5',
+  video: 'wan-2.1',
+  audio: 'gemini-3-1-flash-tts',
+  text: '',
+};
+
+function pickBestDefault(groupId, availableIds) {
+  const preferred = PREFERRED_DEFAULTS[groupId];
+  if (preferred && availableIds?.includes(preferred)) return preferred;
+  return availableIds?.[0] || '';
+}
+
 function initialState(initialConfig, candidates) {
   const mountedModelIds = Object.fromEntries(GROUPS.map(({ id }) => [
     id,
@@ -38,14 +51,9 @@ function initialState(initialConfig, candidates) {
     ...initialConfig?.defaults,
   };
 
-  // 优先保障修复好的文生图模型 seedream-4.5 作为默认生图模型
-  if (mountedModelIds.image?.includes('seedream-4.5') && (!defaults.imageModelId || !mountedModelIds.image.includes(defaults.imageModelId))) {
-    defaults.imageModelId = 'seedream-4.5';
-  }
-
   for (const group of GROUPS) {
     if (!mountedModelIds[group.id]?.includes(defaults[group.defaultKey])) {
-      defaults[group.defaultKey] = mountedModelIds[group.id]?.[0] || '';
+      defaults[group.defaultKey] = pickBestDefault(group.id, mountedModelIds[group.id]);
     }
   }
 
@@ -74,9 +82,7 @@ export default function CanvasConfigClient({ initialConfig, candidates = [], can
       const next = selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id];
       const defaults = { ...current.defaults };
       if (!next.includes(defaults[group.defaultKey])) {
-        defaults[group.defaultKey] = next.includes('seedream-4.5') && group.id === 'image'
-          ? 'seedream-4.5'
-          : (next[0] || '');
+        defaults[group.defaultKey] = pickBestDefault(group.id, next);
       }
       return {
         mountedModelIds: { ...current.mountedModelIds, [group.id]: next },
@@ -92,9 +98,7 @@ export default function CanvasConfigClient({ initialConfig, candidates = [], can
       const next = [...nextSet];
       const defaults = { ...current.defaults };
       if (!defaults[group.defaultKey] && next.length) {
-        defaults[group.defaultKey] = next.includes('seedream-4.5') && group.id === 'image'
-          ? 'seedream-4.5'
-          : next[0];
+        defaults[group.defaultKey] = pickBestDefault(group.id, next);
       }
       return {
         mountedModelIds: { ...current.mountedModelIds, [group.id]: next },
