@@ -22,16 +22,8 @@ export default function UserProfileHeaderCard({
   const isOwner = currentUser && (currentUser.id === creator.id || currentUser.userNumber === creator.userNumber);
 
   return (
-    <div
-      className={`relative rounded-3xl border border-line-subtle bg-surface-raised p-5 sm:p-7 shadow-elevation-2 overflow-hidden ${className}`}
-    >
-      {/* 顶部微透环境光晕 */}
-      <div
-        className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl pointer-events-none opacity-20"
-        style={{ background: 'radial-gradient(circle, rgba(255,45,120,0.12) 0%, transparent 70%)' }}
-      />
-
-      <div className={`flex ${compact ? 'flex-col gap-4' : 'flex-col sm:flex-row sm:items-center justify-between gap-6'} relative z-10`}>
+    <div className={`relative ${className}`}>
+      <div className={`flex ${compact ? 'flex-col gap-4' : 'flex-col sm:flex-row sm:items-center justify-between gap-6'}`}>
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           {/* 头像 */}
           <div className={`${compact ? 'size-16' : 'size-20 sm:size-24'} rounded-full overflow-hidden bg-wash border-2 border-line-subtle flex items-center justify-center text-2xl font-bold text-brand shrink-0 shadow-elevation-1`}>

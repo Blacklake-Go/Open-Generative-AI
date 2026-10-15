@@ -203,7 +203,7 @@ export default function UserProfileView({
     <div className={`w-full ${className}`}>
       {/* 返回上级 */}
       {showBackLink && (
-        <div className="mb-6">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/community"
             className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink transition-colors"
@@ -214,7 +214,7 @@ export default function UserProfileView({
         </div>
       )}
 
-      {/* 创作者头部 Profile Banner 卡片 */}
+      {/* 创作者头部个人资料区（无框简洁设计） */}
       <UserProfileHeaderCard
         creator={creator}
         currentUser={currentUser}
@@ -225,11 +225,11 @@ export default function UserProfileView({
         onCopyUid={handleCopyUid}
         copiedUid={copiedUid}
         compact={compact}
-        className="mb-6 sm:mb-8"
+        className="mb-8 sm:mb-10"
       />
 
       {/* Tab 导航切换栏 */}
-      <div className="flex items-center gap-4 border-b border-line-subtle mb-6 select-none">
+      <div className="flex items-center gap-6 border-b border-line-subtle mb-6 select-none">
         <button
           type="button"
           onClick={() => setActiveTab('creations')}
