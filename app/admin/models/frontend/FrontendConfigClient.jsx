@@ -535,38 +535,38 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
       {/* Toast Alert */}
       {toast && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-surface-raised border border-line px-4 py-2.5 text-body-sm shadow-elevation-3 animate-fade-in text-ink font-medium">
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs shadow-xl animate-fade-in text-slate-800 font-medium">
           <CheckCircle2 className="size-4 text-brand" />
           <span>{toast.msg}</span>
         </div>
       )}
 
       {/* ─── ROW 1: 顶层业务三位一体导航 (草稿图4第1行: 模型管理 / 模型API / 模型定价) ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-line-subtle">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/80">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-well/80 rounded-xl border border-line-subtle">
+        <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl border border-slate-200 shadow-sm">
           <button
             type="button"
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-surface-raised text-ink font-bold text-body-sm shadow-elevation-1 border border-line"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-brand/10 text-brand font-bold text-xs border border-brand/20 shadow-sm"
           >
             <Layers className="size-4 text-brand" />
             <span>模型管理</span>
-            <span className="rounded-full bg-brand/10 text-brand px-1.5 py-0.2 text-[11px] font-mono font-bold">
+            <span className="rounded-full bg-brand text-white px-1.5 py-0.2 text-[10px] font-mono font-bold">
               {models.length}
             </span>
           </button>
           <a
             href="/admin/models/routing"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface text-body-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium transition-colors"
           >
-            <Zap className="size-4 text-amber-400" />
+            <Zap className="size-4 text-amber-500" />
             <span>模型 API / 渠道</span>
           </a>
           <a
             href="/admin/models/pricing"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface text-body-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium transition-colors"
           >
-            <DollarSign className="size-4 text-emerald-400" />
+            <DollarSign className="size-4 text-emerald-600" />
             <span>模型定价与利润</span>
           </a>
         </div>
@@ -578,7 +578,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               variant="primary"
               size="sm"
               onClick={() => setRepoDrawerOpen(true)}
-              className="text-xs font-semibold shadow-elevation-2"
+              className="text-xs font-semibold shadow-sm bg-brand hover:bg-brand-hover text-white rounded-lg px-3.5 py-1.5"
             >
               <Plus className="size-3.5 mr-1" />
               从模型库引入
@@ -588,17 +588,17 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
             variant="secondary"
             size="sm"
             onClick={() => setHygieneDrawerOpen(true)}
-            className="text-xs text-ink-muted hover:text-ink"
+            className="text-xs text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-sm rounded-lg px-3 py-1.5"
             title="去重与规范治理"
           >
-            <ShieldCheck className="size-3.5 mr-1 text-emerald-400" />
+            <ShieldCheck className="size-3.5 mr-1 text-emerald-600" />
             去重治理
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setPreviewerOpen(true)}
-            className="text-xs text-ink-muted hover:text-ink"
+            className="text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg px-3 py-1.5"
             title="查看前台 Studio 真实下拉组件"
           >
             <Eye className="size-3.5 mr-1" />
@@ -614,13 +614,13 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           onClick={() => handleBrandSelect('all')}
           className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
             selectedBrand === 'all'
-              ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
-              : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+              ? 'bg-slate-900 text-white border-slate-900 shadow-sm font-bold'
+              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 shadow-sm'
           }`}
         >
           <span>全部厂商</span>
           <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-            selectedBrand === 'all' ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
+            selectedBrand === 'all' ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
           }`}>
             {models.length}
           </span>
@@ -636,14 +636,14 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               onClick={() => handleBrandSelect(brand.id)}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all border ${
                 isSelected
-                  ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
-                  : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-sm font-bold'
+                  : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 shadow-sm'
               }`}
             >
               <BrandLogo brand={brand} size="xs" className="rounded shrink-0" />
               <span>{brand.shortName}</span>
               <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-                isSelected ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
+                isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
               }`}>
                 {count}
               </span>
@@ -653,7 +653,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       </div>
 
       {/* ─── ROW 3: 业务任务场景单行过滤条 (草稿图4第3行绿色模块) ─── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2 rounded-2xl bg-surface-raised border border-line-subtle">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2 rounded-xl bg-white border border-slate-200 shadow-sm">
         {/* Left: Task Scene Pills */}
         <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar">
           {TASK_SCENES.map((scene) => {
@@ -666,13 +666,13 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                 onClick={() => setActiveScene(scene.id)}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
                   isActive
-                    ? 'bg-brand text-white font-bold shadow-elevation-1'
-                    : 'text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                    ? 'bg-brand text-white font-bold shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
                 <span>{scene.label}</span>
                 <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
-                  isActive ? 'bg-black/20 text-white font-bold' : 'bg-white/10 text-ink-subtle'
+                  isActive ? 'bg-black/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
                 }`}>
                   {count}
                 </span>
@@ -686,7 +686,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-line-subtle bg-well px-2.5 py-1.5 text-xs text-ink outline-none cursor-pointer focus:border-brand"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-700 outline-none cursor-pointer focus:border-brand focus:bg-white"
           >
             <option value="all">全部展示状态</option>
             <option value="visible">仅看展示已开</option>
@@ -694,37 +694,37 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           </select>
 
           <div className="relative w-48 sm:w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-ink-subtle" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜索模型名称或ID..."
-              className="w-full rounded-xl border border-line-subtle bg-well pl-7 pr-6 py-1.5 text-xs text-ink placeholder:text-ink-subtle outline-none focus:border-brand"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-7 pr-6 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-brand focus:bg-white"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
               >
                 <X className="size-3" />
               </button>
             )}
           </div>
 
-          <span className="text-caption text-ink-subtle hidden sm:inline-block font-mono">
+          <span className="text-xs text-slate-400 hidden sm:inline-block font-mono">
             共 {currentModels.length} 个
           </span>
         </div>
       </div>
 
       {/* ─── ROW 4: 核心所见即所得管理大表 (草稿图4核心表格主体) ─── */}
-      <Card className="overflow-hidden p-0 border border-line shadow-elevation-1">
+      <Card className="overflow-hidden p-0 border border-slate-200 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)] rounded-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-line bg-surface-raised/80 text-caption font-semibold text-ink-muted">
+              <tr className="border-b border-slate-200 bg-slate-50/90 text-xs font-semibold text-slate-500">
                 <th className="px-3.5 py-3 w-[120px]">厂商品牌</th>
                 <th className="px-3.5 py-3 min-w-[200px]">模型名称 / 系统ID</th>
                 <th className="px-3 py-3 w-[100px]">任务场景</th>
@@ -736,10 +736,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                 <th className="px-3 py-3 w-[120px] text-right">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-line-subtle text-body-sm">
+            <tbody className="divide-y divide-slate-100 text-xs">
               {currentModels.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-ink-muted space-y-2">
+                  <td colSpan={9} className="py-16 text-center text-slate-400 space-y-2">
                     <p>{search ? '未检索到匹配的模型' : '当前筛选条件下暂无模型'}</p>
                     {selectedBrand !== 'all' && (
                       <Button
@@ -749,7 +749,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                           setSelectedBrand('all');
                           setActiveScene('all');
                         }}
-                        className="text-xs"
+                        className="text-xs border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-sm"
                       >
                         清除筛选，查看全部模型
                       </Button>
@@ -774,29 +774,29 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                       key={model.id}
                       className={`group transition-colors ${
                         isVisible
-                          ? 'hover:bg-white/[0.02]'
-                          : 'bg-white/[0.005] opacity-75 hover:opacity-100 hover:bg-white/[0.02]'
+                          ? 'hover:bg-slate-50/80'
+                          : 'bg-slate-50/40 opacity-70 hover:opacity-100 hover:bg-slate-50/80'
                       }`}
                     >
                       {/* Col 1: 厂商品牌 */}
-                      <td className="px-3.5 py-3 align-middle">
+                      <td className="px-3.5 py-3.5 align-middle">
                         <div className="flex items-center gap-2">
                           <BrandLogo brand={brand} size="xs" className="rounded shrink-0" />
-                          <span className="font-medium text-ink text-xs whitespace-nowrap">
+                          <span className="font-medium text-slate-800 text-xs whitespace-nowrap">
                             {brand?.shortName || '通用'}
                           </span>
                         </div>
                       </td>
 
                       {/* Col 2: 模型名称 / 系统 ID */}
-                      <td className="px-3.5 py-3 align-middle">
+                      <td className="px-3.5 py-3.5 align-middle">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-ink text-body-sm">
+                            <span className="font-semibold text-slate-900 text-sm">
                               {model.display_name || model.name}
                             </span>
                             {model.badge && (
-                              <span className="rounded-md bg-brand/15 text-brand border border-brand/25 px-1.5 py-0.2 text-[10px] font-bold">
+                              <span className="rounded bg-brand/10 text-brand border border-brand/20 px-1.5 py-0.2 text-[10px] font-bold">
                                 {model.badge}
                               </span>
                             )}
@@ -806,80 +806,80 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-1 text-ink-subtle">
-                            <span className="font-mono text-caption">{model.id}</span>
+                          <div className="flex items-center gap-1 text-slate-400">
+                            <span className="font-mono text-xs">{model.id}</span>
                             <button
                               type="button"
                               onClick={() => handleCopyId(model.id)}
-                              className="opacity-0 group-hover:opacity-100 hover:text-ink p-0.5 transition-opacity"
+                              className="opacity-0 group-hover:opacity-100 hover:text-slate-800 p-0.5 transition-opacity"
                               title="复制模型 ID"
                             >
                               <Copy className="size-2.5" />
                             </button>
                             {copiedId === model.id && (
-                              <span className="text-[10px] text-emerald-400 font-sans">已复制</span>
+                              <span className="text-[10px] text-emerald-600 font-sans">已复制</span>
                             )}
                           </div>
                         </div>
                       </td>
 
                       {/* Col 3: 任务场景 */}
-                      <td className="px-3 py-3 align-middle">
-                        <span className="inline-flex rounded-full bg-white/[0.06] border border-white/10 px-2.5 py-0.5 text-xs text-ink-muted whitespace-nowrap">
+                      <td className="px-3 py-3.5 align-middle">
+                        <span className="inline-flex rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs text-slate-600 whitespace-nowrap font-medium">
                           {sceneLabel}
                         </span>
                       </td>
 
                       {/* Col 4: 支持能力规格 */}
-                      <td className="px-3.5 py-3 align-middle">
-                        <div className="space-y-1 text-caption">
+                      <td className="px-3.5 py-3.5 align-middle">
+                        <div className="space-y-1 text-xs">
                           {ratios.length > 0 && (
                             <div className="flex items-center gap-1 flex-wrap">
-                              <span className="text-ink-subtle text-[11px]">画幅:</span>
+                              <span className="text-slate-400 text-[11px]">画幅:</span>
                               {ratios.slice(0, 4).map((r) => (
                                 <span
                                   key={r}
-                                  className="rounded bg-well px-1 py-0.2 font-mono text-[10px] text-ink-muted border border-line-subtle"
+                                  className="rounded bg-slate-100 px-1 py-0.2 font-mono text-[10px] text-slate-700 border border-slate-200"
                                 >
                                   {r}
                                 </span>
                               ))}
                               {ratios.length > 4 && (
-                                <span className="text-ink-subtle text-[10px]">+{ratios.length - 4}</span>
+                                <span className="text-slate-400 text-[10px]">+{ratios.length - 4}</span>
                               )}
                             </div>
                           )}
 
-                          <div className="flex items-center gap-2 text-ink-subtle text-[11px]">
+                          <div className="flex items-center gap-2 text-slate-400 text-[11px]">
                             {resolutions.length > 0 && (
-                              <span>分辨率: <strong className="text-ink-muted font-mono">{resolutions[resolutions.length - 1]}</strong></span>
+                              <span>分辨率: <strong className="text-slate-700 font-mono">{resolutions[resolutions.length - 1]}</strong></span>
                             )}
                             {durations.length > 0 && (
-                              <span>时长: <strong className="text-ink-muted font-mono">{durations.join('/')}s</strong></span>
+                              <span>时长: <strong className="text-slate-700 font-mono">{durations.join('/')}s</strong></span>
                             )}
                           </div>
                         </div>
                       </td>
 
                       {/* Col 5: 官方参考成本 */}
-                      <td className="px-3 py-3 align-middle text-right font-mono">
+                      <td className="px-3 py-3.5 align-middle text-right font-mono">
                         {Number(model.min_cost_cny) > 0 ? (
                           <div>
-                            <span className="text-ink font-semibold">¥{Number(model.min_cost_cny).toFixed(3)}</span>
-                            <span className="block text-[10px] text-ink-subtle">/次调用</span>
+                            <span className="text-slate-900 font-semibold text-xs">¥{Number(model.min_cost_cny).toFixed(3)}</span>
+                            <span className="block text-[10px] text-slate-400">/次调用</span>
                           </div>
                         ) : Number(model.min_cost_usd) > 0 ? (
                           <div>
-                            <span className="text-ink font-semibold">${Number(model.min_cost_usd).toFixed(4)}</span>
-                            <span className="block text-[10px] text-ink-subtle">/次调用</span>
+                            <span className="text-slate-900 font-semibold text-xs">${Number(model.min_cost_usd).toFixed(4)}</span>
+                            <span className="block text-[10px] text-slate-400">/次调用</span>
                           </div>
                         ) : (
-                          <span className="text-ink-subtle text-caption">暂无报价</span>
+                          <span className="text-slate-400 text-xs">暂无报价</span>
                         )}
                       </td>
 
                       {/* Col 6: 平台积分定价 (点击极速调价) */}
-                      <td className="px-3.5 py-3 align-middle text-center">
+                      <td className="px-3.5 py-3.5 align-middle text-center">
                         {canWrite ? (
                           <button
                             type="button"
@@ -887,53 +887,53 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                               setQuickPriceModal({ model, credits });
                               setQuickPriceInput(String(credits || 50));
                             }}
-                            className="inline-flex flex-col items-center justify-center px-2.5 py-1 rounded-xl bg-brand/5 hover:bg-brand/15 border border-brand/20 transition-all group/price"
+                            className="inline-flex flex-col items-center justify-center px-2.5 py-1 rounded-lg bg-brand/5 hover:bg-brand/10 border border-brand/20 transition-all group/price"
                             title="点击极速调整用户扣减积分"
                           >
-                            <span className="font-mono font-bold text-brand text-body-sm group-hover/price:underline">
+                            <span className="font-mono font-bold text-brand text-xs group-hover/price:underline">
                               {credits} 积分 ✏️
                             </span>
-                            <span className="font-mono text-[10px] text-ink-subtle">
+                            <span className="font-mono text-[10px] text-slate-400">
                               ≈ ¥{(credits * 0.1).toFixed(2)}
                             </span>
                           </button>
                         ) : (
-                          <div className="font-mono font-semibold text-brand">
+                          <div className="font-mono font-semibold text-brand text-xs">
                             {credits} 积分
                           </div>
                         )}
                       </td>
 
                       {/* Col 7: 预估毛利率 */}
-                      <td className="px-3 py-3 align-middle text-center">
+                      <td className="px-3 py-3.5 align-middle text-center">
                         {marginInfo.hasData ? (
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-mono font-bold border ${
                               marginInfo.status === 'loss'
-                                ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
                                 : marginInfo.status === 'high'
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                                : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}
                           >
                             {marginInfo.rate}%
                           </span>
                         ) : (
-                          <span className="text-ink-subtle text-caption">—</span>
+                          <span className="text-slate-400 text-xs">—</span>
                         )}
                       </td>
 
                       {/* Col 8: 前台展示开关 */}
-                      <td className="px-3 py-3 align-middle text-center">
+                      <td className="px-3 py-3.5 align-middle text-center">
                         {canWrite ? (
                           <button
                             type="button"
                             onClick={() => toggleVisibility(model)}
                             disabled={isSavingThis}
-                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label font-medium transition-all border ${
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all border ${
                               isVisible
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25 shadow-elevation-1'
-                                : 'bg-white/[0.04] text-ink-subtle border-line-subtle hover:bg-white/[0.08] hover:text-ink'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm'
+                                : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
                             }`}
                             title={isVisible ? '展示已开 (点击关闭)' : '展示已关 (点击开启)'}
                           >
@@ -941,7 +941,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                               <Loader2 className="size-3 animate-spin" />
                             ) : isVisible ? (
                               <>
-                                <Eye className="size-3 text-emerald-400" />
+                                <Eye className="size-3 text-emerald-600" />
                                 <span>展示已开</span>
                               </>
                             ) : (
@@ -952,14 +952,14 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                             )}
                           </button>
                         ) : (
-                          <span className="text-ink-subtle text-caption">
+                          <span className="text-slate-500 text-xs">
                             {isVisible ? '展示中' : '已隐藏'}
                           </span>
                         )}
                       </td>
 
                       {/* Col 9: 快捷操作 */}
-                      <td className="px-3 py-3 align-middle text-right">
+                      <td className="px-3 py-3.5 align-middle text-right">
                         <div className="flex items-center justify-end gap-1">
                           {canWrite && (
                             <>
@@ -970,12 +970,12 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                                 disabled={isSavingThis}
                                 className={`p-1.5 rounded-lg transition-colors ${
                                   model.is_pinned
-                                    ? 'text-amber-400 bg-amber-400/15 hover:bg-amber-400/25'
-                                    : 'text-ink-subtle hover:text-ink hover:bg-white/[0.06]'
+                                    ? 'text-amber-600 bg-amber-50 hover:bg-amber-100'
+                                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
                                 }`}
                                 title={model.is_pinned ? '取消置顶' : '置顶到首位'}
                               >
-                                <Pin className={`size-3.5 ${model.is_pinned ? 'fill-amber-400' : ''}`} />
+                                <Pin className={`size-3.5 ${model.is_pinned ? 'fill-amber-500' : ''}`} />
                               </button>
 
                               {/* 快速上移/下移 */}
@@ -983,7 +983,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                                 type="button"
                                 onClick={() => moveModel(model, 'up')}
                                 disabled={idx === 0}
-                                className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.06] disabled:opacity-20"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-20"
                                 title="上移"
                               >
                                 <ChevronUp className="size-3.5" />
@@ -992,7 +992,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                                 type="button"
                                 onClick={() => moveModel(model, 'down')}
                                 disabled={idx === currentModels.length - 1}
-                                className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.06] disabled:opacity-20"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-20"
                                 title="下移"
                               >
                                 <ChevronDown className="size-3.5" />
@@ -1003,7 +1003,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => startEdit(model)}
-                                className="h-7 text-xs px-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-ink ml-1 font-medium"
+                                className="h-7 text-xs px-2.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 ml-1 font-medium shadow-sm rounded-lg"
                               >
                                 配置
                               </Button>
@@ -1022,17 +1022,17 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
 
       {/* ─── 极速调价浮层 (Quick Price Modal) ─── */}
       {quickPriceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-surface-raised border border-line p-5 shadow-elevation-3 space-y-4">
-            <div className="flex items-center justify-between border-b border-line-subtle pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 p-5 shadow-2xl space-y-4 text-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <BrandLogo model={quickPriceModal.model} size="sm" className="rounded-md" />
-                <h3 className="text-body font-semibold text-ink">极速调整积分定价</h3>
+                <h3 className="text-sm font-bold text-slate-900">极速调整积分定价</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setQuickPriceModal(null)}
-                className="text-ink-subtle hover:text-ink p-1 rounded-md"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
               >
                 <X className="size-4" />
               </button>
@@ -1040,18 +1040,18 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
 
             <div className="space-y-3">
               <div>
-                <p className="text-body-sm font-semibold text-ink">
+                <p className="text-sm font-semibold text-slate-900">
                   {quickPriceModal.model.display_name || quickPriceModal.model.name}
                 </p>
-                <p className="font-mono text-caption text-ink-subtle">
+                <p className="font-mono text-xs text-slate-400">
                   {quickPriceModal.model.id}
                 </p>
               </div>
 
               {/* Reference Cost info */}
-              <div className="p-2.5 rounded-xl bg-well/60 border border-line-subtle flex items-center justify-between text-caption">
-                <span className="text-ink-muted">官方渠道成本参考</span>
-                <span className="font-mono text-ink font-semibold">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                <span className="text-slate-500">官方渠道成本参考</span>
+                <span className="font-mono text-slate-800 font-semibold">
                   {Number(quickPriceModal.model.min_cost_cny) > 0
                     ? `¥${Number(quickPriceModal.model.min_cost_cny).toFixed(3)}/次`
                     : Number(quickPriceModal.model.min_cost_usd) > 0
@@ -1062,7 +1062,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
 
               {/* Credits input */}
               <div className="space-y-1.5">
-                <label className="text-label text-ink-muted block font-medium">
+                <label className="text-xs text-slate-600 block font-medium">
                   单次生成扣除积分 (10 积分 = ¥1.00)
                 </label>
                 <div className="relative">
@@ -1072,11 +1072,11 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                     step="1"
                     value={quickPriceInput}
                     onChange={(e) => setQuickPriceInput(e.target.value)}
-                    className="w-full rounded-xl bg-field border border-line-subtle px-3 py-2 text-body font-mono text-ink focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand font-bold"
+                    className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 focus:outline-none focus:border-brand focus:bg-white focus:ring-1 focus:ring-brand/40 font-bold"
                     placeholder="如 50"
                     autoFocus
                   />
-                  <span className="absolute right-3 top-2.5 text-caption text-ink-subtle font-mono">
+                  <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">
                     ≈ ¥{((Number(quickPriceInput) || 0) * 0.1).toFixed(2)}
                   </span>
                 </div>
@@ -1089,12 +1089,12 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                 const isHealthy = margin.status === 'high';
                 const isLoss = margin.status === 'loss';
                 return (
-                  <div className={`p-2.5 rounded-xl border flex items-center justify-between text-caption ${
+                  <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
                     isLoss
-                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                      ? 'bg-rose-50 border-rose-200 text-rose-700'
                       : isHealthy
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                      : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                      : 'bg-amber-50 border-amber-200 text-amber-700'
                   }`}>
                     <span>预估毛利率</span>
                     <span className="font-mono font-bold">
@@ -1105,12 +1105,13 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               })()}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-line-subtle">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setQuickPriceModal(null)}
                 disabled={savingQuickPrice}
+                className="text-xs text-slate-600 hover:text-slate-900"
               >
                 取消
               </Button>
@@ -1119,6 +1120,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                 size="sm"
                 onClick={handleSaveQuickPrice}
                 disabled={savingQuickPrice}
+                className="text-xs font-semibold bg-brand hover:bg-brand-hover text-white shadow-sm"
               >
                 {savingQuickPrice ? (
                   <Loader2 className="size-3.5 mr-1 animate-spin" />

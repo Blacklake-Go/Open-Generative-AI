@@ -82,7 +82,7 @@ export default function AdminNav({ user, onItemClick }) {
                 className={`group relative flex h-[38px] items-center justify-between rounded-lg px-3 text-xs font-medium tracking-[-0.005em] transition-all duration-150 active:scale-[0.98] ${
                   active(singleItem)
                     ? 'bg-brand/10 text-brand font-semibold'
-                    : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 {active(singleItem) && (
@@ -91,7 +91,7 @@ export default function AdminNav({ user, onItemClick }) {
                 <div className="flex items-center gap-2.5 truncate">
                   <IconComponent
                     className={`size-4 transition-colors ${
-                      active(singleItem) ? 'text-brand' : 'text-ink-muted group-hover:text-ink'
+                      active(singleItem) ? 'text-brand' : 'text-slate-500 group-hover:text-slate-900'
                     }`}
                   />
                   <span className="truncate">{group.label}</span>
@@ -108,17 +108,17 @@ export default function AdminNav({ user, onItemClick }) {
               onClick={() => toggleGroup(group.id)}
               className={`group relative flex h-[38px] w-full items-center justify-between rounded-lg pl-3 pr-2.5 text-xs font-medium tracking-[-0.005em] transition-all duration-150 cursor-pointer ${
                 hasActiveChild
-                  ? 'bg-white/[0.04] text-ink'
-                  : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
+                  ? 'bg-slate-100/80 text-slate-900 font-semibold'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <div className="flex flex-1 h-full items-center gap-2.5 truncate py-2 text-left">
                 <IconComponent
                   className={`size-4 shrink-0 transition-colors ${
-                    hasActiveChild ? 'text-brand' : 'text-ink-muted group-hover:text-ink'
+                    hasActiveChild ? 'text-brand' : 'text-slate-500 group-hover:text-slate-900'
                   }`}
                 />
-                <span className={`truncate ${hasActiveChild ? 'font-semibold text-ink' : ''}`}>
+                <span className={`truncate ${hasActiveChild ? 'font-semibold text-slate-900' : ''}`}>
                   {group.label}
                 </span>
               </div>
@@ -128,8 +128,8 @@ export default function AdminNav({ user, onItemClick }) {
                   <span className="size-1.5 rounded-full bg-brand" />
                 )}
                 <ChevronDown
-                  className={`size-3.5 transition-transform duration-200 ease-out text-ink-subtle ${
-                    isOpen ? 'rotate-180 text-brand' : 'group-hover:text-ink'
+                  className={`size-3.5 transition-transform duration-200 ease-out text-slate-400 ${
+                    isOpen ? 'rotate-180 text-brand' : 'group-hover:text-slate-600'
                   }`}
                 />
               </div>
@@ -141,7 +141,7 @@ export default function AdminNav({ user, onItemClick }) {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="relative mt-1 ml-4 space-y-1 pl-3 border-l border-line-subtle pb-1">
+                <div className="relative mt-1 ml-4 space-y-1 pl-3 border-l border-slate-200 pb-1">
                   {visibleItems.map((item) => {
                     const itemActive = active(item);
 
@@ -154,7 +154,7 @@ export default function AdminNav({ user, onItemClick }) {
                         className={`group relative flex h-8 items-center rounded-lg px-2.5 text-xs tracking-[-0.005em] transition-all duration-150 active:scale-[0.98] ${
                           itemActive
                             ? 'bg-brand/10 text-brand font-semibold'
-                            : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
+                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                         }`}
                       >
                         {itemActive && (
@@ -164,7 +164,7 @@ export default function AdminNav({ user, onItemClick }) {
                           className={`mr-2 size-1 rounded-full transition-all duration-150 ${
                             itemActive
                               ? 'bg-brand'
-                              : 'bg-white/20 group-hover:bg-white/50'
+                              : 'bg-slate-300 group-hover:bg-slate-400'
                           }`}
                         />
                         <span className="truncate">{item.label}</span>

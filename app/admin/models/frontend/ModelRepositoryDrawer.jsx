@@ -178,23 +178,23 @@ export default function ModelRepositoryDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-modal flex justify-end bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-[#14161a] border-l border-line-subtle shadow-[-20px_0_60px_rgba(0,0,0,0.8)] flex flex-col h-full animate-slide-left">
+    <div className="fixed inset-0 z-modal flex justify-end bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-2xl bg-white border-l border-slate-200/90 shadow-[-10px_0_40px_rgba(0,0,0,0.15)] flex flex-col h-full animate-slide-left text-slate-800">
         {/* Drawer Header */}
-        <div className="p-5 border-b border-line-subtle bg-surface-raised flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200/90 bg-slate-50/70 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-brand/15 border border-brand/30 flex items-center justify-center text-brand">
+            <div className="size-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
               <Layers className="size-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-body-lg font-bold text-ink">模型库 · 资产引入中心</h2>
-                <span className="rounded-full bg-brand/15 text-brand px-2.5 py-0.5 text-micro font-bold border border-brand/30">
+                <h2 className="text-base font-bold text-slate-900">模型库 · 资产引入中心</h2>
+                <span className="rounded-full bg-brand/10 text-brand px-2.5 py-0.5 text-xs font-semibold border border-brand/20">
                   随时引入
                 </span>
               </div>
-              <p className="text-caption text-ink-muted mt-0.5">
-                目标分类：<strong className="text-ink">{categoryLabel}</strong> · 从底层资产库（{allModels.length} 个模型）一键导入前台
+              <p className="text-xs text-slate-500 mt-0.5">
+                目标分类：<strong className="text-slate-800 font-semibold">{categoryLabel}</strong> · 从底层资产库（{allModels.length} 个模型）一键导入前台
               </p>
             </div>
           </div>
@@ -202,21 +202,21 @@ export default function ModelRepositoryDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="size-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 px-5 py-2.5 border-b border-line-subtle bg-well/40 text-body-sm">
+        <div className="flex items-center gap-2 px-5 py-2.5 border-b border-slate-200/90 bg-slate-50/50 text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('browse')}
             className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-all ${
               activeTab === 'browse'
-                ? 'bg-surface-raised text-ink shadow-elevation-1 font-semibold border border-line'
-                : 'text-ink-muted hover:text-ink'
+                ? 'bg-white text-slate-900 shadow-sm font-semibold border border-slate-200/90'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <Search className="size-3.5" />
@@ -231,8 +231,8 @@ export default function ModelRepositoryDrawer({
             onClick={() => setActiveTab('register')}
             className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-all ${
               activeTab === 'register'
-                ? 'bg-surface-raised text-ink shadow-elevation-1 font-semibold border border-line'
-                : 'text-ink-muted hover:text-ink'
+                ? 'bg-white text-slate-900 shadow-sm font-semibold border border-slate-200/90'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             <Plus className="size-3.5" />
@@ -247,19 +247,19 @@ export default function ModelRepositoryDrawer({
             <div className="space-y-3">
               {/* Search input */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-ink-subtle" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="搜索模型库 ID、显示名、供应商或描述..."
-                  className="w-full rounded-xl border border-line-strong bg-well pl-9 pr-8 py-2 text-body-sm text-ink placeholder:text-ink-subtle outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-8 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
                 />
                 {search && (
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -267,10 +267,10 @@ export default function ModelRepositoryDrawer({
               </div>
 
               {/* Scope & Status chips */}
-              <div className="flex flex-wrap items-center justify-between gap-2 text-caption">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-ink-subtle">范围:</span>
-                  <div className="inline-flex rounded-full bg-well p-0.5 border border-line-subtle">
+                  <span className="text-slate-400">范围:</span>
+                  <div className="inline-flex rounded-full bg-slate-100 p-0.5 border border-slate-200/80">
                     {[
                       { id: 'current', label: `当前类别 (${categoryLabel})` },
                       { id: 'all', label: '全库模型' },
@@ -282,8 +282,8 @@ export default function ModelRepositoryDrawer({
                         onClick={() => setCategoryFilter(f.id)}
                         className={`rounded-full px-2.5 py-0.5 transition-colors ${
                           categoryFilter === f.id
-                            ? 'bg-surface-raised text-ink font-semibold border border-line'
-                            : 'text-ink-muted hover:text-ink'
+                            ? 'bg-white text-slate-900 font-semibold shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-800'
                         }`}
                       >
                         {f.label}
@@ -293,8 +293,8 @@ export default function ModelRepositoryDrawer({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-ink-subtle">状态:</span>
-                  <div className="inline-flex rounded-full bg-well p-0.5 border border-line-subtle">
+                  <span className="text-slate-400">状态:</span>
+                  <div className="inline-flex rounded-full bg-slate-100 p-0.5 border border-slate-200/80">
                     {[
                       { id: 'all', label: '全部' },
                       { id: 'unexposed', label: '仅看未上架 (可加)' },
@@ -306,8 +306,8 @@ export default function ModelRepositoryDrawer({
                         onClick={() => setStatusFilter(s.id)}
                         className={`rounded-full px-2.5 py-0.5 transition-colors ${
                           statusFilter === s.id
-                            ? 'bg-surface-raised text-ink font-semibold border border-line'
-                            : 'text-ink-muted hover:text-ink'
+                            ? 'bg-white text-slate-900 font-semibold shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-800'
                         }`}
                       >
                         {s.label}
@@ -319,9 +319,9 @@ export default function ModelRepositoryDrawer({
             </div>
 
             {/* Candidates Card List */}
-            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
               {repositoryCandidates.length === 0 ? (
-                <div className="py-16 text-center text-body-sm text-ink-muted">
+                <div className="py-16 text-center text-sm text-slate-400">
                   没有找到匹配的模型资产
                 </div>
               ) : (
@@ -339,10 +339,10 @@ export default function ModelRepositoryDrawer({
                   return (
                     <div
                       key={m.id}
-                      className={`rounded-xl border p-3.5 transition-all ${
+                      className={`rounded-xl border p-3.5 transition-all shadow-sm ${
                         isVisibleInActiveCategory
-                          ? 'bg-emerald-500/[0.03] border-emerald-500/20'
-                          : 'bg-surface-raised border-line-subtle hover:border-line-strong hover:bg-well/60'
+                          ? 'bg-emerald-50/40 border-emerald-200'
+                          : 'bg-white border-slate-200/90 hover:border-slate-300'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -350,36 +350,36 @@ export default function ModelRepositoryDrawer({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <BrandLogo model={m} size="sm" className="rounded-md shrink-0" />
-                            <span className="font-bold text-body text-ink">
+                            <span className="font-bold text-sm text-slate-900">
                               {m.display_name || m.name}
                             </span>
                             {m.badge && (
-                              <span className="rounded-full bg-brand/15 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/25">
+                              <span className="rounded-full bg-brand/10 text-brand px-1.5 py-0.5 text-[10px] font-bold border border-brand/20">
                                 {m.badge}
                               </span>
                             )}
-                            <span className="rounded bg-white/[0.04] px-1.5 py-0.2 text-[10px] text-ink-subtle font-mono">
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 font-mono">
                               {m.category}
                             </span>
                             {hasRoutes ? (
-                              <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-                                <span className="size-1.5 rounded-full bg-emerald-400" />
+                              <span className="flex items-center gap-1 text-xs text-emerald-700 font-medium">
+                                <span className="size-1.5 rounded-full bg-emerald-500" />
                                 {m.approved_routes} 个渠道
                               </span>
                             ) : (
-                              <span className="flex items-center gap-1 text-[11px] text-red-400 font-medium">
+                              <span className="flex items-center gap-1 text-xs text-red-500 font-medium">
                                 <AlertTriangle className="size-3" />
                                 无可用渠道
                               </span>
                             )}
                           </div>
 
-                          <div className="mt-1 flex items-center gap-2 text-caption text-ink-muted flex-wrap">
-                            <span className="font-mono text-ink-subtle">{m.id}</span>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-slate-400 flex-wrap">
+                            <span className="font-mono text-slate-500">{m.id}</span>
                             {providers.length > 0 && (
                               <>
                                 <span>·</span>
-                                <span className="text-ink-subtle">
+                                <span className="text-slate-500">
                                   提供商: {providers.slice(0, 2).join(', ')}
                                 </span>
                               </>
@@ -395,7 +395,7 @@ export default function ModelRepositoryDrawer({
                           </div>
 
                           {m.description && (
-                            <p className="mt-1 text-caption text-ink-muted line-clamp-1">
+                            <p className="mt-1 text-xs text-slate-500 line-clamp-1">
                               {m.description}
                             </p>
                           )}
@@ -405,7 +405,7 @@ export default function ModelRepositoryDrawer({
                         <div className="shrink-0 flex items-center gap-2">
                           {isVisibleInActiveCategory ? (
                             <div className="flex items-center gap-1.5">
-                              <span className="flex items-center gap-1 text-caption text-emerald-400 font-semibold px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                              <span className="flex items-center gap-1 text-xs text-emerald-700 font-semibold px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
                                 <CheckCircle2 className="size-3.5" />
                                 前台展示中
                               </span>
@@ -417,7 +417,7 @@ export default function ModelRepositoryDrawer({
                                     onSelectForEdit(m);
                                     onClose();
                                   }}
-                                  className="text-xs h-8 px-2 text-ink-muted hover:text-ink"
+                                  className="text-xs h-8 px-2 text-slate-500 hover:text-slate-800"
                                 >
                                   编辑配置
                                 </Button>
@@ -429,7 +429,7 @@ export default function ModelRepositoryDrawer({
                               size="sm"
                               disabled={isOperating || !canWrite}
                               onClick={() => handleQuickAdd(m)}
-                              className="text-xs h-8 px-3 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/15"
+                              className="text-xs h-8 px-3 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
                             >
                               {isOperating ? (
                                 <Loader2 className="size-3 animate-spin mr-1" />
@@ -444,7 +444,7 @@ export default function ModelRepositoryDrawer({
                               size="sm"
                               disabled={isOperating || !canWrite}
                               onClick={() => handleQuickAdd(m)}
-                              className="text-xs h-8 px-3 text-brand border-brand/30 hover:bg-brand/10"
+                              className="text-xs h-8 px-3 text-brand border-brand/20 bg-brand/5 hover:bg-brand/10"
                             >
                               {isOperating ? (
                                 <Loader2 className="size-3 animate-spin mr-1" />
@@ -466,8 +466,8 @@ export default function ModelRepositoryDrawer({
 
         {/* TAB 2: REGISTER CUSTOM MODEL */}
         {activeTab === 'register' && (
-          <form onSubmit={handleRegisterSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-            <div className="rounded-xl bg-brand/10 border border-brand/20 p-3 text-caption text-brand leading-relaxed flex items-start gap-2">
+          <form onSubmit={handleRegisterSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+            <div className="rounded-xl bg-brand/5 border border-brand/20 p-3 text-xs text-brand leading-relaxed flex items-start gap-2">
               <Sparkles className="size-4 shrink-0 mt-0.5" />
               <div>
                 <strong>自定义模型注册</strong>：当上游服务商上线了新模型 ID，您可在此快速注册并直接暴露到前台展示池中。
@@ -476,7 +476,7 @@ export default function ModelRepositoryDrawer({
 
             {/* Model ID */}
             <div>
-              <label className="text-label text-ink-muted block font-medium mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 模型 ID (唯一标识，对应供应商映射) *
               </label>
               <input
@@ -485,13 +485,13 @@ export default function ModelRepositoryDrawer({
                 value={customForm.model_id}
                 onChange={(e) => setCustomForm((f) => ({ ...f, model_id: e.target.value }))}
                 placeholder="例如：kling-v3.0-pro-t2v 或 flux-2.0-pro"
-                className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink font-mono outline-none focus:border-brand"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 font-mono outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
               />
             </div>
 
             {/* Display Name */}
             <div>
-              <label className="text-label text-ink-muted block font-medium mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 前台友好展示名称 *
               </label>
               <input
@@ -500,14 +500,14 @@ export default function ModelRepositoryDrawer({
                 value={customForm.display_name}
                 onChange={(e) => setCustomForm((f) => ({ ...f, display_name: e.target.value }))}
                 placeholder="例如：快手可灵 Kling 3.0 旗舰版"
-                className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all"
               />
             </div>
 
             {/* Category & Subtype */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-label text-ink-muted block font-medium mb-1">归属主分类</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">归属主分类</label>
                 <select
                   value={customForm.category}
                   onChange={(e) => {
@@ -519,7 +519,7 @@ export default function ModelRepositoryDrawer({
                       sub_type: subOptions[0]?.id || '',
                     }));
                   }}
-                  className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink outline-none focus:border-brand [&>option]:bg-[#14161a]"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all [&>option]:bg-white [&>option]:text-slate-800"
                 >
                   <option value="image">图像模型 (Image)</option>
                   <option value="video">视频模型 (Video)</option>
@@ -529,11 +529,11 @@ export default function ModelRepositoryDrawer({
               </div>
 
               <div>
-                <label className="text-label text-ink-muted block font-medium mb-1">子类型</label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">子类型</label>
                 <select
                   value={customForm.sub_type}
                   onChange={(e) => setCustomForm((f) => ({ ...f, sub_type: e.target.value }))}
-                  className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink outline-none focus:border-brand [&>option]:bg-[#14161a]"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all [&>option]:bg-white [&>option]:text-slate-800"
                 >
                   {(SUBTYPE_DEFAULTS[customForm.category] || []).map((s) => (
                     <option key={s.id} value={s.id}>
@@ -546,17 +546,17 @@ export default function ModelRepositoryDrawer({
 
             {/* Badges Presets & Input */}
             <div>
-              <label className="text-label text-ink-muted block font-medium mb-1">前台高光徽章</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">前台高光徽章</label>
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 {PRESET_BADGES.map((b) => (
                   <button
                     key={b}
                     type="button"
                     onClick={() => setCustomForm((f) => ({ ...f, badge: f.badge === b ? '' : b }))}
-                    className={`rounded-full px-2.5 py-1 text-label transition-all ${
+                    className={`rounded-full px-2.5 py-1 text-xs transition-all ${
                       customForm.badge === b
-                        ? 'bg-brand text-white shadow-elevation-1 font-bold'
-                        : 'bg-surface-raised border border-line text-ink-muted hover:text-ink'
+                        ? 'bg-brand text-white shadow-sm font-bold'
+                        : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {b}
@@ -568,13 +568,13 @@ export default function ModelRepositoryDrawer({
                 value={customForm.badge}
                 onChange={(e) => setCustomForm((f) => ({ ...f, badge: e.target.value }))}
                 placeholder="或自定义徽章文本（如 4.5 旗舰）"
-                className="w-full rounded-xl border border-line-subtle bg-surface-raised px-3 py-1.5 text-body-sm text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-brand transition-all"
               />
             </div>
 
             {/* Base Credits Price */}
             <div>
-              <label className="text-label text-ink-muted block font-medium mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 固定积分价格（可留空，待成本与售价审核）
               </label>
               <input
@@ -582,13 +582,13 @@ export default function ModelRepositoryDrawer({
                 min="0"
                 value={customForm.credits_price}
                 onChange={(e) => setCustomForm((f) => ({ ...f, credits_price: e.target.value }))}
-                className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink outline-none focus:border-brand"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none focus:bg-white focus:border-brand transition-all"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="text-label text-ink-muted block font-medium mb-1">
+              <label className="text-xs font-semibold text-slate-700 block mb-1">
                 前台特性描述
               </label>
               <textarea
@@ -596,13 +596,13 @@ export default function ModelRepositoryDrawer({
                 value={customForm.description}
                 onChange={(e) => setCustomForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="例如：极速秒出图，高清写实人像增强，适合快速创意。"
-                className="w-full rounded-xl border border-line-strong bg-surface-raised px-3 py-2 text-body text-ink outline-none resize-none focus:border-brand"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 outline-none resize-none focus:bg-white focus:border-brand transition-all"
               />
             </div>
 
             {/* Switches */}
             <div className="flex items-center gap-4 pt-2">
-              <label className="flex items-center gap-2 text-body-sm text-ink cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={false}
@@ -612,19 +612,19 @@ export default function ModelRepositoryDrawer({
                 <span className="font-semibold text-brand">申请前台展示（审核前保持隐藏）</span>
               </label>
 
-              <label className="flex items-center gap-2 text-body-sm text-amber-300 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-xs text-amber-700 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={customForm.is_pinned}
                   onChange={(e) => setCustomForm((f) => ({ ...f, is_pinned: e.target.checked }))}
                   className="rounded accent-amber-500 size-4"
                 />
-                <span>前台列表置顶 📌</span>
+                <span className="font-semibold">前台列表置顶 📌</span>
               </label>
             </div>
 
             {/* Submit */}
-            <div className="pt-4 border-t border-line-subtle flex justify-end gap-2">
+            <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
               <Button variant="ghost" size="sm" type="button" onClick={() => setActiveTab('browse')}>
                 取消
               </Button>
