@@ -17,6 +17,7 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
+._*
 *.suo
 *.ntvs*
 *.njsproj
@@ -30,6 +31,7 @@ release/
 # Next.js
 .next/
 .next*/
+.next-*/
 out/
 
 # Local runtime/session data and generated archives
@@ -42,6 +44,29 @@ data/backups/
 *.db
 *.tar
 *.tar.gz
+*.bak*
+*.r14bak
+*.patch
+.r*-backup-*/
+outputs/
+test-results/
+tmp/
+_tmp_*
+scripts/*.png
+tests/visual_baselines/output/
+
+# User uploads & dynamic content
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Docs & non-repo project records
+ORIGINAL_REQUEST.md
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md
+*.xlsx
+支付宝*
+权益设计和算力包.md
 
 # Misc
 *.pem

@@ -1,0 +1,5 @@
+-- DEPRECATED: 请勿直接执行这个旧种子文件。
+--
+-- 旧版本包含“赠送积分”和年/季付折扣，会覆盖当前的统一价盘。套餐同步现由
+-- lib/db/migrations/022_pricing_policy_v2.sql 管理，并须通过 `npm run db:migrate`
+-- 写入迁移账本后执行。保留此文件仅为兼容历史部署脚本的路径引用。

@@ -1,0 +1,50 @@
+import { getUserFromRequest, json } from '@/lib/services/auth';
+import { addCommunityComment, listCommunityComments } from '@/lib/services/community';
+import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
+import { publicErrorMessage } from '@/lib/security/publicError';
+
+export const runtime = 'nodejs';
+
+export async function GET(request, { params }) {
+  try {
+    const { id } = await params;
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '50', 10);
+    const comments = await listCommunityComments(id, limit);
+    return json({ comments });
+  } catch (error) {
+    console.error('[community list comments error]', error);
+    return json({ error: '获取评论失败' }, { status: 500 });
+  }
+}
+
+export async function POST(request, { params }) {
+  const user = await getUserFromRequest(request);
+  if (!user) return json({ error: '请先登录后再发表评论' }, { status: 401 });
+
+  const guarded = guardMutation(request, { maxBytes: 32 * 1024 });
+  if (guarded) return guarded;
+
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const content = body.content;
+
+    if (!content || !content.trim()) {
+      return json({ error: '评论内容不能为空' }, { status: 400 });
+    }
+
+    const limit = await consumeRateLimit({ scope: 'community_comment_user', subject: user.id, limit: 30, windowMs: 60 * 60 * 1000 });
+    if (!limit.allowed) return rateLimitResponse(limit);
+
+    const comment = await addCommunityComment({
+      postId: id,
+      userId: user.id,
+      content: content.trim(),
+    });
+
+    return json({ comment }, { status: 201 });
+  } catch (error) {
+    console.error('[community add comment error]', error);
+    return json({ error: publicErrorMessage(error, '发表评论失败') }, { status: 500 });
+  }
+}

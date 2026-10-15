@@ -1,0 +1,400 @@
+model_id|name|category|has_price_sheet_row|frontend_reachable
+veo-2|Google Veo 2 超清视频|video|yes|no
+luma-ray-2|Luma Ray 2 电影感运镜|video|yes|no
+flux-1.1-pro|Flux 1.1 Pro 电影质感摄影|image|yes|no
+kling-3.0-pro|快手 可灵 3.0 Pro 电影视频|video|yes|no
+hailuo-2.3|MiniMax 海螺 2.3 电影视频|video|yes|no
+ai-clipping|AI Clipping|image|yes|no
+flux-schnell-image|Flux Schnell|image|yes|no
+sd-3.5-large|SD 3.5 Large|image|yes|no
+veo-2-text-to-video|Google Veo 2|video|yes|no
+veo-2-image-to-video|Google Veo 2 I2V|video|yes|no
+luma-dream-machine|Luma Dream Machine|video|yes|no
+wan2.1-t2v-14b|Wan 2.1 14B|video|yes|no
+wan2.1-i2v-14b|Wan 2.1 14B I2V|video|yes|no
+kling-2.6|Kling 2.6|video|yes|no
+flux-pro|Flux Pro|image|yes|no
+wan-2.1|Wan 2.1|video|yes|no
+hailuo-02|Hailuo 02|video|yes|no
+gpt-image|GPT Image|image|yes|no
+imagen-4|Imagen 4|image|yes|no
+rh-hitem3d-portrait-v15-image-to-3d-b55c93e5|RH hitem3d-portrait-v15/image-to-3d|other|no|no
+rh-hitem3d-portrait-v20-image-to-3d-fe2cd98c|RH hitem3d-portrait-v20/image-to-3d|other|no|no
+rh-hitem3d-portrait-v20-multi-image-to-3d-c18db054|RH hitem3d-portrait-v20/multi-image-to-3d|other|no|no
+rh-hitem3d-portrait-v21-image-to-3d-7190180d|RH hitem3d-portrait-v21/image-to-3d|other|no|no
+rh-hitem3d-portrait-v21-multi-image-to-3d-ba4ba499|RH hitem3d-portrait-v21/multi-image-to-3d|other|no|no
+rh-hitem3d-v15-image-to-3d-3cb045f8|RH hitem3d-v15/image-to-3d|other|no|no
+rh-hitem3d-v15-multi-image-to-3d-2a7019c2|RH hitem3d-v15/multi-image-to-3d|other|no|no
+rh-hitem3d-v2-image-to-3d-ba176134|RH hitem3d-v2/image-to-3d|other|no|no
+rh-hitem3d-v2-multi-image-to-3d-5490b263|RH hitem3d-v2/multi-image-to-3d|other|no|no
+rh-hitem3d-v21-image-to-3d-690e2c89|RH hitem3d-v21/image-to-3d|other|no|no
+rh-hitem3d-v21-multi-image-to-3d-ba5a0742|RH hitem3d-v21/multi-image-to-3d|other|no|no
+rh-hunyuan3d-v3-1-image-to-3d-f62bbecd|RH 混元图生3D模型v3.1|other|no|no
+rh-hunyuan3d-v3-1-text-to-3d-02b3bd11|RH 混元文生3D模型v3.1|other|no|no
+rh-meshy6-image-to-3d-8830b42b|RH Meshy 6 图生 3D|other|no|no
+rh-meshy6-text-to-3d-f16831e9|RH Meshy 6 文生 3D|other|no|no
+rh-bytedance-doubao-seed-audio-1-0-7716894a|RH Doubao-音频生成-1.0|audio|no|no
+rh-minimax-music-2-6-2bec2785|RH MiniMax Music 2.6|audio|no|no
+rh-minimax-music-cover-28a1353a|RH MiniMax Music 翻唱|audio|no|no
+rh-minimax-music-cover-preprocess-65c9d7c3|RH MiniMax Music 翻唱前处理|audio|no|no
+rh-minimax-voice-design-364625d1|RH minimax-音色设计|audio|no|no
+rh-rhart-audio-suno-v4-5-custom-46f60f23|RH suno-custom-v4.5|audio|no|no
+rh-rhart-audio-suno-v4-5-single-bab03946|RH suno-single-v4.5|audio|no|no
+rh-rhart-audio-suno-v5-5-custom-db90eef3|RH suno-custom-v5.5|audio|no|no
+rh-rhart-audio-suno-v5-5-single-6d6b259e|RH suno-single-v5.5|audio|no|no
+rh-rhart-audio-suno-v5-custom-cc6a6028|RH suno-custom-v5|audio|no|no
+rh-rhart-audio-suno-v5-single-8d37ec6e|RH suno-single-v5|audio|no|no
+rh-rhart-audio-suno-lyrics-e048e873|RH suno-歌词生成|audio|no|no
+rh-rhart-audio-text-to-audio-music-2-5-c37aa9c5|RH minimax/music-2.5|audio|no|no
+rh-rhart-audio-text-to-audio-speech-02-hd-7c16d1e4|RH minimax/speech-02-hd|audio|no|no
+rh-alibaba-qwen-image-3-0-pro-image-edit-209c253e|RH 千问3.0Pro-图像编辑|image|no|no
+rh-rhart-audio-text-to-audio-speech-02-turbo-8286747c|RH minimax/speech-02-turbo|audio|no|no
+rh-rhart-audio-text-to-audio-speech-2-6-hd-e974cfc6|RH minimax/speech-2.6-hd|audio|no|no
+rh-rhart-audio-text-to-audio-speech-2-6-turbo-9c104250|RH minimax/speech-2.6-turbo|audio|no|no
+rh-rhart-audio-text-to-audio-speech-2-8-hd-3ba8c259|RH minimax/speech-2.8-hd|audio|no|no
+rh-rhart-audio-text-to-audio-speech-2-8-turbo-9d562e3b|RH minimax/speech-2.8-turbo|audio|no|no
+rh-rhart-audio-text-to-audio-voice-clone-f1aa0d99|RH minimax/voice-clone|audio|no|no
+rh-alibaba-qwen-image-2-0-pro-image-edit-15322251|RH 千问2.0Pro-图像编辑|image|no|no
+rh-alibaba-qwen-image-3-0-pro-text-to-image-77436160|RH 千问3.0Pro-文生图|image|no|no
+rh-marble-1-0-image-to-world-712b0d1f|RH marble-1.0 单图生3D世界|image|no|no
+rh-alibaba-qwen-image-2-0-pro-text-to-image-2f27bd4e|RH 千问2.0Pro-文生图|image|no|no
+rh-alibaba-qwen-image-2-0-image-edit-b160f231|RH 千问2.0-图像编辑|image|no|no
+rh-alibaba-qwen-image-2-0-text-to-image-47d85512|RH 千问2.0-文生图|image|no|no
+rh-alibaba-wan-2-5-preview-image-to-image-091baa1e|RH 万相2.5 Preview 图生图|image|no|no
+rh-alibaba-wan-2-5-preview-text-to-image-6d96b02b|RH 万相2.5 Preview 文生图|image|no|no
+rh-alibaba-wan-2-7-image-edit-bb223572|RH 万相2.7-图像编辑|image|no|no
+rh-alibaba-wan-2-7-image-edit-pro-dda415b7|RH 万相2.7-图像编辑Pro|image|no|no
+rh-alibaba-wan-2-7-text-to-image-pro-df963e20|RH 万相2.7-文生图Pro|image|no|no
+rh-marble-1-0-multi-image-to-world-005066fb|RH marble-1.0 多图生3D世界|image|no|no
+rh-bytedance-jimeng-4-6-image-to-image-5359f76c|RH 即梦图片 4.6 图生图|image|no|no
+rh-bytedance-jimeng-4-6-text-to-image-989ec69c|RH 即梦图片 4.6 文生图|image|no|no
+rh-higgsfield-soul-image-to-image-71979f19|RH Higgsfield Soul 图生图|image|no|no
+rh-image-enhance-hypir-balance-3fcc42ba|RH HYPIR-BALANCE|image|no|no
+rh-image-enhance-hypir-ultra-8218ff93|RH HYPIR-ULTRA|image|no|no
+rh-luma-uni-1-max-image-edit-0170ba85|RH Luma uni-1-max 图像编辑|image|no|no
+rh-luma-uni-1-max-image-to-image-9fc9df11|RH Luma uni-1-max 图生图|image|no|no
+rh-luma-uni-1-max-text-to-image-ce762473|RH Luma uni-1-max 文生图|image|no|no
+rh-luma-uni-1-image-edit-8e256821|RH Luma uni-1 图像编辑|image|no|no
+rh-luma-uni-1-image-to-image-020824e9|RH Luma uni-1 图生图|image|no|no
+rh-luma-uni-1-text-to-image-270c0d40|RH Luma uni-1 文生图|image|no|no
+rh-marble-1-1-plus-image-to-world-4a295a96|RH marble-1.1-plus 单图生3D世界|image|no|no
+rh-marble-1-1-plus-multi-image-to-world-ecec2e99|RH marble-1.1-plus 多图生3D世界|image|no|no
+rh-marble-1-1-image-to-world-ef8794af|RH marble-1.1 单图生3D世界|image|no|no
+rh-marble-1-1-multi-image-to-world-ce94f4e8|RH marble-1.1 多图生3D世界|image|no|no
+rh-rhart-image-g-1-5-official-image-to-image-94a278c9|RH 全能图片G-1.5-图生图-官方稳定版|image|no|no
+rh-rhart-image-g-1-5-official-text-to-image-63d44c95|RH 全能图片G-1.5-文生图-官方稳定版|image|no|no
+rh-rhart-image-g-1-5-edit-deprecated-09c7dad8|RH 全能图片G-1.5-图生图-低价渠道版-(已下架) 可用全能图片G-2 模型代替|image|no|no
+rh-rhart-image-g-1-5-text-to-image-deprecated-0acd7917|RH 全能图片G-1.5-文生图-低价渠道版-(已下架) 可用全能图片G-2 模型代替|image|no|no
+rh-rhart-image-g-2-official-image-to-image-761c73d9|RH 全能图片G-2-图生图-官方稳定版|image|no|no
+rh-topazlabs-image-upscale-standard-v2-0c85ac06|RH topazlabs图像放大StandardV2|image|no|no
+rh-rhart-image-g-2-official-text-to-image-a340a888|RH 全能图片G-2-文生图-官方稳定版|image|no|no
+rh-rhart-image-g-2-image-to-image-1e59c11c|RH 全能图片G-2.0-图生图-低价渠道版|image|no|no
+rh-rhart-image-g-2-text-to-image-a509ebf7|RH 全能图片G-2.0-文生图-低价渠道版|image|no|no
+rh-rhart-image-g-3-image-to-image-0fc0e0ee|RH 全能图片X-3-图生图|image|no|no
+rh-rhart-image-g-3-text-to-image-3c804aaf|RH 全能图片X-3-文生图|image|no|no
+rh-rhart-image-g-4-image-to-image-9409cf51|RH 全能图片X-4-图生图|image|no|no
+rh-rhart-image-g-4-text-to-image-210901af|RH 全能图片X-4-文生图|image|no|no
+rh-rhart-image-g-image-to-image-bec0f7c0|RH 全能图片X-图生图-低价渠道版|image|no|no
+rh-rhart-image-g-text-to-image-2daf6115|RH 全能图片X-文生图-低价渠道版|image|no|no
+rh-rhart-image-n-g31-flash-lite-official-image-t-d6e31f47|RH 全能图片V2-lite-图生图-官方稳定版|image|no|no
+rh-rhart-image-n-g31-flash-lite-official-text-to-2cc1f04a|RH 全能图片V2-lite-文生图-官方稳定版|image|no|no
+rh-rhart-image-n-g31-flash-lite-image-to-image-eb4468f6|RH 全能图片V2-lite-图生图-低价渠道版|image|no|no
+rh-rhart-image-n-g31-flash-lite-text-to-image-7e22f167|RH 全能图片V2-lite-文生图-低价渠道版|image|no|no
+rh-rhart-image-n-g31-flash-official-image-to-ima-a3b71154|RH 全能图片V2-图生图-官方稳定版|image|no|no
+rh-rhart-image-n-g31-flash-official-text-to-imag-e30de17e|RH 全能图片V2-文生图-官方稳定版|image|no|no
+rh-rhart-image-n-g31-flash-image-to-image-035d935b|RH 全能图片V2-图生图-低价渠道版|image|no|no
+rh-rhart-image-n-g31-flash-text-to-image-58b1f2d0|RH 全能图片V2-文生图-低价渠道版|image|no|no
+rh-rhart-image-n-pro-official-edit-5e19cc9d|RH 全能图片PRO-图生图-官方稳定版|image|no|no
+rh-rhart-image-n-pro-official-edit-ultra-8af36900|RH 全能图片PRO-图生图Ultra-官方稳定版|image|no|no
+rh-rhart-image-n-pro-official-text-to-image-050b064a|RH 全能图片PRO-文生图-官方稳定版|image|no|no
+rh-rhart-image-n-pro-official-text-to-image-ultr-e072a4fb|RH 全能图片PRO-文生图Ultra-官方稳定版|image|no|no
+rh-rhart-image-n-pro-edit-cc3f933d|RH 全能图片PRO-图生图-低价渠道版|image|no|no
+rh-rhart-image-n-pro-text-to-image-13c1d816|RH 全能图片PRO-文生图-低价渠道版|image|no|no
+rh-rhart-image-v1-official-edit-32cc2f5b|RH 全能图片V1-图生图-官方稳定版|image|no|no
+rh-rhart-image-v1-official-text-to-image-59caf656|RH 全能图片V1-文生图-官方稳定版|image|no|no
+rh-rhart-image-v1-edit-0ee18460|RH 全能图片V1-图生图-低价渠道版|image|no|no
+rh-rhart-text-g-25-pro-text-to-text-a86c8269|RH rhart-text-g-25-pro/text-to-text|text|no|no
+rh-rhart-image-v1-text-to-image-079e6a44|RH 全能图片V1-文生图-低价渠道版|image|no|no
+rh-rhart-image-x-official-edit-a1ec9e52|RH 全能图片X-图片编辑-官方稳定版|image|no|no
+rh-rhart-image-x-official-text-to-image-952c838c|RH 全能图片X-文生图片-官方稳定版|image|no|no
+rh-rhart-image-f-dev-05cc4557|RH f-dev|image|no|no
+rh-rhart-image-f-dev-lora-28e01b04|RH f-dev-lora|image|no|no
+rh-rhart-imagine-image-quality-edit-e1a56cd6|RH 全能图片X-高质量图片编辑-官方稳定版|image|no|no
+rh-rhart-imagine-image-quality-text-to-image-4ca8e8c5|RH 全能图片X-高质量文生图-官方稳定版|image|no|no
+rh-seedream-v4-5-image-to-image-5cfd3a16|RH seedream-v4.5-图生图|image|no|no
+rh-seedream-v4-5-text-to-image-abdf51f3|RH seedream-v4.5-文生图|image|no|no
+rh-seedream-v4-image-to-image-e7d7e32b|RH seedream-v4-图生图|image|no|no
+rh-seedream-v4-text-to-image-cedcaeb6|RH seedream-v4-文生图|image|no|no
+rh-seedream-v5-lite-image-to-image-aa2ad229|RH seedream-v5-lite-图生图|image|no|no
+rh-seedream-v5-lite-text-to-image-777f2fb2|RH seedream-v5-lite-文生图|image|no|no
+rh-seedream-v5-pro-image-to-image-57ba8f7a|RH seedream-v5-pro-图生图|image|no|no
+rh-seedream-v5-pro-text-to-image-dcff0bca|RH seedream-v5-pro-文生图|image|no|no
+rh-topazlabs-image-upscale-cgi-010572a8|RH topazlabs图像放大CGI|image|no|no
+rh-topazlabs-image-upscale-high-fidelity-v2-45c3c1a4|RH topazlabs图像放大High Fidelity V2|image|no|no
+rh-topazlabs-image-upscale-text-refine-c6275081|RH topazlabs图像放大Text Refine|image|no|no
+rh-topazlabs-image-upscale-low-resolution-v2-38002bab|RH topazlabs图像放大Low Resolution V2|image|no|no
+rh-youchuan-text-to-image-niji6-93704baf|RH 悠船文生图-niji6|image|no|no
+rh-youchuan-text-to-image-niji7-34bb8fb9|RH 悠船文生图-niji7|image|no|no
+rh-youchuan-text-to-image-v6-b0f4cd32|RH 悠船文生图-v6|image|no|no
+rh-youchuan-text-to-image-v61-7f176a02|RH 悠船文生图-v61|image|no|no
+rh-youchuan-text-to-image-v7-0bcbd44c|RH 悠船文生图-v7|image|no|no
+rh-youchuan-text-to-image-v81-e950fd66|RH 悠船文生图-v8.1|image|no|no
+rh-youchuan-text-to-image-v82-a8366f77|RH 悠船文生图-v8.2预览版|image|no|no
+rh-bytedance-doubao-seed-tts-2-0-212a4f91|RH Doubao-语音合成-2.0|text|no|no
+rh-kling-elements-84813079|RH kling-elements|text|no|no
+rh-kling-lip-sync-identify-face-1fd557af|RH 可灵对口型-人脸识别|text|no|no
+rh-kling-lip-sync-tts-f87fa5a9|RH 可灵对口型-语音合成|text|no|no
+rh-marble-1-0-text-to-world-1b720d1e|RH marble-1.0 文生3D世界|text|no|no
+rh-marble-1-1-plus-text-to-world-29fa4d65|RH marble-1.1-plus 文生3D世界|text|no|no
+rh-marble-1-1-text-to-world-39a01d88|RH marble-1.1 文生3D世界|text|no|no
+rh-marble-upload-media-asset-9f05a3d5|RH Marble 上传媒体资源|text|no|no
+rh-mureka-ai-describe-song-efb18979|RH mureka-ai 歌曲理解|text|no|no
+rh-mureka-ai-extend-lyrics-66df245d|RH mureka-ai 歌词延长|text|no|no
+rh-mureka-ai-files-upload-24c39925|RH Mureka 文件上传|text|no|no
+rh-mureka-ai-generate-lyrics-862f78c5|RH Mureka 歌词生成|text|no|no
+rh-mureka-ai-mureka-o2-generate-song-0bc6ac4c|RH Mureka-o2 歌曲生成|text|no|no
+rh-mureka-ai-mureka-v7-6-extend-song-ac03e09a|RH mureka-v7.6 短歌延长|text|no|no
+rh-mureka-ai-mureka-v7-6-generate-bgm-25538ffa|RH Mureka-v7.6 伴奏生成|text|no|no
+rh-mureka-ai-mureka-v7-6-generate-song-01531c8e|RH Mureka-v7.6 歌曲生成|text|no|no
+rh-mureka-ai-mureka-v8-extend-song-a3ba54f1|RH Mureka-v8 短歌延长|text|no|no
+rh-mureka-ai-mureka-v8-generate-bgm-3b570fc7|RH Mureka-v8 伴奏生成|text|no|no
+rh-mureka-ai-mureka-v8-generate-song-783d6fbe|RH Mureka-v8 歌曲生成|text|no|no
+rh-mureka-ai-mureka-v9-generate-bgm-757e6e5b|RH Mureka-v9 伴奏生成|text|no|no
+rh-rhart-text-g-25-pro-video-to-text-819a2143|RH rhart-text-g-25-pro/video-to-text|text|no|no
+rh-rhart-text-g-3-flash-preview-cv-image-to-text-ef764e46|RH rhart-text-g-3-flash-preview-cv/image-to-text|text|no|no
+rh-mureka-ai-mureka-v9-generate-song-e28d1b3b|RH Mureka-v9 歌曲生成|text|no|no
+rh-mureka-ai-recognize-song-7349bdc8|RH mureka-ai 歌曲识别|text|no|no
+rh-mureka-ai-stem-song-bc98ecb0|RH mureka-ai 音轨分离|text|no|no
+rh-mureka-ai-vocal-clone-1531ecbe|RH Mureka 人声克隆|text|no|no
+rh-mureka-o2-instrumental-generate-66effec4|RH Mureka mureka-o2 伴奏生成-暂不可用|text|no|no
+rh-pixverse-v6-extend-3f064e6a|RH PixVerse V6 视频续写|text|no|no
+rh-rhart-text-g-25-flash-cv-image-to-text-88b6e3cc|RH rhart-text-g-25-flash-cv/image-to-text|text|no|no
+rh-rhart-text-g-25-flash-image-to-text-555652a7|RH rhart-text-g-25-flash/image-to-text|text|no|no
+rh-rhart-text-g-25-flash-text-to-text-4ebd2e41|RH rhart-text-g-25-flash/text-to-text|text|no|no
+rh-rhart-text-g-25-flash-video-to-text-8a103a2a|RH rhart-text-g-25-flash/video-to-text|text|no|no
+rh-rhart-text-g-25-pro-cv-image-to-text-1308fa9d|RH rhart-text-g-25-pro-cv/image-to-text|text|no|no
+rh-rhart-text-g-25-pro-image-to-text-17631a40|RH rhart-text-g-25-pro/image-to-text|text|no|no
+rh-rhart-text-g-3-flash-preview-image-to-text-83d0c715|RH rhart-text-g-3-flash-preview/image-to-text|text|no|no
+rh-rhart-text-g-3-flash-preview-text-to-text-ac9b277e|RH rhart-text-g-3-flash-preview/text-to-text|text|no|no
+rh-rhart-text-g-3-flash-preview-video-to-text-cd76378d|RH rhart-text-g-3-flash-preview/video-to-text|text|no|no
+rh-rhart-text-g-3-pro-preview-cv-image-to-text-4591e26d|RH rhart-text-g-3-pro-preview-cv/image-to-text|text|no|no
+rh-rhart-text-g-3-pro-preview-image-to-text-c186755f|RH rhart-text-g-3-pro-preview/image-to-text|text|no|no
+rh-rhart-text-g-3-pro-preview-text-to-text-b45fe21a|RH rhart-text-g-3-pro-preview/text-to-text|text|no|no
+rh-rhart-text-g-3-pro-preview-video-to-text-43d15e95|RH rhart-text-g-3-pro-preview/video-to-text|text|no|no
+rh-rhart-text-qwen-27b-chat-770f3571|RH rhart-text-qwen-27b/chat|text|no|no
+rh-vidu-short-play-q3-ad-3cf340e7|RH Vidu Q3 Ad 短剧成片|text|no|no
+rh-vidu-short-play-q3-drama-b93688ba|RH Vidu Q3 Drama 短剧成片|text|no|no
+rh-alibaba-happyhorse-1-0-image-to-video-0f5bff81|RH happyhorse-1.0/image-to-video|video|no|no
+rh-alibaba-happyhorse-1-0-reference-to-video-8f2396ca|RH happyhorse-1.0/reference-to-video|video|no|no
+rh-alibaba-happyhorse-1-0-text-to-video-4d5a487d|RH happyhorse-1.0/text-to-video|video|no|no
+rh-alibaba-happyhorse-1-0-video-edit-0cd765e3|RH happyhorse-1.0/video-edit|video|no|no
+rh-alibaba-happyhorse-1-1-image-to-video-91330413|RH happyhorse-1.1/image-to-video|video|no|no
+rh-alibaba-happyhorse-1-1-reference-to-video-27b4db61|RH happyhorse-1.1/reference-to-video|video|no|no
+rh-alibaba-happyhorse-1-1-text-to-video-e5ff0547|RH happyhorse-1.1/text-to-video|video|no|no
+rh-alibaba-wan-2-5-preview-image-to-video-d3ef612a|RH 万相2.5 Preview 图生视频|video|no|no
+rh-alibaba-wan-2-5-preview-text-to-video-b750daad|RH 万相2.5 Preview 文生视频|video|no|no
+rh-alibaba-wan-2-6-image-to-video-315db5b9|RH 万相2.6-图生视频|video|no|no
+rh-alibaba-wan-2-6-image-to-video-flash-05e6dad5|RH 万相2.6-图生视频Flash|video|no|no
+rh-alibaba-wan-2-6-reference-to-video-ac10fad1|RH 万相2.6-参考生视频|video|no|no
+rh-alibaba-wan-2-6-reference-to-video-flash-3bb97a8c|RH 万相2.6-参考生视频Flash|video|no|no
+rh-alibaba-wan-2-6-text-to-video-bc6f7112|RH 万相2.6-文生视频|video|no|no
+rh-alibaba-wan-2-7-spicy-image-to-video-bad4e05f|RH 万相2.7-spicy-图生视频|video|no|no
+rh-alibaba-wan-2-7-image-to-video-1dc69b8c|RH 万相2.7-图生视频|video|no|no
+rh-alibaba-wan-2-7-reference-to-video-02843f56|RH 万相2.7-参考生视频|video|no|no
+rh-alibaba-wan-2-7-text-to-video-9e50bcfc|RH 万相2.7-文生视频|video|no|no
+rh-alibaba-wan-2-7-video-edit-cf7fbb2d|RH 万相2.7-视频编辑|video|no|no
+rh-alibaba-wan-2-7-video-extend-30f0b24e|RH 万相2.7-视频续写|video|no|no
+rh-bytedance-dreamactor-v2-c1d24434|RH SD2.0 视频参考生视频(体验版)|video|no|no
+rh-gemini-omni-flash-image-to-video-ddc1e2b9|RH 全能视频 Omni Flash 图生视频-低价渠道版|video|no|no
+rh-gemini-omni-flash-text-to-video-34d5dda3|RH 全能视频 Omni Flash 文生视频-低价渠道版|video|no|no
+rh-gemini-omni-flash-video-edit-fa39cf08|RH 全能视频 Omni Flash 视频编辑-低价渠道版|video|no|no
+rh-higgsfield-dop-image-to-video-6177179a|RH Higgsfield DoP 图生视频|video|no|no
+rh-kling-elements-advanced-7a51d977|RH 可灵 o3 创建主体|video|no|no
+rh-kling-lip-sync-lip-sync-video-00e9a3bc|RH 可灵对口型-视频生成|video|no|no
+rh-kling-v2-ai-avatar-pro-image-audio-to-video-f59f60e8|RH Kling V2 Pro 数字人口播视频|video|no|no
+rh-kling-v2-ai-avatar-standard-image-audio-to-vi-caaa70a2|RH Kling V2 Std 数字人口播视频|video|no|no
+rh-kling-v2-5-turbo-pro-image-to-video-4fd25435|RH 可灵图生视频2.5-turbo-pro|video|no|no
+rh-kling-v2-5-turbo-pro-text-to-video-a474367f|RH 可灵文生视频2.5-turbo-pro|video|no|no
+rh-kling-v2-5-turbo-std-image-to-video-db2e41fa|RH 可灵图生视频2.5-turbo-std|video|no|no
+rh-kling-v2-5-turbo-std-text-to-video-34795f99|RH 可灵文生视频2.5-turbo-std|video|no|no
+rh-kling-v2-6-pro-image-to-video-439c1752|RH 可灵图生视频2.6-pro|video|no|no
+rh-kling-v2-6-pro-motion-control-e0f98c01|RH kling-v2.6-pro-动作控制|video|no|no
+rh-kling-v2-6-pro-text-to-video-93f49576|RH 可灵文生视频2.6-pro|video|no|no
+rh-kling-v2-6-std-image-to-video-23e2d974|RH 可灵图生视频2.6-标准版|video|no|no
+rh-kling-v2-6-std-motion-control-953f6b82|RH kling-v2.6-std-动作控制|video|no|no
+rh-kling-v2-6-std-text-to-video-a1ed5d2b|RH 可灵文生视频2.6-标准版|video|no|no
+rh-kling-v3-4k-image-to-video-7f87255d|RH 可灵图生视频v3-4k|video|no|no
+rh-kling-v3-4k-text-to-video-90115774|RH 可灵文生视频v3-4k|video|no|no
+rh-kling-v3-turbo-pro-image-to-video-59e25ef2|RH 可灵图生视频v3-turbo-pro|video|no|no
+rh-kling-v3-turbo-pro-text-to-video-0d703d77|RH 可灵文生视频v3-turbo-pro|video|no|no
+rh-kling-v3-turbo-std-image-to-video-da60e648|RH 可灵图生视频v3-turbo-std|video|no|no
+rh-kling-v3-turbo-std-text-to-video-3d81b435|RH 可灵文生视频v3-turbo-std|video|no|no
+rh-kling-v3-0-4k-motion-control-eba64a07|RH 可灵动作控制V3.0-4k|video|no|no
+rh-kling-v3-0-pro-image-to-video-87f75869|RH 可灵图生视频3.0-pro|video|no|no
+rh-kling-v3-0-pro-motion-control-8390e05a|RH 可灵动作控制V3.0-pro|video|no|no
+rh-kling-v3-0-pro-text-to-video-7c2beacd|RH 可灵文生视频3.0-pro|video|no|no
+rh-kling-v3-0-std-image-to-video-175f85c2|RH 可灵图生视频3.0-std|video|no|no
+rh-kling-v3-0-std-motion-control-a0425d66|RH 可灵动作控制V3.0-std|video|no|no
+rh-kling-v3-0-std-text-to-video-7614dbf6|RH 可灵文生视频3.0-std|video|no|no
+rh-kling-video-o1-std-edit-video-5edd1088|RH 可灵视频编辑o1|video|no|no
+rh-kling-video-o1-std-refrence-to-video-da217546|RH 可灵参考生视频o1|video|no|no
+rh-kling-video-o1-image-to-video-92510196|RH 可灵图生视频o1|video|no|no
+rh-kling-video-o1-start-to-end-7f54c666|RH 可灵首尾帧生视频o1|video|no|no
+rh-kling-video-o1-text-to-video-ee3cfe7a|RH 可灵文生视频o1|video|no|no
+rh-kling-video-o3-4k-image-to-video-f6e306b5|RH 可灵图生视频o3-4k|video|no|no
+rh-kling-video-o3-4k-reference-to-video-ad810f60|RH 可灵参考生视频o3-4k|video|no|no
+rh-kling-video-o3-4k-text-to-video-4426c87a|RH 可灵文生视频o3-4k|video|no|no
+rh-kling-video-o3-pro-image-to-video-5a337db1|RH 可灵图生视频o3-pro|video|no|no
+rh-kling-video-o3-pro-reference-to-video-0ea48bed|RH kling-video-o3-pro/reference-to-video|video|no|no
+rh-kling-video-o3-pro-text-to-video-cb164bdd|RH 可灵文生视频o3-pro|video|no|no
+rh-kling-video-o3-pro-video-edit-52f1ce85|RH kling-video-o3-pro/video-edit|video|no|no
+rh-kling-video-o3-std-image-to-video-334e7fa3|RH 可灵图生视频o3-std|video|no|no
+rh-kling-video-o3-std-reference-to-video-f72615a4|RH kling-video-o3-std/reference-to-video|video|no|no
+rh-kling-video-o3-std-text-to-video-6c9c1843|RH 可灵文生视频o3-std|video|no|no
+rh-kling-video-o3-std-video-edit-df58edb4|RH kling-video-o3-std/video-edit|video|no|no
+rh-marble-1-0-video-to-world-6d22b7cd|RH marble-1.0 视频生3D世界|video|no|no
+rh-marble-1-1-plus-video-to-world-ac73d97f|RH marble-1.1-plus 视频生3D世界|video|no|no
+rh-marble-1-1-video-to-world-01a79bf2|RH marble-1.1 视频生3D世界|video|no|no
+rh-minimax-hailuo-02-fast-93b93bfa|RH 海螺-02-fast|video|no|no
+rh-volc-subtitle-erase-pro-video-cfe388e0|RH 火山字幕擦除-视频字幕擦除（精细化版）|video|no|no
+rh-minimax-hailuo-02-i2v-pro-086cc590|RH 海螺-02-图生视频-pro|video|no|no
+rh-minimax-hailuo-02-i2v-standard-9099638f|RH 海螺-02-图生视频-标准|video|no|no
+rh-minimax-hailuo-02-pro-6c35a10b|RH 海螺-02-pro|video|no|no
+rh-minimax-hailuo-02-standard-a92c5f2e|RH 海螺-02-标准|video|no|no
+rh-minimax-hailuo-02-t2v-pro-888f583d|RH 海螺-02-文生视频-pro|video|no|no
+rh-minimax-hailuo-02-t2v-standard-1be674e6|RH 海螺-02-文生视频-标准|video|no|no
+rh-minimax-hailuo-2-3-fast-pro-image-to-video-c69b4662|RH 海螺-2.3-fast-pro-图生视频|video|no|no
+rh-minimax-hailuo-2-3-fast-image-to-video-1b83f27a|RH 海螺-2.3-fast-图生视频|video|no|no
+rh-minimax-hailuo-2-3-i2v-standard-1ad343e3|RH 海螺-2.3-图生视频-标准|video|no|no
+rh-minimax-hailuo-2-3-image-to-video-pro-509e3ba1|RH 海螺-2.3-图生视频-pro|video|no|no
+rh-minimax-hailuo-2-3-t2v-pro-ad5feb06|RH 海螺-2.3-文生视频-pro|video|no|no
+rh-minimax-hailuo-2-3-t2v-standard-dd5b8b7c|RH 海螺-2.3-文生视频-标准|video|no|no
+rh-pixverse-c1-image-to-video-217e9088|RH PixVerse C1 图生视频|video|no|no
+rh-pixverse-c1-reference-to-video-26f4b567|RH PixVerse C1 参考生视频|video|no|no
+rh-pixverse-c1-text-to-video-10b3a41b|RH PixVerse C1 文生视频|video|no|no
+rh-pixverse-c1-transition-ced8869d|RH PixVerse C1 转场|video|no|no
+rh-pixverse-v5-5-effects-f7b914db|RH PixVerse V5.5 特效|video|no|no
+rh-volc-subtitle-erase-video-0a80b28b|RH 火山字幕擦除-视频字幕擦除（标准版）|video|no|no
+rh-pixverse-v5-5-transition-3e0e3252|RH PixVerse V5.5 转场|video|no|no
+rh-pixverse-v5-5-image-to-video-03f58c0f|RH PixVerse V5.5 图生视频|video|no|no
+rh-pixverse-v5-5-text-to-video-d11fbb59|RH PixVerse V5.5 文生视频|video|no|no
+rh-pixverse-v5-6-image-to-video-e8b609cc|RH PixVerse V5.6 图生视频|video|no|no
+rh-pixverse-v5-6-text-to-video-41e8ca14|RH PixVerse V5.6 文生视频|video|no|no
+rh-pixverse-v6-effects-22cb7266|RH PixVerse V6 特效|video|no|no
+rh-pixverse-v6-image-to-video-523b0a7b|RH PixVerse V6 图生视频|video|no|no
+rh-pixverse-v6-text-to-video-640a7c20|RH PixVerse V6 文生视频|video|no|no
+rh-pixverse-v6-transition-5700510d|RH PixVerse V6 转场|video|no|no
+rh-rhart-video-g-official-edit-video-b648cc3a|RH 全能视频X-编辑视频-官方稳定版|video|no|no
+rh-rhart-video-g-official-image-to-video-b3b61fe7|RH 全能视频X-图生视频-官方稳定版|video|no|no
+rh-rhart-video-g-official-image-to-video-v1-5-f78fb89f|RH 全能视频X-图生视频-官方稳定版-v1.5|video|no|no
+rh-rhart-video-g-official-reference-to-video-972e5437|RH 全能视频X-多图参考生视频-官方稳定版|video|no|no
+rh-rhart-video-g-official-text-to-video-d609944e|RH 全能视频X-文生视频-官方稳定版|video|no|no
+rh-rhart-video-g-official-video-extend-abe5a865|RH 全能视频X-视频续写-官方稳定版|video|no|no
+rh-rhart-video-g-image-to-video-0d4465bd|RH 全能视频X-图生视频-低价渠道版-v1.5|video|no|no
+rh-rhart-video-sparkvideo-2-0-fast-image-to-vide-02c188f0|RH Seedance2.0-Fast/图生视频|video|no|no
+rh-rhart-video-g-text-to-video-fc6e2069|RH 全能视频X-文生视频-低价渠道版-v1.5|video|no|no
+rh-rhart-video-r-gen4-aleph-official-video-to-vi-c9c9799e|RH 全能视频R-gen4-aleph/视频编辑-官方稳定版|video|no|no
+rh-rhart-video-r-gen4-turbo-official-image-to-vi-92ea4b12|RH 全能视频R/gen4-turbo/图生视频-官方稳定版|video|no|no
+rh-rhart-video-r-gen4-turbo-image-to-video-1b7cf079|RH 全能视频R/gen4-turbo/图生视频-低价渠道版|video|no|no
+rh-rhart-video-s-official-image-to-video-f757f325|RH 全能视频S-图生视频-官方稳定版|video|no|no
+rh-rhart-video-s-official-image-to-video-pro-cef50f30|RH 全能视频S-图生视频-pro-官方稳定版|video|no|no
+rh-rhart-video-s-official-image-to-video-realist-c059f14b|RH 全能视频S-图生视频-支持真人-官方稳定版|video|no|no
+rh-rhart-video-s-official-text-to-video-bf299e8c|RH 全能视频S-文生视频-官方稳定版|video|no|no
+rh-rhart-video-s-official-text-to-video-pro-81c50b70|RH 全能视频S-文生视频-pro-官方稳定版|video|no|no
+rh-rhart-video-s-image-to-video-01b26a21|RH 全能视频S-图生视频-低价渠道版|video|no|no
+rh-rhart-video-s-image-to-video-asyn-c8a7114d|RH 全能视频S-图生视频（异步）-低价渠道版|video|no|no
+rh-rhart-video-s-image-to-video-pro-deprecated-47402505|RH 全能视频S-图生视频-pro-低价渠道版-已下架|video|no|no
+rh-rhart-video-s-text-to-video-da856395|RH 全能视频S-文生视频-低价渠道版|video|no|no
+rh-rhart-video-s-text-to-video-pro-deprecated-a4c05529|RH 全能视频S-文生视频-pro-低价渠道版-已下架|video|no|no
+rh-rhart-video-v3-1-pro-text-to-video-5c4f8bf0|RH 全能视频V3.1-pro-文生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-fast-official-image-to-video-b95a509d|RH 全能视频V3.1-fast-图生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-fast-official-reference-to-v-f78aa8cc|RH 全能视频V3.1-fast-参考生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-fast-official-text-to-video-81f64f5b|RH 全能视频V3.1-fast-文生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-fast-official-video-extend-f9167423|RH 全能视频V3.1-fast-视频扩展-官方稳定版|video|no|no
+rh-rhart-video-v3-1-fast-image-to-video-5d744719|RH 全能视频V3.1-fast-图生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-fast-start-end-to-video-5e63aa44|RH 全能视频V3.1-fast-首尾帧生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-fast-text-to-video-99f1fa65|RH 全能视频V3.1-fast-文生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-lite-official-image-to-video-bc985d20|RH 全能视频V3.1-Lite图生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-lite-official-start-end-to-v-a8558d1d|RH 全能视频V3.1-Lite首尾帧生视频-官方稳定版|video|no|no
+rh-rhart-video-ltx-2-text-to-video-lora-1e956c92|RH ltx-2-19b/text-to-video-lora|video|no|no
+rh-rhart-video-v3-1-lite-official-text-to-video-a529f35b|RH 全能视频V3.1-Lite文生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-lite-image-to-video-754f6bf2|RH 全能视频V3.1-lite-图生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-lite-text-to-video-4b76cc61|RH 全能视频V3.1-lite-文生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-pro-official-image-to-video-bff657b5|RH 全能视频V3.1-pro-图生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-pro-official-reference-to-vi-314ab26c|RH 全能视频V3.1-pro-参考生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-pro-official-text-to-video-1f912ca4|RH 全能视频V3.1-pro-文生视频-官方稳定版|video|no|no
+rh-rhart-video-v3-1-pro-official-video-extend-22606be9|RH 全能视频V3.1-pro-视频扩展-官方稳定版|video|no|no
+rh-rhart-video-v3-1-pro-image-to-video-59697a26|RH 全能视频V3.1-pro-图生视频-低价渠道版|video|no|no
+rh-rhart-video-v3-1-pro-start-end-to-video-960d474e|RH 全能视频V3.1-pro-首尾帧生视频-低价渠道版|video|no|no
+rh-rhart-video-sparkvideo-2-0-fast-multimodal-vi-4f7e9e52|RH Seedance2.0-Fast/全能参考视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-fast-text-to-video-6f0c940b|RH Seedance2.0-Fast/文生视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-mini-image-to-vide-3fdbc432|RH seedance2.0-Mini/图生视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-mini-multimodal-vi-b4c4dbdd|RH seedance2.0-Mini/多模态视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-mini-text-to-video-599f7553|RH seedance2.0-Mini/文生视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-image-to-video-869a70e3|RH Seedance2.0/图生视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-multimodal-video-eb7c1545|RH Seedance2.0/全能参考视频|video|no|no
+rh-rhart-video-sparkvideo-2-0-multimodal-video-s-9724265b|RH 周星驰版权IP视频生成 (Seedance 2.0)|video|no|no
+rh-rhart-video-sparkvideo-2-0-multimodal-video-s-670e91a5|RH 周星驰版权IP视频生成-极速版 (Seedance 2.0 Fast)|video|no|no
+rh-rhart-video-sparkvideo-2-0-text-to-video-11ac22dd|RH Seedance2.0/文生视频|video|no|no
+rh-rhart-video-video-fps-increaser-a83af242|RH RH视频帧率增强|video|no|no
+rh-rhart-video-video-upscaler-1a35a4d8|RH RH视频超分|video|no|no
+rh-seedance-v1-lite-reference-to-video-cc5a3061|RH seedance-v1-lite-reference-to-video|video|no|no
+rh-seedance-v1-5-pro-image-to-video-c721441a|RH seedance-v1.5-pro-image-to-video|video|no|no
+rh-seedance-v1-5-pro-image-to-video-fast-2d303ef4|RH seedance-v1.5-pro-image-to-video-fast|video|no|no
+rh-seedance-v1-5-pro-text-to-video-d763de85|RH seedance-v1.5-pro-text-to-video|video|no|no
+rh-seedance-v1-5-pro-text-to-video-fast-17884cf1|RH seedance-v1.5-pro-text-to-video-fast|video|no|no
+rh-volc-drama-video-translate-9f4cacff|RH 火山短剧-视频翻译|video|no|no
+rh-skyreels-v3-reference-to-video-d1140993|RH SkyReels V3 参考图生视频|video|no|no
+rh-skyreels-v3-shot-switching-video-extension-38d8646f|RH SkyReels V3 视频续写（镜头切换）|video|no|no
+rh-skyreels-v3-single-shot-video-extension-bb3729c5|RH SkyReels V3 视频续写（单镜头）|video|no|no
+rh-skyreels-v3-video-restyling-1dc84ed9|RH SkyReels V3 视频风格化|video|no|no
+rh-skyreels-v4-image-to-video-fast-32a577fe|RH SkyReels V4 图生视频-fast|video|no|no
+rh-skyreels-v4-image-to-video-std-e0cce7bc|RH SkyReels V4 图生视频-std|video|no|no
+rh-skyreels-v4-omni-reference-fast-9446ec50|RH SkyReels V4 Omni 参考视频-fast|video|no|no
+rh-skyreels-v4-omni-reference-std-ddf8eff9|RH SkyReels V4 Omni 参考视频-std|video|no|no
+rh-skyreels-v4-text-to-video-fast-8835c177|RH SkyReels V4 文生视频-fast|video|no|no
+rh-skyreels-v4-text-to-video-std-cb41d9e8|RH SkyReels V4 文生视频-std|video|no|no
+rh-topazlabs-video-upscale-a3939c7a|RH topazlabs视频放大|video|no|no
+rh-vidu-image-to-video-q2-pro-27655ad2|RH Vidu-图生视频-q2-pro|video|no|no
+rh-vidu-image-to-video-q2-pro-fast-aa2fe581|RH Vidu-图生视频-q2-pro-fast|video|no|no
+rh-vidu-image-to-video-q2-turbo-d6eb3631|RH Vidu-图生视频-q2-turbo|video|no|no
+rh-vidu-image-to-video-q3-pro-26f0a07d|RH Vidu-图生视频-q3-pro|video|no|no
+rh-vidu-image-to-video-q3-pro-fast-4ffdcff2|RH Vidu-图生视频-q3-pro-fast|video|no|no
+rh-vidu-image-to-video-q3-turbo-aa29d7f4|RH Vidu-图生视频-q3-turbo|video|no|no
+rh-vidu-reference-to-video-q2-05f1d2d7|RH Vidu-参考生视频-q2|video|no|no
+rh-vidu-reference-to-video-q2-pro-48138ff2|RH Vidu-参考生视频-q2-pro|video|no|no
+rh-vidu-reference-to-video-q3-3a62f6b9|RH Vidu-参考生视频-q3|video|no|no
+rh-vidu-reference-to-video-q3-ad-344b7dc0|RH Vidu-参考生视频-q3-ad|video|no|no
+rh-vidu-reference-to-video-q3-drama-1cb94b15|RH Vidu-参考生视频-q3-drama|video|no|no
+rh-vidu-reference-to-video-q3-mix-0d70e3e6|RH Vidu-参考生视频-q3-mix|video|no|no
+rh-vidu-start-end-to-video-q2-pro-b47d62bd|RH Vidu-首尾帧生视频-q2-pro|video|no|no
+rh-vidu-start-end-to-video-q2-pro-fast-1c573ad9|RH Vidu-首尾帧生视频-q2-pro-fast|video|no|no
+rh-vidu-start-end-to-video-q2-turbo-69f92529|RH Vidu-首尾帧生视频-q2-turbo|video|no|no
+rh-vidu-start-end-to-video-q3-pro-9e02d55c|RH Vidu-首尾帧生视频-q3-pro|video|no|no
+rh-vidu-start-end-to-video-q3-pro-fast-c3cafa81|RH Vidu-首尾帧生视频-q3-pro-fast|video|no|no
+rh-vidu-start-end-to-video-q3-turbo-87fd7873|RH Vidu-首尾帧生视频-q3-turbo|video|no|no
+rh-vidu-text-to-video-12518e91|RH Vidu-文生视频-q2|video|no|no
+rh-vidu-text-to-video-q3-pro-7c267ed0|RH Vidu-文生视频-q3-pro|video|no|no
+rh-vidu-text-to-video-q3-pro-fast-29c305dd|RH Vidu-文生视频-q3-pro-fast|video|no|no
+rh-vidu-text-to-video-q3-turbo-d4083a6f|RH Vidu-文生视频-q3-turbo|video|no|no
+rh-volc-drama-serial-video-translate-79ce6c8c|RH 火山短剧-多集视频翻译|video|no|no
+rh-youchuan-image-to-video-d3d62c54|RH 悠船图生视频|video|no|no
+rh-minimax-hailuo-h3-image-to-video-d359ea64|RH MiniMax-H3 图生视频（首尾帧）|video|no|no
+rh-minimax-hailuo-h3-multimodal-to-video-b91a0e60|RH MiniMax-H3 多模态参考生视频|video|no|no
+rh-minimax-hailuo-h3-text-to-video-7885457d|RH MiniMax-H3 文生视频|video|no|no
+rh-topazlabs-image-gigapixel-art-and-cgi-52bfa42f|RH topazlabs图像放大Art and CGI|image|no|no
+rh-topazlabs-image-gigapixel-high-fidelity-2-ea154f4c|RH topazlabs图像放大High Fidelity v2|image|no|no
+rh-topazlabs-image-gigapixel-low-resolution-2-408ad4c7|RH topazlabs图像放大Low Resolution v2|image|no|no
+rh-topazlabs-image-gigapixel-standard-2-e3b475cb|RH topazlabs图像放大Standard v2|image|no|no
+rh-topazlabs-image-gigapixel-text-and-shapes-256f6544|RH topazlabs图像放大Text and Shapes|image|no|no
+rh-topazlabs-image-upscale-detail-faces-8c283415|RH topazlabs图像放大Detail Faces|image|no|no
+rh-topazlabs-image-upscale-high-fidelity-v3-58388edf|RH topazlabs图像放大High Fidelity V3|image|no|no
+rh-topazlabs-image-upscale-transparent-f08aa01c|RH topazlabs图像放大Transparent|image|no|no
+rh-alibaba-qwen3-tts-flash-656a35fd|RH 千问3-语音合成-Flash|text|no|no
+rh-alibaba-qwen3-tts-instruct-flash-4d406bb8|RH 千问3-语音合成-Instruct-Flash|text|no|no
+rh-topazlabs-video-astra-ce2b25b9|RH topazlabs视频放大Astra|video|no|no
+rh-topazlabs-video-denoise-6f670c7d|RH topazlabs视频降噪Denoise|video|no|no
+rh-topazlabs-video-frame-interpolation-3825aa1b|RH topazlabs视频补帧Frame Interpolation|video|no|no
+rh-topazlabs-video-proteus-c992b4ae|RH topazlabs视频增强Proteus|video|no|no
+rh-topazlabs-video-starlight-ff92d099|RH topazlabs视频增强Starlight|video|no|no
+rh-hitem3d-portrait-v15-multi-image-to-3d-c8a5acb3|RH hitem3d-portrait-v15/multi-image-to-3d|other|no|no

@@ -1,0 +1,22 @@
+[Unit]
+Description=supdance Worker (www.supdance.com)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/home/wwwroot/AI/domain/supdance.com/web
+EnvironmentFile=/etc/supdance.env
+ExecStart=/usr/local/bin/node scripts/generation-worker-supervisor.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=append:/home/wwwroot/AI/logs/supdance-worker.log
+StandardError=append:/home/wwwroot/AI/logs/supdance-worker.log
+
+[Install]
+WantedBy=multi-user.target

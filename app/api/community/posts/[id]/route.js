@@ -1,0 +1,48 @@
+import { getUserFromRequest, json } from '@/lib/services/auth';
+import { deleteCommunityPost, getCommunityPostById } from '@/lib/services/community';
+import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
+
+export const runtime = 'nodejs';
+
+export async function GET(request, { params }) {
+  try {
+    const { id } = await params;
+    const user = await getUserFromRequest(request);
+
+    const post = await getCommunityPostById(id, user?.id || null);
+    if (!post) {
+      return json({ error: '作品不存在或已被作者删除' }, { status: 404 });
+    }
+
+    return json({ post });
+  } catch (error) {
+    console.error('[community detail error]', error);
+    return json({ error: '获取作品详情失败' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request, { params }) {
+  const user = await getUserFromRequest(request);
+  if (!user) return json({ error: '请先登录' }, { status: 401 });
+
+  const guarded = guardMutation(request, { maxBytes: 32 * 1024 });
+  if (guarded) return guarded;
+
+  try {
+    const limit = await consumeRateLimit({ scope: 'community_post_delete_user', subject: user.id, limit: 30, windowMs: 60 * 60 * 1000 });
+    if (!limit.allowed) return rateLimitResponse(limit);
+
+    const { id } = await params;
+    const isAdmin = ['admin', 'super_admin'].includes(user.role);
+
+    const ok = await deleteCommunityPost(id, user.id, isAdmin);
+    if (!ok) {
+      return json({ error: '作品不存在或无权删除' }, { status: 403 });
+    }
+
+    return json({ ok: true, message: '作品已成功从社区下架' });
+  } catch (error) {
+    console.error('[community delete error]', error);
+    return json({ error: '删除作品失败' }, { status: 500 });
+  }
+}

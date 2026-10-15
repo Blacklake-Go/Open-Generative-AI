@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Static, database, build and browser gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_pass
+          POSTGRES_DB: open_generative_ai
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # 业务库只用于 schema 基线与只读校验；一切破坏性演练只碰 open_generative_ai_test。
+      DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai
+      TEST_DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai_test
+      REDIS_URL: redis://localhost:6379
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+      E2E_BASE_URL: http://127.0.0.1:3100
+      E2E_PORT: '3100'
+      CI: 'true'
+      NODE_ENV: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies (lockfile only)
+        run: npm ci
+
+      - name: Wait for PostgreSQL readiness
+        run: |
+          for i in $(seq 1 30); do
+            if pg_isready -h localhost -U ci_user -d open_generative_ai; then exit 0; fi
+            sleep 2
+          done
+          echo 'postgres never became ready' >&2
+          exit 1
+
+      - name: Prepare isolated test database
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE DATABASE open_generative_ai_test'
+
+      - name: Migrate application and test schemas
+        run: |
+          npm run db:migrate
+          npm run db:migrate:test
+
+      - name: Seed disposable application database for community contracts
+        run: npm run db:seed:community-cases
+
+      - name: Forward migration rehearsal (destructive drill, test database only)
+        run: npm run migration:drill
+
+      - name: Backup and restore rehearsal (destructive drill, test database only)
+        run: npm run backup:restore:drill
+
+      - name: Format and lint
+        run: |
+          npm run format:check
+          npm run lint
+          npm run lint:routes
+
+      - name: Release safety and secret scan
+        run: |
+          npm run release:check
+          npm run security:secrets
+
+      - name: i18n contract
+        run: npm run test:i18n
+
+      - name: Database integration suite (isolated temporary database)
+        run: npm run test:db
+
+      - name: Unit and contract suite
+        run: npm run test:all:isolated
+
+      - name: Build workspaces and application
+        run: |
+          npm run build:studio
+          npm run vite:build
+          npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser permission-boundary suite
+        run: npm run test:e2e
+
+      - name: Upload browser artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: .playwright-artifacts
+          if-no-files-found: ignore
+          retention-days: 7

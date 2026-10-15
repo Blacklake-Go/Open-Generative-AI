@@ -1,0 +1,222 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+
+import {
+  buildWechatV3AuthHeader,
+  decryptWechatV3Resource,
+  getWechatProvider,
+  verifyWechatV3Signature,
+} from '../../lib/payments/wechatProvider.js';
+import {
+  buildAlipaySignString,
+  getAlipayProvider,
+  signAlipayParams,
+  verifyAlipaySignature,
+} from '../../lib/payments/alipayProvider.js';
+import { assertPaymentProvider } from '../../lib/payments/provider.js';
+
+test('wechat provider implements all required payment actions', () => {
+  const provider = getWechatProvider();
+  assert.equal(typeof provider.createCheckout, 'function');
+  assert.equal(typeof provider.retrievePayment, 'function');
+  assert.equal(typeof provider.cancel, 'function');
+  assert.equal(typeof provider.refund, 'function');
+  assert.equal(typeof provider.verifyWebhookSignature, 'function');
+  assert.equal(assertPaymentProvider(provider), provider);
+});
+
+test('alipay provider implements all required payment actions', () => {
+  const provider = getAlipayProvider();
+  assert.equal(typeof provider.createCheckout, 'function');
+  assert.equal(typeof provider.retrievePayment, 'function');
+  assert.equal(typeof provider.cancel, 'function');
+  assert.equal(typeof provider.refund, 'function');
+  assert.equal(typeof provider.verifyWebhookSignature, 'function');
+  assert.equal(assertPaymentProvider(provider), provider);
+});
+
+test('alipay gateway failures log safe metadata without raw response bodies', async () => {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  });
+  const sentinel = 'provider-response-signature-sentinel';
+  const responses = [
+    new Response(JSON.stringify({
+      alipay_trade_close_response: {
+        code: '40004',
+        sub_code: 'ACQ.TRADE_NOT_EXIST',
+        msg: 'Business Failed',
+      },
+      sign: sentinel,
+    }), { status: 200 }),
+    new Response(`non-json ${sentinel}`, { status: 200 }),
+  ];
+  const originalFetch = globalThis.fetch;
+  const originalConsoleError = console.error;
+  const logged = [];
+  globalThis.fetch = async () => responses.shift();
+  console.error = (...args) => logged.push(args);
+
+  try {
+    const provider = getAlipayProvider({
+      appId: 'test-app-id',
+      privateKey,
+      publicKey,
+      gateway: 'https://alipay.invalid/gateway.do',
+    });
+    await assert.rejects(provider.cancel('test-order-1'));
+    await assert.rejects(provider.cancel('test-order-2'));
+  } finally {
+    globalThis.fetch = originalFetch;
+    console.error = originalConsoleError;
+  }
+
+  const logText = JSON.stringify(logged);
+  assert.match(logText, /alipay\.trade\.close/);
+  assert.match(logText, /ACQ\.TRADE_NOT_EXIST/);
+  assert.doesNotMatch(logText, /provider-response-signature-sentinel|Business Failed/);
+});
+
+test('alipay sign string builds sorted query string ignoring sign and empty params', () => {
+  const params = {
+    c: 3,
+    a: 'first',
+    sign: 'should_be_ignored',
+    sign_type: 'RSA2',
+    b: 'second',
+    empty_val: '',
+    null_val: null,
+  };
+  // 下单签名：sign_type 是参与签名的公共参数，必须保留（支付宝 RSA2 规则）。
+  assert.equal(buildAlipaySignString(params), 'a=first&b=second&c=3&sign_type=RSA2');
+  // 回调验签：支付宝明确排除 sign 与 sign_type，线上真实 TRADE_SUCCESS 按此规则通过。
+  assert.equal(buildAlipaySignString(params, true), 'a=first&b=second&c=3');
+  assert.ok(!buildAlipaySignString(params).includes('should_be_ignored'));
+});
+
+test('alipay RSA2 signature generation and verification', () => {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  });
+
+  const params = {
+    app_id: '2021000000000000',
+    method: 'alipay.trade.precreate',
+    out_trade_no: 'order_test_123',
+    total_amount: '39.90',
+  };
+
+  const sign = signAlipayParams(params, privateKey);
+  assert.ok(sign && typeof sign === 'string');
+
+  const signedParams = { ...params, sign, sign_type: 'RSA2' };
+  const valid = verifyAlipaySignature(signedParams, publicKey);
+  assert.equal(valid, true);
+
+  const tamperedParams = { ...signedParams, total_amount: '0.01' };
+  const invalid = verifyAlipaySignature(tamperedParams, publicKey);
+  assert.equal(invalid, false);
+});
+
+test('wechat V3 auth header structure and signature', () => {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  });
+
+  const authHeader = buildWechatV3AuthHeader({
+    method: 'POST',
+    urlPath: '/v3/pay/transactions/native',
+    timestamp: '1700000000',
+    nonce: 'random_nonce_string_123456',
+    body: '{"amount":990}',
+    mchId: '1600000000',
+    serialNo: 'ABCDEF1234567890',
+    privateKey,
+  });
+
+  assert.match(authHeader, /^WECHATPAY2-SHA256-RSA2048 /);
+  assert.match(authHeader, /mchid="1600000000"/);
+  assert.match(authHeader, /serial_no="ABCDEF1234567890"/);
+  assert.match(authHeader, /signature="[A-Za-z0-9+/=]+"/);
+});
+
+test('wechat V3 notification AES-GCM decryption', () => {
+  const apiV3Key = '12345678901234567890123456789012'; // 32 字节
+  const nonce = '123456789012'; // 12 字节
+  const associatedData = 'certificate';
+  const originalPayload = {
+    out_trade_no: 'order_wx_001',
+    transaction_id: '420000000020260917000000',
+    trade_state: 'SUCCESS',
+    amount: { total: 3990, currency: 'CNY' },
+  };
+  const plaintext = JSON.stringify(originalPayload);
+
+  // 模拟微信端加密
+  const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(apiV3Key, 'utf8'), Buffer.from(nonce, 'utf8'));
+  cipher.setAAD(Buffer.from(associatedData, 'utf8'));
+  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  const ciphertextBuffer = Buffer.concat([encrypted, tag]);
+
+  const resource = {
+    ciphertext: ciphertextBuffer.toString('base64'),
+    nonce,
+    associated_data: associatedData,
+  };
+
+  const decrypted = decryptWechatV3Resource(resource, apiV3Key);
+  assert.deepEqual(decrypted, originalPayload);
+  assert.equal(decrypted.trade_state, 'SUCCESS');
+  assert.equal(decrypted.out_trade_no, 'order_wx_001');
+});
+
+test('payment routes and services export wechat and alipay capabilities', () => {
+  const paymentService = fs.readFileSync(new URL('../../lib/services/paymentService.js', import.meta.url), 'utf8');
+  assert.match(paymentService, /getWechatProvider/);
+  assert.match(paymentService, /getAlipayProvider/);
+  assert.match(paymentService, /syncOrderPaymentStatus/);
+  assert.match(paymentService, /provider === 'wechat'/);
+  assert.match(paymentService, /provider === 'alipay'/);
+
+  const wechatWebhook = fs.readFileSync(new URL('../../app/api/billing/webhooks/wechat/route.js', import.meta.url), 'utf8');
+  assert.match(wechatWebhook, /getWechatProvider/);
+  assert.match(wechatWebhook, /handleProviderPaymentWebhook/);
+  // 留痕入口必须真的落到订单级履约，避免路由只写 webhook_events 不入账。
+  assert.match(
+    fs.readFileSync(new URL('../../lib/services/webhookDispatcher.js', import.meta.url), 'utf8'),
+    /const result = await dispatchPaymentWebhook\(\{ provider: normalizedProvider/,
+  );
+  assert.match(wechatWebhook, /SUCCESS/);
+
+  const alipayWebhook = fs.readFileSync(new URL('../../app/api/billing/webhooks/alipay/route.js', import.meta.url), 'utf8');
+  // 回调路由经 DB 凭据解析 resolveAlipayProvider（内部再取 getAlipayProvider），覆盖面严于直读 env。
+  assert.match(alipayWebhook, /resolveAlipayProvider/);
+  assert.match(alipayWebhook, /handleProviderPaymentWebhook/);
+  // 留痕入口必须真的落到订单级履约，避免路由只写 webhook_events 不入账。
+  assert.match(
+    fs.readFileSync(new URL('../../lib/services/webhookDispatcher.js', import.meta.url), 'utf8'),
+    /const result = await dispatchPaymentWebhook\(\{ provider: normalizedProvider/,
+  );
+  assert.match(alipayWebhook, /success/);
+
+  const orderStatusRoute = fs.readFileSync(new URL('../../app/api/billing/orders/[id]/status/route.js', import.meta.url), 'utf8');
+  assert.match(orderStatusRoute, /syncOrderPaymentStatus/);
+});
+
+test('credit pack UI stays closed until its independent checkout path is implemented', () => {
+  const pricing = fs.readFileSync(new URL('../../components/pricing/PricingClient.js', import.meta.url), 'utf8');
+  const creditPackSection = pricing.split('<section id="credit-packs"')[1]?.split('</section>')[0] || '';
+  assert.ok(creditPackSection, 'credit pack section should remain present');
+  assert.match(creditPackSection, /算力包购买暂未开放/);
+  assert.match(creditPackSection, /<button[\s\S]*?disabled[\s\S]*?算力包购买暂未开放/);
+  assert.doesNotMatch(creditPackSection, /startCheckout\(['"]credit_pack['"]/);
+});
