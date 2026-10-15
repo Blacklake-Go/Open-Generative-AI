@@ -328,3 +328,25 @@ test('MuAPI bare catalog paths are pinned to the versioned task route the suppli
   assert.equal(muapiTaskEndpoint('https://partner.example/api/v1/custom', 'x'), 'https://partner.example/api/v1/custom');
   assert.equal(muapiTaskEndpoint('/api/v1/already-prefixed', 'x'), '/api/v1/already-prefixed');
 });
+
+test('watermark and standard generation parameters are accepted and not rejected as PARAMETER_UNVERIFIED', () => {
+  const route = mapping({ providerId: 'volcengine' });
+  route.model_id = 'seedream-4.5';
+  route.provider_model_id = 'doubao-seedream-4-5-251128';
+  route.supported_task_types = ['t2i', 'i2i'];
+  route.supported_resolutions = ['1024x1024', '2048x2048'];
+  route.capabilities = { input_types: ['text', 'image'], output_types: ['image'] };
+
+  const evaluated = evaluateRouteCandidates([route], {
+    prompt: 'A cute cat',
+    size: '1024x1024',
+    watermark: false,
+    seed: 42,
+    quote_id: 'quote_123',
+    studio_id: 'canvas',
+  }, { modelId: 'seedream-4.5', now, fxSnapshot });
+
+  assert.equal(evaluated.candidates.length, 1);
+  assert.equal(evaluated.candidates[0].providerId, 'volcengine');
+  assert.equal(evaluated.rejected.length, 0);
+});
