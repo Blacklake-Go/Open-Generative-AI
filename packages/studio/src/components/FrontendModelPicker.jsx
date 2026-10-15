@@ -35,7 +35,7 @@ export default function FrontendModelPicker({
   const activeItemRef = useRef(null);
   const [directoryRevision, setDirectoryRevision] = useState(0);
   const [directoryLoaded, setDirectoryLoaded] = useState(() =>
-    typeof globalThis !== 'undefined' && globalThis.__KOYOSIM_ACTIVE_MODEL_IDS__ instanceof Set);
+    typeof globalThis !== 'undefined' && globalThis.__SUPDANCE_ACTIVE_MODEL_IDS__ instanceof Set);
   const [directoryError, setDirectoryError] = useState(false);
 
   // Background sync with /api/models/active to reflect dynamic admin updates in real-time
@@ -45,7 +45,7 @@ export default function FrontendModelPicker({
       setDirectoryLoaded(true);
       setDirectoryRevision((revision) => revision + 1);
     };
-    window.addEventListener('koyosim-model-pricing-updated', handleDirectoryUpdate);
+    window.addEventListener('supdance-model-pricing-updated', handleDirectoryUpdate);
     fetch("/api/models/active?nocache=1")
       .then((res) => {
         if (!res.ok) throw new Error('模型目录不可用');
@@ -65,7 +65,7 @@ export default function FrontendModelPicker({
 
     return () => {
       isMounted = false;
-      window.removeEventListener('koyosim-model-pricing-updated', handleDirectoryUpdate);
+      window.removeEventListener('supdance-model-pricing-updated', handleDirectoryUpdate);
     };
   }, []);
 
@@ -80,8 +80,8 @@ export default function FrontendModelPicker({
     // Dynamic fallback: include any active server models of this category not already covered in static catalog
     const coveredIds = new Set(catalogEntries.flatMap((e) => [...(e.variantIds || [e.id])]));
     const dynamicServerEntries = [];
-    if (typeof globalThis !== "undefined" && globalThis.__KOYOSIM_SERVER_MODEL_META__) {
-      for (const [id, meta] of globalThis.__KOYOSIM_SERVER_MODEL_META__.entries()) {
+    if (typeof globalThis !== "undefined" && globalThis.__SUPDANCE_SERVER_MODEL_META__) {
+      for (const [id, meta] of globalThis.__SUPDANCE_SERVER_MODEL_META__.entries()) {
         const cat = meta.category || meta.type || "image";
         if (
           cat === studioType &&

@@ -1091,10 +1091,10 @@ export default function ImageStudio({
   const [modelDirectoryRevision, setModelDirectoryRevision] = useState(0);
   useEffect(() => {
     const refreshModelDirectory = () => setModelDirectoryRevision((revision) => revision + 1);
-    window.addEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
-    if (window.__KOYOSIM_ACTIVE_MODEL_IDS__ instanceof Set) {
+    window.addEventListener("supdance-model-pricing-updated", refreshModelDirectory);
+    if (window.__SUPDANCE_ACTIVE_MODEL_IDS__ instanceof Set) {
       setModelDirectoryRevision(1);
-      return () => window.removeEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+      return () => window.removeEventListener("supdance-model-pricing-updated", refreshModelDirectory);
     }
 
     let mounted = true;
@@ -1113,7 +1113,7 @@ export default function ImageStudio({
       });
     return () => {
       mounted = false;
-      window.removeEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+      window.removeEventListener("supdance-model-pricing-updated", refreshModelDirectory);
     };
   }, []);
 
@@ -1577,7 +1577,7 @@ export default function ImageStudio({
     }
   }, [initialPrompt]);
 
-  // ── Sync with global koyosim-select-model custom events ──────────────────
+  // ── Sync with global supdance-select-model custom events ──────────────────
   useEffect(() => {
     const handleSelectModelEvent = (e) => {
       const detail = e.detail;
@@ -1590,8 +1590,8 @@ export default function ImageStudio({
         applyModelSelection(modelKey);
       }
     };
-    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
-    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+    window.addEventListener("supdance-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("supdance-select-model", handleSelectModelEvent);
   }, [applyModelSelection]);
 
   // ── Textarea auto-resize ─────────────────────────────────────────────────

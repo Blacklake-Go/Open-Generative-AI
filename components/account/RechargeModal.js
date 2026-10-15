@@ -241,7 +241,7 @@ export default function RechargeModal({
             setPollStatus('paid');
             onPaySuccess?.({ coinsAdded: checkoutData.creditAmount });
             if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('koyosim:credits-updated', { detail: { orderId: checkoutData.orderId } }));
+              window.dispatchEvent(new CustomEvent('supdance:credits-updated', { detail: { orderId: checkoutData.orderId } }));
             }
           }
         }
@@ -438,7 +438,7 @@ export default function RechargeModal({
       setCouponConfirmData(null);
       setCouponCode('');
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('koyosim:credits-updated', { detail: {} }));
+        window.dispatchEvent(new CustomEvent('supdance:credits-updated', { detail: {} }));
       }
       onPaySuccess?.();
     } catch (err) {

@@ -281,9 +281,9 @@ export default function LayersStudio({
 
   const resolveEffectiveApiKey = useCallback(async () => {
     if (apiKey) return apiKey;
-    if (typeof window !== "undefined" && window.__KOYOSIM_REQUIRE_API_KEY__) {
+    if (typeof window !== "undefined" && window.__SUPDANCE_REQUIRE_API_KEY__) {
       try {
-        const key = await window.__KOYOSIM_REQUIRE_API_KEY__();
+        const key = await window.__SUPDANCE_REQUIRE_API_KEY__();
         if (key) return key;
       } catch {
         return null;
@@ -308,7 +308,7 @@ export default function LayersStudio({
     setUploadProgress(0);
     try {
       const uploadedUrl = await uploadFile(
-        effectiveKey || "koyosim-account-session",
+        effectiveKey || "supdance-account-session",
         file,
         (pct) => setUploadProgress(pct),
       );

@@ -509,8 +509,8 @@ export default function MarketingStudio({
         toast.success(relayCopy.relayLoadedToast);
       }
     };
-    window.addEventListener("koyosim-relay-video", handleRelay);
-    return () => window.removeEventListener("koyosim-relay-video", handleRelay);
+    window.addEventListener("supdance-relay-video", handleRelay);
+    return () => window.removeEventListener("supdance-relay-video", handleRelay);
   }, [relayCopy]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────

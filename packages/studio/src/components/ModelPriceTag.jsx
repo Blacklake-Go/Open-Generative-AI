@@ -37,22 +37,22 @@ export default function ModelPriceTag({
       }
     };
     if (typeof window !== "undefined") {
-      window.addEventListener("koyosim-model-pricing-updated", handleUpdate);
-      window.addEventListener("koyosim:quote", handleQuote);
+      window.addEventListener("supdance-model-pricing-updated", handleUpdate);
+      window.addEventListener("supdance:quote", handleQuote);
     }
     return () => {
       if (typeof window !== "undefined") {
-        window.removeEventListener("koyosim-model-pricing-updated", handleUpdate);
-        window.removeEventListener("koyosim:quote", handleQuote);
+        window.removeEventListener("supdance-model-pricing-updated", handleUpdate);
+        window.removeEventListener("supdance:quote", handleQuote);
       }
     };
   }, [ids]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const globalPricing = globalThis.__KOYOSIM_MODEL_PRICING_MAP__;
-    if (!window.__KOYOSIM_PRICING_FETCHING__ && (!globalPricing || globalPricing.size === 0)) {
-      window.__KOYOSIM_PRICING_FETCHING__ = true;
+    const globalPricing = globalThis.__SUPDANCE_MODEL_PRICING_MAP__;
+    if (!window.__SUPDANCE_PRICING_FETCHING__ && (!globalPricing || globalPricing.size === 0)) {
+      window.__SUPDANCE_PRICING_FETCHING__ = true;
       fetch("/api/models/active")
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
@@ -62,7 +62,7 @@ export default function ModelPriceTag({
         })
         .catch(() => {})
         .finally(() => {
-          window.__KOYOSIM_PRICING_FETCHING__ = false;
+          window.__SUPDANCE_PRICING_FETCHING__ = false;
         });
     }
   }, []);

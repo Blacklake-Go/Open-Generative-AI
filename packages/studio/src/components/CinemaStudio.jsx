@@ -733,8 +733,8 @@ export default function CinemaStudio({
         toast.success(relayCopy.relayLoadedToast);
       }
     };
-    window.addEventListener("koyosim-relay-video", handleRelay);
-    return () => window.removeEventListener("koyosim-relay-video", handleRelay);
+    window.addEventListener("supdance-relay-video", handleRelay);
+    return () => window.removeEventListener("supdance-relay-video", handleRelay);
   }, [relayCopy]);
 
   // ── Settings state ──
@@ -780,8 +780,8 @@ export default function CinemaStudio({
         applyModelSelection(modelKey);
       }
     };
-    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
-    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+    window.addEventListener("supdance-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("supdance-select-model", handleSelectModelEvent);
   }, [applyModelSelection]);
 
   useEffect(() => {

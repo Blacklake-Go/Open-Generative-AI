@@ -879,12 +879,12 @@ export default function VideoStudio({
 
   useEffect(() => {
     const refreshModelDirectory = () => setModelDirectoryRevision((revision) => revision + 1);
-    window.addEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
-    return () => window.removeEventListener("koyosim-model-pricing-updated", refreshModelDirectory);
+    window.addEventListener("supdance-model-pricing-updated", refreshModelDirectory);
+    return () => window.removeEventListener("supdance-model-pricing-updated", refreshModelDirectory);
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined" || window.__KOYOSIM_ACTIVE_MODEL_IDS__ instanceof Set) return;
+    if (typeof window === "undefined" || window.__SUPDANCE_ACTIVE_MODEL_IDS__ instanceof Set) return;
     let mounted = true;
     fetch("/api/models/active?nocache=1")
       .then((response) => {
@@ -973,8 +973,8 @@ export default function VideoStudio({
         toast.success(relayCopy.relayLoadedToast);
       }
     };
-    window.addEventListener("koyosim-relay-video", handleRelay);
-    return () => window.removeEventListener("koyosim-relay-video", handleRelay);
+    window.addEventListener("supdance-relay-video", handleRelay);
+    return () => window.removeEventListener("supdance-relay-video", handleRelay);
   }, [relayCopy]);
 
   // ── generation / canvas ──
@@ -1638,7 +1638,7 @@ export default function VideoStudio({
     }
   }, [initialPrompt]);
 
-  // ── Sync with global koyosim-select-model custom events ──────────────────
+  // ── Sync with global supdance-select-model custom events ──────────────────
   useEffect(() => {
     const handleSelectModelEvent = (e) => {
       const detail = e.detail;
@@ -1647,8 +1647,8 @@ export default function VideoStudio({
         applyModelSelection(modelKey);
       }
     };
-    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
-    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+    window.addEventListener("supdance-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("supdance-select-model", handleSelectModelEvent);
   }, [applyModelSelection]);
 
   // ── Persistence: Load ────────────────────────────────────────────────────

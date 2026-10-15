@@ -17,8 +17,8 @@ echo "=================================================="
 
 # 1. 本地打包已验证的代码和构建
 echo "[1/5] 本地打包已验证源码与构建产物..."
-SOURCE_ARCHIVE="/tmp/source_koyosim_fusion.tar.gz"
-NEXT_ARCHIVE="/tmp/next_koyosim_fusion.tar.gz"
+SOURCE_ARCHIVE="/tmp/source_supdance_fusion.tar.gz"
+NEXT_ARCHIVE="/tmp/next_supdance_fusion.tar.gz"
 
 rm -f "$SOURCE_ARCHIVE" "$NEXT_ARCHIVE"
 
@@ -28,6 +28,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs -czf "$SOURCE_ARCHIVE" \
   components \
   lib \
   messages \
+  scripts \
   middleware.js \
   tailwind.config.js \
   package.json \
@@ -72,8 +73,8 @@ if [ -d \"\$WEB_DIR/.next\" ]; then
 fi
 
 echo \"解压候选源码与新构建到临时暂存区...\"
-tar -xzf /tmp/source_koyosim_fusion.tar.gz -C \"\$STAGE\"
-tar -xzf /tmp/next_koyosim_fusion.tar.gz -C \"\$STAGE\"
+tar -xzf /tmp/source_supdance_fusion.tar.gz -C \"\$STAGE\"
+tar -xzf /tmp/next_supdance_fusion.tar.gz -C \"\$STAGE\"
 
 echo \"验证构建 BUILD_ID: \$(cat \"\$STAGE/.next/BUILD_ID\")\"
 
@@ -96,6 +97,7 @@ rsync -a \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
 rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
 rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
+rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
 cp \"\$STAGE/middleware.js\" \"\$WEB_DIR/middleware.js\"
 cp \"\$STAGE/app/globals.css\" \"\$WEB_DIR/app/globals.css\"
 cp \"\$STAGE/tailwind.config.js\" \"\$WEB_DIR/tailwind.config.js\"
@@ -110,10 +112,11 @@ chown -R www:www \"\$WEB_DIR/components\"
 chown -R www:www \"\$WEB_DIR/app\"
 chown -R www:www \"\$WEB_DIR/lib\"
 chown -R www:www \"\$WEB_DIR/messages\"
+chown -R www:www \"\$WEB_DIR/scripts\"
 chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/package.json\"
 
 # 清理暂存文件
-rm -rf \"\$STAGE\" /tmp/source_koyosim_fusion.tar.gz /tmp/next_koyosim_fusion.tar.gz
+rm -rf \"\$STAGE\" /tmp/source_supdance_fusion.tar.gz /tmp/next_supdance_fusion.tar.gz
 
 # 启动服务
 echo \"重启应用与 Worker 服务...\"
@@ -138,6 +141,10 @@ curl -s -o /dev/null -w 'Port 3200 (supdance): HTTP %{http_code}\n' http://127.0
 
 echo '=== /api/ready 健康检查 ==='
 curl -s http://127.0.0.1:3200/api/ready
+echo ''
+
+echo '=== /api/models/active 接口校验 ==='
+curl -s http://127.0.0.1:3200/api/models/active | jq -c '{success, models_count: (.models | length)}'
 echo ''
 
 echo '=== /api/generation/quote 接口契约验证 ==='

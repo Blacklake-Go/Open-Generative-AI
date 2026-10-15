@@ -722,8 +722,8 @@ export default function RecastStudio({
           handleRelay(e.detail.videoUrl);
         }
       };
-      window.addEventListener("koyosim-relay-video", listener);
-      return () => window.removeEventListener("koyosim-relay-video", listener);
+      window.addEventListener("supdance-relay-video", listener);
+      return () => window.removeEventListener("supdance-relay-video", listener);
     }
   }, [relayCopy.relayPortraitToast, relayCopy.relayVideoToast]);
 

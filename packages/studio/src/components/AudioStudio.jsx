@@ -624,7 +624,7 @@ export default function AudioStudio({
     }
   }, [initialModel, resolveAudioModelId]);
 
-  // Sync with global koyosim-select-model custom events
+  // Sync with global supdance-select-model custom events
   useEffect(() => {
     const handleSelectModelEvent = (e) => {
       const detail = e.detail;
@@ -636,8 +636,8 @@ export default function AudioStudio({
         if (resolved) setSelectedModelId(resolved);
       }
     };
-    window.addEventListener("koyosim-select-model", handleSelectModelEvent);
-    return () => window.removeEventListener("koyosim-select-model", handleSelectModelEvent);
+    window.addEventListener("supdance-select-model", handleSelectModelEvent);
+    return () => window.removeEventListener("supdance-select-model", handleSelectModelEvent);
   }, [resolveAudioModelId]);
 
   // Close dropdowns on outside click

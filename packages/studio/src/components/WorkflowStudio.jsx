@@ -156,7 +156,7 @@ export default function WorkflowStudio({
   const router = useRouter();
   const idFromParams = params?.id;     // exists on /workflow/[id]/[tab] route
   const tabFromParams = params?.tab;   // string on /workflow/[id]/[tab]; array on the [[...tab]] catch-all
-  // Catch-all routes (/studio/[brandSlug]/[[...tab]], /koyosim/[[...tab]]) expose the
+  // Catch-all routes (/studio/[brandSlug]/[[...tab]], /supdance/[[...tab]]) expose the
   // whole remaining path as params.tab (an array) — NOT params.slug, which doesn't exist on either
   // route and previously made this whole fallback branch permanently dead.
   const catchAllSegments = Array.isArray(tabFromParams) ? tabFromParams : [];
@@ -471,7 +471,7 @@ export default function WorkflowStudio({
   };
 
   // Workflow execution and private workflow ownership are not yet backed by
-  // user-scoped KoyoSIM APIs. Keep the imported gallery/editor closed until
+  // user-scoped SupDance APIs. Keep the imported gallery/editor closed until
   // those paths have billing, authorization, and terminal-result verification.
   if (!workflowFeatureAvailable) {
     return (

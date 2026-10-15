@@ -39,7 +39,7 @@ export function BrandMark({ compact = false, locale = null }) {
       href={logoHref}
       target={logoTarget}
       className="group inline-flex items-center gap-2.5 cursor-pointer shrink-0"
-      aria-label={`${brand?.brandName || 'koyosim'} Studio`}
+      aria-label={`${brand?.brandName || 'supdance'} Studio`}
     >
       <BrandLogo brand={brand} className="inline-flex items-center gap-2.5 [&>span:first-child]:group-hover:scale-105" />
     </Link>
@@ -105,7 +105,7 @@ export default function StudioHeader({
   // 针对未完成新用户引导的登录用户，主动推送轻量资料设置与额度领取弹窗
   useEffect(() => {
     if (user && user.onboardingCompleted === false && !onboardingPromptedRef.current) {
-      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('koyosim_onboarding_dismissed');
+      const dismissed = typeof window !== 'undefined' && sessionStorage.getItem('supdance_onboarding_dismissed');
       if (!dismissed) {
         setShowOnboardingModal(true);
         onboardingPromptedRef.current = true;
@@ -438,7 +438,7 @@ export default function StudioHeader({
           onClose={() => {
             setShowOnboardingModal(false);
             if (typeof window !== 'undefined') {
-              sessionStorage.setItem('koyosim_onboarding_dismissed', '1');
+              sessionStorage.setItem('supdance_onboarding_dismissed', '1');
             }
           }}
         />

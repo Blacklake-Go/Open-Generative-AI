@@ -249,7 +249,7 @@ export default function AgentStudio({
   const params = useParams();
   const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
 
-  const effectiveApiKey = apiKey || (signedIn ? 'koyosim-account-session' : null);
+  const effectiveApiKey = apiKey || (signedIn ? 'supdance-account-session' : null);
   const [selectedModel, setSelectedModel] = useState(() => {
     if (initialModel) return initialModel;
     if (typeof window !== "undefined") {
@@ -275,8 +275,8 @@ export default function AgentStudio({
         setSelectedModel(model);
       }
     };
-    window.addEventListener("koyosim-select-model", handleModelSelect);
-    return () => window.removeEventListener("koyosim-select-model", handleModelSelect);
+    window.addEventListener("supdance-select-model", handleModelSelect);
+    return () => window.removeEventListener("supdance-select-model", handleModelSelect);
   }, []);
 
   const [activeMainTab, setActiveMainTab] = useState("templates");
