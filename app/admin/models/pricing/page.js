@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/admin/AdminUi';
+import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
@@ -106,12 +106,8 @@ export default async function ModelPricingPage({ searchParams }) {
     : { baseMultiplier: 1.5, minMarginRate: 0.3, categoryMultipliers: {}, tierMultipliers: {}, specMultipliers: {} };
 
   return (
-    <>
-      <PageHeader
-        eyebrow="AI 模型中心"
-        title="模型定价与明细中心"
-        description="配置全局倍率定价策略、穿透供应商多渠道底价与毛利明细，并实时掌控当前前台模型售卖扣费态览。"
-      />
+    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+      <ModelNavTabs activeTab="pricing" />
       <PricingManagerClient
         initialTab={initialTab}
         initialPricing={initialPricing}
@@ -121,6 +117,6 @@ export default async function ModelPricingPage({ searchParams }) {
         initialPendingPrices={pendingPrices || []}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
       />
-    </>
+    </div>
   );
 }

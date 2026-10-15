@@ -11,6 +11,7 @@ import { Card, Button } from '@/components/admin/AdminUi';
 import ModelRepositoryDrawer from './ModelRepositoryDrawer';
 import ModelConfigDrawer from './ModelConfigDrawer';
 import BrandLogo from '@/components/admin/BrandLogo';
+import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { BRANDS, resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
 
 // ─── 任务场景定义 (严格对照草稿图4第3行绿色模块) ──────────────────────
@@ -532,39 +533,11 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── ROW 1: 顶层业务三位一体导航 (草稿图4第1行: 模型管理 / 模型API / 模型定价) ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-line-subtle">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-well/80 rounded-xl border border-line-subtle">
-          <button
-            type="button"
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-surface-raised text-ink font-bold text-body-sm shadow-elevation-1 border border-line"
-          >
-            <Layers className="size-4 text-brand" />
-            <span>模型管理</span>
-            <span className="rounded-full bg-brand/10 text-brand px-1.5 py-0.2 text-[11px] font-mono font-bold">
-              {models.length}
-            </span>
-          </button>
-          <a
-            href="/admin/models/routing"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface text-body-sm font-medium transition-colors"
-          >
-            <Zap className="size-4 text-amber-400" />
-            <span>模型 API / 渠道</span>
-          </a>
-          <a
-            href="/admin/models/pricing"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface text-body-sm font-medium transition-colors"
-          >
-            <DollarSign className="size-4 text-emerald-400" />
-            <span>模型定价与利润</span>
-          </a>
-        </div>
-
-        {/* Global Operational Shortcuts */}
-        <div className="flex items-center gap-2 shrink-0">
-          {canWrite && (
+      {/* ─── ROW 1: 顶层业务三位一体导航 (微信规范下划线选项卡: 严格对标截图1) ─── */}
+      <ModelNavTabs
+        modelCount={models.length}
+        rightAction={
+          canWrite && (
             <Button
               variant="primary"
               size="sm"
@@ -574,9 +547,9 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               <Plus className="size-3.5 mr-1" />
               从模型库引入
             </Button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块: Logo 放大 250% + 图标化紧凑胶囊) ─── */}
       <div className="flex flex-wrap items-center gap-2 py-2 px-3 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">

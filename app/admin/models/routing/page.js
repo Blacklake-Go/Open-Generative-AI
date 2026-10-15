@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/admin/AdminUi';
+import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany } from '@/lib/db/index';
@@ -57,17 +57,13 @@ export default async function ModelRoutingPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="AI 模型中心"
-        title="模型分配"
-        description="管理各模型的路由策略、权重配比与多渠道容灾。通过模拟器验证选路逻辑与报价结果。"
-      />
+    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+      <ModelNavTabs activeTab="routing" />
       <RoutingClient
         initialSnapshot={JSON.parse(JSON.stringify(snapshot))}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
       />
-    </>
+    </div>
   );
 }
 
