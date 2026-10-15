@@ -165,7 +165,7 @@ export default function UserDetailTabs({ detail }) {
               </div>
               <div className="flex justify-between border-b border-white/[0.05] pb-2">
                 <span className="text-white/45">注册来源渠道</span>
-                <span className="font-mono text-cyan-200">{user.registration_source || 'web'}</span>
+                <span className="font-mono text-brand">{user.registration_source || 'web'}</span>
               </div>
               <div className="flex justify-between border-b border-white/[0.05] pb-2">
                 <span className="text-white/45">账户角色</span>
@@ -235,7 +235,7 @@ export default function UserDetailTabs({ detail }) {
                 <select
                   value={selectedTag}
                   onChange={(e) => setSelectedTag(e.target.value)}
-                  className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2 text-xs text-white outline-none focus:border-cyan-300/50"
+                  className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2 text-xs text-white outline-none focus:border-brand"
                 >
                   <option value="">选择要添加的标签…</option>
                   {allTags
@@ -253,14 +253,14 @@ export default function UserDetailTabs({ detail }) {
                     handleTagAction(selectedTag, 'add');
                     setSelectedTag('');
                   }}
-                  className="rounded-xl bg-cyan-300 px-4 py-2 text-xs font-bold text-black transition hover:bg-cyan-200 disabled:opacity-40"
+                  className="rounded-xl bg-brand px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-hover shadow-sm disabled:opacity-40"
                 >
                   打标
                 </button>
               </div>
 
               {tagMsg && (
-                <p className="mt-2 text-xs text-cyan-300">{tagMsg}</p>
+                <p className="mt-2 text-xs text-brand">{tagMsg}</p>
               )}
             </Card>
 
@@ -428,7 +428,7 @@ export default function UserDetailTabs({ detail }) {
             columns={[
               { key: 'studio_id', label: '所属模块' },
               { key: 'label', label: '生成概要' },
-              { key: 'credit_cost', label: '扣减额度', render: (row) => <span className="font-mono text-cyan-200">{row.credit_cost}</span> },
+              { key: 'credit_cost', label: '扣减额度', render: (row) => <span className="font-mono text-brand">{row.credit_cost}</span> },
               {
                 key: 'status',
                 label: '状态',

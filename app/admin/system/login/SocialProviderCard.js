@@ -101,7 +101,7 @@ export function Toggle({ checked, disabled, onChange, label }) {
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-[18px] w-[32px] shrink-0 items-center rounded-full border transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
-        checked ? 'border-cyan-500/50 bg-cyan-500/80' : 'border-white/[0.12] bg-white/[0.08]'
+        checked ? 'border-brand/50 bg-brand' : 'border-white/[0.12] bg-white/[0.08]'
       }`}
     >
       <span
@@ -287,7 +287,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
 
   return (
     <section
-      className={`flex flex-col rounded-xl border bg-surface/90 p-3.5 transition-colors duration-200 hover:border-cyan-500/25 ${
+      className={`flex flex-col rounded-xl border bg-surface/90 p-3.5 transition-colors duration-200 hover:border-brand/25 ${
         configured ? 'border-white/[0.08]' : 'border-amber-500/25'
       }`}
     >
@@ -314,7 +314,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
           type="button"
           onClick={handleCopyUri}
           title="一键复制回调地址"
-          className="shrink-0 rounded p-1.5 text-gray-500 transition hover:bg-white/[0.06] hover:text-cyan-400"
+          className="shrink-0 rounded p-1.5 text-gray-500 transition hover:bg-white/[0.06] hover:text-brand"
         >
           {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
         </button>
@@ -324,7 +324,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
             target="_blank"
             rel="noreferrer"
             title={consoleLink.label}
-            className="shrink-0 rounded p-1.5 text-gray-500 transition hover:bg-white/[0.06] hover:text-cyan-400"
+            className="shrink-0 rounded p-1.5 text-gray-500 transition hover:bg-white/[0.06] hover:text-brand"
           >
             <ExternalLink className="size-3.5" />
           </a>
@@ -369,9 +369,9 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
             disabled={testing}
             onClick={runTest}
             title="测试连接 / 网关可达性探针"
-            className="inline-flex size-7 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] text-gray-300 transition hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-[0.96] disabled:opacity-50"
+            className="inline-flex size-7 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] text-gray-300 transition hover:border-brand/40 hover:bg-brand/10 hover:text-brand active:scale-[0.96] disabled:opacity-50"
           >
-            <RefreshCw className={`size-3.5 ${testing ? 'animate-spin text-cyan-400' : ''}`} />
+            <RefreshCw className={`size-3.5 ${testing ? 'animate-spin text-brand' : ''}`} />
           </button>
           <button
             type="button"
@@ -379,7 +379,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
               setMessage('');
               setFormOpen(true);
             }}
-            className="inline-flex h-7 items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 text-label font-medium text-cyan-300 transition hover:bg-cyan-500/20 active:scale-[0.96]"
+            className="inline-flex h-7 items-center rounded-full border border-brand/30 bg-brand/10 px-3 text-label font-medium text-brand transition hover:bg-brand/20 active:scale-[0.96]"
           >
             配置密钥 / 轮换
           </button>
@@ -424,7 +424,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
                 <span className="font-mono text-gray-200">{provider.mode}</span>
               </MetaRow>
               <MetaRow label="密钥安全机制">
-                <span className="inline-flex items-center gap-1 text-cyan-400">
+                <span className="inline-flex items-center gap-1 text-emerald-400">
                   <ShieldCheck className="size-3.5" />
                   写入式（AES-256-GCM 不可反显）
                 </span>
@@ -435,7 +435,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
                     href={consoleLink.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-gray-300 transition hover:text-cyan-400"
+                    className="inline-flex items-center gap-1 text-gray-300 transition hover:text-brand"
                   >
                     {consoleLink.label}
                     <ExternalLink className="size-3 text-gray-500" />
@@ -450,7 +450,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
                 <button
                   type="button"
                   onClick={handleCopyUri}
-                  className="inline-flex items-center gap-1 text-caption font-semibold text-cyan-400 transition hover:text-cyan-300"
+                  className="inline-flex items-center gap-1 text-caption font-semibold text-brand transition hover:underline"
                 >
                   {copied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
                   {copied ? '已复制' : '一键复制'}
@@ -465,7 +465,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
             </div>
 
             <form onSubmit={handleSaveSecrets} className="mt-4 space-y-3">
-              <p className="text-label font-semibold text-cyan-400">凭证托管录入（加密存盘后不可反显）</p>
+              <p className="text-label font-semibold text-brand">凭证托管录入（加密存盘后不可反显）</p>
 
               {keyDefs.map((keyDef) => {
                 const hasConfigured = Boolean(keyDef.configured);
@@ -500,7 +500,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
                               : keyDef.placeholder || '输入新值覆盖'
                             : keyDef.placeholder || '请输入凭证明文…'
                         }
-                        className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-black/30 px-3 pr-9 font-mono text-body-sm text-gray-100 outline-none transition placeholder:text-gray-600 focus:border-cyan-500/60 focus:ring-2 focus:ring-cyan-500/20"
+                        className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-black/30 px-3 pr-9 font-mono text-body-sm text-gray-100 outline-none transition placeholder:text-gray-600 focus:border-brand/60 focus:ring-2 focus:ring-brand/20"
                       />
                       {isSecret && (
                         <button
@@ -549,7 +549,7 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
                 <button
                   type="submit"
                   disabled={busy}
-                  className="inline-flex h-8 items-center rounded-full bg-cyan-500 px-4 text-body-sm font-semibold text-black transition hover:bg-cyan-400 active:scale-[0.98] disabled:opacity-50"
+                  className="inline-flex h-8 items-center rounded-full bg-brand px-4 text-body-sm font-semibold text-white transition hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50"
                 >
                   {busy ? '正在加密保存…' : '安全提交凭证'}
                 </button>

@@ -69,7 +69,7 @@ export default function MotionManagerClient({ initialMotion }) {
       <div className="rounded-2xl border border-white/10 bg-[#070709] p-6 shadow-2xl relative overflow-hidden">
         <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/[0.06] relative z-10">
           <div className="flex items-center gap-2 text-xs font-semibold text-white/80">
-            <Sparkles className="size-4 text-cyan-400" />
+            <Sparkles className="size-4 text-brand" />
             <span>前台动效模式模拟视窗</span>
           </div>
           <span className="text-[11px] text-white/40">模拟当前设置下的 Studio 卡片微动交互</span>
@@ -78,16 +78,16 @@ export default function MotionManagerClient({ initialMotion }) {
         {/* 模拟前台环境背景流光 */}
         <div className="relative rounded-xl border border-white/10 bg-canvas p-8 overflow-hidden min-h-[220px] flex items-center justify-center">
           {motion.ambientGlow && (
-            <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-gradient-to-b from-cyan-500/20 via-indigo-500/15 to-transparent blur-3xl opacity-80 animate-pulse" />
+            <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-gradient-to-b from-brand/20 via-brand/10 to-transparent blur-3xl opacity-80 animate-pulse" />
           )}
 
           {/* 模拟 Studio 交互卡片 */}
           <div className={`relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-2xl backdrop-blur-md transition-all duration-300 ${
-            motion.cardTiltHover ? 'hover:scale-[1.03] hover:border-cyan-400/50 hover:shadow-cyan-500/10 cursor-pointer' : ''
+            motion.cardTiltHover ? 'hover:scale-[1.03] hover:border-brand/50 hover:shadow-brand/10 cursor-pointer' : ''
           }`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="size-3 rounded-full bg-cyan-400" />
+                <div className="size-3 rounded-full bg-brand" />
                 <span className="text-xs font-bold text-white">Cinema Studio 电影工作室</span>
               </div>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/60">
@@ -97,7 +97,7 @@ export default function MotionManagerClient({ initialMotion }) {
             <p className="text-xs text-white/60 leading-relaxed mb-4">
               这里是 Studio 模块预览卡片。把鼠标悬浮在此卡片上方，可直观测试卡片微浮效果。
             </p>
-            <div className="flex items-center justify-between text-[11px] text-cyan-300">
+            <div className="flex items-center justify-between text-[11px] text-brand">
               <span>{motion.cardTiltHover ? '✔ 3D 微动悬停已激活' : '✕ 卡片微动已禁用'}</span>
               <span>{motion.ambientGlow ? '✔ 背景氛围光已开启' : '✕ 氛围光已关闭'}</span>
             </div>
@@ -126,19 +126,19 @@ export default function MotionManagerClient({ initialMotion }) {
                   onClick={() => setMotion({ ...motion, motionLevel: lvl.id })}
                   className={`flex flex-col text-left rounded-xl p-4 border transition-all ${
                     isSelected
-                      ? 'border-cyan-400 bg-cyan-500/10 shadow-lg shadow-cyan-500/10'
+                      ? 'border-brand bg-brand/10 shadow-lg shadow-brand/10'
                       : 'border-white/10 bg-white/[0.02] hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-cyan-400/20 text-cyan-300' : 'bg-white/5 text-white/40'}`}>
+                      <div className={`p-2 rounded-lg ${isSelected ? 'bg-brand/20 text-brand' : 'bg-white/5 text-white/40'}`}>
                         <Icon className="size-4" />
                       </div>
                       <span className="text-xs font-bold text-white">{lvl.name}</span>
                     </div>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                      isSelected ? 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-white/40'
+                      isSelected ? 'bg-brand/20 text-brand border border-brand/30' : 'bg-white/5 text-white/40'
                     }`}>
                       {lvl.badge}
                     </span>
@@ -164,14 +164,14 @@ export default function MotionManagerClient({ initialMotion }) {
               <div>
                 <h3 className="text-xs font-semibold text-white">Studio 顶部氛围弥散光晕 (Ambient Glow)</h3>
                 <p className="text-[11px] text-white/40 mt-0.5">
-                  在前台顶部中央渲染深空青蓝与紫色的柔和呼吸光晕，大幅增强高质感赛博氛围。
+                  在前台顶部中央渲染深空洋红与微紫的柔和呼吸光晕，大幅增强高质感赛博氛围。
                 </p>
               </div>
               <input
                 type="checkbox"
                 checked={Boolean(motion.ambientGlow)}
                 onChange={(e) => setMotion({ ...motion, ambientGlow: e.target.checked })}
-                className="size-4 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-cyan-400/50"
+                className="size-4 rounded border-white/20 bg-black/40 text-brand focus:ring-brand/40"
               />
             </div>
 
@@ -186,7 +186,7 @@ export default function MotionManagerClient({ initialMotion }) {
                 type="checkbox"
                 checked={Boolean(motion.cardTiltHover)}
                 onChange={(e) => setMotion({ ...motion, cardTiltHover: e.target.checked })}
-                className="size-4 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-cyan-400/50"
+                className="size-4 rounded border-white/20 bg-black/40 text-brand focus:ring-brand/40"
               />
             </div>
 
@@ -201,7 +201,7 @@ export default function MotionManagerClient({ initialMotion }) {
                 type="checkbox"
                 checked={Boolean(motion.bannerPulse)}
                 onChange={(e) => setMotion({ ...motion, bannerPulse: e.target.checked })}
-                className="size-4 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-cyan-400/50"
+                className="size-4 rounded border-white/20 bg-black/40 text-brand focus:ring-brand/40"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function MotionManagerClient({ initialMotion }) {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-500/20 hover:opacity-90 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 rounded-xl bg-brand hover:bg-brand-hover px-5 py-2.5 text-xs font-semibold text-white shadow-sm disabled:opacity-50 transition-all"
             >
               <Save className="size-4" />
               <span>{isSaving ? '正在更新动效...' : '保存动效设置并生效'}</span>

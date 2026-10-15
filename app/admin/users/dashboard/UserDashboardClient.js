@@ -237,7 +237,7 @@ export default function UserDashboardClient({ initialData }) {
         <Card className="p-4 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-white/50">时段新增注册</span>
-            <TrendingUp size={16} className="text-cyan-400" />
+            <TrendingUp size={16} className="text-brand" />
           </div>
           <p className="mt-2 text-3xl font-bold tracking-tight text-white font-mono">
             +{metrics.periodNewUsers || 0}
@@ -311,7 +311,7 @@ export default function UserDashboardClient({ initialData }) {
               type="button"
               onClick={() => setActiveTrendMetric('users')}
               className={`rounded-full px-3 py-1 font-medium transition ${
-                activeTrendMetric === 'users' ? 'bg-cyan-400 text-black font-bold' : 'text-white/60 hover:text-white'
+                activeTrendMetric === 'users' ? 'bg-brand text-white font-bold' : 'text-white/60 hover:text-white'
               }`}
             >
               新增用户
@@ -350,7 +350,7 @@ export default function UserDashboardClient({ initialData }) {
                     className={`w-full rounded-t-md transition-all duration-300 group-hover:opacity-100 ${
                       val > 0
                         ? activeTrendMetric === 'users'
-                          ? 'bg-gradient-to-t from-cyan-500/30 to-cyan-400 opacity-80'
+                          ? 'bg-gradient-to-t from-brand/30 to-brand opacity-80'
                           : 'bg-gradient-to-t from-pink-500/30 to-pink-400 opacity-80'
                         : 'bg-white/5 opacity-30'
                     }`}
@@ -390,7 +390,7 @@ export default function UserDashboardClient({ initialData }) {
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
                     <div
-                      className="h-full rounded-full bg-cyan-400"
+                      className="h-full rounded-full bg-brand"
                       style={{ width: `${c.percentage}%` }}
                     />
                   </div>
@@ -412,7 +412,7 @@ export default function UserDashboardClient({ initialData }) {
             {distribution?.modality && distribution.modality.length > 0 ? (
               distribution.modality.map((m, i) => {
                 const IconComponent = m.modality === 'video' ? Film : m.modality === 'audio' ? Music : ImageIcon;
-                const colorClass = m.modality === 'video' ? 'bg-pink-400' : m.modality === 'audio' ? 'bg-amber-400' : 'bg-cyan-400';
+                const colorClass = m.modality === 'video' ? 'bg-pink-400' : m.modality === 'audio' ? 'bg-amber-400' : 'bg-brand';
                 return (
                   <div key={i} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
@@ -456,12 +456,12 @@ export default function UserDashboardClient({ initialData }) {
               </span>
             </div>
 
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-2.5 flex items-center justify-between">
+            <div className="rounded-xl border border-brand/20 bg-brand/5 p-2.5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-cyan-300">激活期 (有创作出片)</p>
+                <p className="text-xs font-semibold text-brand">激活期 (有创作出片)</p>
                 <p className="text-[11px] text-white/40">已打通 AI 创作闭环</p>
               </div>
-              <span className="text-base font-bold text-cyan-400 font-mono">
+              <span className="text-base font-bold text-brand font-mono">
                 {distribution?.lifecycle?.activated || 0}
               </span>
             </div>
@@ -494,8 +494,8 @@ export default function UserDashboardClient({ initialData }) {
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand" />
             </span>
             <h3 className="text-base font-semibold text-white">实时用户动态脉冲流 (10s Live Stream)</h3>
           </div>
@@ -513,7 +513,7 @@ export default function UserDashboardClient({ initialData }) {
                         ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
                         : evt.type === 'payment'
                         ? 'border-purple-500/30 bg-purple-500/10 text-purple-300'
-                        : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                        : 'border-brand/30 bg-brand/10 text-brand'
                     }`}
                   >
                     {evt.type === 'signup' ? '新注册' : evt.type === 'payment' ? '支付充值' : '任务生成'}

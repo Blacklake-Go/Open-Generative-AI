@@ -42,7 +42,7 @@ export default function LiveLogViewer() {
               type="button"
               onClick={() => setLogType('out')}
               className={`rounded px-3 py-1 font-semibold transition ${
-                logType === 'out' ? 'bg-cyan-300/20 text-cyan-200' : 'text-white/50 hover:text-white'
+                logType === 'out' ? 'bg-brand/20 text-brand' : 'text-white/50 hover:text-white'
               }`}
             >
               标准输出 (Out)

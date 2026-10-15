@@ -304,7 +304,7 @@ export default function ModelHygieneDrawer({
                   </div>
                   <div className="space-y-1.5 p-3 rounded-lg bg-well/40 border border-line-subtle/50">
                     <span className="font-semibold text-ink flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-cyan-400" />
+                      <span className="size-2 rounded-full bg-brand" />
                       2. 底层端：多供应商渠道聚合 (Provider Models)
                     </span>
                     <p className="leading-relaxed">

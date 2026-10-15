@@ -122,7 +122,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-brand/10 border border-brand/30 text-brand">
               <Plus className="size-5" />
             </div>
             <div>
@@ -150,7 +150,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-white/60 mb-1">
-                套餐标识 ID <span className="text-cyan-400">*</span>
+                套餐标识 ID <span className="text-brand">*</span>
               </label>
               <input
                 type="text"
@@ -158,12 +158,12 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                 placeholder="如 team / enterprise"
                 value={planId}
                 onChange={(e) => setPlanId(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs font-mono text-cyan-200 outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs font-mono text-brand outline-none focus:border-brand"
               />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-white/60 mb-1">
-                套餐显示名称 <span className="text-cyan-400">*</span>
+                套餐显示名称 <span className="text-brand">*</span>
               </label>
               <input
                 type="text"
@@ -171,7 +171,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                 placeholder="如 Team (企业团队版)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
             <div>
@@ -183,7 +183,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                 placeholder="如: 团队首选 / 限时特惠"
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
-                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/15 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white/80">阶梯周期定价 (CNY / USD)</span>
-              <span className="text-[11px] text-cyan-300/80">月付¥0.07/分 · 季付9折 · 年付8.3折</span>
+              <span className="text-[11px] text-brand/80">月付¥0.07/分 · 季付9折 · 年付8.3折</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
@@ -262,7 +262,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                 required
                 value={quotaBase}
                 onChange={(e) => setQuotaBase(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 font-mono text-cyan-300"
+                className="w-full rounded-lg border border-white/15 bg-black/40 px-2.5 py-1.5 font-mono text-brand"
               />
             </div>
             <div>
@@ -304,10 +304,10 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
           </div>
 
           {/* 专属权益可选项（可勾选） */}
-          <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/10 p-3.5 space-y-2.5">
+          <div className="rounded-xl border border-brand/20 bg-brand/[0.03] p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-cyan-200 flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-cyan-300" />
+              <span className="text-xs font-bold text-brand flex items-center gap-1.5">
+                <Sparkles className="size-3.5 text-brand" />
                 <span>专属权益配置（可勾选）</span>
               </span>
               <span className="text-[10px] text-white/40">勾选后将自动生效并赋予订购该套餐的用户</span>
@@ -322,7 +322,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                     key={benefit.key}
                     className={`flex items-start gap-2.5 p-2 rounded-lg border cursor-pointer select-none transition ${
                       checked
-                        ? 'border-cyan-500/40 bg-cyan-500/10 text-white'
+                        ? 'border-brand/40 bg-brand/10 text-white'
                         : 'border-white/10 bg-black/30 text-white/60 hover:border-white/20'
                     }`}
                   >
@@ -335,7 +335,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                     <div
                       className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border transition ${
                         checked
-                          ? 'border-cyan-400 bg-cyan-400 text-black'
+                          ? 'border-brand bg-brand text-white'
                           : 'border-white/30 bg-transparent'
                       }`}
                     >
@@ -343,7 +343,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <IconComponent className="size-3.5 text-cyan-300 shrink-0" />
+                        <IconComponent className="size-3.5 text-brand shrink-0" />
                         <span className="text-xs font-semibold">{benefit.label}</span>
                       </div>
                       <p className="text-[10px] text-white/50 leading-tight mt-0.5">
@@ -366,7 +366,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
               placeholder="每月 4,000 创作积分&#10;任务并发: 4 路同时生成&#10;专享优先通道"
               value={featuresText}
               onChange={(e) => setFeaturesText(e.target.value)}
-              className="w-full rounded-xl border border-white/15 bg-black/40 p-2.5 text-xs text-white outline-none focus:border-cyan-300 font-sans"
+              className="w-full rounded-xl border border-white/15 bg-black/40 p-2.5 text-xs text-white outline-none focus:border-brand font-sans"
             />
           </div>
 
@@ -405,7 +405,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-lg bg-cyan-300 px-4 py-1.5 text-xs font-bold text-black hover:bg-cyan-200 transition shadow-lg shadow-cyan-500/20"
+                className="rounded-lg bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-hover transition shadow-sm"
               >
                 {busy ? '创建中…' : '立即创建套餐'}
               </button>

@@ -21,7 +21,7 @@ export default function ProfitPeriodSelector({ currentPeriod = '7d' }) {
           onClick={() => router.push(`/admin/profit-center?period=${p.value}`)}
           className={`inline-flex h-[30px] items-center rounded-lg px-3 text-[11px] font-medium transition-all active:scale-[0.98] ${
             currentPeriod === p.value
-              ? 'bg-cyan-500/20 border border-cyan-500/40 text-cyan-400'
+              ? 'bg-brand/10 border border-brand/20 text-brand font-semibold'
               : 'border border-white/[0.10] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-white'
           }`}
         >

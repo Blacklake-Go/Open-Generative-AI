@@ -413,7 +413,7 @@ export default function SubscriptionFaqManagerClient({ initialConfig, defaultCon
                           className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
                           title="编辑问题与解答"
                         >
-                          <Edit3 className="size-3 text-cyan-400" />
+                          <Edit3 className="size-3 text-brand" />
                           <span>编辑</span>
                         </button>
 

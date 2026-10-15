@@ -25,7 +25,7 @@ export default async function FailedGenerationsPage({ searchParams }) {
         <div>
           <CopyableId id={row.id} />
           <div className="mt-1">
-            <Link href={`/admin/users/${row.user_id}`} className="text-xs text-white/50 hover:text-cyan-200">
+            <Link href={`/admin/users/${row.user_id}`} className="text-xs text-white/50 hover:text-brand">
               {row.email || row.user_id}
             </Link>
           </div>
@@ -80,12 +80,12 @@ export default async function FailedGenerationsPage({ searchParams }) {
             name="q"
             defaultValue={params.get('q') || ''}
             placeholder="搜索任务 ID、模型名或用户…"
-            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand"
           />
 
           <button
             type="submit"
-            className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black hover:bg-cyan-200"
+            className="rounded-xl bg-brand hover:bg-brand-hover px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all"
           >
             筛选
           </button>

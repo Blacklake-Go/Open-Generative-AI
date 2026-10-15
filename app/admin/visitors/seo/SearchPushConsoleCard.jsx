@@ -185,7 +185,7 @@ export default function SearchPushConsoleCard({
             onSubmit={handleSaveConfig}
             className="rounded-xl border border-white/10 bg-black/40 p-4 space-y-4"
           >
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-brand">
               搜索引擎准入凭据与密钥配置
             </h4>
 
@@ -204,7 +204,7 @@ export default function SearchPushConsoleCard({
                       onChange={(e) =>
                         setConfig((prev) => ({ ...prev, indexNowEnabled: e.target.checked }))
                       }
-                      className="rounded border-white/20 bg-black/40 text-cyan-500"
+                      className="rounded border-white/20 bg-black/40 accent-brand"
                     />
                     <span>启用</span>
                   </label>
@@ -229,7 +229,7 @@ export default function SearchPushConsoleCard({
                       href="/api/seo/indexnow-key"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-[10px] text-cyan-400 hover:underline"
+                      className="inline-flex items-center gap-0.5 text-[10px] text-brand font-semibold hover:underline"
                     >
                       <span>在线验证端点</span>
                       <ExternalLink className="size-2.5" />
@@ -260,7 +260,7 @@ export default function SearchPushConsoleCard({
                       onChange={(e) =>
                         setConfig((prev) => ({ ...prev, baiduEnabled: e.target.checked }))
                       }
-                      className="rounded border-white/20 bg-black/40 text-cyan-500"
+                      className="rounded border-white/20 bg-black/40 accent-brand"
                     />
                     <span>启用</span>
                   </label>
@@ -304,7 +304,7 @@ export default function SearchPushConsoleCard({
                 <button
                   type="submit"
                   disabled={isSavingConfig}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors"
                 >
                   <Save className="size-3.5" />
                   <span>{isSavingConfig ? '正在保存...' : '保存凭据设置'}</span>
@@ -324,7 +324,7 @@ export default function SearchPushConsoleCard({
               <button
                 type="button"
                 onClick={handleQuickFillUrls}
-                className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+                className="text-xs text-brand font-semibold hover:underline"
               >
                 快速填充主要公开路由
               </button>
@@ -335,7 +335,7 @@ export default function SearchPushConsoleCard({
               value={urlsInput}
               onChange={(e) => setUrlsInput(e.target.value)}
               placeholder="https://www.supdance.com/&#10;https://www.supdance.com/studio&#10;https://www.supdance.com/models"
-              className="w-full resize-y rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-xs text-white placeholder-white/20 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full resize-y rounded-xl border border-white/10 bg-black/40 p-3 font-mono text-xs text-white placeholder-white/20 outline-none focus:border-brand transition-colors"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -470,7 +470,7 @@ export default function SearchPushConsoleCard({
                             <button
                               type="button"
                               onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                              className="inline-flex items-center gap-0.5 text-cyan-400 hover:underline text-[11px]"
+                              className="inline-flex items-center gap-0.5 text-brand font-semibold hover:underline text-[11px]"
                             >
                               <span>{isExpanded ? '收起' : '详情'}</span>
                               {isExpanded ? (
@@ -504,7 +504,7 @@ export default function SearchPushConsoleCard({
                                   <p className="text-[11px] font-semibold text-gray-300 mb-1">
                                     引擎响应结果 (Response Body):
                                   </p>
-                                  <pre className="rounded-lg bg-black/80 p-2 font-mono text-[10px] text-cyan-300/80 overflow-x-auto">
+                                  <pre className="rounded-lg bg-black/80 p-2 font-mono text-[10px] text-brand/80 overflow-x-auto">
                                     {JSON.stringify(log.response_body, null, 2)}
                                   </pre>
                                 </div>

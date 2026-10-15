@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas px-4 text-white">
         <div className="w-full max-w-md rounded-2xl border border-white/[0.10] bg-surface/95 p-8 text-center shadow-2xl shadow-black/60 backdrop-blur-md">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand">
             SupDance AI Studio
           </p>
           <h1 className="mt-3 text-2xl font-bold tracking-[-0.02em] leading-8 text-white">暂无后台访问权限</h1>
@@ -45,7 +45,7 @@ export default async function AdminLayout({ children }) {
           <div className="mt-6 flex justify-center gap-3">
             <a
               href="/studio"
-              className="inline-flex h-[38px] items-center rounded-lg bg-cyan-500 px-4 text-xs font-semibold text-black transition-all hover:bg-cyan-400 active:scale-[0.98]"
+              className="inline-flex h-[38px] items-center rounded-xl bg-brand hover:bg-brand-hover px-4 text-xs font-semibold text-white transition-all active:scale-[0.98] shadow-sm"
             >
               返回 Studio
             </a>

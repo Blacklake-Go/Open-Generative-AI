@@ -541,7 +541,7 @@ export default function BrandingManagerClient({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-            <ImageIcon className="w-6 h-6 text-cyan-400" />
+            <ImageIcon className="w-6 h-6 text-brand" />
             品牌设置 (Logo 与网站 Icon)
           </h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -553,21 +553,21 @@ export default function BrandingManagerClient({
               href="#logo-settings"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-xs font-medium text-slate-200 transition"
             >
-              <Crop className="w-3.5 h-3.5 text-cyan-400" />
+              <Crop className="w-3.5 h-3.5 text-brand" />
               Logo 设置
             </a>
             <a
               href="#icon-settings"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-xs font-medium text-cyan-300 transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand/30 bg-brand/10 hover:bg-brand/20 text-xs font-medium text-brand transition"
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <Sparkles className="w-3.5 h-3.5 text-brand" />
               Icon 图标设置
             </a>
             <a
               href="#nav-settings"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-xs font-medium text-slate-200 transition"
             >
-              <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+              <Sliders className="w-3.5 h-3.5 text-brand" />
               顶栏导航菜单
             </a>
           </div>
@@ -586,7 +586,7 @@ export default function BrandingManagerClient({
           <Button
             onClick={handleSaveAll}
             disabled={isSaving || isUploading}
-            className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs flex items-center gap-1.5 shadow-lg shadow-cyan-500/20"
+            className="bg-brand hover:bg-brand-hover text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm"
           >
             <Save className="w-3.5 h-3.5" />
             {isSaving ? '正在发布...' : '保存全网发布'}
@@ -616,7 +616,7 @@ export default function BrandingManagerClient({
       <Card className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-cyan-400" />
+            <Eye className="w-4 h-4 text-brand" />
             <h3 className="text-sm font-semibold text-white">网站顶栏 1:1 真实渲染仿真器</h3>
             <span className="text-xs text-slate-500 hidden md:inline">所见即所得 · 与前台全站无缝同步</span>
           </div>
@@ -709,8 +709,8 @@ export default function BrandingManagerClient({
                 </span>
                 <span className={`px-2.5 py-1 text-xs rounded-lg font-semibold border ${
                   previewTheme === 'dark'
-                    ? 'text-cyan-300 bg-cyan-500/10 border-cyan-500/30'
-                    : 'text-cyan-700 bg-cyan-50 border-cyan-200'
+                    ? 'text-brand bg-brand/10 border-brand/30'
+                    : 'text-brand bg-brand/10 border-brand/20'
                 }`}>
                   关于 (末尾)
                 </span>
@@ -721,7 +721,7 @@ export default function BrandingManagerClient({
             <div className="flex items-center gap-2">
               {/* 额度 */}
               <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-zinc-300">
-                <Zap className="size-3 text-cyan-400" />
+                <Zap className="size-3 text-brand" />
                 <span className="font-mono font-bold text-white text-[11px]">10</span>
                 <span className="text-[9px] text-zinc-400">算力</span>
               </div>
@@ -735,7 +735,7 @@ export default function BrandingManagerClient({
                 <Globe className="size-3.5" />
               </div>
               {/* 头像 */}
-              <div className="size-7 rounded-full border border-white/20 bg-slate-800 text-cyan-300 text-xs font-bold flex items-center justify-center">
+              <div className="size-7 rounded-full border border-white/20 bg-slate-800 text-brand text-xs font-bold flex items-center justify-center">
                 A
               </div>
             </div>
@@ -747,14 +747,14 @@ export default function BrandingManagerClient({
       <Card id="logo-settings" className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden scroll-mt-20">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Crop className="w-5 h-5 text-cyan-400" />
+            <Crop className="w-5 h-5 text-brand" />
             <div>
               <h2 className="text-base font-semibold text-white">网站 Logo 替换工具</h2>
               <p className="text-xs text-slate-400">选择图片后将自动调出裁剪工具，支持 1:1 方形、3:1 横版或自由裁切</p>
             </div>
           </div>
           {brand.logoUrl && !isCropping && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-brand/10 text-brand border border-brand/20 font-medium">
               自定义 Logo 已生效
             </span>
           )}
@@ -849,12 +849,12 @@ export default function BrandingManagerClient({
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-slate-950/40 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group h-full min-h-[175px]"
+                className="bg-slate-950/40 border-2 border-dashed border-slate-800 hover:border-brand/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group h-full min-h-[175px]"
               >
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 text-brand flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <Upload className="w-5 h-5" />
                 </div>
-                <h4 className="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">
+                <h4 className="text-sm font-semibold text-white group-hover:text-brand transition-colors">
                   {isUploading ? '正在处理上传...' : '点击添加图片 或 拖拽图片至此处'}
                 </h4>
                 <p className="text-xs text-slate-400 mt-1.5 max-w-xs">
@@ -879,7 +879,7 @@ export default function BrandingManagerClient({
             <button
               type="button"
               onClick={() => setShowManualUrl(!showManualUrl)}
-              className="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1.5 transition-colors"
+              className="text-xs text-slate-400 hover:text-brand flex items-center gap-1.5 transition-colors"
             >
               <LinkIcon className="w-3.5 h-3.5" />
               {showManualUrl ? '收起外部链接输入' : '高级选项: 直接输入外部图片 URL 或 CDN 链接'}
@@ -892,7 +892,7 @@ export default function BrandingManagerClient({
                   placeholder="https://example.com/logo.png 或 /uploads/..."
                   value={brand.logoUrl}
                   onChange={(e) => setBrand((prev) => ({ ...prev, logoType: 'image', logoUrl: e.target.value }))}
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
                 />
                 <Button
                   size="sm"
@@ -923,7 +923,7 @@ export default function BrandingManagerClient({
                 value={brand.brandName}
                 onChange={(e) => setBrand((prev) => ({ ...prev, brandName: e.target.value }))}
                 placeholder="例如 supdance"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand"
               />
               <span className="text-[11px] text-slate-500 mt-1 block">全站 SEO 标题与品牌标示文本</span>
             </div>
@@ -941,7 +941,7 @@ export default function BrandingManagerClient({
                   aria-label="切换是否显示品牌文本名称"
                   onClick={() => setBrand((prev) => ({ ...prev, showBrandName: !prev.showBrandName }))}
                   className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-                    brand.showBrandName ? 'bg-cyan-500' : 'bg-slate-800'
+                    brand.showBrandName ? 'bg-brand' : 'bg-slate-800'
                   }`}
                 >
                   <span
@@ -967,7 +967,7 @@ export default function BrandingManagerClient({
                 value={brand.logoHref}
                 onChange={(e) => setBrand((prev) => ({ ...prev, logoHref: e.target.value }))}
                 placeholder="/studio"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand"
               />
               <span className="text-[11px] text-slate-500 mt-1 block">默认跳转工作室首页 `/studio`</span>
             </div>
@@ -979,7 +979,7 @@ export default function BrandingManagerClient({
       <Card id="icon-settings" className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden scroll-mt-20">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-cyan-400" />
+            <Sparkles className="w-5 h-5 text-brand" />
             <div>
               <h2 className="text-base font-semibold text-white">网站 Icon / 浏览器图标 (Favicon) 设置</h2>
               <p className="text-xs text-slate-400">
@@ -988,7 +988,7 @@ export default function BrandingManagerClient({
             </div>
           </div>
           {brand.faviconUrl ? (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium flex items-center gap-1.5">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-brand/10 text-brand border border-brand/20 font-medium flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               自定义 Icon 已生效
             </span>
@@ -1029,7 +1029,7 @@ export default function BrandingManagerClient({
                         <AlertCircle className="w-3.5 h-3.5" /> 图标加载异常
                       </span>
                     ) : (
-                      <span className="text-xs text-cyan-400 flex items-center gap-1 font-medium">
+                      <span className="text-xs text-brand flex items-center gap-1 font-medium">
                         <CheckCircle2 className="w-3.5 h-3.5" /> 自定义正方形图标
                       </span>
                     )
@@ -1122,12 +1122,12 @@ export default function BrandingManagerClient({
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleIconDrop}
                   onClick={() => iconFileInputRef.current?.click()}
-                  className="bg-slate-950/40 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group flex-1 min-h-[180px]"
+                  className="bg-slate-950/40 border-2 border-dashed border-slate-800 hover:border-brand/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 group flex-1 min-h-[180px]"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 text-brand flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <Upload className="w-5 h-5" />
                   </div>
-                  <h4 className="text-sm font-semibold text-white group-hover:text-cyan-400 transition-colors">
+                  <h4 className="text-sm font-semibold text-white group-hover:text-brand transition-colors">
                     {isUploading ? '正在处理上传...' : '点击上传图标 或 拖拽图标至此处'}
                   </h4>
                   <p className="text-xs text-slate-400 mt-1.5 max-w-xs">
@@ -1150,7 +1150,7 @@ export default function BrandingManagerClient({
                   <button
                     type="button"
                     onClick={() => setShowManualIconUrl(!showManualIconUrl)}
-                    className="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1.5 transition-colors"
+                    className="text-xs text-slate-400 hover:text-brand flex items-center gap-1.5 transition-colors"
                   >
                     <LinkIcon className="w-3.5 h-3.5" />
                     {showManualIconUrl ? '收起外部图标链接输入' : '高级选项: 直接输入外部 Icon URL 或 CDN 链接'}
@@ -1163,7 +1163,7 @@ export default function BrandingManagerClient({
                         placeholder="https://example.com/favicon.png 或 /uploads/..."
                         value={brand.faviconUrl || ''}
                         onChange={(e) => setBrand((prev) => ({ ...prev, faviconUrl: e.target.value }))}
-                        className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand"
                       />
                       <Button
                         size="sm"
@@ -1193,7 +1193,7 @@ export default function BrandingManagerClient({
         <div className="p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-white flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-cyan-400" />
+              <Sliders className="w-4 h-4 text-brand" />
               全站顶栏导航菜单与按钮管理
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">控制全站前台顶栏导航按钮，支持自定义中英文名称、跳转链接、角标、图标与排序</p>
@@ -1209,8 +1209,8 @@ export default function BrandingManagerClient({
         </div>
 
         {/* 提示条 */}
-        <div className="px-5 py-3 bg-cyan-500/5 border-b border-cyan-500/10 flex items-center gap-2 text-xs text-cyan-300/90">
-          <Info className="size-4 shrink-0 text-cyan-400" />
+        <div className="px-5 py-3 bg-brand/5 border-b border-brand/10 flex items-center gap-2 text-xs text-brand/90">
+          <Info className="size-4 shrink-0 text-brand" />
           <span>
             <strong>全站规则：</strong>「关于本站」已设定为全站顶部导航栏的最终固定入口（无论在此列表中排序如何，在前台顶栏始终位于最右端末尾）。在此处可编辑其文本名称、英文对照与图标。
           </span>
@@ -1245,7 +1245,7 @@ export default function BrandingManagerClient({
                       aria-label={`切换${item.label || item.id}是否启用`}
                       onClick={() => toggleItemEnabled(item.id)}
                       className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
-                        item.enabled ? 'bg-cyan-500' : 'bg-slate-800'
+                        item.enabled ? 'bg-brand' : 'bg-slate-800'
                       }`}
                     >
                       <span
@@ -1255,7 +1255,7 @@ export default function BrandingManagerClient({
                       />
                     </button>
 
-                    <div className="size-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 shrink-0">
+                    <div className="size-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-brand shrink-0">
                       <DynamicNavIcon iconName={item.icon} className="size-4" />
                     </div>
 
@@ -1268,12 +1268,12 @@ export default function BrandingManagerClient({
                           </span>
                         )}
                         {item.badge && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-bold">
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-brand/10 text-brand border border-brand/20 font-bold">
                             {item.badge}
                           </span>
                         )}
                         {isAbout && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-medium">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/20 font-medium">
                             顶栏终位固定
                           </span>
                         )}
@@ -1340,7 +1340,7 @@ export default function BrandingManagerClient({
       <div className="fixed bottom-6 left-0 right-0 z-40 max-w-4xl mx-auto px-4 pointer-events-none">
         <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-2xl p-4 shadow-2xl flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <Sparkles className="w-4 h-4 text-brand" />
             <span>修改后请点击发布，变更将实时推送到全站前台。</span>
           </div>
 
@@ -1356,7 +1356,7 @@ export default function BrandingManagerClient({
             <Button
               onClick={handleSaveAll}
               disabled={isSaving || isUploading}
-              className="bg-cyan-400 hover:bg-cyan-300 text-black font-semibold text-xs px-5 shadow-lg shadow-cyan-500/20"
+              className="bg-brand hover:bg-brand-hover text-white font-semibold text-xs px-5 shadow-sm"
             >
               <Save className="w-3.5 h-3.5 mr-1" />
               {isSaving ? '保存中...' : '保存全网发布'}
@@ -1383,7 +1383,7 @@ export default function BrandingManagerClient({
             </div>
 
             {editingItem.href?.includes('/about') && (
-              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300">
+              <div className="p-3 rounded-xl bg-brand/10 border border-brand/20 text-xs text-brand">
                 💡 <strong>提示：</strong>当前项为全站「关于」页面，根据设计规范，无论在此处如何排列，都会在全站顶栏导航末端作为终位展示。
               </div>
             )}
@@ -1408,7 +1408,7 @@ export default function BrandingManagerClient({
                           badge: qr.badge,
                         })
                       }
-                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 transition border border-slate-700/60"
+                      className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-brand transition border border-slate-700/60"
                     >
                       {qr.label}
                     </button>
@@ -1462,7 +1462,7 @@ export default function BrandingManagerClient({
                     图标 (Icon)
                   </label>
                   <div className="flex items-center gap-2">
-                    <div className="size-9 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-cyan-400 shrink-0">
+                    <div className="size-9 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-brand shrink-0">
                       <DynamicNavIcon iconName={editingItem.icon} className="size-4" />
                     </div>
                     <select
@@ -1535,7 +1535,7 @@ export default function BrandingManagerClient({
               <button
                 type="button"
                 onClick={handleSaveModalItem}
-                className="px-5 py-2 text-xs font-semibold bg-cyan-400 hover:bg-cyan-300 text-black rounded-lg"
+                className="px-5 py-2 text-xs font-semibold bg-brand hover:bg-brand-hover text-white rounded-lg shadow-sm"
               >
                 保存菜单项
               </button>

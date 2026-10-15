@@ -24,7 +24,7 @@ export default function PlansManagerClient({ initialPlans = [] }) {
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2 text-xs font-bold text-black shadow-lg shadow-cyan-500/20 hover:bg-cyan-200 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-bold text-white shadow-lg shadow-brand/20 hover:bg-brand-hover transition-colors cursor-pointer"
         >
           <Plus className="size-4" />
           <span>新增套餐</span>

@@ -21,10 +21,10 @@ export function CopyableId({ id, label }) {
       type="button"
       onClick={copy}
       title="点击复制完整 ID"
-      className="group inline-flex items-center gap-1 font-mono text-xs text-gray-400 transition hover:text-cyan-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50 rounded"
+      className="group inline-flex items-center gap-1 font-mono text-xs text-gray-400 transition hover:text-brand focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand/50 rounded"
     >
       <span>{display}</span>
-      <span className="text-[10px] text-gray-500 group-hover:text-cyan-400">
+      <span className="text-[10px] text-gray-500 group-hover:text-brand">
         {copied ? '✓' : '⧉'}
       </span>
     </button>

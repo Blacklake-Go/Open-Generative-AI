@@ -111,13 +111,13 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索模型名称或 ID..."
-            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40"
           />
         </div>
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+          className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
         >
           <option value="all">全部类型</option>
           <option value="image">图像</option>
@@ -128,7 +128,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
         <select
           value={tierFilter}
           onChange={(e) => setTierFilter(e.target.value)}
-          className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+          className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
         >
           <option value="all">全部分级</option>
           <option value="core">Core 核心</option>
@@ -199,7 +199,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                   <td className="px-4 py-3 text-gray-300">
                     {ROUTING_LABELS[m.routing_mode] || m.routing_mode || '成本优先'}
                   </td>
-                  <td className="px-4 py-3 font-mono text-cyan-400">
+                  <td className="px-4 py-3 font-mono text-brand font-semibold">
                     {m.base_credits ?? '—'}
                   </td>
                   <td className="px-4 py-3 font-mono text-gray-300">
@@ -217,7 +217,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => openEdit(m)}
-                      className="rounded p-1.5 text-gray-400 hover:bg-white/[0.06] hover:text-cyan-400 transition-colors"
+                      className="rounded p-1.5 text-gray-400 hover:bg-white/[0.06] hover:text-brand transition-colors"
                     >
                       <ChevronDown className={`size-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                     </button>
@@ -234,7 +234,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
 
       {/* 展开编辑面板 */}
       {expandedId && (
-        <Card className="border-cyan-500/20 bg-cyan-950/5">
+        <Card className="border-brand/20 bg-brand/[0.03]">
           <h3 className="text-sm font-semibold text-white mb-4">
             编辑模型分层: {models.find((m) => m.id === expandedId)?.display_name || expandedId}
           </h3>
@@ -245,7 +245,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                 value={editTier}
                 onChange={(e) => setEditTier(e.target.value)}
                 disabled={!canWrite}
-                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50"
+                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
               >
                 <option value="core">Core 核心模型</option>
                 <option value="backup">Backup 备用模型</option>
@@ -259,7 +259,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                 value={editVisible ? 'true' : 'false'}
                 onChange={(e) => setEditVisible(e.target.value === 'true')}
                 disabled={!canWrite}
-                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50"
+                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
               >
                 <option value="true">前台可见</option>
                 <option value="false">前台隐藏</option>
@@ -271,7 +271,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                 value={editAutoRoute ? 'true' : 'false'}
                 onChange={(e) => setEditAutoRoute(e.target.value === 'true')}
                 disabled={!canWrite}
-                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50"
+                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
               >
                 <option value="true">参与自动路由</option>
                 <option value="false">不参与</option>
@@ -283,7 +283,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
                 value={editBackup}
                 onChange={(e) => setEditBackup(e.target.value)}
                 disabled={!canWrite}
-                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50"
+                className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
               >
                 <option value="">未指定</option>
                 {models.filter((m) => m.id !== expandedId).map((m) => (
@@ -296,7 +296,7 @@ export default function RegistryClient({ initialModels = [], canWrite = false })
             <Button
               disabled={!canWrite || busy === expandedId}
               onClick={() => saveTiering(expandedId)}
-              className="bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-semibold"
+              className="rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all"
             >
               {busy === expandedId ? <Loader2 className="mr-1 size-3 animate-spin" /> : null}
               保存分层配置

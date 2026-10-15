@@ -223,7 +223,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
             <select
               value={selectedModelId}
               onChange={(e) => setSelectedModelId(e.target.value)}
-              className="rounded-lg border border-white/[0.12] bg-[#161820] px-3 py-2 text-sm font-semibold text-white focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-white/[0.12] bg-[#161820] px-3 py-2 text-sm font-semibold text-white focus:border-brand focus:outline-none"
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -247,7 +247,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   enabled: true,
                 });
               }}
-              className="bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-semibold py-1.5"
+              className="rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-semibold py-2 px-4 shadow-sm transition-all"
             >
               <Plus className="mr-1 size-3.5" />
               添加供应商渠道
@@ -257,10 +257,10 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
       </Card>
 
       {/* 核心指标 & 铁律告示 */}
-      <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 flex items-start gap-3">
-        <ShieldCheck className="size-5 text-cyan-400 mt-0.5 shrink-0" />
+      <div className="rounded-xl border border-brand/20 bg-brand/[0.04] p-4 flex items-start gap-3">
+        <ShieldCheck className="size-5 text-brand mt-0.5 shrink-0" />
         <div className="text-xs text-gray-300 space-y-1 leading-5">
-          <p className="font-semibold text-cyan-300">智能路由铁律：严格禁止跨模型降级</p>
+          <p className="font-semibold text-brand">智能路由铁律：严格禁止跨模型降级</p>
           <p>
             前台创作者选择规范模型 <strong>{selectedModel?.display_name || selectedModelId}</strong> 后，系统仅会在下方绑定的供应商模型间进行主备切换与负载均衡。即便所有渠道均不可用，也不会降级到其它模型，确保画风、画质与物理参数绝对一致。
           </p>
@@ -272,7 +272,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
         <Card className="lg:col-span-1 p-5 border-white/[0.08] space-y-4">
           <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <Shuffle className="size-4 text-cyan-400" />
+              <Shuffle className="size-4 text-brand" />
               调度模式与权重
             </h3>
             <span className="text-[10px] text-gray-400 font-mono">RoutingPolicy</span>
@@ -285,7 +285,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                 <select
                   name="routingMode"
                   defaultValue={routingPolicy.routing_mode || 'balanced'}
-                  className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-brand focus:outline-none"
                 >
                   <option value="balanced">智能平衡 (Balanced - 推荐)</option>
                   <option value="cost">成本优先 (Cost First - 最低价格)</option>
@@ -346,7 +346,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   name="failoverEnabled"
                   id="failoverEnabled"
                   defaultChecked={routingPolicy.failover_enabled !== false}
-                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-cyan-500 focus:ring-0"
+                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] accent-brand focus:ring-0"
                 />
                 <label htmlFor="failoverEnabled" className="text-gray-300 cursor-pointer">
                   开启自动故障转移 (Failover)
@@ -376,7 +376,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
 
           {loading ? (
             <div className="py-12 text-center text-xs text-gray-400">
-              <Loader2 className="mx-auto size-5 animate-spin text-cyan-400 mb-2" />
+              <Loader2 className="mx-auto size-5 animate-spin text-brand mb-2" />
               加载渠道映射中...
             </div>
           ) : providerModels.length === 0 ? (
@@ -398,7 +398,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-white text-sm">{pm.provider_name || pm.provider_id}</span>
-                          <span className="font-mono text-xs text-cyan-400">[{pm.provider_model_id}]</span>
+                          <span className="font-mono text-xs text-brand font-semibold">[{pm.provider_model_id}]</span>
                           <StatusBadge tone={pm.enabled ? 'good' : 'neutral'}>
                             {pm.enabled ? '已启用' : '已禁用'}
                           </StatusBadge>
@@ -423,7 +423,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                             </>
                           ) : (
                             <>
-                              <Zap className="mr-1 size-3 text-cyan-400" />
+                              <Zap className="mr-1 size-3 text-brand" />
                               一键测试
                             </>
                           )}
@@ -440,7 +440,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                           variant="ghost"
                           size="sm"
                           onClick={() => setEditingChannel(pm)}
-                          className="text-xs text-cyan-400 hover:text-cyan-300"
+                          className="text-xs font-semibold text-brand hover:underline"
                         >
                           编辑
                         </Button>
@@ -481,7 +481,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
               {editingChannel.id ? '编辑渠道映射' : '新增供应商渠道'}
             </h3>
             <p className="mt-1 text-xs text-gray-400">
-              为规范模型 <span className="text-cyan-400 font-mono">{selectedModelId}</span> 挂载物理上游驱动。
+              为规范模型 <span className="text-brand font-semibold font-mono">{selectedModelId}</span> 挂载物理上游驱动。
             </p>
 
             <form onSubmit={handleSaveChannel} className="mt-5 space-y-4 text-xs">
@@ -491,7 +491,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   <select
                     name="providerId"
                     defaultValue={editingChannel.provider_id || providers[0]?.id}
-                    className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-brand focus:outline-none"
                   >
                     {providers.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -506,7 +506,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                     name="priority"
                     type="number"
                     defaultValue={editingChannel.priority ?? 100}
-                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
               </div>
@@ -520,7 +520,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   defaultValue={editingChannel.provider_model_id || selectedModelId}
                   required
                   placeholder="例如: kling-v2-6, flux-pro, wan2.1-i2v-14b"
-                  className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-brand focus:outline-none font-mono"
                 />
               </div>
 
@@ -531,7 +531,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                     name="timeout"
                     type="number"
                     defaultValue={editingChannel.timeout || 120000}
-                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
                 <div>
@@ -540,7 +540,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                     name="maxRetries"
                     type="number"
                     defaultValue={editingChannel.max_retries ?? 2}
-                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
               </div>
@@ -553,7 +553,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                     type="number"
                     step="0.001"
                     defaultValue={editingChannel.cost_config?.base_cost ?? 0.05}
-                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
                 <div>
@@ -561,7 +561,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   <select
                     name="currency"
                     defaultValue={editingChannel.cost_config?.currency || 'USD'}
-                    className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-white focus:border-brand focus:outline-none"
                   >
                     <option value="USD">USD ($)</option>
                     <option value="CNY">CNY (¥)</option>
@@ -575,7 +575,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                   name="enabled"
                   id="chEnabled"
                   defaultChecked={editingChannel.enabled !== false}
-                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-cyan-500 focus:ring-0"
+                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] accent-brand focus:ring-0"
                 />
                 <label htmlFor="chEnabled" className="text-gray-300 cursor-pointer">
                   启用该供应商渠道映射
@@ -594,7 +594,7 @@ export default function RoutingManagerClient({ initialModels = [], initialProvid
                 <Button
                   type="submit"
                   disabled={isSavingChannel}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+                  className="rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2.5 text-xs font-semibold shadow-sm transition-all"
                 >
                   {isSavingChannel ? <Loader2 className="mr-1.5 size-3.5 animate-spin" /> : null}
                   保存渠道

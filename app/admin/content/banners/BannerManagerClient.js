@@ -14,7 +14,7 @@ import { Eye, ExternalLink, Save, CheckCircle2, AlertCircle, History, RotateCcw,
 
 const THEME_OPTIONS = [
   { id: 'indigo', name: '星云紫 (默认)', bg: 'bg-gradient-to-r from-indigo-600 to-violet-600', text: 'text-white' },
-  { id: 'cyan', name: '赛博青 (推荐)', bg: 'bg-gradient-to-r from-cyan-600 to-blue-600', text: 'text-white' },
+  { id: 'brand', name: '品牌品红 (推荐)', bg: 'bg-gradient-to-r from-brand to-rose-600', text: 'text-white' },
   { id: 'emerald', name: '翡翠绿 (福利/活动)', bg: 'bg-gradient-to-r from-emerald-600 to-teal-600', text: 'text-white' },
   { id: 'amber', name: '暗夜金 (VIP/限免)', bg: 'bg-gradient-to-r from-amber-600 to-orange-600', text: 'text-white' },
   { id: 'rose', name: '蔷薇粉 (节日特惠)', bg: 'bg-gradient-to-r from-rose-600 to-pink-600', text: 'text-white' },
@@ -22,8 +22,8 @@ const THEME_OPTIONS = [
 ];
 
 const GLOW_OPTIONS = [
-  { id: 'aurora', name: '幻彩极光 (蓝紫交织)', color: 'from-cyan-400 via-indigo-500 to-purple-600' },
-  { id: 'cyan', name: '赛博冰蓝 (冷调科技)', color: 'from-cyan-400 via-sky-500 to-blue-600' },
+  { id: 'aurora', name: '幻彩极光 (洋红紫交织)', color: 'from-brand via-indigo-500 to-purple-600' },
+  { id: 'brand', name: '品牌品红 (标准科技)', color: 'from-brand via-pink-500 to-rose-600' },
   { id: 'amber', name: '暮光炽金 (温暖辉光)', color: 'from-amber-400 via-orange-500 to-rose-600' },
   { id: 'rose', name: '霓虹魅粉 (幻夜梦境)', color: 'from-rose-500 via-pink-500 to-purple-600' },
 ];
@@ -176,7 +176,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
       <div className="rounded-2xl border border-white/10 bg-[#070709] p-5 shadow-2xl relative overflow-hidden">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 text-xs font-semibold text-white/90">
-            <Eye className="size-4 text-cyan-400" />
+            <Eye className="size-4 text-brand" />
             <span>前台 1:1 真实弥散光晕效果预览 (Flova 风格)</span>
           </div>
           <span className="text-[11px] text-white/40">所见即所得 · 毫秒级动态仿真</span>
@@ -187,7 +187,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
           {banner.enabled ? (
             <div
               className={`w-full relative px-4 py-2.5 transition-all select-none border-b border-white/10 bg-[#060609]/90 backdrop-blur-xl ${
-                banner.ambientGlow ? 'shadow-[0_12px_36px_-6px_rgba(56,189,248,0.25)]' : 'shadow-md'
+                banner.ambientGlow ? 'shadow-[0_12px_36px_-6px_rgba(225,29,116,0.25)]' : 'shadow-md'
               }`}
             >
               {/* 弥散光晕层 */}
@@ -238,7 +238,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                   </span>
 
                   {banner.ctaText && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-sky-400 via-cyan-300 to-sky-400 px-3 py-0.5 text-[11px] font-bold text-slate-950 shadow-[0_0_14px_rgba(56,189,248,0.5)]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand px-3 py-0.5 text-[11px] font-bold text-white shadow-sm hover:bg-brand-hover">
                       <span>{banner.ctaText}</span>
                       <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7" />
@@ -295,7 +295,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               id="banner_enabled"
               checked={Boolean(banner.enabled)}
               onChange={(e) => setBanner({ ...banner, enabled: e.target.checked })}
-              className="size-4 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-cyan-400/50"
+              className="size-4 rounded border-white/20 bg-black/40 text-brand focus:ring-brand/40"
             />
             <label htmlFor="banner_enabled" className="text-xs font-semibold text-white cursor-pointer">
               在前台顶部启用横幅展示
@@ -311,7 +311,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               value={banner.title || ''}
               onChange={(e) => setBanner({ ...banner, title: e.target.value })}
               placeholder="例如：618 大促 / Flova 风格上线横幅"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-brand"
             />
           </div>
 
@@ -338,14 +338,14 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                 value={banner.message || ''}
                 onChange={(e) => setBanner({ ...banner, message: e.target.value })}
                 placeholder="例如：年会员享 Flova Image 2.5、Seedance 2.5 最低4折..."
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-cyan-300/80 mb-1.5">
+              <label className="block text-[11px] font-semibold text-brand mb-1.5">
                 行动胶囊按钮文案 (CTA Text)
               </label>
               <input
@@ -353,7 +353,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                 value={banner.ctaText || ''}
                 onChange={(e) => setBanner({ ...banner, ctaText: e.target.value })}
                 placeholder="例如：立即订阅 / 立即体验 (留空不显示)"
-                className="w-full rounded-xl border border-cyan-500/20 bg-black/40 px-3.5 py-2 text-xs text-cyan-300 font-bold outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-brand/20 bg-black/40 px-3.5 py-2 text-xs text-brand font-bold outline-none focus:border-brand"
               />
             </div>
             <div>
@@ -365,7 +365,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                 value={banner.badgeText || ''}
                 onChange={(e) => setBanner({ ...banner, badgeText: e.target.value })}
                 placeholder="例如：HOT / NEW / 限时"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                 value={banner.linkUrl || ''}
                 onChange={(e) => setBanner({ ...banner, linkUrl: e.target.value })}
                 placeholder="例如：/pricing 或 https://..."
-                className="w-full rounded-xl border border-white/10 bg-black/40 pl-3.5 pr-8 py-2 text-xs text-white font-mono outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-3.5 pr-8 py-2 text-xs text-white font-mono outline-none focus:border-brand"
               />
               <ExternalLink className="absolute right-3 top-2.5 size-4 text-white/30 pointer-events-none" />
             </div>
@@ -394,7 +394,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               <select
                 value={banner.linkTarget || '_self'}
                 onChange={(e) => setBanner({ ...banner, linkTarget: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-brand"
               >
                 <option value="_self">当前页面直接跳转 (_self)</option>
                 <option value="_blank">新标签页打开 (_blank)</option>
@@ -410,7 +410,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                 max="90"
                 value={banner.autoHideDays ?? 7}
                 onChange={(e) => setBanner({ ...banner, autoHideDays: parseInt(e.target.value, 10) || 0 })}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               id="banner_dismissible"
               checked={banner.dismissible !== false}
               onChange={(e) => setBanner({ ...banner, dismissible: e.target.checked })}
-              className="size-4 rounded border-white/20 bg-black/40 text-cyan-400"
+              className="size-4 rounded border-white/20 bg-black/40 text-brand"
             />
             <label htmlFor="banner_dismissible" className="text-xs text-white/80 cursor-pointer">
               允许用户点击右侧 ✕ 关闭横幅
@@ -434,15 +434,15 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
           <Card className="space-y-4">
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <div className="flex items-center gap-2">
-                <Wand2 className="size-4 text-cyan-400" />
+                <Wand2 className="size-4 text-brand" />
                 <h2 className="text-sm font-bold text-white">弥散光晕与动效模式</h2>
               </div>
-              <label className="flex items-center gap-2 text-xs text-cyan-300 font-semibold cursor-pointer">
+              <label className="flex items-center gap-2 text-xs text-brand font-semibold cursor-pointer">
                 <input
                   type="checkbox"
                   checked={banner.ambientGlow !== false}
                   onChange={(e) => setBanner({ ...banner, ambientGlow: e.target.checked })}
-                  className="size-4 rounded border-white/20 bg-black/40 text-cyan-400"
+                  className="size-4 rounded border-white/20 bg-black/40 text-brand"
                 />
                 <span>开启弥散光晕</span>
               </label>
@@ -463,14 +463,14 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                       onClick={() => setBanner({ ...banner, glowStyle: glow.id })}
                       className={`rounded-xl p-3 text-left border transition-all ${
                         isSelected
-                          ? 'border-cyan-400 bg-white/10 shadow-lg shadow-cyan-500/10'
+                          ? 'border-brand bg-white/10 shadow-sm'
                           : 'border-white/10 bg-white/[0.02] hover:border-white/25'
                       }`}
                     >
                       <div className={`h-4 w-full rounded-full mb-2 bg-gradient-to-r ${glow.color} blur-[2px] opacity-80`} />
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-white">{glow.name}</span>
-                        {isSelected && <span className="size-2 rounded-full bg-cyan-400" />}
+                        {isSelected && <span className="size-2 rounded-full bg-brand" />}
                       </div>
                     </button>
                   );
@@ -486,7 +486,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               <select
                 value={banner.dynamicEffect || 'breathe'}
                 onChange={(e) => setBanner({ ...banner, dynamicEffect: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-brand"
               >
                 {MOTION_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.id}>
@@ -504,7 +504,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               <select
                 value={banner.targetScope || 'all'}
                 onChange={(e) => setBanner({ ...banner, targetScope: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-cyan-400/60"
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0c] px-3 py-2 text-xs text-white outline-none focus:border-brand"
               >
                 <option value="all">全站所有页面展示 (all)</option>
                 <option value="studio">仅在 Studio 创作工作台展示 (studio)</option>
@@ -530,7 +530,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-500/20 hover:opacity-90 disabled:opacity-50 transition-all"
+                className="flex items-center gap-2 rounded-xl bg-brand hover:bg-brand-hover px-5 py-2.5 text-xs font-bold text-white shadow-sm disabled:opacity-50 transition-all"
               >
                 <Save className="size-4" />
                 <span>{isSaving ? '正在发布同步...' : '保存并全网同步'}</span>
@@ -544,7 +544,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
       <Card className="space-y-4">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
           <div className="flex items-center gap-2">
-            <History className="size-4 text-cyan-400" />
+            <History className="size-4 text-brand" />
             <h2 className="text-sm font-bold text-white">历史横幅管理与快速恢复</h2>
           </div>
           <span className="text-[11px] text-white/40">每次发布自动归档 · 支持一键无缝回退</span>
@@ -585,7 +585,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                             </span>
                           )}
                           {item.ctaText ? (
-                            <span className="rounded bg-cyan-400/20 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300">
+                            <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold text-brand border border-brand/20">
                               CTA: {item.ctaText}
                             </span>
                           ) : (
@@ -627,7 +627,7 @@ export default function BannerManagerClient({ initialBanner, initialHistory = []
                               type="button"
                               disabled={isActionBusy}
                               onClick={() => handleApplyHistory(item)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-cyan-500/20 px-2.5 py-1 text-[11px] font-semibold text-cyan-300 hover:bg-cyan-500/30 transition active:scale-95 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 rounded-lg bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand hover:bg-brand/20 transition active:scale-95 disabled:opacity-50 border border-brand/20"
                               title="立即将此横幅重新设置为全网生效"
                             >
                               <RotateCcw className="size-3" />

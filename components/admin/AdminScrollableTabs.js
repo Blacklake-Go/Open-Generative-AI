@@ -168,7 +168,7 @@ export default function AdminScrollableTabs({
           type="button"
           onClick={() => scrollStep('left')}
           aria-label="向左滑动"
-          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.12] bg-surface-raised/90 text-gray-300 shadow-lg backdrop-blur-md transition-all hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-95 cursor-pointer"
+          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.12] bg-surface-raised/90 text-gray-300 shadow-lg backdrop-blur-md transition-all hover:border-brand/40 hover:bg-brand/10 hover:text-brand active:scale-95 cursor-pointer"
         >
           <ChevronLeft className="size-4" />
         </button>
@@ -198,7 +198,7 @@ export default function AdminScrollableTabs({
               onClick={(e) => handleTabClick(t.id, e)}
               className={`shrink-0 rounded-xl px-4 py-2 text-xs font-semibold tracking-wide transition-all duration-200 active:scale-[0.98] ${
                 isActive
-                  ? 'border border-brand/40 bg-gradient-to-r from-brand/15 via-brand/10 to-brand/5 text-brand shadow-[0_0_15px_rgba(225,29,116,0.18)]'
+                  ? 'border border-brand/30 bg-brand/10 text-brand'
                   : 'border border-transparent text-white/55 hover:border-white/10 hover:bg-white/[0.06] hover:text-white'
               } ${tabClassName}`}
             >
@@ -209,7 +209,7 @@ export default function AdminScrollableTabs({
                   <span
                     className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
                       isActive
-                        ? 'bg-cyan-400/20 text-cyan-300'
+                        ? 'bg-brand/20 text-brand'
                         : 'bg-white/10 text-white/50'
                     }`}
                   >
@@ -232,7 +232,7 @@ export default function AdminScrollableTabs({
           type="button"
           onClick={() => scrollStep('right')}
           aria-label="向右滑动"
-          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.12] bg-surface-raised/90 text-gray-300 shadow-lg backdrop-blur-md transition-all hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-95 cursor-pointer"
+          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.12] bg-surface-raised/90 text-gray-300 shadow-lg backdrop-blur-md transition-all hover:border-brand/40 hover:bg-brand/10 hover:text-brand active:scale-95 cursor-pointer"
         >
           <ChevronRight className="size-4" />
         </button>

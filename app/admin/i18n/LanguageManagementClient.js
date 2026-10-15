@@ -91,7 +91,7 @@ export default function LanguageManagementClient({ initialSnapshot }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl border border-white/[0.08] bg-black/30 backdrop-blur-xl">
         <div>
           <p className="text-[11px] font-medium text-white/40 uppercase tracking-wider">基准语言 (Canonical)</p>
-          <p className="mt-1 text-lg font-bold font-mono text-cyan-300">English (en)</p>
+          <p className="mt-1 text-lg font-bold font-mono text-brand">English (en)</p>
           <p className="mt-0.5 text-[11px] text-white/40">100% 完整词条基准</p>
         </div>
         <div>
@@ -113,7 +113,7 @@ export default function LanguageManagementClient({ initialSnapshot }) {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         {(snapshot?.locales || []).map((item) => (
-          <button key={item.locale} type="button" onClick={() => setLocale(item.locale)} className={`text-left transition-all ${locale === item.locale ? 'ring-2 ring-cyan-300/80 scale-[1.02]' : 'opacity-90 hover:opacity-100'}`}>
+          <button key={item.locale} type="button" onClick={() => setLocale(item.locale)} className={`text-left transition-all ${locale === item.locale ? 'ring-2 ring-brand/80 scale-[1.02]' : 'opacity-90 hover:opacity-100'}`}>
             <Card className="h-full p-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold text-white truncate">{item.name}</p>
@@ -125,7 +125,7 @@ export default function LanguageManagementClient({ initialSnapshot }) {
               <div className="mt-3 space-y-1 text-xs">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-white/55">字符覆盖</span>
-                  <span className="font-mono font-bold text-cyan-300">{(item.charCoverage ?? item.coverage).toFixed(1)}%</span>
+                  <span className="font-mono font-bold text-brand">{(item.charCoverage ?? item.coverage).toFixed(1)}%</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-white/55">词条覆盖</span>
@@ -151,23 +151,23 @@ export default function LanguageManagementClient({ initialSnapshot }) {
             <p className="mt-1 text-xs text-white/40">真实翻译才计入覆盖率；English fallback 只作为运行时安全回退。</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索 key 或文案" className="w-56 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300/50" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索 key 或文案" className="w-56 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-none focus:border-brand/50" />
             <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2 text-xs text-white outline-none">
               <option value="all">全部状态</option>
               {Object.entries(STATUS_LABELS).filter(([key]) => key !== 'source').map(([key, label]) => <option key={key} value={key}>{label}</option>)}
             </select>
-            <button type="button" disabled={busy} onClick={publishLocale} className="rounded-xl bg-cyan-300 px-3 py-2 text-xs font-bold text-black disabled:opacity-50">发布当前语言</button>
+            <button type="button" disabled={busy} onClick={publishLocale} className="rounded-xl bg-brand px-3 py-2 text-xs font-bold text-white hover:bg-brand-hover disabled:opacity-50 transition-colors">发布当前语言</button>
           </div>
         </div>
 
-        {feedback && <p role="status" className="mt-4 rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs text-cyan-100">{feedback}</p>}
+        {feedback && <p role="status" className="mt-4 rounded-xl border border-brand/20 bg-brand/10 px-3 py-2 text-xs text-brand">{feedback}</p>}
 
         <div className="mt-4 space-y-3">
           {fields.map((field) => (
             <div key={field.key} className="rounded-xl border border-white/[0.08] bg-black/20 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="break-all font-mono text-xs text-cyan-200">{field.key}</p>
+                  <p className="break-all font-mono text-xs text-ink font-semibold">{field.key}</p>
                   <p className="mt-1 text-xs text-white/45">English：{field.english}</p>
                 </div>
                 <StatusBadge tone={tone(field.status)}>{STATUS_LABELS[field.status] || field.status}</StatusBadge>
@@ -176,11 +176,11 @@ export default function LanguageManagementClient({ initialSnapshot }) {
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
                   <label className="min-w-0 flex-1 text-xs text-white/50">
                     {selected.name} 文案
-                    <textarea value={drafts[field.key] ?? field.value ?? ''} onChange={(event) => setDrafts((current) => ({ ...current, [field.key]: event.target.value }))} rows={2} className="mt-1 w-full rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none focus:border-cyan-300/60" />
+                    <textarea value={drafts[field.key] ?? field.value ?? ''} onChange={(event) => setDrafts((current) => ({ ...current, [field.key]: event.target.value }))} rows={2} className="mt-1 w-full rounded-xl border border-white/10 bg-[#050505] px-3 py-2 text-sm text-white outline-none focus:border-brand/60" />
                   </label>
                   <div className="flex gap-2">
                     <button type="button" disabled={busy} onClick={() => saveField(field)} className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 disabled:opacity-50">保存草稿</button>
-                    <button type="button" disabled={busy} onClick={() => saveField(field, 'publish')} className="rounded-xl bg-cyan-300 px-3 py-2 text-xs font-bold text-black disabled:opacity-50">发布字段</button>
+                    <button type="button" disabled={busy} onClick={() => saveField(field, 'publish')} className="rounded-xl bg-brand px-3 py-2 text-xs font-bold text-white hover:bg-brand-hover disabled:opacity-50 transition-colors">发布字段</button>
                   </div>
                 </div>
               )}

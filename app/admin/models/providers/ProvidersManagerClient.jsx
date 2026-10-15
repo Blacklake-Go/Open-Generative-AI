@@ -439,7 +439,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="搜索渠道、ID 或 URL..."
-              className="h-8 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-8 pr-3 text-xs text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
+              className="h-8 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-8 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
             />
           </div>
 
@@ -460,7 +460,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   onClick={() => setStatusFilter(f.id)}
                   className={`h-7 rounded-full px-2.5 text-xs font-medium transition-all ${
                     active
-                      ? 'bg-cyan-500 text-black font-semibold shadow-sm'
+                      ? 'bg-brand text-white font-semibold shadow-sm'
                       : 'border border-white/[0.08] bg-white/[0.03] text-gray-400 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
@@ -489,13 +489,13 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
             size="sm"
             disabled={isRefreshing || syncingId !== null}
             onClick={handleSyncAllModels}
-            className="h-8 text-xs border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+            className="h-8 text-xs border-brand/30 text-brand hover:bg-brand/10"
             title="一键拉取所有启用渠道的最新模型目录并自动适配"
           >
             {syncingId === 'all' ? (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin text-cyan-400" />
+              <Loader2 className="mr-1.5 size-3.5 animate-spin text-brand" />
             ) : (
-              <RefreshCw className="mr-1.5 size-3.5 text-cyan-400" />
+              <RefreshCw className="mr-1.5 size-3.5 text-brand" />
             )}
             全量拉取模型
           </Button>
@@ -505,9 +505,9 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
             size="sm"
             disabled={isRefreshing || syncingId !== null}
             onClick={handleProbeAll}
-            className="h-8 text-xs border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+            className="h-8 text-xs border-brand/30 text-brand hover:bg-brand/10"
           >
-            <Zap className="mr-1.5 size-3.5 text-cyan-400" />
+            <Zap className="mr-1.5 size-3.5 text-brand" />
             全量通道探针扫描
           </Button>
 
@@ -526,7 +526,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                 enabled: true,
               });
             }}
-            className="h-8 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-semibold"
+            className="h-8 bg-brand hover:bg-brand-hover text-white text-xs font-semibold shadow-sm"
           >
             <Plus className="mr-1 size-3.5" />
             新增供应商
@@ -643,7 +643,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
 
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">基础优先级:</span>
-                        <span className="font-semibold text-cyan-400">{c.priority ?? 100}</span>
+                        <span className="font-semibold text-brand">{c.priority ?? 100}</span>
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -666,7 +666,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                           title={c.modelCatalogApiUrl || '使用渠道官方默认端点'}
                         >
                           {c.modelCatalogApiUrl ? (
-                            <span className="text-cyan-400">{c.modelCatalogApiUrl}</span>
+                            <span className="text-brand">{c.modelCatalogApiUrl}</span>
                           ) : (
                             <span className="text-gray-500">默认驱动推断</span>
                           )}
@@ -677,7 +677,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         <span className="text-gray-500">品牌模型:</span>
                         <Link
                           href={`/admin/models/brands?provider=${c.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/25 bg-cyan-500/10 px-2 py-0.5 font-mono text-xs font-medium text-cyan-400 shadow-sm transition-all hover:border-cyan-500/50 hover:bg-cyan-500/20 hover:text-cyan-300"
+                          className="inline-flex items-center gap-1.5 rounded-md border border-brand/20 bg-brand/10 px-2 py-0.5 font-mono text-xs font-medium text-brand shadow-sm transition-all hover:border-brand/40 hover:bg-brand/15 hover:text-brand"
                           title={`点击跳转进入【${c.name}】品牌模型明细页面`}
                         >
                           {c.brandStats?.topBrands?.slice(0, 3).map((b) => (
@@ -686,12 +686,12 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                           <span>
                             {c.boundModelsCount || 0} 个
                             {c.brandStats?.totalBrands > 0 && (
-                              <span className="ml-1 text-[11px] text-cyan-300/80">
+                              <span className="ml-1 text-[11px] text-brand/80">
                                 ({c.brandStats.totalBrands} 品牌)
                               </span>
                             )}
                           </span>
-                          <ChevronRight className="size-3 text-cyan-400 transition-transform group-hover:translate-x-0.5" />
+                          <ChevronRight className="size-3 text-brand transition-transform group-hover:translate-x-0.5" />
                         </Link>
                       </div>
                     </div>
@@ -797,7 +797,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                       size="sm"
                       disabled={syncingId === c.id || syncingId === 'all'}
                       onClick={() => handleSyncModels(c.id)}
-                      className="h-7 border-cyan-500/25 text-cyan-400 hover:bg-cyan-500/10 text-xs"
+                      className="h-7 border-brand/20 text-brand hover:bg-brand/10 text-xs"
                       title="从该渠道抽取最新可用模型列表并自动关联适配"
                     >
                       {syncingId === c.id ? (
@@ -807,7 +807,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="mr-1 size-3 text-cyan-400" />
+                          <RefreshCw className="mr-1 size-3 text-brand" />
                           拉取模型
                         </>
                       )}
@@ -828,7 +828,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         </>
                       ) : (
                         <>
-                          <Zap className="mr-1 size-3 text-cyan-400" />
+                          <Zap className="mr-1 size-3 text-brand" />
                           健康探测
                         </>
                       )}
@@ -882,7 +882,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   disabled={!isCreating}
                   required
                   placeholder="例如: kling, openai, custom-gateway"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50 font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none disabled:opacity-50 font-mono"
                 />
               </div>
 
@@ -893,7 +893,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   defaultValue={editingProvider.name}
                   required
                   placeholder="例如: 快手可灵官方 API"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                 />
               </div>
 
@@ -910,7 +910,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         ? 'direct'
                         : 'aggregator'
                     }
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     <option value="aggregator">Aggregator (聚合网关)</option>
                     <option value="official">Official (原厂官方 API)</option>
@@ -923,7 +923,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                     type="number"
                     name="priority"
                     defaultValue={editingProvider.priority ?? 100}
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   />
                 </div>
               </div>
@@ -934,7 +934,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   name="baseUrl"
                   defaultValue={editingProvider.base_url || editingProvider.baseUrl || ''}
                   placeholder="https://api.example.com/v1"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
               </div>
 
@@ -943,13 +943,13 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   <label className="block text-xs font-medium text-gray-300">
                     模型抽取端点 (Catalog Endpoint)
                   </label>
-                  <span className="text-[10px] text-cyan-400 font-mono">模型拉取设置</span>
+                  <span className="text-[10px] text-brand font-mono">模型拉取设置</span>
                 </div>
                 <input
                   name="modelCatalogApiUrl"
                   defaultValue={editingProvider.model_catalog_api_url || editingProvider.modelCatalogApiUrl || ''}
                   placeholder="留空自动匹配 (例如: /v1/models 或完整 URL)"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
                 <p className="mt-1 text-[11px] text-gray-500">
                   仅需此项设置即可自动抽取最新模型列表；支持相对路径或完整 URL，留空使用官方默认。
@@ -969,7 +969,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         ? 'stream'
                         : 'async'
                     }
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     <option value="async">异步轮询 (Async Poll)</option>
                     <option value="sync">同步直出 (Sync Direct)</option>
@@ -982,7 +982,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                       type="checkbox"
                       name="enabled"
                       defaultChecked={editingProvider.enabled !== false}
-                      className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-cyan-500 focus:ring-0"
+                      className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-brand focus:ring-0"
                     />
                     启用该供应商
                   </label>
@@ -1008,7 +1008,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         : '•••••••••••••••• (留空保持现有凭证)'
                       : '输入供应商 API Key'
                   }
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
               </div>
 
@@ -1017,7 +1017,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                 <div className="space-y-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-gray-200">挂载品牌模型</span>
-                    <span className="font-mono font-medium text-cyan-400">
+                    <span className="font-mono font-medium text-brand">
                       {editingProvider.boundModelsCount || 0} 个模型
                       {editingProvider.brandStats?.totalBrands > 0 && ` (${editingProvider.brandStats.totalBrands} 个品牌)`}
                     </span>
@@ -1036,7 +1036,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                     </div>
                     <Link
                       href={`/admin/models/brands?provider=${editingProvider.id}`}
-                      className="inline-flex items-center gap-1 font-medium text-[11px] text-cyan-400 transition-colors hover:text-cyan-300"
+                      className="inline-flex items-center gap-1 font-medium text-[11px] text-brand transition-colors hover:underline"
                     >
                       前往品牌模型明细 <ChevronRight className="size-3" />
                     </Link>
@@ -1059,7 +1059,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                 <Button
                   type="submit"
                   disabled={isSaving}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+                  className="bg-brand hover:bg-brand-hover text-white font-semibold shadow-sm"
                 >
                   {isSaving ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
                   保存配置

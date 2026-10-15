@@ -85,7 +85,7 @@ export default async function ProfitCenterPage({ searchParams }) {
       <span className="text-xs font-mono tabular-nums text-white">{row.total_credits.toLocaleString()}</span>
     )},
     { key: 'revenue', label: '收入(CNY)', render: (row) => (
-      <span className="text-xs font-mono tabular-nums text-cyan-400">¥{Number(row.revenue_cny).toFixed(2)}</span>
+      <span className="text-xs font-mono tabular-nums text-brand font-semibold">¥{Number(row.revenue_cny).toFixed(2)}</span>
     )},
     { key: 'cost_usd', label: 'API 成本(USD)', render: (row) => (
       <span className="text-xs font-mono tabular-nums text-white/70">${Number(row.cost_usd).toFixed(4)}</span>

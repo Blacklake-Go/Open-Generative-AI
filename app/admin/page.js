@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getDashboardOverview, emptyDashboardSnapshot } from '@/lib/services/dashboard';
-import { Card, MetricCard, PageHeader, StatusBadge } from '@/components/admin/AdminUi';
+import { Card, MetricCard, PageHeader, StatusBadge, AdminChartCard } from '@/components/admin/AdminUi';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 
@@ -89,37 +89,36 @@ export default async function AdminDashboardPage() {
       {/* 近 7 天调用趋势与风险队列 */}
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         {/* 调用走势柱状图 */}
-        <Card>
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
-            <div>
-              <h2 className="text-base font-semibold text-white tracking-[-0.015em] leading-6">近 7 天生成调用走势</h2>
-              <p className="mt-1 text-xs text-gray-400 tracking-[-0.005em] leading-5">每日 AI 图像/视频生成请求总量</p>
+        <AdminChartCard
+          title="近 7 天生成调用走势"
+          subtitle={`每日 AI 图像/视频生成请求总量 · 7天累计: ${trends?.last7Days?.reduce((acc, d) => acc + d.count, 0) || 0} 次`}
+          filters={
+            <div className="flex items-center justify-between w-full text-xs text-ink-muted">
+              <span className="font-mono text-ink-subtle">每日调用频次分布</span>
+              <span className="font-mono text-brand font-semibold">峰值: {maxDayCount} 次/日</span>
             </div>
-            <span className="text-xs text-gray-400 font-mono">
-              7 天累计: {trends?.last7Days?.reduce((acc, d) => acc + d.count, 0) || 0} 次
-            </span>
-          </div>
-
-          <div className="mt-6 flex h-48 items-end gap-3 sm:gap-6 px-2">
+          }
+        >
+          <div className="w-full flex h-48 items-end gap-3 sm:gap-6 px-2">
             {trends?.last7Days?.map((day) => {
               const heightPct = Math.max(8, Math.round((day.count / maxDayCount) * 100));
               return (
                 <div key={day.date} className="group relative flex flex-1 flex-col items-center h-full justify-end">
                   {/* Tooltip */}
-                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition rounded-lg bg-white/10 backdrop-blur px-2 py-1 text-[10px] text-cyan-200 font-mono pointer-events-none whitespace-nowrap">
+                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition rounded-lg bg-surface-raised border border-line-subtle px-2 py-1 text-[10px] text-brand font-mono pointer-events-none whitespace-nowrap shadow-sm">
                     {day.date}: {day.count} 次
                   </div>
                   {/* 柱子 */}
                   <div
                     style={{ height: `${heightPct}%` }}
-                    className="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-cyan-500/25 via-cyan-500/40 to-cyan-400 transition-all duration-200 group-hover:from-cyan-400/40 group-hover:to-cyan-300"
+                    className="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-brand/25 via-brand/40 to-brand transition-all duration-200 group-hover:from-brand/40 group-hover:to-brand-hover"
                   />
                   <span className="mt-2 text-[11px] text-gray-400 font-mono">{day.label}</span>
                 </div>
               );
             })}
           </div>
-        </Card>
+        </AdminChartCard>
 
         {/* 待处理风险队列 */}
         <Card>
@@ -171,7 +170,7 @@ export default async function AdminDashboardPage() {
               <h2 className="text-base font-semibold text-white tracking-[-0.015em] leading-6">最近管理员操作审计</h2>
               <p className="mt-1 text-xs text-gray-400 tracking-[-0.005em] leading-5">全站重要管理动作（调额、改价、封禁、切换角色）全自动留痕</p>
             </div>
-            <Link href="/admin/audit" className="text-xs text-cyan-300 hover:text-cyan-200 font-semibold tracking-[-0.005em]">
+            <Link href="/admin/audit" className="text-xs text-brand hover:underline font-semibold tracking-[-0.005em]">
               全部审计记录 →
             </Link>
           </div>
@@ -218,28 +217,28 @@ export default async function AdminDashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <Link
               href="/admin/users"
-              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all duration-200"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
               <p className="text-xs font-semibold text-white tracking-[-0.005em]">👥 用户与角色</p>
               <p className="mt-1 text-[11px] text-gray-400">搜索、封禁、解封</p>
             </Link>
             <Link
               href="/admin/credits"
-              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all duration-200"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
               <p className="text-xs font-semibold text-white tracking-[-0.005em]">💰 额度流水台账</p>
               <p className="mt-1 text-[11px] text-gray-400">充值、扣减、明细</p>
             </Link>
             <Link
               href="/admin/models"
-              className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3.5 hover:bg-cyan-500/15 transition-all duration-200"
+              className="rounded-xl border border-brand/30 bg-brand/10 p-3.5 hover:bg-brand/15 transition-all duration-200"
             >
-              <p className="text-xs font-semibold text-cyan-300 tracking-[-0.005em]">🎛️ 模型开关与成本</p>
-              <p className="mt-1 text-[11px] text-cyan-300/70">成本价与 Credits 定价</p>
+              <p className="text-xs font-semibold text-brand tracking-[-0.005em]">🎛️ 模型开关与成本</p>
+              <p className="mt-1 text-[11px] text-brand/70">成本价与 Credits 定价</p>
             </Link>
             <Link
               href="/admin/health"
-              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-cyan-500/30 hover:bg-white/[0.05] transition-all duration-200"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
               <p className="text-xs font-semibold text-white tracking-[-0.005em]">🩺 系统健康 & 日志</p>
               <p className="mt-1 text-[11px] text-gray-400">PM2 日志、队列与内存</p>

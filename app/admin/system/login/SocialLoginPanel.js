@@ -182,7 +182,7 @@ export default function SocialLoginPanel({ regions, diagnostics, canWrite }) {
             type="button"
             onClick={save}
             disabled={busy || !dirty}
-            className="inline-flex h-8 items-center rounded-full bg-cyan-500 px-4 text-body-sm font-semibold text-black transition hover:bg-cyan-400 active:scale-[0.98] disabled:opacity-50"
+            className="inline-flex h-8 items-center rounded-full bg-brand px-4 text-body-sm font-semibold text-white transition hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50"
           >
             {busy ? '保存中…' : '保存分区设置'}
           </button>

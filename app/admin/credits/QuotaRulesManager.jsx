@@ -82,10 +82,10 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
       {/* 顶部核心指标 KPI 仪表盘 */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* 初始注册 */}
-        <Card className="border-cyan-500/20 bg-cyan-500/[0.03]">
+        <Card className="border-brand/20 bg-brand/[0.03]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-cyan-300">注册初始赠送</span>
-            <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-mono text-cyan-300">即时到账</span>
+            <span className="text-xs font-semibold text-brand">注册初始赠送</span>
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-mono text-brand">即时到账</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="font-mono text-2xl font-extrabold text-white">{rules.initialSignupCredits}</span>
@@ -228,7 +228,7 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
                   <select
                     value={rules.dailyCheckinValidity}
                     onChange={(e) => handleChange('dailyCheckinValidity', e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-[#0a0c10] px-3 py-2 text-xs text-white outline-none focus:border-cyan-400"
+                    className="w-full rounded-xl border border-white/10 bg-[#0a0c10] px-3 py-2 text-xs text-white outline-none focus:border-brand"
                   >
                     <option value="today">当日有效 (23:59:59 过期 - 推荐)</option>
                     <option value="24h">24小时滑动有效期</option>
@@ -249,7 +249,7 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
                     type="checkbox"
                     checked={rules.onboardingGateEnabled}
                     onChange={(e) => handleChange('onboardingGateEnabled', e.target.checked)}
-                    className="size-4 rounded border-white/20 bg-black/40 text-cyan-400 focus:ring-cyan-400 cursor-pointer"
+                    className="size-4 rounded border-white/20 bg-black/40 text-brand focus:ring-brand cursor-pointer"
                   />
                 </div>
 
@@ -276,7 +276,7 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
               <div className="flex items-center justify-between pt-3">
                 <div>
                   {feedback.text && (
-                    <span className={`text-xs ${feedback.type === 'error' ? 'text-red-400' : 'text-cyan-300'}`}>
+                    <span className={`text-xs ${feedback.type === 'error' ? 'text-red-400' : 'text-brand'}`}>
                       {feedback.text}
                     </span>
                   )}
@@ -285,7 +285,7 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-400 px-5 py-2.5 text-xs font-bold text-black transition-all hover:bg-cyan-300 active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-cyan-500/20 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-white transition-all hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-brand/20 cursor-pointer"
                 >
                   {saving ? <RefreshCw className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
                   <span>{saving ? '保存中…' : '保存额度策略'}</span>
@@ -368,7 +368,7 @@ export default function QuotaRulesManager({ initialRules, initialConsistency }) 
             <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/40 p-3 text-[11px] text-white/60">
               <div className="flex items-center justify-between text-white font-medium mb-1">
                 <span>入门版 Starter (¥{consistency.starterPlan.monthlyCny}/月)</span>
-                <span className="font-mono text-cyan-300">{consistency.starterPlan.monthlyCredits} 积分</span>
+                <span className="font-mono text-brand">{consistency.starterPlan.monthlyCredits} 积分</span>
               </div>
               <p>
                 商业套餐包含专属并发、无水印与个人商用许可，额度为免费总额度的 <strong className="text-white font-mono">{uE.freeVsStarterRatio} 倍</strong>，转化漏斗梯度健康。

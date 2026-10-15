@@ -39,9 +39,9 @@ function renderProviderBadges(providers = []) {
     wechat_oauth: { label: '微信', icon: <WeChatIcon size={12} />, color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
     qq: { label: 'QQ', icon: <QQIcon size={12} />, color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
     douyin: { label: '抖音', icon: <DouyinIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
-    bilibili: { label: 'B站', icon: <BilibiliIcon size={12} />, color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' },
+    bilibili: { label: 'B站', icon: <BilibiliIcon size={12} />, color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
     google: { label: 'Google', icon: <GoogleIcon size={12} />, color: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
-    tiktok: { label: 'TikTok', icon: <TikTokIcon size={12} />, color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' },
+    tiktok: { label: 'TikTok', icon: <TikTokIcon size={12} />, color: 'bg-brand/10 text-brand border-brand/20' },
     instagram: { label: 'Instagram', icon: <InstagramIcon size={12} />, color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
     x: { label: 'X', icon: <XIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
     github: { label: 'GitHub', icon: <GithubIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
@@ -83,7 +83,7 @@ function renderTagBadges(tags = [], preferredModality = null) {
       <span>🎵 偏好音频</span>
     </span>
   ) : preferredModality === 'image' ? (
-    <span key="mod_image" className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-medium text-cyan-300">
+    <span key="mod_image" className="inline-flex items-center gap-1 rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
       <span>🎨 偏好生图</span>
     </span>
   ) : null;
@@ -141,7 +141,7 @@ export default async function UsersPage({ searchParams }) {
             {row.phone && <div>📱 {row.phone_country_code || '+86'} {row.phone}</div>}
           </div>
           <div className="mt-1 flex items-center gap-1.5">
-            <span className="text-[11px] font-mono text-cyan-300/80">#{row.user_number || row.id}</span>
+            <span className="text-[11px] font-mono text-brand/80">#{row.user_number || row.id}</span>
             <CopyableId id={row.id} />
           </div>
         </div>
@@ -180,7 +180,7 @@ export default async function UsersPage({ searchParams }) {
       label: '模型额度 / 生成活跃',
       render: (row) => (
         <div>
-          <span className="font-mono font-bold text-cyan-200">{row.credits} 点</span>
+          <span className="font-mono font-bold text-brand">{row.credits} 点</span>
           <p className="text-[11px] text-white/40 mt-0.5">
             累计 {row.creationsCount || 0} 次生成
           </p>
@@ -205,7 +205,7 @@ export default async function UsersPage({ searchParams }) {
       render: (row) => (
         <Link
           href={`/admin/users/${row.id}`}
-          className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/10 hover:text-cyan-100"
+          className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-brand transition hover:bg-brand/10 hover:text-brand-hover"
         >
           查看画像与运营 →
         </Link>
@@ -223,7 +223,7 @@ export default async function UsersPage({ searchParams }) {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/admin/users/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-brand/30 bg-brand/10 px-3.5 py-2 text-xs font-semibold text-brand hover:bg-brand/20 transition"
           >
             <span>📊 用户数据看板 (实时大屏) →</span>
           </Link>
@@ -272,14 +272,14 @@ export default async function UsersPage({ searchParams }) {
             name="q"
             defaultValue={params.get('q') || ''}
             placeholder="搜索手机号、邮箱、昵称或用户 ID…"
-            className="min-w-[220px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+            className="min-w-[220px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand"
           />
 
           {/* 注册时间段筛选 */}
           <select
             name="timeRange"
             defaultValue={params.get('timeRange') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部注册时间</option>
             <option value="today">今日新注册</option>
@@ -291,7 +291,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="commercial"
             defaultValue={params.get('commercial') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部付费层级</option>
             <option value="paid">付费会员客群</option>
@@ -302,7 +302,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="provider"
             defaultValue={params.get('provider') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部登录方式</option>
             <option value="phone">手机短信</option>
@@ -321,7 +321,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="tag"
             defaultValue={params.get('tag') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部运营标签</option>
             <option value="tag_new">🟢 新用户</option>
@@ -336,7 +336,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="role"
             defaultValue={params.get('role') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部角色</option>
             <option value="user">普通用户</option>
@@ -351,7 +351,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="status"
             defaultValue={params.get('status') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部账户状态</option>
             <option value="active">正常</option>
@@ -362,7 +362,7 @@ export default async function UsersPage({ searchParams }) {
           <select
             name="order"
             defaultValue={params.get('order') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">注册时间倒序 (默认)</option>
             <option value="login_desc">最近登录倒序</option>
@@ -372,7 +372,7 @@ export default async function UsersPage({ searchParams }) {
 
           <button
             type="submit"
-            className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black transition hover:bg-cyan-200"
+            className="rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-white transition hover:bg-brand-hover shadow-sm"
           >
             筛选
           </button>

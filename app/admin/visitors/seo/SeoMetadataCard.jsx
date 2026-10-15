@@ -59,7 +59,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-brand">
               <Search className="size-4" />
             </div>
             <div>
@@ -78,7 +78,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
               value={formData.title}
               onChange={(e) => handleChange('title', e.target.value)}
               placeholder="SupDance — Free AI Image & Video Studio"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
             />
           </div>
 
@@ -90,7 +90,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
                 value={formData.titleTemplate}
                 onChange={(e) => handleChange('titleTemplate', e.target.value)}
                 placeholder="%s | SupDance AI Studio"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
               />
             </div>
 
@@ -101,7 +101,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
                 value={formData.canonicalBase}
                 onChange={(e) => handleChange('canonicalBase', e.target.value)}
                 placeholder="https://www.supdance.com"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
               />
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
               placeholder="生成高品质 AI 图像与视频，集成 Flux, Midjourney, Kling 等 200+ 顶尖模型..."
-              className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
             />
           </div>
 
@@ -124,7 +124,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
               value={formData.keywords}
               onChange={(e) => handleChange('keywords', e.target.value)}
               placeholder="AI Image Generator, AI Video, Flux AI, Midjourney"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
             />
           </div>
 
@@ -135,13 +135,13 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
               value={formData.ogImage}
               onChange={(e) => handleChange('ogImage', e.target.value)}
               placeholder="https://www.supdance.com/og-image.png"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
             />
           </div>
 
           {/* SERP Search Result Live Preview */}
-          <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/20 p-3.5 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
+          <div className="rounded-xl border border-brand/20 bg-brand/[0.04] p-3.5 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-brand">
               <Eye className="size-3.5" />
               <span>Google 搜索结果实时渲染预览</span>
             </div>
@@ -173,7 +173,7 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/30 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
           >
             <Save className="size-3.5" />
             <span>{isSaving ? '正在保存...' : '保存 TDK 配置'}</span>

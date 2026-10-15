@@ -68,7 +68,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <Filter className="size-3.5 text-cyan-400" />
+              <Filter className="size-3.5 text-brand" />
               <span>筛选过滤:</span>
             </div>
 
@@ -76,7 +76,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
             <select
               value={selectedProvider}
               onChange={handleProviderChange}
-              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-brand focus:outline-none"
             >
               <option value="">全部供应商 (All Providers)</option>
               {providers.map((p) => (
@@ -90,7 +90,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
             <select
               value={selectedModel}
               onChange={handleModelChange}
-              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-brand focus:outline-none"
             >
               <option value="">全部规范模型 (All Models)</option>
               {models.map((m) => (
@@ -114,7 +114,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
                 onClick={() => handleDateRangeChange(r.id)}
                 className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                   dateRange === r.id
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    ? 'bg-brand/10 text-brand border border-brand/20 font-semibold'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -155,7 +155,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
 
       {isLoading ? (
         <div className="py-16 text-center text-xs text-gray-400">
-          <Loader2 className="mx-auto size-6 animate-spin text-cyan-400 mb-2" />
+          <Loader2 className="mx-auto size-6 animate-spin text-brand mb-2" />
           正在计算财务与调用流水...
         </div>
       ) : (
@@ -165,7 +165,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
             <Card className="p-5 border-white/[0.08] space-y-4">
               <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Server className="size-4 text-cyan-400" />
+                  <Server className="size-4 text-brand" />
                   各供应商成本与调用分布
                 </h3>
                 <span className="text-xs text-gray-400">按美金支出从高到低</span>
@@ -245,7 +245,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
                         </td>
                         <td className="px-3 py-2.5 font-mono text-gray-300">{m.totalCalls}</td>
                         <td className="px-3 py-2.5 font-mono text-emerald-400">{m.successRate}%</td>
-                        <td className="px-3 py-2.5 text-right font-mono font-bold text-cyan-400">
+                        <td className="px-3 py-2.5 text-right font-mono font-bold text-brand">
                           ${m.totalCostUsd.toFixed(4)}
                         </td>
                       </tr>
@@ -262,7 +262,7 @@ export default function CostCenterClient({ initialData, providers = [], models =
             <Card className="p-5 border-white/[0.08] space-y-4">
               <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Calendar className="size-4 text-cyan-400" />
+                  <Calendar className="size-4 text-brand" />
                   每日支出流水
                 </h3>
                 <span className="text-[11px] text-gray-400 font-mono">USD</span>

@@ -20,7 +20,7 @@ export default function AdminShell({ user, children }) {
           <button
             type="button"
             onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 lg:hidden focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-line-subtle bg-white/5 text-ink-muted hover:bg-white/10 lg:hidden focus-visible:ring-2 focus-visible:ring-brand/40"
             aria-label="切换侧栏导航"
           >
             {mobileNavOpen ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -28,7 +28,7 @@ export default function AdminShell({ user, children }) {
 
           <BrandMark compact />
 
-          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-gray-400">
+          <span className="rounded-full border border-line-subtle bg-white/[0.04] px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-ink-muted">
             运营管理端
           </span>
         </div>
@@ -43,14 +43,14 @@ export default function AdminShell({ user, children }) {
             {roleLabel(user?.role)}
           </Badge>
 
-          <span className="hidden rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1 text-gray-400 md:inline font-mono text-[11px]">
+          <span className="hidden rounded-lg border border-line-subtle bg-white/[0.03] px-2.5 py-1 text-ink-muted md:inline font-mono text-[11px]">
             {user?.email}
           </span>
 
           <Link
             href="/studio"
             prefetch={false}
-            className="inline-flex h-8 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.03] px-3 text-xs font-medium text-gray-200 transition-colors hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-400 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+            className="inline-flex h-8 items-center justify-center rounded-md border border-line-subtle bg-white/[0.03] px-3 text-xs font-medium text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand/10 hover:text-brand select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             返回 Studio
           </Link>
@@ -58,7 +58,7 @@ export default function AdminShell({ user, children }) {
           <Link
             href="/account"
             prefetch={false}
-            className="inline-flex h-8 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.03] px-3 text-xs font-medium text-gray-200 transition-colors hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-400 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+            className="inline-flex h-8 items-center justify-center rounded-md border border-line-subtle bg-white/[0.03] px-3 text-xs font-medium text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand/10 hover:text-brand select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
             账户
           </Link>

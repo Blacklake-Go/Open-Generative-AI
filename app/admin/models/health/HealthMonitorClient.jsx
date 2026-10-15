@@ -128,7 +128,7 @@ export default function HealthMonitorClient({ initialChannels = [] }) {
       {/* 操作栏 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Activity className="size-4 text-cyan-400" />
+          <Activity className="size-4 text-brand" />
           <h2 className="text-base font-semibold text-white">通道健康与熔断器状态</h2>
         </div>
         <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export default function HealthMonitorClient({ initialChannels = [] }) {
             size="sm"
             disabled={isRefreshing}
             onClick={handleProbeAll}
-            className="bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-semibold"
+            className="bg-brand hover:bg-brand-hover text-white text-xs font-semibold shadow-sm"
           >
             <Zap className="mr-1.5 size-3.5" />
             全量通道探针扫描
@@ -267,7 +267,7 @@ export default function HealthMonitorClient({ initialChannels = [] }) {
                       </>
                     ) : (
                       <>
-                        <Zap className="mr-1 size-3 text-cyan-400" />
+                        <Zap className="mr-1 size-3 text-brand" />
                         探测心跳
                       </>
                     )}

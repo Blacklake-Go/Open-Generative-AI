@@ -671,7 +671,7 @@ export default function PricingManagerClient({
           <Card>
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4 text-cyan-400" />
+                <Settings className="h-4 w-4 text-brand" />
                 <h3 className="text-sm font-semibold text-white">全局定价策略</h3>
                 <span className="text-xs text-gray-400">
                   基准 {strategy.baseMultiplier}x · 最低毛利 {(strategy.minMarginRate * 100).toFixed(0)}%
@@ -681,7 +681,7 @@ export default function PricingManagerClient({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowStrategy(!showStrategy)}
-                className="text-xs text-cyan-400 hover:text-cyan-300"
+                className="text-xs text-brand hover:underline font-semibold"
               >
                 {showStrategy ? '收起' : '配置策略'}
               </Button>
@@ -786,7 +786,7 @@ export default function PricingManagerClient({
                 placeholder="搜索模型标识或名称..."
                 value={searchRulesKeyword}
                 onChange={(e) => setSearchRulesKeyword(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-surface/80 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-surface/80 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
               />
             </div>
           </div>
@@ -829,7 +829,7 @@ export default function PricingManagerClient({
                           {MODE_LABELS[p.pricingMode] || p.pricingMode}
                         </StatusBadge>
                       </td>
-                      <td className="px-4 py-3 font-mono font-bold text-cyan-300">
+                      <td className="px-4 py-3 font-mono font-bold text-brand">
                         {p.baseCredits == null ? '未定价' : p.baseCredits}
                       </td>
                       <td className="px-4 py-3 font-mono text-gray-300">
@@ -846,7 +846,7 @@ export default function PricingManagerClient({
                             variant="ghost"
                             size="sm"
                             onClick={() => setEditingPricing(p)}
-                            className="h-7 text-xs text-cyan-400 hover:text-cyan-300"
+                            className="h-7 text-xs text-brand hover:underline font-semibold"
                           >
                             <Edit3 className="mr-1 h-3 w-3" /> 编辑定价
                           </Button>
@@ -889,7 +889,7 @@ export default function PricingManagerClient({
                   placeholder="搜索模型标识、名称或品牌..."
                   value={breakdownSearch}
                   onChange={(e) => setBreakdownSearch(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
                 />
               </div>
 
@@ -897,7 +897,7 @@ export default function PricingManagerClient({
               <select
                 value={breakdownCategory}
                 onChange={(e) => setBreakdownCategory(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
               >
                 <option value="">全部模态类型</option>
                 <option value="image">图像生成</option>
@@ -910,7 +910,7 @@ export default function PricingManagerClient({
               <select
                 value={breakdownMarginFilter}
                 onChange={(e) => setBreakdownMarginFilter(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
               >
                 <option value="">全部毛利状态</option>
                 <option value="high">🟢 高毛利 (≥50%)</option>
@@ -982,7 +982,7 @@ export default function PricingManagerClient({
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-mono font-bold text-cyan-300 text-sm">{item.baseCredits == null ? '未定价' : `${item.baseCredits} 算力`}</span>
+                        <span className="font-mono font-bold text-brand text-sm">{item.baseCredits == null ? '未定价' : `${item.baseCredits} 算力`}</span>
                         {item.userPriceCny != null && <span className="text-[11px] text-white/40 font-mono block">≈ ¥{item.userPriceCny.toFixed(2)}</span>}
                       </td>
                       <td className="px-4 py-3">
@@ -1001,7 +1001,7 @@ export default function PricingManagerClient({
                               item.marginStatus === 'high'
                                 ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
                                 : item.marginStatus === 'healthy'
-                                ? 'border border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                                ? 'border border-brand/20 bg-brand/10 text-brand'
                                 : item.marginStatus === 'low'
                                 ? 'border border-amber-500/30 bg-amber-500/10 text-amber-300'
                                 : 'border border-red-500/30 bg-red-500/15 text-red-300 animate-pulse'
@@ -1025,7 +1025,7 @@ export default function PricingManagerClient({
                               variant="ghost"
                               size="sm"
                               onClick={() => setQuickEditModel(item)}
-                              className="h-7 text-xs text-cyan-400 hover:text-cyan-300"
+                              className="h-7 text-xs text-brand hover:underline font-semibold"
                             >
                               调价
                             </Button>
@@ -1064,7 +1064,7 @@ export default function PricingManagerClient({
                   placeholder="搜索前台模型标识、名称或品牌..."
                   value={frontendSearch}
                   onChange={(e) => setFrontendSearch(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-cyan-500/50 focus:outline-none"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
                 />
               </div>
 
@@ -1072,7 +1072,7 @@ export default function PricingManagerClient({
               <select
                 value={frontendStudioFilter}
                 onChange={(e) => setFrontendStudioFilter(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
               >
                 <option value="">全部 Studio 工作室</option>
                 <option value="ImageStudio">图像创作 (ImageStudio)</option>
@@ -1085,7 +1085,7 @@ export default function PricingManagerClient({
               <select
                 value={frontendBadgeFilter}
                 onChange={(e) => setFrontendBadgeFilter(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
               >
                 <option value="">全部角标状态</option>
                 <option value="has_badge">所有带角标模型</option>
@@ -1133,7 +1133,7 @@ export default function PricingManagerClient({
                                 </span>
                               )}
                               {item.isPinned && (
-                                <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-1.5 py-0.2 text-[10px] text-cyan-300">
+                                <span className="rounded-full border border-brand/20 bg-brand/10 px-1.5 py-0.2 text-[10px] text-brand">
                                   置顶
                                 </span>
                               )}
@@ -1151,12 +1151,12 @@ export default function PricingManagerClient({
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/80">
-                          {item.studioId === 'VideoStudio' ? <Film size={12} className="text-pink-400" /> : item.studioId === 'AudioStudio' ? <Music size={12} className="text-amber-400" /> : <ImageIcon size={12} className="text-cyan-400" />}
+                          {item.studioId === 'VideoStudio' ? <Film size={12} className="text-pink-400" /> : item.studioId === 'AudioStudio' ? <Music size={12} className="text-amber-400" /> : <ImageIcon size={12} className="text-brand" />}
                           <span>{item.studioId}</span>
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-medium text-cyan-200 bg-cyan-500/10 border border-cyan-500/20 rounded-lg px-2.5 py-1 inline-block">
+                        <span className="font-medium text-brand bg-brand/10 border border-brand/20 rounded-lg px-2.5 py-1 inline-block">
                           {item.pricingHint}
                         </span>
                       </td>
@@ -1172,7 +1172,7 @@ export default function PricingManagerClient({
                                 ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
                                 : item.badge === 'VIP'
                                 ? 'border border-amber-500/40 bg-amber-500/20 text-amber-300'
-                                : 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
+                                : 'border border-brand/40 bg-brand/20 text-brand'
                             }`}
                           >
                             {item.badge}
@@ -1224,7 +1224,7 @@ export default function PricingManagerClient({
                             variant="ghost"
                             size="sm"
                             onClick={() => setEditingFrontendModel(item)}
-                            className="h-7 text-xs text-cyan-400 hover:text-cyan-300"
+                            className="h-7 text-xs text-brand hover:underline font-semibold"
                           >
                             <Edit3 className="mr-1 h-3 w-3" /> 编辑前台配置
                           </Button>
@@ -1615,7 +1615,7 @@ export default function PricingManagerClient({
                 </div>
                 <div className="flex justify-between text-white/60">
                   <span>当前基础积分:</span>
-                  <span className="font-mono text-cyan-300 font-bold">{quickEditModel.baseCredits == null ? '未定价' : `${quickEditModel.baseCredits} 算力`}</span>
+                  <span className="font-mono text-brand font-bold">{quickEditModel.baseCredits == null ? '未定价' : `${quickEditModel.baseCredits} 算力`}</span>
                 </div>
                 <div className="flex justify-between text-white/60">
                   <span>当前折算售价:</span>

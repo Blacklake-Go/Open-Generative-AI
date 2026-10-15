@@ -22,7 +22,7 @@ export default async function CreditsPage({ searchParams }) {
       label: '目标用户',
       render: (row) => (
         <div>
-          <Link href={`/admin/users/${row.user_id}`} className="font-semibold text-white hover:text-cyan-200">
+          <Link href={`/admin/users/${row.user_id}`} className="font-semibold text-white hover:text-brand">
             {row.email}
           </Link>
           <div className="mt-1">
@@ -40,7 +40,7 @@ export default async function CreditsPage({ searchParams }) {
           return <span className="rounded-md border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[11px] font-semibold text-purple-300">💎 订阅专属额度</span>;
         }
         if (type === 'perpetual') {
-          return <span className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-300">⚡ 通用充值积分</span>;
+          return <span className="rounded-md border border-brand/30 bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">⚡ 通用充值积分</span>;
         }
         if (type === 'currency' || type === 'k_coin') {
           return <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-300">🪙 平台 K 币</span>;
@@ -108,8 +108,8 @@ export default async function CreditsPage({ searchParams }) {
           </p>
         </Card>
 
-        <Card className="border-cyan-500/20 bg-cyan-500/[0.03]">
-          <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm">
+        <Card className="border-brand/20 bg-brand/[0.03]">
+          <div className="flex items-center gap-2 text-brand font-bold text-sm">
             <span>⚡ 通用算力积分 (Credits)</span>
           </div>
           <p className="mt-2 text-xs text-white/60 leading-relaxed">
@@ -133,11 +133,11 @@ export default async function CreditsPage({ searchParams }) {
             name="q"
             defaultValue={params.get('q') || ''}
             placeholder="搜索用户邮箱、变动原因或关联单号…"
-            className="min-w-[240px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+            className="min-w-[240px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand/50"
           />
           <button
             type="submit"
-            className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black hover:bg-cyan-200 transition shadow-lg shadow-cyan-500/10"
+            className="rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-white hover:bg-brand-hover transition shadow-lg shadow-brand/10"
           >
             筛选流水
           </button>

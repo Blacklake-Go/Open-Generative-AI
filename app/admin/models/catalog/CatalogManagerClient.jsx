@@ -113,7 +113,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
               onClick={() => setSelectedCategory(cat)}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 selectedCategory === cat
-                  ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                  ? 'bg-brand/10 text-brand border border-brand/20 font-semibold'
                   : 'bg-white/[0.04] text-gray-400 hover:text-white border border-white/[0.06]'
               }`}
             >
@@ -129,7 +129,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="搜索模型 ID 或显示名..."
-              className="w-56 rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
+              className="w-56 rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
             />
           </div>
           <Button
@@ -146,7 +146,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                 is_featured: false,
               });
             }}
-            className="bg-cyan-500 hover:bg-cyan-400 text-black font-medium text-xs py-1.5"
+            className="bg-brand hover:bg-brand-hover text-white font-semibold text-xs py-1.5 shadow-sm"
           >
             <Plus className="mr-1 size-3.5" />
             注册规范模型
@@ -207,7 +207,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                         setIsCreating(false);
                         setEditingModel(m);
                       }}
-                      className="rounded p-1 text-gray-400 hover:bg-white/[0.06] hover:text-cyan-400 transition-colors"
+                      className="rounded p-1 text-gray-400 hover:bg-white/[0.06] hover:text-brand transition-colors"
                     >
                       <Edit3 className="size-3.5" />
                     </button>
@@ -247,7 +247,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                   disabled={!isCreating}
                   required
                   placeholder="例如: kling-2.6-pro, flux-1.1-pro"
-                  className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50 font-mono"
+                  className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none disabled:opacity-50 font-mono"
                 />
               </div>
 
@@ -259,7 +259,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                     defaultValue={editingModel.name}
                     required
                     placeholder="例如: Kling 2.6 Pro"
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   />
                 </div>
                 <div>
@@ -268,7 +268,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                     name="displayName"
                     defaultValue={editingModel.display_name}
                     placeholder="前台展示名"
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   />
                 </div>
               </div>
@@ -279,7 +279,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                   <select
                     name="category"
                     defaultValue={editingModel.category || 'image'}
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     <option value="image">图像 (Image)</option>
                     <option value="video">视频 (Video)</option>
@@ -292,7 +292,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                     type="number"
                     name="sort"
                     defaultValue={editingModel.sort ?? 10}
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
                 <div>
@@ -300,7 +300,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                   <select
                     name="status"
                     defaultValue={editingModel.status || 'active'}
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     <option value="active">Active (开放)</option>
                     <option value="disabled">Disabled (禁用)</option>
@@ -315,7 +315,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                   name="description"
                   defaultValue={editingModel.description || ''}
                   rows={2}
-                  className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                  className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                 />
               </div>
 
@@ -325,7 +325,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                   name="isFeatured"
                   id="isFeatured"
                   defaultChecked={Boolean(editingModel.is_featured)}
-                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-cyan-500 focus:ring-0"
+                  className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-brand focus:ring-0"
                 />
                 <label htmlFor="isFeatured" className="text-xs text-gray-300 cursor-pointer">
                   标记为前台 Featured 推荐模型
@@ -347,7 +347,7 @@ export default function CatalogManagerClient({ initialModels = [] }) {
                 <Button
                   type="submit"
                   disabled={isSaving}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+                  className="bg-brand hover:bg-brand-hover text-white font-semibold shadow-sm"
                 >
                   {isSaving ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
                   保存模型

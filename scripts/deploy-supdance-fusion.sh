@@ -34,6 +34,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCH
   tailwind.config.js \
   package.json \
   docs/UI_DESIGN_SYSTEM.md \
+  docs/ADMIN_UI_DESIGN_SYSTEM.md \
   docs/UI_COMPONENTS.md
 
 COPYFILE_DISABLE=1 tar --no-xattrs --exclude='.next/cache' -czf "$NEXT_ARCHIVE" .next

@@ -94,11 +94,11 @@ export default function ProviderCard({ provider }) {
   };
 
   return (
-    <Card className="flex flex-col justify-between relative overflow-hidden border-white/[0.08] bg-surface/90 backdrop-blur-md hover:border-cyan-500/30 hover:shadow-cyan-500/5 transition-all duration-200 shadow-xl shadow-black/40">
+    <Card className="flex flex-col justify-between relative overflow-hidden border-white/[0.08] bg-surface/90 backdrop-blur-md hover:border-brand/30 hover:shadow-brand/5 transition-all duration-200 shadow-xl shadow-black/40">
       <div>
         <div className="flex items-start justify-between border-b border-white/[0.08] pb-3.5 mb-4">
           <div>
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-cyan-400">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-brand">
               {provider.kind === 'ai' ? 'AI MODEL ENGINE' : 'PAYMENT GATEWAY'}
             </span>
             <h3 className="mt-1 text-base font-semibold text-white tracking-[-0.01em] leading-6">{provider.name}</h3>
@@ -137,7 +137,7 @@ export default function ProviderCard({ provider }) {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-400 tracking-[0.01em]">密钥存储机制</span>
-            <span className="text-cyan-300/90 font-medium">写入式（不可反显明文）</span>
+            <span className="text-brand font-medium">写入式（不可反显明文）</span>
           </div>
           {testResult && (
             <div className="flex justify-between items-center border-t border-white/[0.05] pt-2">
@@ -152,7 +152,7 @@ export default function ProviderCard({ provider }) {
         {/* 密钥轮换折叠表单 */}
         {showRotate && (
           <form onSubmit={handleRotate} className="mt-4 rounded-xl border border-white/[0.08] bg-[#070709]/80 p-4 space-y-3.5 backdrop-blur-sm">
-            <p className="text-xs font-semibold text-cyan-300 tracking-[-0.005em]">安全密钥轮换（仅限超管）</p>
+            <p className="text-xs font-semibold text-brand tracking-[-0.005em]">安全密钥轮换（仅限超管）</p>
             <div>
               <label className="block text-xs text-gray-400 font-medium tracking-[0.01em] mb-1">新密钥明文（只写一次）</label>
               <input
@@ -161,7 +161,7 @@ export default function ProviderCard({ provider }) {
                 value={newKey}
                 onChange={(e) => setNewKey(e.target.value)}
                 placeholder="sk-..."
-                className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-canvas px-3 text-xs text-white font-mono placeholder:text-gray-500 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all"
+                className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-canvas px-3 text-xs text-white font-mono placeholder:text-gray-500 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all"
               />
             </div>
             <div>
@@ -172,7 +172,7 @@ export default function ProviderCard({ provider }) {
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="你的管理员密码"
-                className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-canvas px-3 text-xs text-white font-mono placeholder:text-gray-500 focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 outline-none transition-all"
+                className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-canvas px-3 text-xs text-white font-mono placeholder:text-gray-500 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all"
               />
             </div>
             <div className="flex justify-end gap-2 pt-1">
@@ -186,7 +186,7 @@ export default function ProviderCard({ provider }) {
               <button
                 type="submit"
                 disabled={busy}
-                className="h-8 rounded-lg bg-cyan-500 hover:bg-cyan-400 px-4 text-xs font-semibold text-black active:scale-[0.98] transition disabled:opacity-50"
+                className="h-8 rounded-lg bg-brand hover:bg-brand-hover px-4 text-xs font-semibold text-white active:scale-[0.98] transition disabled:opacity-50"
               >
                 {busy ? '轮换中…' : '确认轮换'}
               </button>
@@ -208,13 +208,13 @@ export default function ProviderCard({ provider }) {
         <button
           type="button"
           onClick={() => setShowRotate(!showRotate)}
-          className="inline-flex h-[38px] items-center rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 active:scale-[0.98] transition tracking-[-0.005em]"
+          className="inline-flex h-[38px] items-center rounded-lg border border-brand/20 bg-brand/10 px-4 text-xs font-semibold text-brand hover:bg-brand/15 active:scale-[0.98] transition tracking-[-0.005em]"
         >
           {showRotate ? '收起' : '轮换密钥 ⚙'}
         </button>
       </div>
 
-      {message && <p className="mt-2 text-xs text-cyan-300">{message}</p>}
+      {message && <p className="mt-2 text-xs text-brand">{message}</p>}
     </Card>
   );
 }

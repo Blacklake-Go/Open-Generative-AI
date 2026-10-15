@@ -33,7 +33,7 @@ export default async function ModerationPage({ searchParams }) {
       key: 'user',
       label: '作者账号',
       render: (row) => (
-        <Link href={`/admin/users/${row.user_id}`} className="font-semibold text-white hover:text-cyan-200">
+        <Link href={`/admin/users/${row.user_id}`} className="font-semibold text-white hover:text-brand">
           {row.email || row.user_id}
         </Link>
       ),
@@ -89,13 +89,13 @@ export default async function ModerationPage({ searchParams }) {
             name="q"
             defaultValue={params.get('q') || ''}
             placeholder="搜索案件 ID、产物 ID 或用户…"
-            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand/50"
           />
 
           <select
             name="status"
             defaultValue={params.get('status') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white/70 outline-none focus:border-brand/50"
           >
             <option value="">全部状态</option>
             <option value="pending">待处理</option>
@@ -105,7 +105,7 @@ export default async function ModerationPage({ searchParams }) {
 
           <button
             type="submit"
-            className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black hover:bg-cyan-200"
+            className="rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-white hover:bg-brand-hover transition-colors"
           >
             筛选
           </button>

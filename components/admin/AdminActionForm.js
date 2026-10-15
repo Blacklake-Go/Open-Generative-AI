@@ -75,7 +75,7 @@ export default function AdminActionForm({
   }
 
   const toneClass = {
-    primary: 'bg-cyan-300 text-black hover:bg-cyan-200 active:scale-[0.98]',
+    primary: 'bg-brand text-white hover:bg-brand-hover active:scale-[0.98]',
     good: 'border border-emerald-400/40 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25 active:scale-[0.98]',
     attention: 'border border-amber-400/40 bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 active:scale-[0.98]',
     danger: 'border border-red-400/40 bg-red-400/15 text-red-200 hover:bg-red-400/25 active:scale-[0.98]',
@@ -109,7 +109,7 @@ export default function AdminActionForm({
                   required={field.required !== false}
                   name={field.name}
                   defaultValue={field.defaultValue || ''}
-                  className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-300/50"
+                  className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2 text-xs text-white outline-none focus:border-brand/50"
                 >
                   {field.options?.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -135,7 +135,7 @@ export default function AdminActionForm({
                   rows={field.rows || 3}
                   defaultValue={field.defaultValue || ''}
                   placeholder={field.placeholder}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-300/50"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-brand/50"
                 />
               </div>
             );
@@ -154,7 +154,7 @@ export default function AdminActionForm({
                 type={field.type || 'text'}
                 defaultValue={field.defaultValue || ''}
                 placeholder={field.placeholder}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white outline-none focus:border-brand/50"
               />
             </div>
           );
@@ -169,7 +169,7 @@ export default function AdminActionForm({
       </div>
 
       {message && (
-        <p className={`text-xs ${isError ? 'text-red-400' : 'text-cyan-300'}`}>
+        <p className={`text-xs ${isError ? 'text-red-400' : 'text-emerald-400'}`}>
           {message}
         </p>
       )}

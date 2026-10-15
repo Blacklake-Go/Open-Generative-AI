@@ -68,11 +68,11 @@ function QuickChannelSwitcher({ model, onSwitch, isBusy }) {
         type="button"
         onClick={() => setOpen(!open)}
         disabled={isBusy}
-        className="inline-flex h-[26px] items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 text-[10px] font-medium text-cyan-300 transition-all hover:bg-cyan-500/20 hover:text-cyan-200 active:scale-[0.98] disabled:opacity-40"
+        className="inline-flex h-[26px] items-center gap-1 rounded-md border border-brand/30 bg-brand/10 px-2 text-[10px] font-semibold text-brand transition-all hover:bg-brand/20 active:scale-[0.98] disabled:opacity-40"
         title="点击快速切换默认主渠道"
       >
         {isBusy ? (
-          <RefreshCw className="size-2.5 animate-spin text-cyan-400" />
+          <RefreshCw className="size-2.5 animate-spin text-brand" />
         ) : (
           <Star className="size-2.5 text-amber-400 fill-amber-400" />
         )}
@@ -99,7 +99,7 @@ function QuickChannelSwitcher({ model, onSwitch, isBusy }) {
                   }}
                   className={`w-full flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
                     isPrimary
-                      ? 'bg-cyan-500/15 text-cyan-300 font-semibold'
+                      ? 'bg-brand/15 text-brand font-semibold'
                       : ch.enabled
                       ? 'text-gray-300 hover:bg-white/[0.06] hover:text-white'
                       : 'text-gray-500 cursor-not-allowed opacity-50'
@@ -118,9 +118,9 @@ function QuickChannelSwitcher({ model, onSwitch, isBusy }) {
                   </div>
                   <span className="text-[10px] shrink-0 font-medium">
                     {isPrimary ? (
-                      <span className="text-cyan-400">当前主选</span>
+                      <span className="text-brand font-semibold">当前主选</span>
                     ) : ch.enabled ? (
-                      <span className="text-gray-400 hover:text-cyan-300">设为主选</span>
+                      <span className="text-gray-400 hover:text-brand">设为主选</span>
                     ) : (
                       <span className="text-gray-500">已禁用</span>
                     )}
@@ -290,12 +290,12 @@ export default function RoutingViewClient({ initialModels = [] }) {
           <div className="flex flex-col gap-1.5 max-w-[220px]">
             <div className="flex items-center gap-1.5 flex-wrap">
               {primary && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-cyan-500/10 border border-cyan-500/25 px-2 py-0.5 text-[10px] font-semibold text-cyan-300">
+                <span className="inline-flex items-center gap-1 rounded-md bg-brand/10 border border-brand/25 px-2 py-0.5 text-[10px] font-semibold text-brand">
                   <span className="text-amber-400">★</span>
                   <span className="truncate max-w-[110px]">
                     {primary.provider_name || PROVIDER_NAMES[primary.provider_id] || primary.provider_id}
                   </span>
-                  <span className="text-cyan-400/60 font-normal">主选</span>
+                  <span className="text-brand/70 font-normal">主选</span>
                 </span>
               )}
               {backupCount > 0 && (
@@ -369,7 +369,7 @@ export default function RoutingViewClient({ initialModels = [] }) {
         <div className="flex items-center gap-1.5">
           <Link
             href={`/admin/routing/${row.id}`}
-            className="inline-flex h-[28px] items-center rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 text-[11px] font-medium text-cyan-300 transition-all hover:bg-cyan-500/20 hover:text-cyan-200 active:scale-[0.98]"
+            className="inline-flex h-[28px] items-center rounded-lg border border-brand/30 bg-brand/10 px-2.5 text-[11px] font-semibold text-brand transition-all hover:bg-brand/20 active:scale-[0.98]"
           >
             配置渠道
           </Link>
@@ -405,12 +405,12 @@ export default function RoutingViewClient({ initialModels = [] }) {
             onClick={() => setActiveTab('canonical')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               activeTab === 'canonical'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                ? 'bg-brand text-white font-semibold shadow-sm'
                 : 'text-white/60 hover:text-white'
             }`}
           >
             <span>核心去重模型</span>
-            <span className="rounded-full bg-cyan-500/20 px-1.5 py-0.2 text-[10px] font-mono text-cyan-300">
+            <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${activeTab === 'canonical' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/70'}`}>
               {stats.canonicalCount}
             </span>
           </button>
@@ -418,12 +418,12 @@ export default function RoutingViewClient({ initialModels = [] }) {
             onClick={() => setActiveTab('multi_channel')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               activeTab === 'multi_channel'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                ? 'bg-brand text-white font-semibold shadow-sm'
                 : 'text-white/60 hover:text-white'
             }`}
           >
             <span>多渠道成熟模型</span>
-            <span className="rounded-full bg-cyan-500/20 px-1.5 py-0.2 text-[10px] font-mono text-cyan-300">
+            <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${activeTab === 'multi_channel' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/70'}`}>
               {stats.multiChannelCount}
             </span>
           </button>
@@ -431,7 +431,7 @@ export default function RoutingViewClient({ initialModels = [] }) {
             onClick={() => setActiveTab('all')}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
               activeTab === 'all'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                ? 'bg-brand text-white font-semibold shadow-sm'
                 : 'text-white/60 hover:text-white'
             }`}
           >
@@ -449,7 +449,7 @@ export default function RoutingViewClient({ initialModels = [] }) {
             placeholder="搜索模型名称、ID 或供应商..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-white/[0.10] bg-white/[0.04] px-3 py-1.5 text-xs text-white placeholder-white/30 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+            className="w-full rounded-lg border border-white/[0.10] bg-white/[0.04] px-3 py-1.5 text-xs text-white placeholder-white/30 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40"
           />
           {searchQuery && (
             <button

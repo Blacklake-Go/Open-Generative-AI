@@ -344,7 +344,7 @@ export default function ModelConfigDrawer({
                       {formData.sub_type ? formData.sub_type.toUpperCase() : 'AI MODEL'}
                     </span>
                     <span className="text-ink-subtle">·</span>
-                    <span className="text-caption text-cyan-400 font-semibold font-mono">
+                    <span className="text-caption text-brand font-semibold font-mono">
                       {previewCredits} 积分 / 次
                     </span>
                     {marginMetrics.hasData && (
@@ -424,7 +424,7 @@ export default function ModelConfigDrawer({
           {/* Section 3: 采购成本与定价策略 (打通模型定价与毛利率) */}
           <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
             <h3 className="text-body font-bold text-ink flex items-center gap-2">
-              <DollarSign className="size-4 text-cyan-400" />
+              <DollarSign className="size-4 text-brand" />
               采购成本与定价测算
             </h3>
 
@@ -441,9 +441,9 @@ export default function ModelConfigDrawer({
               </div>
 
               {/* Price / Credits Input */}
-              <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/[0.03] p-3 space-y-1">
+              <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-micro text-cyan-300 uppercase font-bold">单次生成积分</span>
+                  <span className="text-micro text-brand uppercase font-bold">单次生成积分</span>
                   <span className="text-[10px] text-ink-subtle font-mono">1积分=0.1元</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -454,9 +454,9 @@ export default function ModelConfigDrawer({
                     step="1"
                     value={formData.credits ?? ''}
                     onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
-                    className="w-full rounded-lg border border-cyan-500/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-cyan-300 outline-none focus:border-cyan-400"
+                    className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
                   />
-                  <span className="text-caption font-bold text-cyan-400 shrink-0">积分</span>
+                  <span className="text-caption font-bold text-brand shrink-0">积分</span>
                 </div>
                 <span className="text-[10px] text-ink-muted font-mono block">
                   折合 C 端售价: ¥{marginMetrics.userPriceCny}
@@ -470,7 +470,7 @@ export default function ModelConfigDrawer({
                   {marginMetrics.hasData ? (
                     <span className={
                       marginMetrics.status === 'high' ? 'text-emerald-400'
-                        : marginMetrics.status === 'healthy' ? 'text-cyan-400'
+                        : marginMetrics.status === 'healthy' ? 'text-brand'
                         : marginMetrics.status === 'low' ? 'text-amber-400'
                         : 'text-red-400 animate-pulse'
                     }>
@@ -629,7 +629,7 @@ export default function ModelConfigDrawer({
                       }}
                       className={`rounded-full px-2 py-0.5 text-[11px] font-mono transition-all ${
                         isSelected
-                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
+                          ? 'bg-brand/10 text-brand border border-brand/20 font-bold'
                           : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
                       }`}
                     >

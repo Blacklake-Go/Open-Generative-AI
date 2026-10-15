@@ -56,7 +56,7 @@ export default async function UserDetailPage({ params }) {
 
         <Card>
           <p className="text-xs text-white/40">可用模型额度</p>
-          <p className="mt-2 text-3xl font-extrabold text-cyan-200">{user.credits}</p>
+          <p className="mt-2 text-3xl font-extrabold text-brand">{user.credits}</p>
           <p className="mt-1 text-[11px] text-white/35">可直接用于 AI 图像/视频生成</p>
         </Card>
 

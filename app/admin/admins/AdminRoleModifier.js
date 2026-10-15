@@ -72,7 +72,7 @@ export default function AdminRoleModifier() {
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-base px-3 text-xs text-[#f3f4f6] outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+          className="h-[38px] w-full rounded-lg border border-white/[0.10] bg-base px-3 text-xs text-[#f3f4f6] outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         >
           <option value="operations_admin">运营管理员 (内容、生成、用户)</option>
           <option value="finance_admin">财务管理员 (订阅、订单、调额、套餐)</option>
@@ -109,7 +109,7 @@ export default function AdminRoleModifier() {
       </Button>
 
       {message && (
-        <p className={`text-xs ${isError ? 'text-red-400' : 'text-cyan-400'}`}>
+        <p className={`text-xs ${isError ? 'text-red-400' : 'text-brand'}`}>
           {message}
         </p>
       )}

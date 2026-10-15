@@ -95,7 +95,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-brand">
               <BarChart3 className="size-4" />
             </div>
             <div>
@@ -114,8 +114,8 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
               aria-label="启用 Google Analytics 4"
               disabled={disabled}
               onClick={() => handleToggle(!ga4.enabled)}
-              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 disabled:cursor-not-allowed disabled:opacity-40 ${
-                ga4.enabled ? 'border-cyan-500/50 bg-cyan-500/80' : 'border-white/[0.12] bg-white/[0.08]'
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-40 ${
+                ga4.enabled ? 'border-brand bg-brand' : 'border-white/[0.12] bg-white/[0.08]'
               }`}
             >
               <span
@@ -144,7 +144,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
               className={`w-full rounded-xl border px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
                 hasError
                   ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
-                  : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
+                  : 'border-white/10 bg-black/40 focus:border-brand'
               }`}
             />
             {hasError && (
@@ -166,7 +166,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
               value={ga4.propertyId || ''}
               onChange={(e) => handleFieldChange('propertyId', e.target.value.trim())}
               placeholder="例如：558360595"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors focus:border-cyan-500/60"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors focus:border-brand"
             />
           </div>
 
@@ -178,7 +178,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
               className="flex w-full items-center justify-between text-xs font-medium text-gray-300 hover:text-white transition-colors"
             >
               <div className="flex items-center gap-1.5">
-                <KeyRound className="size-3.5 text-cyan-400" />
+                <KeyRound className="size-3.5 text-brand" />
                 <span>Data API 服务账号凭据</span>
               </div>
               <div className="flex items-center gap-1 text-[11px] text-gray-400">
@@ -204,7 +204,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                       }
                     }}
                     placeholder="ga4-reader@project.iam.gserviceaccount.com"
-                    className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/20 outline-none focus:border-cyan-500/60"
+                    className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/20 outline-none focus:border-brand"
                   />
                 </div>
 
@@ -223,7 +223,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                       }
                     }}
                     placeholder="-----BEGIN PRIVATE KEY----- 或直接粘贴 JSON 密钥"
-                    className="w-full rounded-lg border border-white/10 bg-black/40 p-2 font-mono text-[11px] text-white/80 placeholder-white/20 outline-none focus:border-cyan-500/60 resize-y"
+                    className="w-full rounded-lg border border-white/10 bg-black/40 p-2 font-mono text-[11px] text-white/80 placeholder-white/20 outline-none focus:border-brand resize-y"
                   />
                 </div>
 
@@ -232,7 +232,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                     type="button"
                     disabled={disabled || testing || !ga4.propertyId}
                     onClick={handleTestConnection}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-brand/20 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
                   >
                     {testing ? (
                       <>
@@ -251,7 +251,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                     href="https://console.cloud.google.com/iam-admin/serviceaccounts"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[11px] text-gray-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
+                    className="text-[11px] text-gray-400 hover:text-brand transition-colors inline-flex items-center gap-1"
                   >
                     <span>Google Cloud 凭据</span>
                     <ExternalLink className="size-2.5" />
@@ -285,7 +285,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
           href="https://analytics.google.com/analytics/web/"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-brand font-semibold hover:underline transition-colors"
         >
           <span>Google Analytics 控制台</span>
           <ExternalLink className="size-3" />

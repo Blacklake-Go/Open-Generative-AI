@@ -135,7 +135,7 @@ export default function AnalyticsTab() {
             type="button"
             disabled={saving || !isDirty || !validation.valid}
             onClick={handleSave}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-3.5 text-xs font-semibold text-cyan-200 shadow-elevation-1 hover:bg-cyan-500/30 hover:text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-4 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {saving ? (
               <>

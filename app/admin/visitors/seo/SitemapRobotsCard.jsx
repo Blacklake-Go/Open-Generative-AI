@@ -25,7 +25,7 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-brand">
               <FileText className="size-4" />
             </div>
             <div>
@@ -40,13 +40,13 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
           <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/30 p-3.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-white">动态站点地图</span>
-              <span className="font-mono text-[11px] text-cyan-400">/sitemap.xml</span>
+              <span className="font-mono text-[11px] text-brand">/sitemap.xml</span>
             </div>
             <a
               href="/sitemap.xml"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-cyan-300 hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-brand font-semibold hover:border-brand/30 hover:bg-brand/10 transition-colors"
             >
               <span>查看 XML</span>
               <ExternalLink className="size-3" />
@@ -56,13 +56,13 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
           <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-black/30 p-3.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-white">爬虫抓取协议</span>
-              <span className="font-mono text-[11px] text-cyan-400">/robots.txt</span>
+              <span className="font-mono text-[11px] text-brand">/robots.txt</span>
             </div>
             <a
               href="/robots.txt"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-cyan-300 hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-brand font-semibold hover:border-brand/30 hover:bg-brand/10 transition-colors"
             >
               <span>查看规则</span>
               <ExternalLink className="size-3" />
@@ -79,7 +79,7 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
               value={customRules}
               onChange={(e) => setCustomRules(e.target.value)}
               placeholder="# 可在此输入额外的 Disallow 或 User-agent 规则，例如：&#10;Disallow: /temp-preview/&#10;Disallow: /private-campaign/"
-              className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+              className="w-full resize-none rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
             />
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function SitemapRobotsCard({ config, onSave, isSaving }) {
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/30 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
           >
             <Save className="size-3.5" />
             <span>{isSaving ? '正在保存...' : '更新爬虫协议'}</span>

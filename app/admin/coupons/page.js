@@ -22,7 +22,7 @@ export default async function CouponsPage({ searchParams }) {
       key: 'code',
       label: '兑换码 / 卡密',
       render: (row) => (
-        <div className="font-mono font-bold text-cyan-200">
+        <div className="font-mono font-bold text-brand">
           <CopyableId id={row.code} />
         </div>
       ),
@@ -115,13 +115,13 @@ export default async function CouponsPage({ searchParams }) {
             name="q"
             defaultValue={params.get('q') || ''}
             placeholder="搜索卡密码或创建人…"
-            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+            className="min-w-[260px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand/50"
           />
 
           <select
             name="type"
             defaultValue={params.get('type') || ''}
-            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+            className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white/70 outline-none focus:border-brand/50"
           >
             <option value="">全部类型</option>
             <option value="credits">算力点卡</option>
@@ -130,7 +130,7 @@ export default async function CouponsPage({ searchParams }) {
 
           <button
             type="submit"
-            className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black hover:bg-cyan-200"
+            className="rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-white hover:bg-brand-hover transition-colors"
           >
             筛选
           </button>

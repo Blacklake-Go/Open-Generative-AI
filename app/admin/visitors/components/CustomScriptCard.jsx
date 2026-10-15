@@ -42,8 +42,8 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
               aria-label="启用自定义统计代码"
               disabled={disabled}
               onClick={() => handleToggle(!custom.enabled)}
-              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 disabled:cursor-not-allowed disabled:opacity-40 ${
-                custom.enabled ? 'border-cyan-500/50 bg-cyan-500/80' : 'border-white/[0.12] bg-white/[0.08]'
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-40 ${
+                custom.enabled ? 'border-brand bg-brand' : 'border-white/[0.12] bg-white/[0.08]'
               }`}
             >
               <span
@@ -79,7 +79,7 @@ export default function CustomScriptCard({ value, onChange, disabled }) {
             className={`w-full font-mono text-xs rounded-xl border px-3 py-2 text-gray-200 placeholder-white/20 outline-none transition-colors ${
               isOverLimit
                 ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
-                : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
+                : 'border-white/10 bg-black/40 focus:border-brand'
             }`}
           />
           {isOverLimit && (

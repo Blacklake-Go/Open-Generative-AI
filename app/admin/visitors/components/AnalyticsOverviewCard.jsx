@@ -19,7 +19,7 @@ export default function AnalyticsOverviewCard({ config, links }) {
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">已就绪平台</span>
-            <Activity className="size-4 text-cyan-400" />
+            <Activity className="size-4 text-brand" />
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-white tabular-nums">
             {activeCount} / 4
@@ -41,9 +41,9 @@ export default function AnalyticsOverviewCard({ config, links }) {
         <Card className="p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-400">单页无刷新追踪</span>
-            <Layers className="size-4 text-cyan-400" />
+            <Layers className="size-4 text-brand" />
           </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-cyan-400">全自动</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-brand">全自动</p>
           <p className="mt-1 text-xs text-gray-400">路由监听器自动分发 PV 命中</p>
         </Card>
 
@@ -64,7 +64,7 @@ export default function AnalyticsOverviewCard({ config, links }) {
           href={links?.googleAnalytics?.dashboardUrl || 'https://analytics.google.com/analytics/web/#/realtime'}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-cyan-300 hover:bg-white/[0.08] hover:text-cyan-200 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-brand hover:border-brand/30 hover:bg-brand/10 transition-colors"
         >
           <span>GA4 实时看板</span>
           <ExternalLink className="size-3" />
@@ -73,7 +73,7 @@ export default function AnalyticsOverviewCard({ config, links }) {
           href={links?.baiduTongji?.dashboardUrl || 'https://tongji.baidu.com/web/welcome/login'}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-cyan-300 hover:bg-white/[0.08] hover:text-cyan-200 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-brand hover:border-brand/30 hover:bg-brand/10 transition-colors"
         >
           <span>百度统计概览</span>
           <ExternalLink className="size-3" />
@@ -82,7 +82,7 @@ export default function AnalyticsOverviewCard({ config, links }) {
           href={links?.microsoftClarity?.dashboardUrl || 'https://clarity.microsoft.com/projects'}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-cyan-300 hover:bg-white/[0.08] hover:text-cyan-200 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-brand hover:border-brand/30 hover:bg-brand/10 transition-colors"
         >
           <span>Clarity 热力图</span>
           <ExternalLink className="size-3" />

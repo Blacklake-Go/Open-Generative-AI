@@ -60,13 +60,13 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <Filter className="size-3.5 text-cyan-400" />
+              <Filter className="size-3.5 text-brand" />
               <span>模型筛选:</span>
             </div>
             <select
               value={selectedModel}
               onChange={handleModelChange}
-              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-white/[0.1] bg-[#161820] px-3 py-1.5 text-xs text-white focus:border-brand focus:outline-none"
             >
               <option value="">全部规范模型 (All Models)</option>
               {models.map((m) => (
@@ -89,7 +89,7 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
                 onClick={() => handleDateRangeChange(r.id)}
                 className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                   dateRange === r.id
-                    ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    ? 'bg-brand/10 text-brand border border-brand/20 font-semibold'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -130,7 +130,7 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
 
       {isLoading ? (
         <div className="py-16 text-center text-xs text-gray-400">
-          <Loader2 className="mx-auto size-6 animate-spin text-cyan-400 mb-2" />
+          <Loader2 className="mx-auto size-6 animate-spin text-brand mb-2" />
           正在核算模型营收与毛利...
         </div>
       ) : (
@@ -194,7 +194,7 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
                         </td>
                         <td className="px-4 py-3 capitalize text-gray-400">{m.category}</td>
                         <td className="px-4 py-3 font-mono text-gray-300">{m.totalGenerations}</td>
-                        <td className="px-4 py-3 font-mono text-cyan-400 font-medium">
+                        <td className="px-4 py-3 font-mono text-brand font-medium">
                           {m.creditsConsumed.toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-white">
@@ -252,7 +252,7 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
           <Card className="p-5 border-white/[0.08] space-y-4">
             <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Calendar className="size-4 text-cyan-400" />
+                <Calendar className="size-4 text-brand" />
                 每日营收与毛利润明细
               </h3>
               <span className="text-xs text-gray-400 font-mono">USD</span>
@@ -276,7 +276,7 @@ export default function ProfitCenterClient({ initialData, models = [] }) {
                     <tr key={d.date} className="hover:bg-white/[0.02]">
                       <td className="px-4 py-2.5 font-mono text-white">{d.date}</td>
                       <td className="px-4 py-2.5 font-mono text-gray-300">{d.totalGenerations}</td>
-                      <td className="px-4 py-2.5 font-mono text-cyan-400">{d.creditsConsumed.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 font-mono text-brand">{d.creditsConsumed.toLocaleString()}</td>
                       <td className="px-4 py-2.5 text-right font-mono text-white">${d.revenueUsd.toFixed(2)}</td>
                       <td className="px-4 py-2.5 text-right font-mono text-gray-400">${d.costUsd.toFixed(4)}</td>
                       <td

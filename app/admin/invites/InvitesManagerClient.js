@@ -247,13 +247,13 @@ export default function InvitesManagerClient({
       render: (row) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-cyan-300 text-sm tracking-wide select-all">
+            <span className="font-mono font-bold text-brand text-sm tracking-wide select-all">
               {row.code}
             </span>
             <button
               type="button"
               onClick={() => handleCopyLink(row.code)}
-              className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-cyan-300 transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-brand transition-colors"
               title="复制专属推广链接"
             >
               {copiedCodeId === row.code ? (
@@ -313,7 +313,7 @@ export default function InvitesManagerClient({
             <div className="h-1.5 w-full rounded-full bg-white/[0.08] overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 rounded-full ${
-                  percent >= 100 ? 'bg-gray-500' : 'bg-cyan-400'
+                  percent >= 100 ? 'bg-gray-500' : 'bg-brand'
                 }`}
                 style={{ width: `${percent}%` }}
               />
@@ -342,7 +342,7 @@ export default function InvitesManagerClient({
               <span>衍生 {creations} 次创作</span>
             </div>
             {favModel && (
-              <p className="text-[11px] text-cyan-300 font-mono truncate max-w-[190px]" title={favModel}>
+              <p className="text-[11px] text-brand font-mono truncate max-w-[190px]" title={favModel}>
                 偏好: {favModel}
               </p>
             )}
@@ -371,7 +371,7 @@ export default function InvitesManagerClient({
         <div className="space-y-0.5 text-xs text-gray-400 font-mono">
           <p>创建: {formatDate(row.created_at)}</p>
           {row.latest_redeemed_at && (
-            <p className="text-cyan-400/80 text-[11px]">
+            <p className="text-brand/80 text-[11px]">
               活跃: {formatDate(row.latest_redeemed_at)}
             </p>
           )}
@@ -386,7 +386,7 @@ export default function InvitesManagerClient({
           <button
             type="button"
             onClick={() => handleOpenHabits(row)}
-            className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-300 hover:bg-cyan-500/20 hover:text-cyan-200 transition-colors"
+            className="rounded-md border border-brand/30 bg-brand/10 px-2.5 py-1 text-xs font-medium text-brand hover:bg-brand/20 transition-colors"
           >
             习惯画像
           </button>
@@ -434,7 +434,7 @@ export default function InvitesManagerClient({
                 : '当前处于公测模式：访客可免邀请码直接注册；若携带专属邀请链接（?invite=），系统将自动记录归因并分析习惯。'}
             </p>
             {switchFeedback && (
-              <p className="text-xs font-semibold text-cyan-400 animate-in fade-in">
+              <p className="text-xs font-semibold text-brand animate-in fade-in">
                 {switchFeedback}
               </p>
             )}
@@ -445,7 +445,7 @@ export default function InvitesManagerClient({
               type="button"
               disabled={isSwitchBusy}
               onClick={handleToggleGlobalSwitch}
-              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 ${
+              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${
                 isInviteRequired ? 'bg-amber-500' : 'bg-emerald-500'
               } ${isSwitchBusy ? 'opacity-60 cursor-not-allowed' : ''}`}
               aria-label="切换全局邀请码开关"
@@ -495,13 +495,13 @@ export default function InvitesManagerClient({
       <Card className="p-5 shadow-elevation-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Key className="size-4 text-cyan-400" />
+            <Key className="size-4 text-brand" />
             <h3 className="text-sm font-bold text-white">批量发码与渠道分发器</h3>
           </div>
           <button
             type="button"
             onClick={() => setGeneratorOpen(!generatorOpen)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/20 transition-colors"
           >
             {generatorOpen ? <ChevronUp className="size-3.5" /> : <Plus className="size-3.5" />}
             <span>{generatorOpen ? '收起发码器' : '创建新批次邀请码'}</span>
@@ -521,7 +521,7 @@ export default function InvitesManagerClient({
                   max="100"
                   value={genCount}
                   onChange={(e) => setGenCount(Number(e.target.value))}
-                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
                   required
                 />
               </div>
@@ -536,7 +536,7 @@ export default function InvitesManagerClient({
                   max="10000"
                   value={genMaxUses}
                   onChange={(e) => setGenMaxUses(Number(e.target.value))}
-                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
                   required
                 />
                 <span className="text-[11px] text-gray-500 mt-1 block">
@@ -553,7 +553,7 @@ export default function InvitesManagerClient({
                   placeholder="如: 2026-Q4-影视UP主合作"
                   value={genNotes}
                   onChange={(e) => setGenNotes(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
                 />
               </div>
 
@@ -564,7 +564,7 @@ export default function InvitesManagerClient({
                 <select
                   value={genExpiresDays}
                   onChange={(e) => setGenExpiresDays(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/[0.10] bg-surface px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
                 >
                   <option value="0">永久有效</option>
                   <option value="7">7 天内有效</option>
@@ -578,7 +578,7 @@ export default function InvitesManagerClient({
               <Button
                 type="submit"
                 disabled={genLoading}
-                className="h-[38px] rounded-lg bg-cyan-500 text-black font-semibold text-xs hover:bg-cyan-400 active:scale-[0.98]"
+                className="h-[38px] rounded-lg bg-brand text-white font-semibold text-xs hover:bg-brand-hover active:scale-[0.98]"
               >
                 {genLoading ? (
                   <>
@@ -620,7 +620,7 @@ export default function InvitesManagerClient({
                     </button>
                   </div>
                 </div>
-                <div className="max-h-32 overflow-y-auto rounded-lg bg-black/40 p-2 font-mono text-xs text-cyan-200 grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <div className="max-h-32 overflow-y-auto rounded-lg bg-black/40 p-2 font-mono text-xs text-brand grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {genResult.map((c) => (
                     <div key={c.id || c.code} className="truncate select-all">
                       {c.code}
@@ -651,7 +651,7 @@ export default function InvitesManagerClient({
                 onClick={() => handleStatusChange(tab.id)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   statusFilter === tab.id
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold'
+                    ? 'bg-brand/20 text-brand border border-brand/30 font-semibold'
                     : 'bg-white/[0.04] text-gray-400 hover:text-white border border-transparent'
                 }`}
               >
@@ -669,7 +669,7 @@ export default function InvitesManagerClient({
                 placeholder="搜索邀请码或渠道备注..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="w-56 sm:w-64 rounded-xl border border-white/[0.10] bg-surface pl-8 pr-3 py-1.5 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                className="w-56 sm:w-64 rounded-xl border border-white/[0.10] bg-surface pl-8 pr-3 py-1.5 text-xs text-white focus:border-brand focus:outline-none"
               />
             </div>
             <button
@@ -725,7 +725,7 @@ export default function InvitesManagerClient({
             <div className="flex items-start justify-between border-b border-white/[0.08] pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-lg font-bold text-cyan-300">
+                  <span className="font-mono text-lg font-bold text-brand">
                     {selectedHabitsCode.code}
                   </span>
                   <StatusBadge tone="info">渠道用户习惯画像</StatusBadge>
@@ -747,7 +747,7 @@ export default function InvitesManagerClient({
             <div className="flex-1 overflow-y-auto py-4 space-y-3">
               {habitsLoading ? (
                 <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
-                  <Loader2 className="size-5 animate-spin text-cyan-400" />
+                  <Loader2 className="size-5 animate-spin text-brand" />
                   <span className="text-xs">加载用户使用习惯分析中...</span>
                 </div>
               ) : habitsUsers.length === 0 ? (
@@ -780,7 +780,7 @@ export default function InvitesManagerClient({
                               href={`/admin/users/${user.user_id}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-cyan-400 hover:text-cyan-300"
+                              className="text-brand hover:text-brand-hover"
                               title="在新标签页查看用户详情"
                             >
                               <ArrowUpRight className="size-3.5" />
@@ -806,7 +806,7 @@ export default function InvitesManagerClient({
                         </div>
 
                         {/* 积分 */}
-                        <div className="col-span-2 font-mono text-cyan-300 font-semibold">
+                        <div className="col-span-2 font-mono text-brand font-semibold">
                           {user.credits ?? 0} pts
                         </div>
 
@@ -828,7 +828,7 @@ export default function InvitesManagerClient({
                             ¥ {Number(user.paid_amount_cny || 0).toFixed(2)}
                           </p>
                           {user.active_subscription_plan && (
-                            <span className="inline-block rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] text-cyan-300 font-semibold uppercase">
+                            <span className="inline-block rounded-full bg-brand/20 px-2 py-0.5 text-[10px] text-brand font-semibold uppercase">
                               {user.active_subscription_plan}
                             </span>
                           )}

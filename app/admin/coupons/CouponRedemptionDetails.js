@@ -36,7 +36,7 @@ export default function CouponRedemptionDetails({
     <>
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 text-xs text-white">
-          <span className="text-cyan-300 font-medium truncate max-w-[190px]" title={latest.userEmail || latest.userName || latest.userId}>
+          <span className="text-brand font-medium truncate max-w-[190px]" title={latest.userEmail || latest.userName || latest.userId}>
             👤 {latest.userEmail || latest.userName || latest.userId}
           </span>
         </div>
@@ -45,7 +45,7 @@ export default function CouponRedemptionDetails({
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer shrink-0 font-medium"
+            className="text-brand hover:text-brand-hover underline cursor-pointer shrink-0 font-medium"
           >
             {items.length > 1 ? `共 ${items.length} 条明细` : '明细详情'}
           </button>
@@ -67,7 +67,7 @@ export default function CouponRedemptionDetails({
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-white">卡密兑换明细</h3>
-                  <span className="font-mono font-bold text-xs text-cyan-300 bg-cyan-400/10 border border-cyan-400/20 px-2 py-0.5 rounded-lg">
+                  <span className="font-mono font-bold text-xs text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-lg">
                     {couponCode}
                   </span>
                 </div>
@@ -107,7 +107,7 @@ export default function CouponRedemptionDetails({
                           <div className="text-[11px] text-white/40">{item.userName}</div>
                         )}
                       </td>
-                      <td className="px-3 py-3 font-mono text-cyan-300">
+                      <td className="px-3 py-3 font-mono text-brand">
                         <CopyableId id={item.userId} />
                       </td>
                       <td className="px-3 py-3 text-white/70 font-mono">

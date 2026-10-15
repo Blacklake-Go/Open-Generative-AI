@@ -79,19 +79,19 @@ export default function AdminNav({ user, onItemClick }) {
                 href={singleItem.href}
                 prefetch={false}
                 onClick={onItemClick}
-                className={`group relative flex h-[38px] items-center justify-between rounded-lg px-3 text-xs font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.98] ${
+                className={`group relative flex h-[38px] items-center justify-between rounded-lg px-3 text-xs font-medium tracking-[-0.005em] transition-all duration-150 active:scale-[0.98] ${
                   active(singleItem)
-                    ? 'border border-cyan-500/25 bg-cyan-500/10 text-cyan-300 font-semibold'
-                    : 'border border-transparent text-gray-400 hover:bg-white/[0.05] hover:text-white hover:border-white/[0.06]'
+                    ? 'bg-brand/10 text-brand font-semibold'
+                    : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
                 }`}
               >
                 {active(singleItem) && (
-                  <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-cyan-400" />
+                  <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-brand" />
                 )}
                 <div className="flex items-center gap-2.5 truncate">
                   <IconComponent
                     className={`size-4 transition-colors ${
-                      active(singleItem) ? 'text-cyan-400' : 'text-gray-400 group-hover:text-white'
+                      active(singleItem) ? 'text-brand' : 'text-ink-muted group-hover:text-ink'
                     }`}
                   />
                   <span className="truncate">{group.label}</span>
@@ -106,30 +106,30 @@ export default function AdminNav({ user, onItemClick }) {
             <button
               type="button"
               onClick={() => toggleGroup(group.id)}
-              className={`group relative flex h-[38px] w-full items-center justify-between rounded-lg pl-3 pr-2.5 text-xs font-medium tracking-[-0.005em] transition-all duration-200 cursor-pointer ${
+              className={`group relative flex h-[38px] w-full items-center justify-between rounded-lg pl-3 pr-2.5 text-xs font-medium tracking-[-0.005em] transition-all duration-150 cursor-pointer ${
                 hasActiveChild
-                  ? 'bg-white/[0.04] text-white'
-                  : 'text-gray-400 hover:bg-white/[0.05] hover:text-white'
+                  ? 'bg-white/[0.04] text-ink'
+                  : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
               }`}
             >
               <div className="flex flex-1 h-full items-center gap-2.5 truncate py-2 text-left">
                 <IconComponent
                   className={`size-4 shrink-0 transition-colors ${
-                    hasActiveChild ? 'text-cyan-400' : 'text-gray-400 group-hover:text-gray-200'
+                    hasActiveChild ? 'text-brand' : 'text-ink-muted group-hover:text-ink'
                   }`}
                 />
-                <span className={`truncate ${hasActiveChild ? 'font-semibold text-white' : ''}`}>
+                <span className={`truncate ${hasActiveChild ? 'font-semibold text-ink' : ''}`}>
                   {group.label}
                 </span>
               </div>
 
               <div className="flex items-center gap-1.5">
                 {hasActiveChild && !isOpen && (
-                  <span className="size-1.5 rounded-full bg-cyan-400" />
+                  <span className="size-1.5 rounded-full bg-brand" />
                 )}
                 <ChevronDown
-                  className={`size-3.5 transition-transform duration-200 ease-out text-gray-400 ${
-                    isOpen ? 'rotate-180 text-cyan-300' : 'group-hover:text-gray-200'
+                  className={`size-3.5 transition-transform duration-200 ease-out text-ink-subtle ${
+                    isOpen ? 'rotate-180 text-brand' : 'group-hover:text-ink'
                   }`}
                 />
               </div>
@@ -141,7 +141,7 @@ export default function AdminNav({ user, onItemClick }) {
               }`}
             >
               <div className="overflow-hidden">
-                <div className="relative mt-1 ml-4 space-y-1 pl-3 border-l border-white/[0.08] pb-1">
+                <div className="relative mt-1 ml-4 space-y-1 pl-3 border-l border-line-subtle pb-1">
                   {visibleItems.map((item) => {
                     const itemActive = active(item);
 
@@ -151,19 +151,19 @@ export default function AdminNav({ user, onItemClick }) {
                         href={item.href}
                         prefetch={false}
                         onClick={onItemClick}
-                        className={`group relative flex h-8 items-center rounded-lg px-2.5 text-xs tracking-[-0.005em] transition-all duration-200 active:scale-[0.98] ${
+                        className={`group relative flex h-8 items-center rounded-lg px-2.5 text-xs tracking-[-0.005em] transition-all duration-150 active:scale-[0.98] ${
                           itemActive
-                            ? 'border border-cyan-500/25 bg-cyan-500/10 text-cyan-300 font-semibold'
-                            : 'border border-transparent text-gray-400 hover:bg-white/[0.05] hover:text-white'
+                            ? 'bg-brand/10 text-brand font-semibold'
+                            : 'text-ink-muted hover:bg-white/[0.05] hover:text-ink'
                         }`}
                       >
                         {itemActive && (
-                          <span className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                          <span className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-brand" />
                         )}
                         <span
-                          className={`mr-2 size-1 rounded-full transition-all duration-200 ${
+                          className={`mr-2 size-1 rounded-full transition-all duration-150 ${
                             itemActive
-                              ? 'bg-cyan-400'
+                              ? 'bg-brand'
                               : 'bg-white/20 group-hover:bg-white/50'
                           }`}
                         />

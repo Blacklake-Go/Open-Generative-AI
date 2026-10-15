@@ -218,7 +218,7 @@ export default function ChannelManagerClient({ initialChannels = [], model = {},
                       key={row.id}
                       className={`group transition-colors ${
                         isPrimary
-                          ? 'bg-cyan-500/[0.04] hover:bg-cyan-500/[0.08]'
+                          ? 'bg-brand/[0.04] hover:bg-brand/[0.08]'
                           : 'hover:bg-white/[0.02]'
                       }`}
                     >
@@ -242,7 +242,7 @@ export default function ChannelManagerClient({ initialChannels = [], model = {},
                       {/* 切换主渠道按钮 */}
                       <td className="py-3.5 px-3">
                         {isPrimary ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/15 border border-cyan-500/35 px-3 py-1 text-[11px] font-semibold text-cyan-300 shadow-sm shadow-cyan-950/40">
+                          <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/15 border border-brand/35 px-3 py-1 text-[11px] font-semibold text-brand shadow-sm">
                             <Star className="size-3 fill-amber-400 text-amber-400" />
                             <span>默认主选 (Active)</span>
                           </div>
@@ -251,13 +251,13 @@ export default function ChannelManagerClient({ initialChannels = [], model = {},
                             type="button"
                             onClick={() => handleSetPrimary(row.id)}
                             disabled={isBusy || !row.enabled}
-                            className="inline-flex h-[28px] items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.04] px-2.5 text-[11px] font-medium text-gray-300 transition-all hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-200 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="inline-flex h-[28px] items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.04] px-2.5 text-[11px] font-medium text-gray-300 transition-all hover:border-brand/40 hover:bg-brand/10 hover:text-brand active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
                             title={!row.enabled ? '请先启用该渠道再设为主选' : '点击设为默认主选渠道'}
                           >
                             {isBusy ? (
-                              <RefreshCw className="size-3 animate-spin text-cyan-400" />
+                              <RefreshCw className="size-3 animate-spin text-brand" />
                             ) : (
-                              <Star className="size-3 text-gray-400 group-hover:text-cyan-300" />
+                              <Star className="size-3 text-gray-400 group-hover:text-brand" />
                             )}
                             <span>设为主选</span>
                           </button>

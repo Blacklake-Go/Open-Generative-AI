@@ -484,7 +484,7 @@ export default function LogoCropper({
       {/* 顶部控制栏：比例切换与重置 */}
       <div className="px-5 py-3.5 bg-slate-950/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+          <div className="p-1.5 rounded-lg bg-brand/10 border border-brand/20 text-brand">
             <Crop className="w-4 h-4" />
           </div>
           <div>
@@ -502,7 +502,7 @@ export default function LogoCropper({
               onClick={() => setAspectId(item.id)}
               className={`px-3 py-1 text-xs font-medium rounded-lg transition-all ${
                 aspectId === item.id
-                  ? 'bg-cyan-500 text-black shadow-sm font-semibold'
+                  ? 'bg-brand text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
@@ -547,7 +547,7 @@ export default function LogoCropper({
             step="0.05"
             value={zoom}
             onChange={(e) => setZoom(parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-brand"
           />
           <ZoomIn className="w-4 h-4 text-slate-400" />
           <span className="text-xs text-slate-400 font-mono w-10">
@@ -617,7 +617,7 @@ export default function LogoCropper({
           <button
             type="button"
             onClick={handleConfirm}
-            className="px-5 py-2 text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-1.5 transition-all transform active:scale-95"
+            className="px-5 py-2 text-xs font-semibold text-white bg-brand hover:bg-brand-hover rounded-xl shadow-lg shadow-brand/20 flex items-center gap-1.5 transition-all transform active:scale-95"
           >
             <Check className="w-4 h-4" />
             确认裁剪并应用

@@ -42,8 +42,8 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
               aria-label="启用百度统计"
               disabled={disabled}
               onClick={() => handleToggle(!baidu.enabled)}
-              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50 disabled:cursor-not-allowed disabled:opacity-40 ${
-                baidu.enabled ? 'border-cyan-500/50 bg-cyan-500/80' : 'border-white/[0.12] bg-white/[0.08]'
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-40 ${
+                baidu.enabled ? 'border-brand bg-brand' : 'border-white/[0.12] bg-white/[0.08]'
               }`}
             >
               <span
@@ -70,7 +70,7 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
             className={`w-full rounded-xl border px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
               hasError
                 ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
-                : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
+                : 'border-white/10 bg-black/40 focus:border-brand'
             }`}
           />
           {hasError && (
@@ -87,7 +87,7 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
           href="https://tongji.baidu.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-brand font-semibold hover:underline transition-colors"
         >
           <span>百度统计控制台</span>
           <ExternalLink className="size-3" />

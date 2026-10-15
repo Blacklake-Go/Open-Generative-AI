@@ -82,7 +82,7 @@ export default function ModelsManagerClient({ initialModels }) {
   return (
     <div className="space-y-6">
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-xl border border-cyan-400/30 bg-black/90 px-4 py-3 text-sm text-cyan-200 shadow-2xl backdrop-blur">
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl border border-brand/30 bg-black/90 px-4 py-3 text-sm text-brand shadow-2xl backdrop-blur">
           {toast}
         </div>
       )}
@@ -105,12 +105,12 @@ export default function ModelsManagerClient({ initialModels }) {
                       <input
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="rounded-lg border border-white/20 bg-black/50 px-3 py-1 text-sm font-bold text-white outline-none focus:border-cyan-300"
+                        className="rounded-lg border border-white/20 bg-black/50 px-3 py-1 text-sm font-bold text-white outline-none focus:border-brand"
                       />
                     ) : (
                       <h3 className="text-base font-bold text-white">{m.name}</h3>
                     )}
-                    <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-mono text-cyan-300">
+                    <span className="rounded-md border border-brand/20 bg-brand/10 px-2 py-0.5 text-[10px] font-mono text-brand">
                       {m.type === 'video' ? '🎬 视频' : m.type === 'image' ? '📷 图像' : '🎵 音频'}
                     </span>
                   </div>
@@ -129,7 +129,7 @@ export default function ModelsManagerClient({ initialModels }) {
                           step="0.001"
                           value={editForm.cost_usd}
                           onChange={(e) => setEditForm({ ...editForm, cost_usd: e.target.value })}
-                          className="w-20 rounded-lg border border-white/20 bg-black/50 px-2 py-1 text-xs font-mono text-white outline-none focus:border-cyan-300"
+                          className="w-20 rounded-lg border border-white/20 bg-black/50 px-2 py-1 text-xs font-mono text-white outline-none focus:border-brand"
                         />
                       </div>
                     ) : (
@@ -145,10 +145,10 @@ export default function ModelsManagerClient({ initialModels }) {
                         min="0"
                         value={editForm.credits_price}
                         onChange={(e) => setEditForm({ ...editForm, credits_price: e.target.value })}
-                        className="mt-1 w-16 rounded-lg border border-white/20 bg-black/50 px-2 py-1 text-xs font-mono text-cyan-200 outline-none focus:border-cyan-300"
+                        className="mt-1 w-16 rounded-lg border border-white/20 bg-black/50 px-2 py-1 text-xs font-mono text-brand outline-none focus:border-brand"
                       />
                     ) : (
-                      <p className="mt-1 font-mono text-sm font-bold text-cyan-200">{m.credits_price} 点</p>
+                      <p className="mt-1 font-mono text-sm font-bold text-brand">{m.credits_price} 点</p>
                     )}
                   </div>
 
@@ -170,7 +170,7 @@ export default function ModelsManagerClient({ initialModels }) {
                         type="button"
                         disabled={busy}
                         onClick={() => saveEdit(m.id)}
-                        className="rounded-xl bg-cyan-300 px-3.5 py-1.5 text-xs font-bold text-black hover:bg-cyan-200 transition disabled:opacity-50"
+                        className="rounded-xl bg-brand hover:bg-brand-hover px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition disabled:opacity-50"
                       >
                         保存
                       </button>

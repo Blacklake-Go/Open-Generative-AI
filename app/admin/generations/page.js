@@ -26,7 +26,7 @@ export default async function GenerationsPage({ searchParams }) {
         <div>
           <CopyableId id={row.id} />
           <div className="mt-1">
-            <Link href={`/admin/users/${row.user_id}`} className="text-xs text-white/50 hover:text-cyan-200">
+            <Link href={`/admin/users/${row.user_id}`} className="text-xs text-white/50 hover:text-brand">
               {row.email}
             </Link>
           </div>
@@ -40,7 +40,7 @@ export default async function GenerationsPage({ searchParams }) {
       render: (row) => (
         <div className="max-w-[280px]">
           <p className="truncate text-xs font-semibold text-white/90">{row.label || '无描述'}</p>
-          <p className="mt-0.5 text-[11px] text-cyan-200/70 font-mono">{row.model || row.provider || '默认引擎'}</p>
+          <p className="mt-0.5 text-[11px] text-ink-muted font-mono">{row.model || row.provider || '默认引擎'}</p>
         </div>
       ),
     },
@@ -73,7 +73,7 @@ export default async function GenerationsPage({ searchParams }) {
       label: '额度 / 成本(USD)',
       render: (row) => (
         <div>
-          <span className="font-mono font-bold text-cyan-200">{row.credit_cost} Credits</span>
+          <span className="font-mono font-bold text-brand">{row.credit_cost} Credits</span>
           <p className="text-[11px] font-mono text-amber-300/80">
             ${Number(row.actual_cost_usd || 0).toFixed(3)}
           </p>
@@ -89,7 +89,7 @@ export default async function GenerationsPage({ searchParams }) {
             href={row.result_url}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-cyan-200 hover:bg-cyan-300/10"
+            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-brand hover:bg-brand/10"
           >
             打开查看 ↗
           </a>
@@ -99,7 +99,6 @@ export default async function GenerationsPage({ searchParams }) {
     },
     {
       key: 'created_at',
-      label: '提交时间',
       label: '提交时间',
       render: (row) => formatDate(row.created_at),
     },
@@ -114,13 +113,13 @@ export default async function GenerationsPage({ searchParams }) {
           name="q"
           defaultValue={params.get('q') || ''}
           placeholder={userId ? '在该用户的任务中搜索 ID、提示词或模型…' : '搜索任务 ID、用户邮箱、提示词或模型…'}
-          className="min-w-[240px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+          className="min-w-[240px] flex-1 rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-xs text-white outline-none focus:border-brand"
         />
 
         <select
           name="status"
           defaultValue={params.get('status') || ''}
-          className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-cyan-300/50"
+          className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
         >
           <option value="">全部状态</option>
           <option value="succeeded">Succeeded (成功)</option>
@@ -131,7 +130,7 @@ export default async function GenerationsPage({ searchParams }) {
 
         <button
           type="submit"
-          className="rounded-xl bg-cyan-300 px-5 py-2.5 text-xs font-bold text-black hover:bg-cyan-200"
+          className="rounded-xl bg-brand hover:bg-brand-hover px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all"
         >
           筛选任务
         </button>

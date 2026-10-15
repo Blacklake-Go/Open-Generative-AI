@@ -89,7 +89,7 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-brand">
               <ShieldCheck className="size-4" />
             </div>
             <div>
@@ -130,7 +130,7 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
                       href={platform.consoleUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-[11px] text-cyan-400 hover:text-cyan-300"
+                      className="inline-flex items-center gap-0.5 text-[11px] text-brand font-semibold hover:underline"
                     >
                       <span>控制台</span>
                       <ExternalLink className="size-2.5" />
@@ -143,7 +143,7 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
                   value={currentToken}
                   onChange={(e) => handleInputChange(platform.id, e.target.value)}
                   placeholder={platform.placeholder}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-xs text-white placeholder-white/30 outline-none focus:border-cyan-500/50 transition-colors"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 font-mono text-xs text-white placeholder-white/30 outline-none focus:border-brand transition-colors"
                 />
 
                 {extractedHints[platform.id] && (
@@ -170,7 +170,7 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
           <button
             type="submit"
             disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/30 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
           >
             <Save className="size-3.5" />
             <span>{isSaving ? '正在保存...' : '保存验证配置'}</span>

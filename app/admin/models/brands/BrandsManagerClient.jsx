@@ -391,7 +391,7 @@ export default function BrandsManagerClient({
                 }));
                 setIsMountModalOpen(true);
               }}
-              className="h-8 bg-cyan-500 text-xs font-semibold text-black hover:bg-cyan-400"
+              className="h-8 bg-brand hover:bg-brand-hover text-xs font-semibold text-white shadow-sm"
             >
               <Plus className="mr-1 size-3.5" />
               快速挂载品牌模型
@@ -433,7 +433,7 @@ export default function BrandsManagerClient({
         {/* 第一行：供应商切换胶囊群 */}
         <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-white/[0.06]">
           <span className="text-xs font-medium text-gray-400 flex items-center gap-1.5 shrink-0">
-            <Server className="size-3.5 text-cyan-400" />
+            <Server className="size-3.5 text-brand" />
             渠道筛选:
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -442,7 +442,7 @@ export default function BrandsManagerClient({
               onClick={() => handleSelectProvider('all')}
               className={`h-7 rounded-full px-3 text-xs font-medium transition-all ${
                 selectedProvider === 'all'
-                  ? 'bg-cyan-500 text-black font-semibold shadow-sm'
+                  ? 'bg-brand text-white font-semibold shadow-sm'
                   : 'border border-white/[0.08] bg-white/[0.03] text-gray-400 hover:bg-white/[0.06] hover:text-white'
               }`}
             >
@@ -458,12 +458,12 @@ export default function BrandsManagerClient({
                   onClick={() => handleSelectProvider(p.id)}
                   className={`h-7 rounded-full px-3 text-xs font-medium transition-all flex items-center gap-1.5 ${
                     active
-                      ? 'bg-cyan-500 text-black font-semibold shadow-sm'
+                      ? 'bg-brand text-white font-semibold shadow-sm'
                       : 'border border-white/[0.08] bg-white/[0.03] text-gray-400 hover:bg-white/[0.06] hover:text-white'
                   }`}
                 >
                   <span>{p.name}</span>
-                  <span className={`text-[10px] font-mono px-1 rounded ${active ? 'bg-black/20 text-black' : 'bg-white/[0.06] text-gray-400'}`}>
+                  <span className={`text-[10px] font-mono px-1 rounded ${active ? 'bg-black/20 text-white' : 'bg-white/[0.06] text-gray-400'}`}>
                     {count}
                   </span>
                 </button>
@@ -544,7 +544,7 @@ export default function BrandsManagerClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索模型名称、ID 或渠道标识..."
-              className="h-8 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-8 pr-3 text-xs text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
+              className="h-8 w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-8 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
             />
           </div>
         </div>
@@ -579,7 +579,7 @@ export default function BrandsManagerClient({
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-white">{brand.name}</h3>
-                        <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-300">
+                        <span className="rounded-full border border-brand/20 bg-brand/10 px-2 py-0.5 text-[10px] font-medium text-brand">
                           {brand.badge || '核心品牌'}
                         </span>
                       </div>
@@ -654,7 +654,7 @@ export default function BrandsManagerClient({
                             {/* 供应商底层标识 */}
                             <td className="px-3 py-3">
                               <div className="flex items-center gap-1.5 font-mono text-xs">
-                                <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-cyan-300 border border-white/[0.06]">
+                                <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-brand border border-white/[0.06]">
                                   {c.providerModelId}
                                 </span>
                                 <button
@@ -715,12 +715,12 @@ export default function BrandsManagerClient({
                                     type="number"
                                     value={tempPriority}
                                     onChange={(e) => setTempPriority(e.target.value)}
-                                    className="h-6 w-16 rounded border border-white/[0.2] bg-black px-1.5 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                                    className="h-6 w-16 rounded border border-white/[0.2] bg-black px-1.5 text-xs text-white font-mono focus:outline-none focus:border-brand"
                                   />
                                   <button
                                     type="button"
                                     onClick={() => handleSavePriority(c.id)}
-                                    className="rounded bg-cyan-500 px-1.5 py-0.5 text-[10px] font-semibold text-black hover:bg-cyan-400"
+                                    className="rounded bg-brand px-1.5 py-0.5 text-[10px] font-semibold text-white hover:bg-brand-hover shadow-sm"
                                   >
                                     保存
                                   </button>
@@ -740,7 +740,7 @@ export default function BrandsManagerClient({
                                     setEditingPriorityId(c.id);
                                     setTempPriority(c.priority);
                                   }}
-                                  className="group flex items-center gap-1 font-mono font-semibold text-cyan-400 hover:underline"
+                                  className="group flex items-center gap-1 font-mono font-semibold text-brand hover:underline"
                                   title="点击修改路由优先级"
                                 >
                                   <span>{c.priority}</span>
@@ -811,7 +811,7 @@ export default function BrandsManagerClient({
         >
           <div className="w-full max-w-lg rounded-2xl border border-white/[0.12] bg-surface p-6 shadow-2xl">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Plus className="size-5 text-cyan-400" />
+              <Plus className="size-5 text-brand" />
               快速挂载品牌模型规格
             </h3>
             <p className="mt-1 text-xs text-gray-400">
@@ -827,7 +827,7 @@ export default function BrandsManagerClient({
                     value={mountForm.providerId}
                     onChange={(e) => setMountForm({ ...mountForm, providerId: e.target.value })}
                     required
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     {providers.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -852,7 +852,7 @@ export default function BrandsManagerClient({
                       });
                     }}
                     required
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     {allBrands
                       .filter((b) => b.id !== 'all')
@@ -881,7 +881,7 @@ export default function BrandsManagerClient({
                     });
                   }}
                   required
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 >
                   <option value="">-- 请选择平台模型 --</option>
                   {filteredCandidatesForMount.map((m) => (
@@ -908,7 +908,7 @@ export default function BrandsManagerClient({
                   onChange={(e) => setMountForm({ ...mountForm, providerModelId: e.target.value })}
                   required
                   placeholder="例如: seedream-5-0-lite-260128 或 kling-v1-standard"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
               </div>
 
@@ -922,7 +922,7 @@ export default function BrandsManagerClient({
                   value={mountForm.providerEndpoint}
                   onChange={(e) => setMountForm({ ...mountForm, providerEndpoint: e.target.value })}
                   placeholder="例如: /images/generations 或留空"
-                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
               </div>
 
@@ -934,7 +934,7 @@ export default function BrandsManagerClient({
                     type="number"
                     value={mountForm.priority}
                     onChange={(e) => setMountForm({ ...mountForm, priority: Number(e.target.value) })}
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
 
@@ -946,7 +946,7 @@ export default function BrandsManagerClient({
                     step="0.001"
                     value={mountForm.baseCost}
                     onChange={(e) => setMountForm({ ...mountForm, baseCost: Number(e.target.value) })}
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none font-mono"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                   />
                 </div>
 
@@ -956,7 +956,7 @@ export default function BrandsManagerClient({
                   <select
                     value={mountForm.currency}
                     onChange={(e) => setMountForm({ ...mountForm, currency: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-[#161820] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
                   >
                     <option value="USD">USD ($)</option>
                     <option value="CNY">CNY (¥)</option>
@@ -971,7 +971,7 @@ export default function BrandsManagerClient({
                     type="checkbox"
                     checked={mountForm.enabled}
                     onChange={(e) => setMountForm({ ...mountForm, enabled: e.target.checked })}
-                    className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-cyan-500 focus:ring-0"
+                    className="size-4 rounded border-white/[0.2] bg-white/[0.05] text-brand focus:ring-0"
                   />
                   立即启用该品牌模型路由
                 </label>
@@ -989,7 +989,7 @@ export default function BrandsManagerClient({
                 <Button
                   type="submit"
                   disabled={isSavingMount || !mountForm.modelId || !mountForm.providerModelId}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+                  className="bg-brand hover:bg-brand-hover text-white font-semibold shadow-sm"
                 >
                   {isSavingMount ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
                   确认挂载

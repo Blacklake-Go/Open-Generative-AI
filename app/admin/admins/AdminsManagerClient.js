@@ -268,12 +268,12 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
                     </StatusBadge>
                   </div>
 
-                  {/* 快捷操作区 */}
+                    {/* 快捷操作区 */}
                   <div className="flex items-center gap-1.5 border-l border-white/[0.08] pl-3">
                     <button
                       type="button"
                       onClick={() => handleQuickEditAdmin(admin)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-300/10 hover:text-cyan-100"
+                      className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/10 hover:text-brand-hover"
                       title="点击预填角色修改"
                     >
                       <Edit3 className="size-3" />
@@ -324,7 +324,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
               feedback.type === 'error'
                 ? 'border-red-500/30 bg-red-500/10 text-red-300'
                 : feedback.type === 'info'
-                ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300'
+                ? 'border-brand/30 bg-brand/10 text-brand'
                 : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
             }`}
           >
@@ -343,11 +343,11 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
               value={userSearchQuery}
               onChange={(e) => setUserSearchQuery(e.target.value)}
               placeholder="输入关键词搜索现有注册用户…"
-              className="w-full rounded-xl border border-white/10 bg-black/40 pl-9 pr-4 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+              className="w-full rounded-xl border border-white/10 bg-black/40 pl-9 pr-4 py-2.5 text-xs text-white outline-none focus:border-brand"
             />
             <Search className="absolute left-3 top-3 size-3.5 text-white/40" />
             {isSearchingUsers && (
-              <Loader2 className="absolute right-3 top-3 size-3.5 animate-spin text-cyan-400" />
+              <Loader2 className="absolute right-3 top-3 size-3.5 animate-spin text-brand" />
             )}
           </div>
 
@@ -369,7 +369,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
                       {u.email || u.phone || u.id} · 当前角色: {roleLabel(u.role)}
                     </p>
                   </div>
-                  <span className="rounded bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+                  <span className="rounded bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
                     选择此人
                   </span>
                 </button>
@@ -386,7 +386,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
                 目标用户 ID (usr_xxx) <span className="text-red-400">*</span>
               </label>
               {targetUserDisplay && (
-                <span className="text-[11px] text-cyan-300 truncate max-w-[200px]">
+                <span className="text-[11px] text-brand truncate max-w-[200px]">
                   已选: {targetUserDisplay}
                 </span>
               )}
@@ -400,7 +400,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
                 setTargetUserDisplay('');
               }}
               placeholder="usr_..."
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white font-mono outline-none focus:border-cyan-300/50"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white font-mono outline-none focus:border-brand"
             />
           </div>
 
@@ -411,7 +411,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+              className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3.5 py-2.5 text-xs text-white outline-none focus:border-brand"
             >
               <option value="operations_admin">运营管理员 (内容、生成、用户管理)</option>
               <option value="finance_admin">财务管理员 (订阅、订单、调额、套餐)</option>
@@ -433,7 +433,7 @@ export default function AdminsManagerClient({ initialAdmins = [] }) {
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="验证当前操作人的超管密码"
-                className="w-full rounded-xl border border-white/10 bg-black/40 pl-9 pr-3.5 py-2.5 text-xs text-white outline-none focus:border-cyan-300/50"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-9 pr-3.5 py-2.5 text-xs text-white outline-none focus:border-brand"
               />
               <KeyRound className="absolute left-3 top-3 size-3.5 text-white/40" />
             </div>

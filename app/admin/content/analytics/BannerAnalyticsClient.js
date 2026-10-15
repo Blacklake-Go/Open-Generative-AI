@@ -75,7 +75,7 @@ export default function BannerAnalyticsClient({ initialData }) {
       {/* 顶部统计卡片 (KPIs) */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="p-4 flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400">
+          <div className="p-3 rounded-xl bg-brand/10 text-brand">
             <Eye className="size-5" />
           </div>
           <div>
@@ -104,7 +104,7 @@ export default function BannerAnalyticsClient({ initialData }) {
           </div>
           <div>
             <div className="text-[11px] font-semibold text-white/50">点击转化率 (CTR)</div>
-            <div className="text-xl font-extrabold text-cyan-300 mt-0.5">
+            <div className="text-xl font-extrabold text-brand mt-0.5">
               {kpi.ctr ?? 0}%
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function BannerAnalyticsClient({ initialData }) {
                           关闭 DISMISS
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-brand/10 text-brand border border-brand/20">
                           曝光 VIEW
                         </span>
                       )}
@@ -217,7 +217,7 @@ export default function BannerAnalyticsClient({ initialData }) {
                         second: '2-digit',
                       })}
                     </td>
-                    <td className="py-3 font-mono text-[11px] text-cyan-200">
+                    <td className="py-3 font-mono text-[11px] text-ink">
                       {evt.pagePath}
                     </td>
                     <td className="py-3 font-mono text-[11px] text-white/50 max-w-[200px] truncate" title={evt.targetUrl}>
@@ -235,7 +235,7 @@ export default function BannerAnalyticsClient({ initialData }) {
                     </td>
                     <td className="py-3 text-[11px]">
                       {evt.userId ? (
-                        <span className="text-cyan-400 font-mono font-bold" title={evt.userId}>
+                        <span className="text-brand font-mono font-bold" title={evt.userId}>
                           用户 #{evt.userId.slice(0, 8)}
                         </span>
                       ) : (

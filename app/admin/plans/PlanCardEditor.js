@@ -112,11 +112,11 @@ export default function PlanCardEditor({ plan }) {
       <div>
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-cyan-300">
+            <span className="font-mono text-xs uppercase tracking-wider text-brand">
               {plan.id}
             </span>
             {badge && (
-              <span className="rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] font-semibold text-cyan-300 border border-cyan-500/30">
+              <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand border border-brand/20">
                 {badge}
               </span>
             )}
@@ -132,7 +132,7 @@ export default function PlanCardEditor({ plan }) {
               <h3 className="text-xl font-bold text-white">{name}</h3>
               <div className="mt-2 flex flex-wrap items-baseline gap-2">
                 <div>
-                  <span className="text-2xl font-extrabold text-cyan-200">¥{monthlyCny}</span>
+                  <span className="text-2xl font-extrabold text-brand">¥{monthlyCny}</span>
                   <span className="text-xs text-white/40"> /月 (${monthlyUsd})</span>
                 </div>
                 <div className="text-[11px] text-amber-300 font-medium bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
@@ -148,7 +148,7 @@ export default function PlanCardEditor({ plan }) {
             <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3">
               <p className="text-[11px] font-semibold text-white/40 mb-1.5">每月订阅额度资产：</p>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/80">月度积分: <strong className="font-mono text-cyan-300">{quotaBase}</strong></span>
+                <span className="text-white/80">月度积分: <strong className="font-mono text-brand">{quotaBase}</strong></span>
                 <span className="text-white/50">兑换率: <strong className="font-mono text-amber-200">¥0.07 / 积分</strong></span>
               </div>
             </div>
@@ -169,14 +169,14 @@ export default function PlanCardEditor({ plan }) {
               </div>
               <div className="rounded-lg border border-white/[0.06] bg-black/20 p-2">
                 <div className="text-[10px] text-white/40">云端资产库</div>
-                <div className="font-mono font-bold text-cyan-300 mt-0.5">{storageGb}GB</div>
+                <div className="font-mono font-bold text-brand mt-0.5">{storageGb}GB</div>
               </div>
             </div>
 
             {/* 专属权益徽标（可勾选配置成果） */}
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold text-cyan-300/80 flex items-center gap-1">
-                <Sparkles className="size-3 text-cyan-300" />
+              <p className="text-[11px] font-semibold text-brand flex items-center gap-1">
+                <Sparkles className="size-3 text-brand" />
                 <span>已开通专属特权：</span>
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -188,7 +188,7 @@ export default function PlanCardEditor({ plan }) {
                       key={benefit.key}
                       className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium border ${
                         active
-                          ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+                          ? 'border-brand/20 bg-brand/10 text-brand'
                           : 'border-white/5 bg-white/[0.02] text-white/30 line-through opacity-60'
                       }`}
                     >
@@ -206,7 +206,7 @@ export default function PlanCardEditor({ plan }) {
               <ul className="space-y-1.5 text-xs text-white/70">
                 {(Array.isArray(plan.features) ? plan.features : []).map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-cyan-300 text-[11px] mt-0.5">✔</span>
+                    <span className="text-brand text-[11px] mt-0.5">✔</span>
                     <span className="leading-tight">{f}</span>
                   </li>
                 ))}
@@ -223,7 +223,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -233,7 +233,7 @@ export default function PlanCardEditor({ plan }) {
                   placeholder="如: 推荐"
                   value={badge}
                   onChange={(e) => setBadge(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -247,7 +247,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={monthlyCny}
                   onChange={(e) => setMonthlyCny(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -257,7 +257,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={monthlyUsd}
                   onChange={(e) => setMonthlyUsd(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={quarterlyCny}
                   onChange={(e) => setQuarterlyCny(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -278,7 +278,7 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={quarterlyUsd}
                   onChange={(e) => setQuarterlyUsd(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={yearlyCny}
                   onChange={(e) => setYearlyCny(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -301,7 +301,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={yearlyUsd}
                   onChange={(e) => setYearlyUsd(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -315,7 +315,7 @@ export default function PlanCardEditor({ plan }) {
                   required
                   value={quotaBase}
                   onChange={(e) => setQuotaBase(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-mono text-cyan-200 outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-mono text-brand outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -324,7 +324,7 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={storageGb}
                   onChange={(e) => setStorageGb(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-mono text-cyan-200 outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs font-mono text-brand outline-none focus:border-brand"
                 />
               </div>
             </div>
@@ -337,7 +337,7 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={concurrency}
                   onChange={(e) => setConcurrency(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -346,7 +346,7 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={asyncConcurrency}
                   onChange={(e) => setAsyncConcurrency(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-brand"
                 />
               </div>
               <div>
@@ -355,15 +355,15 @@ export default function PlanCardEditor({ plan }) {
                   type="number"
                   value={portraitCapacity}
                   onChange={(e) => setPortraitCapacity(e.target.value)}
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-cyan-300/60"
+                  className="w-full rounded-lg border border-white/15 bg-black/40 px-2 py-1.5 text-xs font-mono text-white outline-none focus:border-brand"
                 />
               </div>
             </div>
 
             {/* 专属权益配置（可勾选） */}
-            <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/20 p-3 space-y-2">
-              <label className="block text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-cyan-300" />
+            <div className="rounded-xl border border-brand/20 bg-brand/[0.03] p-3 space-y-2">
+              <label className="block text-[11px] font-bold text-brand flex items-center gap-1.5">
+                <Sparkles className="size-3.5 text-brand" />
                 <span>专属权益配置（可勾选开关）：</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -375,7 +375,7 @@ export default function PlanCardEditor({ plan }) {
                       key={benefit.key}
                       className={`flex items-start gap-2 p-1.5 rounded-lg border cursor-pointer select-none transition ${
                         checked
-                          ? 'border-cyan-500/40 bg-cyan-500/10 text-white'
+                          ? 'border-brand/40 bg-brand/10 text-white'
                           : 'border-white/10 bg-black/30 text-white/50 hover:border-white/20'
                       }`}
                     >
@@ -388,7 +388,7 @@ export default function PlanCardEditor({ plan }) {
                       <div
                         className={`mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded border transition ${
                           checked
-                            ? 'border-cyan-400 bg-cyan-400 text-black'
+                            ? 'border-brand bg-brand text-white'
                             : 'border-white/30 bg-transparent'
                         }`}
                       >
@@ -396,7 +396,7 @@ export default function PlanCardEditor({ plan }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 text-[11px] font-semibold">
-                          <IconComponent className="size-3 text-cyan-300 shrink-0" />
+                          <IconComponent className="size-3 text-brand shrink-0" />
                           <span>{benefit.label}</span>
                         </div>
                         <p className="text-[9px] text-white/40 leading-tight">
@@ -415,7 +415,7 @@ export default function PlanCardEditor({ plan }) {
                 rows={4}
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
-                className="w-full rounded-lg border border-white/15 bg-black/40 p-2 text-xs text-white outline-none focus:border-cyan-300/60 font-sans"
+                className="w-full rounded-lg border border-white/15 bg-black/40 p-2 text-xs text-white outline-none focus:border-brand font-sans"
               />
             </div>
 
@@ -457,7 +457,7 @@ export default function PlanCardEditor({ plan }) {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="rounded-lg bg-cyan-300 px-4 py-1.5 text-xs font-bold text-black hover:bg-cyan-200 transition-colors shadow-lg shadow-cyan-500/20"
+                  className="rounded-lg bg-brand px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-hover transition-colors shadow-sm"
                 >
                   {busy ? '保存中…' : '保存更新'}
                 </button>
@@ -479,7 +479,7 @@ export default function PlanCardEditor({ plan }) {
         </div>
       )}
 
-      {message && <p className="mt-2 text-xs text-cyan-200">{message}</p>}
+      {message && <p className="mt-2 text-xs text-brand">{message}</p>}
     </Card>
   );
 }

@@ -94,7 +94,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-raised border border-line-subtle shadow-elevation-1">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-brand/10 text-brand">
               <Activity className="size-4" />
             </span>
             <h2 className="text-body font-bold text-ink">全网模型调用与遥测大盘</h2>
@@ -119,7 +119,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
                   onClick={() => handleRangeChange(t.id)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                     active
-                      ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1'
+                      ? 'bg-brand text-white shadow-sm'
                       : 'text-ink-muted hover:text-ink hover:bg-wash'
                   }`}
                 >
@@ -138,7 +138,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
             className="rounded-lg h-9 px-3"
             title="重新聚合拉取最新数据"
           >
-            <RefreshCw className={`size-3.5 mr-1 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+            <RefreshCw className={`size-3.5 mr-1 ${loading ? 'animate-spin text-brand' : ''}`} />
             刷新数据
           </Button>
         </div>
@@ -195,10 +195,10 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
         <div className="p-4 border-b border-line-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-raised">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-ink text-card-title flex items-center gap-2">
-              <BarChart3 className="size-4 text-cyan-400" />
+              <BarChart3 className="size-4 text-brand" />
               模型调用热度与性能排行
             </span>
-            <span className="rounded-full bg-cyan-500/10 text-cyan-400 px-2 py-0.5 text-micro font-medium border border-cyan-500/20">
+            <span className="rounded-full bg-brand/10 text-brand px-2 py-0.5 text-micro font-semibold border border-brand/20">
               共 {filteredModels.length} 个模型
             </span>
           </div>
@@ -213,7 +213,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
                   onClick={() => setCategoryFilter(c)}
                   className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
                     categoryFilter === c
-                      ? 'bg-surface-inverse text-ink-inverse font-semibold'
+                      ? 'bg-brand text-white font-semibold shadow-sm'
                       : 'text-ink-muted hover:text-ink'
                   }`}
                 >
@@ -230,7 +230,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="搜索模型名称或ID..."
-                className="w-full rounded-xl border border-line-subtle bg-well pl-8 pr-3 py-1.5 text-xs text-ink placeholder:text-ink-subtle outline-none focus:border-cyan-500"
+                className="w-full rounded-xl border border-line-subtle bg-well pl-8 pr-3 py-1.5 text-xs text-ink placeholder:text-ink-subtle outline-none focus:border-brand"
               />
             </div>
           </div>
@@ -413,7 +413,7 @@ export default function ModelTelemetryClient({ initialData, initialRange = '24h'
                         <button
                           type="button"
                           onClick={() => setExpandedErrorKey(isExpanded ? null : item.categoryKey)}
-                          className="text-cyan-400 hover:underline"
+                          className="text-brand font-semibold hover:underline"
                         >
                           {isExpanded ? '收起' : '展开'}
                         </button>

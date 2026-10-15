@@ -122,7 +122,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
           return (
             <Card key={mode.value} className="border-white/[0.06] hover:border-white/[0.12] transition-all">
               <div className="flex items-center gap-2 mb-2">
-                <Icon className="size-4 text-cyan-400" />
+                <Icon className="size-4 text-brand" />
                 <h3 className="text-xs font-semibold text-white">{mode.label}</h3>
               </div>
               <p className="text-[11px] text-gray-400 leading-5">{mode.desc}</p>
@@ -139,7 +139,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索模型名称或 ID..."
-            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40"
           />
         </div>
         <span className="text-xs text-gray-500">{filteredModels.length} 个模型</span>
@@ -180,7 +180,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
                       value={model.routing_mode || 'cost'}
                       onChange={(e) => action('routing_policy', { modelId: model.id, routingMode: e.target.value })}
                       disabled={!canWrite || busy === 'routing_policy'}
-                      className="rounded border border-white/[0.12] bg-surface-raised px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none disabled:opacity-50"
+                      className="rounded border border-white/[0.12] bg-surface-raised px-2 py-1 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
                     >
                       {ROUTING_MODES.map((mode) => (
                         <option key={mode.value} value={mode.value}>{mode.label}</option>
@@ -206,7 +206,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
                         setParamsText(JSON.stringify(defaultSimulationParameters(model), null, 2));
                         document.getElementById('route-simulator')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }}
-                      className="rounded p-1.5 text-gray-400 hover:bg-white/[0.06] hover:text-cyan-400 transition-colors"
+                      className="rounded p-1.5 text-gray-400 hover:bg-white/[0.06] hover:text-brand transition-colors"
                     >
                       <Play className="size-3.5" />
                     </button>
@@ -226,7 +226,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
         <div className="grid gap-5 lg:grid-cols-[minmax(16rem,.75fr)_minmax(20rem,1.25fr)]">
           <div className="space-y-3">
             <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Route className="size-4 text-cyan-400" />
+              <Route className="size-4 text-brand" />
               模拟报价与选路解释
             </h2>
             <p className="text-xs text-gray-400 leading-5">
@@ -243,7 +243,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
                   setParamsText(JSON.stringify(defaultSimulationParameters(model), null, 2));
                   setSimulation(null);
                 }}
-                className="w-full rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-lg border border-white/[0.12] bg-surface-raised px-3 py-2 text-xs text-white focus:border-brand focus:outline-none"
               >
                 {(snapshot.models || []).map((m) => (
                   <option key={m.id} value={m.id}>{m.display_name || m.name} · {m.id}</option>
@@ -258,7 +258,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
                 value={paramsText}
                 onChange={(e) => setParamsText(e.target.value)}
                 rows={4}
-                className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] p-3 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-lg border border-white/[0.1] bg-white/[0.03] p-3 font-mono text-xs text-white focus:border-brand focus:outline-none"
                 spellCheck="false"
               />
             </div>
@@ -272,7 +272,7 @@ export default function RoutingClient({ initialSnapshot, canWrite = false }) {
                   }
                 }}
                 disabled={busy === 'simulate'}
-                className="bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-semibold"
+                className="rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all"
               >
                 {busy === 'simulate' ? <Loader2 className="mr-1 size-3 animate-spin" /> : <Play className="mr-1 size-3" />}
                 模拟报价

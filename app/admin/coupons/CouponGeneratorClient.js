@@ -45,7 +45,7 @@ export default function CouponGeneratorClient() {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="rounded-xl bg-cyan-400/10 border border-cyan-400/30 px-4 py-2 text-xs font-semibold text-cyan-200 hover:bg-cyan-400/20 transition"
+          className="rounded-xl bg-brand/10 border border-brand/30 px-4 py-2 text-xs font-semibold text-brand hover:bg-brand/20 transition"
         >
           {open ? '收起卡密生成器' : '＋ 批量生成卡密兑换码'}
         </button>
@@ -64,7 +64,7 @@ export default function CouponGeneratorClient() {
                 max="100"
                 value={count}
                 onChange={(e) => setCount(Number(e.target.value))}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
 
@@ -77,7 +77,7 @@ export default function CouponGeneratorClient() {
                   if (e.target.value === 'plan') setValue('pro');
                   else setValue('50');
                 }}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2 text-xs text-white/80 outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2 text-xs text-white/80 outline-none focus:border-brand"
               >
                 <option value="credits">算力额度 (Credits)</option>
                 <option value="plan">套餐方案 (Plan)</option>
@@ -93,7 +93,7 @@ export default function CouponGeneratorClient() {
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={type === 'credits' ? '如 100' : '如 pro 或 team'}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
 
@@ -105,28 +105,28 @@ export default function CouponGeneratorClient() {
                 max="10000"
                 value={maxUses}
                 onChange={(e) => setMaxUses(Number(e.target.value))}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-cyan-300"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white outline-none focus:border-brand"
               />
             </div>
           </div>
 
           <div className="mt-5 flex items-center justify-between">
             {feedback ? (
-              <span className="text-xs text-cyan-200">{feedback}</span>
+              <span className="text-xs text-brand font-medium">{feedback}</span>
             ) : <span />}
 
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-cyan-300 px-5 py-2 text-xs font-bold text-black hover:bg-cyan-200 transition disabled:opacity-50"
+              className="rounded-xl bg-brand px-5 py-2 text-xs font-bold text-white hover:bg-brand-hover transition disabled:opacity-50"
             >
               {loading ? '正在生成…' : '确认生成卡密'}
             </button>
           </div>
 
           {resultCodes.length > 0 && (
-            <div className="mt-4 rounded-xl border border-cyan-400/20 bg-black/40 p-4">
-              <p className="text-xs font-bold text-cyan-200 mb-2">本次生成的卡密代码（可直接复制分发）：</p>
+            <div className="mt-4 rounded-xl border border-brand/20 bg-black/40 p-4">
+              <p className="text-xs font-bold text-brand mb-2">本次生成的卡密代码（可直接复制分发）：</p>
               <textarea
                 readOnly
                 rows={Math.min(6, resultCodes.length)}
