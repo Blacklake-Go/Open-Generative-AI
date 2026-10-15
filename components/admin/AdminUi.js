@@ -135,27 +135,45 @@ export function AdminCardGridItem({ title, badge, subtext, actionLabel, onAction
 }
 
 {/* ─── 微信风格下划线选项卡 (WeChat Underline Sub-Nav Tabs) ─── */}
-export function AdminUnderlineTabs({ tabs = [], activeTab, onTabChange }) {
+export function AdminUnderlineTabs({ tabs = [], activeTab, onTabChange, rightAction, className = '' }) {
   return (
-    <div className="flex items-center gap-6 border-b border-line-subtle">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onTabChange(tab.id)}
-            className={`relative pb-3 text-sm font-medium transition-colors cursor-pointer ${
-              isActive ? 'text-brand font-semibold' : 'text-ink-muted hover:text-ink'
-            }`}
-          >
-            {tab.label}
-            {isActive && (
-              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-brand rounded-full" />
-            )}
-          </button>
-        );
-      })}
+    <div className={`flex items-center justify-between border-b border-line-subtle h-12 ${className}`}>
+      <div className="flex items-center gap-6 sm:gap-8 h-full overflow-x-auto scrollbar-none">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              className={`relative h-full inline-flex items-center gap-2 text-sm transition-colors cursor-pointer select-none whitespace-nowrap ${
+                isActive ? 'text-brand font-semibold' : 'text-ink-muted hover:text-ink font-medium'
+              }`}
+            >
+              <span>{tab.label}</span>
+              {typeof tab.count === 'number' && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-mono font-medium ${
+                    isActive
+                      ? 'bg-brand/15 text-brand font-bold'
+                      : 'bg-white/10 text-ink-subtle'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+              {isActive && (
+                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {rightAction && (
+        <div className="shrink-0 flex items-center gap-2">
+          {rightAction}
+        </div>
+      )}
     </div>
   );
 }

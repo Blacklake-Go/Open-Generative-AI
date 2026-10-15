@@ -48,7 +48,7 @@ export default async function ProvidersAdminPage() {
   );
 
   return (
-    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <ModelNavTabs activeTab="providers" />
       <ProvidersManagerClient initialChannels={channels} />
     </div>

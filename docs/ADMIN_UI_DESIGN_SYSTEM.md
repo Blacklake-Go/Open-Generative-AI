@@ -119,29 +119,50 @@
 
 ---
 
-## 5. 次级选项卡规范 (Sub-Navigation Underline Tabs)
+## 5. 次级选项卡与跨页顶层导航规范 (Sub-Navigation Underline Tabs)
 
-> **参考案例**：微信小程序“基本设置 / 第三方设置 / 关联设置”选项卡（图 3）。
+> **参考案例**：微信小程序后台顶部设置选项卡与模型管理顶层导航（图 1、图 2）。
 
-后台页面内的二级导航**绝不使用厚重的嵌套卡片或大块药丸底**，统一采用极简的下划线标尺选项卡（Underline Tabs）：
+后台页面内的二级导航与多视图模块切页**严禁使用任何形式的厚重卡片外壳、分段药丸底或白色卡片按钮组**（严禁 `bg-surface-raised` 外壳包裹 `bg-white text-black` 胶囊）。统一采用微信管理后台最高标准的极简下划线标尺选项卡（WeChat Underline Tabs）：
 
+### 5.1 视觉与几何契约 (Visual & Geometry Contract)
 ```jsx
-<div className="flex items-center gap-6 border-b border-line-subtle">
-  <button className="relative pb-3 text-sm font-semibold text-brand">
-    基本设置
-    <span className="absolute bottom-0 inset-x-0 h-0.5 bg-brand rounded-full" />
-  </button>
-  <button className="pb-3 text-sm font-medium text-ink-muted hover:text-ink transition-colors">
-    第三方与渠道
-  </button>
-  <button className="pb-3 text-sm font-medium text-ink-muted hover:text-ink transition-colors">
-    定价策略
-  </button>
+<div className="flex items-center justify-between border-b border-line-subtle h-12">
+  {/* 左侧下划线选项卡 */}
+  <nav className="flex items-center gap-8 h-full overflow-x-auto scrollbar-none">
+    <Link href="/admin/models" className="relative h-full inline-flex items-center gap-2 text-sm font-semibold text-brand">
+      <span>模型管理</span>
+      <span className="rounded-full px-2 py-0.5 text-xs font-mono font-bold bg-brand/15 text-brand">51</span>
+      <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+    </Link>
+    <Link href="/admin/models/providers" className="relative h-full inline-flex items-center gap-2 text-sm font-medium text-ink-muted hover:text-ink">
+      <span>供应商管理（模型API）</span>
+    </Link>
+    <Link href="/admin/models/pricing" className="relative h-full inline-flex items-center gap-2 text-sm font-medium text-ink-muted hover:text-ink">
+      <span>模型定价与利润</span>
+    </Link>
+  </nav>
+
+  {/* 右侧业务主行动点 */}
+  <div className="shrink-0 flex items-center gap-2">
+    <button className="h-8 px-3.5 rounded-lg text-xs font-semibold bg-brand text-white">
+      + 从模型库引入
+    </button>
+  </div>
 </div>
 ```
 
-- **默认态**：字色 `text-ink-muted`，高度与底边无下划线，悬浮微亮；
-- **选中态**：字色切换为品牌洋红 `text-brand`，下方绝对定位 2px 高度的实心圆角下划标尺，无任何跳动抖动。
+- **无外层容器干扰 (Zero Card Container)**：选项卡直接锚定在页面主网格顶部，无外层卡片背景、无上/左/右边框、无投影；
+- **固定基准线与高度 (Locked Height & Baseline)**：统一锁定行高 `h-12` (48px)，底部由 1px 细发丝分割线 `border-b border-line-subtle` 全宽贯穿；
+- **下划标尺 (Underline Indicator)**：活动项字色为品牌洋红 `text-brand`，下方绝对定位 `bottom-0` 的 2px 实心圆角标尺条，与底边细线平滑嵌合；
+- **非活动项 (Inactive State)**：字色采用次级中性灰 `text-ink-muted`，悬浮微亮为 `hover:text-ink`，无任何背景色块；
+- **数量徽标 (Numeric Count Pill)**：附着在文字右侧，活动态采用 `bg-brand/15 text-brand`，非活动态采用 `bg-white/10 text-ink-subtle`。
+
+### 5.2 跨页零抖动与无割裂契约 (Zero Layout Shift Contract)
+针对属于同一业务模块的兄弟页面（如 AI 模型中心的 `/admin/models`、`/admin/models/providers`、`/admin/models/pricing`）：
+1. **外层容器严格一致**：所有兄弟页必须使用完全相同的根级容器类名 `<div className="space-y-6 max-w-[1600px] mx-auto pb-16">`；
+2. **严禁在单页中注入额外边距**：严禁在某子页使用 `pt-1`、`pt-2` 或大高度 `PageHeader`，导致页面切换时导航栏发生垂直跳动；
+3. **切换时视觉锚定**：用户在兄弟页间切换时，顶栏选项卡、字号、下划线基线和右侧按钮基准必须保持在**绝对相同的屏幕像素 Y 轴坐标**，仅下划线指示条在水平方向滑动，彻底消除“页面割裂感”。
 
 ---
 

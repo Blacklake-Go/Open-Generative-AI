@@ -524,7 +524,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   );
 
   return (
-    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       {/* Toast Alert */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-surface-raised border border-line px-4 py-2.5 text-body-sm shadow-elevation-3 animate-fade-in text-ink font-medium">
@@ -533,7 +533,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── ROW 1: 顶层业务三位一体切换卡片组 (模型管理 / 供应商管理 / 模型定价) ─── */}
+      {/* ─── ROW 1: 顶层业务三位一体下划线选项卡 (模型管理 / 供应商管理 / 模型定价) ─── */}
       <ModelNavTabs
         modelCount={models.length}
         rightAction={
@@ -542,9 +542,9 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               variant="primary"
               size="sm"
               onClick={() => setRepoDrawerOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 h-[42px] px-4 rounded-xl text-xs font-semibold shadow-elevation-2 shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold shadow-elevation-1 shrink-0 bg-brand hover:bg-brand-hover text-white transition-all active:scale-[0.98]"
             >
-              <Plus className="size-3.5 mr-1" />
+              <Plus className="size-3.5" />
               从模型库引入
             </Button>
           )

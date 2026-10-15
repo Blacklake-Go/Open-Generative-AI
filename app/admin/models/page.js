@@ -146,12 +146,10 @@ export default async function ModelsPage() {
   }
 
   return (
-    <div className="pt-1">
-      <FrontendConfigClient
-        initialModels={JSON.parse(JSON.stringify(models))}
-        canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
-      />
-    </div>
+    <FrontendConfigClient
+      initialModels={JSON.parse(JSON.stringify(models))}
+      canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
+    />
   );
 }
 

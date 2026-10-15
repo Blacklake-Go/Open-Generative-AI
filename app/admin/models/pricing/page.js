@@ -106,7 +106,7 @@ export default async function ModelPricingPage({ searchParams }) {
     : { baseMultiplier: 1.5, minMarginRate: 0.3, categoryMultipliers: {}, tierMultipliers: {}, specMultipliers: {} };
 
   return (
-    <div className="space-y-4 max-w-[1600px] mx-auto pb-16">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       <ModelNavTabs activeTab="pricing" />
       <PricingManagerClient
         initialTab={initialTab}

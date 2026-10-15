@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 /**
- * AI 模型中心顶层三位一体切换卡片组 (Top Switchable Card Tabs Group)
- * 涵盖：
- * 1. 模型管理 (/admin/models)
- * 2. 供应商管理（模型API） (/admin/models/providers)
- * 3. 模型定价与利润 (/admin/models/pricing)
+ * AI 模型中心顶层下划线选项卡导航 (WeChat Underline Tabs Navigation)
  *
- * 统一高度 h-[42px]，暗黑极简高对比卡片组设计
+ * 遵循 docs/ADMIN_UI_DESIGN_SYSTEM.md 第 5 节规范及微信管理后台交互哲学：
+ * 1. 严格去除任何外层卡片容器 (无 bg-surface-raised, 无 rounded-2xl, 无 p-2)
+ * 2. 纯文字极简下划线标尺选项卡 (Underline Tabs)，活动项带 2px 品牌洋红指示标尺
+ * 3. 严格锁定固定高度 (h-12 / 48px)，与底边分割线紧密嵌合，垂直居中
+ * 4. 三大核心页面 (/admin/models, /admin/models/providers, /admin/models/pricing) 高度与基准线 100% 绝对一致，消除切换抖动与页面割裂
  */
 export default function ModelNavTabs({
   activeTab: propActiveTab,
@@ -28,10 +28,10 @@ export default function ModelNavTabs({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1 ${className}`}
+      className={`flex items-center justify-between border-b border-line-subtle h-12 ${className}`}
     >
-      {/* 顶层切换卡片组 (Switchable Card Tabs) */}
-      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
+      {/* 左侧下划线选项卡 (WeChat Underline Tabs) */}
+      <nav aria-label="模型中心二级导航" className="flex items-center gap-8 h-full overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const isActive = propActiveTab
             ? propActiveTab === tab.id
@@ -47,32 +47,39 @@ export default function ModelNavTabs({
             <Link
               key={tab.id}
               href={tab.href}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
+              className={`relative h-full inline-flex items-center gap-2 text-sm transition-colors select-none whitespace-nowrap ${
                 isActive
-                  ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
-                  : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                  ? 'text-brand font-semibold'
+                  : 'text-ink-muted hover:text-ink font-medium'
               }`}
             >
               <span>{tab.label}</span>
               {typeof tab.count === 'number' && (
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
-                    isActive ? 'bg-black/15 text-black' : 'bg-white/10 text-ink-subtle'
+                  className={`rounded-full px-2 py-0.5 text-xs font-mono font-medium ${
+                    isActive
+                      ? 'bg-brand/15 text-brand font-bold'
+                      : 'bg-white/10 text-ink-subtle'
                   }`}
                 >
                   {tab.count}
                 </span>
               )}
+              {isActive && (
+                <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+              )}
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      {/* 右侧业务操作 (统一高度 h-[42px]) */}
-      {rightAction && (
+      {/* 右侧业务操作 (统一在同一水平基准线) */}
+      {rightAction ? (
         <div className="shrink-0 flex items-center gap-2">
           {rightAction}
         </div>
+      ) : (
+        <div className="shrink-0 h-9" />
       )}
     </div>
   );

@@ -570,56 +570,61 @@ export default function PricingManagerClient({
         </div>
       )}
 
-      {/* 顶部四位一体连续胶囊导航栏 (契约 40px Track, 32px Item, 100% 对齐 UI_REPAIR_INSTRUCTION.md) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
-        <div data-pill-segmented className="inline-flex h-10 items-center rounded-full bg-black/40 p-1 border border-white/10">
+      {/* 顶部四位一体下划线选项卡导航 (WeChat Underline Tabs 契约，消除卡片割裂) */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line-subtle h-12">
+        <div className="flex items-center gap-6 sm:gap-8 h-full overflow-x-auto scrollbar-none">
           <button
-            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('rules')}
-            className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
+            className={`relative h-full inline-flex items-center gap-1.5 text-xs sm:text-sm transition-colors select-none whitespace-nowrap cursor-pointer ${
               activeTab === 'rules'
-                ? 'bg-white text-black shadow-elevation-1'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
+                ? 'text-brand font-semibold'
+                : 'text-ink-muted hover:text-ink font-medium'
             }`}
           >
-            ⚙️ 定价策略与规则
+            <span>定价策略与规则</span>
+            {activeTab === 'rules' && (
+              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+            )}
           </button>
           <button
-            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('breakdown')}
-            className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
+            className={`relative h-full inline-flex items-center gap-1.5 text-xs sm:text-sm transition-colors select-none whitespace-nowrap cursor-pointer ${
               activeTab === 'breakdown'
-                ? 'bg-white text-black shadow-elevation-1'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
+                ? 'text-brand font-semibold'
+                : 'text-ink-muted hover:text-ink font-medium'
             }`}
           >
-            📊 模型价格明细 (多渠道底价)
+            <span>模型价格明细 (多渠道底价)</span>
+            {activeTab === 'breakdown' && (
+              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+            )}
           </button>
           <button
-            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('frontend')}
-            className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
+            className={`relative h-full inline-flex items-center gap-1.5 text-xs sm:text-sm transition-colors select-none whitespace-nowrap cursor-pointer ${
               activeTab === 'frontend'
-                ? 'bg-white text-black shadow-elevation-1'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
+                ? 'text-brand font-semibold'
+                : 'text-ink-muted hover:text-ink font-medium'
             }`}
           >
-            🖥️ 当前前端模型 (C端态览)
+            <span>当前前端模型 (C端态览)</span>
+            {activeTab === 'frontend' && (
+              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+            )}
           </button>
           <button
-            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('pending')}
-            className={`h-8 rounded-full px-4 text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            className={`relative h-full inline-flex items-center gap-1.5 text-xs sm:text-sm transition-colors select-none whitespace-nowrap cursor-pointer ${
               activeTab === 'pending'
-                ? 'bg-white text-black shadow-elevation-1'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
+                ? 'text-brand font-semibold'
+                : 'text-ink-muted hover:text-ink font-medium'
             }`}
           >
-            <span>⚖️ 待审价格版本</span>
+            <span>待审价格版本</span>
             {pendingPrices.length > 0 && (
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
@@ -629,6 +634,9 @@ export default function PricingManagerClient({
                 {pendingPrices.length}
               </span>
             )}
+            {activeTab === 'pending' && (
+              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
+            )}
           </button>
         </div>
 
@@ -636,13 +644,13 @@ export default function PricingManagerClient({
         <div className="flex items-center gap-2">
           <Link
             href="/admin/cost-center"
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg border border-line-subtle bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-ink-muted hover:bg-white/[0.08] hover:text-ink transition"
           >
             成本中心 →
           </Link>
           <Link
             href="/admin/profit-center"
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg border border-line-subtle bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-ink-muted hover:bg-white/[0.08] hover:text-ink transition"
           >
             利润中心 →
           </Link>
