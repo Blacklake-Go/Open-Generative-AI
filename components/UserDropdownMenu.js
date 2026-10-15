@@ -69,6 +69,7 @@ export default function UserDropdownMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [liveAvatar, setLiveAvatar] = useState(null);
   const [userEntitlements, setUserEntitlements] = useState(
     entitlements || (typeof window !== 'undefined' ? (() => {
       try {

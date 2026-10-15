@@ -92,20 +92,18 @@ export async function middleware(request) {
         }
     }
 
-    // 0.5. 无限画布 (/canvas/) 属于独立子站点，不含语言前缀。若带语言前缀访问（如 /zh/canvas），规范 308 重定向至 /canvas/
-    if (pathname.match(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\/canvas(?:\/.*)?$/)) {
-        const origin = getPublicOrigin(request);
-        const tail = pathname.replace(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\/canvas/, '') || '/';
-        const redirectUrl = new URL(`/canvas${tail}${url.search}`, origin);
+    // 0.5. 无限画布 (/canvas 或 /:locale/canvas) 属于独立子站点，规范重定向至 https://canvas.supdance.com
+    if (pathname === '/canvas' || pathname.startsWith('/canvas/') || pathname.match(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\/canvas(?:\/.*)?$/)) {
+        const tail = pathname.replace(/^(?:\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?)?\/canvas/, '') || '/';
+        const canvasOrigin = 'https://canvas.supdance.com';
+        const redirectUrl = new URL(`${tail}${url.search}`, canvasOrigin);
         return addSecurityHeaders(NextResponse.redirect(redirectUrl, 308));
     }
 
-    // 1. 静态资源、系统探针、画布入口及 ACME 证书挑战路径免检放行
+    // 1. 静态资源、系统探针及 ACME 证书挑战路径免检放行
     const isExcluded =
         pathname.startsWith('/_next') ||
         pathname.startsWith('/.well-known') ||
-        pathname === '/canvas' ||
-        pathname.startsWith('/canvas/') ||
         pathname === '/favicon.ico' ||
         pathname === '/robots.txt' ||
         pathname === '/sitemap.xml';
