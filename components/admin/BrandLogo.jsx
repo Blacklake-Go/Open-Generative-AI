@@ -11,18 +11,18 @@ const SIZE_MAP = {
 };
 
 const TONE_BG_MAP = {
-  blue: 'bg-blue-50 text-blue-700 border-blue-200',
-  rose: 'bg-rose-50 text-rose-700 border-rose-200',
-  amber: 'bg-amber-50 text-amber-700 border-amber-200',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  rose: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   brand: 'bg-brand/10 text-brand border-brand/20',
-  orange: 'bg-orange-50 text-orange-700 border-orange-200',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200',
-  violet: 'bg-violet-50 text-violet-700 border-violet-200',
-  indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  sky: 'bg-sky-50 text-sky-700 border-sky-200',
-  teal: 'bg-teal-50 text-teal-700 border-teal-200',
-  neutral: 'bg-slate-100 text-slate-600 border-slate-200',
+  orange: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  violet: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  sky: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  teal: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  neutral: 'bg-white/[0.05] text-ink-muted border-white/[0.1]',
 };
 
 /**

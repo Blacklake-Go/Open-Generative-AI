@@ -32,14 +32,14 @@ export default async function AdminDashboardPage() {
         description="实时监控 SupDance AI Studio 平台注册增长、模型调用稳定性、商业化营收、上游 API 成本及综合毛利。"
       >
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+          <span className="inline-flex items-center rounded-full border border-white/[0.10] bg-white/[0.04] px-2.5 py-0.5 text-xs font-medium text-gray-400">
             时区：{data.meta.reportTimezone}
           </span>
-          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+          <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
             实时营收结算
           </span>
           {data.meta.degraded && (
-            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+            <span className="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300">
               部分指标暂不可用
             </span>
           )}
@@ -93,8 +93,8 @@ export default async function AdminDashboardPage() {
           title="近 7 天生成调用走势"
           subtitle={`每日 AI 图像/视频生成请求总量 · 7天累计: ${trends?.last7Days?.reduce((acc, d) => acc + d.count, 0) || 0} 次`}
           filters={
-            <div className="flex items-center justify-between w-full text-xs text-slate-500">
-              <span className="font-mono text-slate-400">每日调用频次分布</span>
+            <div className="flex items-center justify-between w-full text-xs text-ink-muted">
+              <span className="font-mono text-ink-subtle">每日调用频次分布</span>
               <span className="font-mono text-brand font-semibold">峰值: {maxDayCount} 次/日</span>
             </div>
           }
@@ -105,15 +105,15 @@ export default async function AdminDashboardPage() {
               return (
                 <div key={day.date} className="group relative flex flex-1 flex-col items-center h-full justify-end">
                   {/* Tooltip */}
-                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition rounded-lg bg-slate-900 text-white px-2 py-1 text-[10px] font-mono pointer-events-none whitespace-nowrap shadow-md">
+                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition rounded-lg bg-surface-raised border border-line-subtle px-2 py-1 text-[10px] text-brand font-mono pointer-events-none whitespace-nowrap shadow-sm">
                     {day.date}: {day.count} 次
                   </div>
                   {/* 柱子 */}
                   <div
                     style={{ height: `${heightPct}%` }}
-                    className="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-brand/20 via-brand/40 to-brand transition-all duration-200 group-hover:from-brand/40 group-hover:to-brand"
+                    className="w-full max-w-[42px] rounded-t-lg bg-gradient-to-t from-brand/25 via-brand/40 to-brand transition-all duration-200 group-hover:from-brand/40 group-hover:to-brand-hover"
                   />
-                  <span className="mt-2 text-[11px] text-slate-400 font-mono">{day.label}</span>
+                  <span className="mt-2 text-[11px] text-gray-400 font-mono">{day.label}</span>
                 </div>
               );
             })}
@@ -122,10 +122,10 @@ export default async function AdminDashboardPage() {
 
         {/* 待处理风险队列 */}
         <Card>
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-[-0.015em] leading-6">待处理风险队列</h2>
-              <p className="mt-1 text-xs text-slate-500 tracking-[-0.005em] leading-5">系统检测到的生成失败或待审核异常项</p>
+              <h2 className="text-base font-semibold text-white tracking-[-0.015em] leading-6">待处理风险队列</h2>
+              <p className="mt-1 text-xs text-gray-400 tracking-[-0.005em] leading-5">系统检测到的生成失败或待审核异常项</p>
             </div>
             <StatusBadge tone={risks.length ? 'warn' : 'good'}>
               {risks.length ? `${risks.length} 项关注` : '健康平稳'}
@@ -137,25 +137,25 @@ export default async function AdminDashboardPage() {
               risks.map((risk) => (
                 <div
                   key={risk.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50/70 p-4 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50"
+                  className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.16] hover:bg-white/[0.04]"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 tracking-[-0.005em]">{risk.title}</p>
-                    <p className="mt-1 text-xs text-slate-500 tracking-[-0.005em]">
-                      共有 <span className="font-bold text-amber-600">{risk.count}</span> 条记录待处理
+                    <p className="text-sm font-semibold text-white tracking-[-0.005em]">{risk.title}</p>
+                    <p className="mt-1 text-xs text-gray-400 tracking-[-0.005em]">
+                      共有 <span className="font-bold text-amber-300">{risk.count}</span> 条记录待处理
                     </p>
                   </div>
                   <Link
                     href={risk.link}
-                    className="inline-flex h-8 items-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
+                    className="inline-flex h-8 items-center rounded-lg border border-white/[0.10] bg-white/[0.04] px-3 text-xs font-medium text-gray-200 transition-all duration-200 hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
                   >
                     立即排查 →
                   </Link>
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center">
-                <p className="text-xs text-slate-400">当前暂无待处理风险，系统运行正常。</p>
+              <div className="rounded-xl border border-dashed border-white/[0.08] p-8 text-center">
+                <p className="text-xs text-gray-400">当前暂无待处理风险，系统运行正常。</p>
               </div>
             )}
           </div>
@@ -165,10 +165,10 @@ export default async function AdminDashboardPage() {
       {/* 最近管理员动作与快捷面板 */}
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_1fr]">
         <Card>
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-[-0.015em] leading-6">最近管理员操作审计</h2>
-              <p className="mt-1 text-xs text-slate-500 tracking-[-0.005em] leading-5">全站重要管理动作（调额、改价、封禁、切换角色）全自动留痕</p>
+              <h2 className="text-base font-semibold text-white tracking-[-0.015em] leading-6">最近管理员操作审计</h2>
+              <p className="mt-1 text-xs text-gray-400 tracking-[-0.005em] leading-5">全站重要管理动作（调额、改价、封禁、切换角色）全自动留痕</p>
             </div>
             <Link href="/admin/audit" className="text-xs text-brand hover:underline font-semibold tracking-[-0.005em]">
               全部审计记录 →
@@ -180,11 +180,11 @@ export default async function AdminDashboardPage() {
               recentAudit.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                  className="flex items-start justify-between gap-3 border-b border-white/[0.05] pb-3 last:border-0 last:pb-0"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-slate-800 tracking-[-0.005em]">{item.action}</p>
-                    <p className="mt-1 truncate text-[11px] text-slate-400">
+                    <p className="truncate text-xs font-semibold text-white/90 tracking-[-0.005em]">{item.action}</p>
+                    <p className="mt-1 truncate text-[11px] text-gray-500">
                       {item.actor_email} · {item.target_type || '系统'} {item.target_id || ''}
                     </p>
                   </div>
@@ -200,48 +200,48 @@ export default async function AdminDashboardPage() {
                     >
                       {item.risk_level}
                     </StatusBadge>
-                    <p className="mt-1 text-[10px] text-slate-400">{formatDate(item.created_at)}</p>
+                    <p className="mt-1 text-[10px] text-gray-500">{formatDate(item.created_at)}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-xs text-slate-400">暂无管理员操作记录</div>
+              <div className="p-8 text-center text-xs text-gray-500">暂无管理员操作记录</div>
             )}
           </div>
         </Card>
 
         {/* 快捷导航与模型管理入口 */}
         <Card>
-          <h2 className="text-base font-bold text-slate-900 tracking-[-0.015em] leading-6 mb-1">快速调度与运维入口</h2>
-          <p className="text-xs text-slate-500 tracking-[-0.005em] leading-5 mb-5">一键直达核心业务管控模块</p>
+          <h2 className="text-base font-semibold text-white tracking-[-0.015em] leading-6 mb-2">快速调度与运维入口</h2>
+          <p className="text-xs text-gray-400 tracking-[-0.005em] leading-5 mb-5">一键直达核心业务管控模块</p>
           <div className="grid grid-cols-2 gap-3">
             <Link
               href="/admin/users"
-              className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3.5 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 shadow-sm"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
-              <p className="text-xs font-semibold text-slate-800 tracking-[-0.005em]">👥 用户与角色</p>
-              <p className="mt-1 text-[11px] text-slate-400">搜索、封禁、解封</p>
+              <p className="text-xs font-semibold text-white tracking-[-0.005em]">👥 用户与角色</p>
+              <p className="mt-1 text-[11px] text-gray-400">搜索、封禁、解封</p>
             </Link>
             <Link
               href="/admin/credits"
-              className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3.5 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 shadow-sm"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
-              <p className="text-xs font-semibold text-slate-800 tracking-[-0.005em]">💰 额度流水台账</p>
-              <p className="mt-1 text-[11px] text-slate-400">充值、扣减、明细</p>
+              <p className="text-xs font-semibold text-white tracking-[-0.005em]">💰 额度流水台账</p>
+              <p className="mt-1 text-[11px] text-gray-400">充值、扣减、明细</p>
             </Link>
             <Link
               href="/admin/models"
-              className="rounded-xl border border-brand/20 bg-brand/5 p-3.5 hover:bg-brand/10 transition-all duration-200 shadow-sm"
+              className="rounded-xl border border-brand/30 bg-brand/10 p-3.5 hover:bg-brand/15 transition-all duration-200"
             >
               <p className="text-xs font-semibold text-brand tracking-[-0.005em]">🎛️ 模型开关与成本</p>
               <p className="mt-1 text-[11px] text-brand/70">成本价与 Credits 定价</p>
             </Link>
             <Link
               href="/admin/health"
-              className="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3.5 hover:border-slate-300 hover:bg-slate-50 transition-all duration-200 shadow-sm"
+              className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:border-brand/30 hover:bg-white/[0.05] transition-all duration-200"
             >
-              <p className="text-xs font-semibold text-slate-800 tracking-[-0.005em]">🩺 系统健康 & 日志</p>
-              <p className="mt-1 text-[11px] text-slate-400">PM2 日志、队列与内存</p>
+              <p className="text-xs font-semibold text-white tracking-[-0.005em]">🩺 系统健康 & 日志</p>
+              <p className="mt-1 text-[11px] text-gray-400">PM2 日志、队列与内存</p>
             </Link>
           </div>
         </Card>

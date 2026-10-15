@@ -77,21 +77,21 @@ export default function StudioLivePreviewer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-modal w-full max-w-md bg-white border-l border-slate-200/90 shadow-[-10px_0_40px_rgba(0,0,0,0.15)] flex flex-col animate-slide-left text-slate-800">
+    <div className="fixed inset-y-0 right-0 z-modal w-full max-w-md bg-[#131519]/98 border-l border-line-subtle shadow-[-16px_0_48px_rgba(0,0,0,0.7)] backdrop-blur-xl flex flex-col animate-slide-left">
       {/* Header */}
-      <div className="p-4 border-b border-slate-200/90 flex items-center justify-between bg-slate-50/70">
+      <div className="p-4 border-b border-line-subtle flex items-center justify-between bg-surface-raised/40">
         <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
+          <div className="size-8 rounded-xl bg-brand/15 border border-brand/30 flex items-center justify-center text-brand">
             <Eye className="size-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-base font-bold text-slate-900">公开目录展示预览</h3>
+              <h3 className="text-body font-bold text-ink">公开目录展示预览</h3>
               <span className="rounded-full bg-brand/10 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/20">
                 参考图2
               </span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-caption text-ink-muted">
               {categoryLabel} · 仅显示当前目录可选模型，真实生成仍需验收
             </p>
           </div>
@@ -100,71 +100,71 @@ export default function StudioLivePreviewer({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors"
         >
           <X className="size-4" />
         </button>
       </div>
 
       {/* Trigger Button Mockup (how it looks in Studio toolbar) */}
-      <div className="p-4 border-b border-slate-200/90 bg-slate-50/40">
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+      <div className="p-4 border-b border-line-subtle bg-well/30">
+        <label className="text-caption font-semibold text-ink-subtle uppercase tracking-wider block mb-2">
           工作室顶部触发按钮外观 (Trigger Button)
         </label>
         {activeSelectedModel ? (
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-slate-200/90 bg-white px-3.5 py-2 shadow-sm cursor-pointer hover:border-slate-300 transition-all">
+          <div className="inline-flex items-center gap-2.5 rounded-full border border-line-strong bg-surface-raised px-3.5 py-2 shadow-elevation-2 cursor-pointer hover:border-brand/40 transition-all">
             {/* Emblem */}
-            <div className="size-5 rounded-full bg-brand/10 text-brand font-black text-[11px] flex items-center justify-center border border-brand/20">
+            <div className="size-5 rounded-full bg-brand/20 text-brand font-black text-[11px] flex items-center justify-center border border-brand/30">
               {(activeSelectedModel.display_name || activeSelectedModel.name || 'M').charAt(0)}
             </div>
-            <span className="text-sm font-bold text-slate-900">
+            <span className="text-body-sm font-bold text-ink">
               {activeSelectedModel.display_name || activeSelectedModel.name}
             </span>
             {activeSelectedModel.badge && (
-              <span className="rounded-full bg-brand/10 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/20">
+              <span className="rounded-full bg-brand/20 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/30">
                 {activeSelectedModel.badge}
               </span>
             )}
             {activeSelectedModel.is_pinned && (
-              <span className="rounded-full bg-amber-50 text-amber-700 px-1.5 py-0.2 text-[9px] font-bold border border-amber-200 flex items-center gap-0.5">
-                <Pin className="size-2 fill-amber-500" />
+              <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5">
+                <Pin className="size-2 fill-amber-300" />
               </span>
             )}
-            <span className="text-slate-400 text-xs ml-1 font-mono">
+            <span className="text-ink-subtle text-caption ml-1 font-mono">
               {Number(activeSelectedModel.base_credits) > 0 ? `${activeSelectedModel.base_credits} 积分` : '价格待核验'}
             </span>
           </div>
         ) : (
-          <div className="text-xs text-slate-400 py-2">当前分类暂无前台可见模型</div>
+          <div className="text-caption text-ink-subtle py-2">当前分类暂无前台可见模型</div>
         )}
       </div>
 
       {/* Fig 2 Clean Dropdown Container */}
       <div className="p-4 flex-1 flex flex-col min-h-0 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <label className="text-caption font-semibold text-ink-subtle uppercase tracking-wider">
             点击弹出的模型下拉菜单 (Fig 2 Clean Picker)
           </label>
-          <span className="text-xs text-brand font-semibold">
+          <span className="text-caption text-brand font-medium">
             {visibleModels.length} 个目录可选
           </span>
         </div>
 
         {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-subtle" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`搜索 ${categoryLabel}...`}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-7 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:bg-white focus:border-brand transition-all"
+            className="w-full rounded-xl border border-line-strong bg-well pl-8 pr-7 py-2 text-body-sm text-ink placeholder:text-ink-subtle outline-none focus:border-brand/40"
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-subtle hover:text-ink"
             >
               <X className="size-3" />
             </button>
@@ -173,16 +173,16 @@ export default function StudioLivePreviewer({
 
         {/* Subtype Chips */}
         {subtypes.length > 1 && (
-          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
             {subtypes.map((sub) => (
               <button
                 key={sub.id}
                 type="button"
                 onClick={() => setSelectedSubtype(sub.id)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
+                className={`rounded-full px-2.5 py-1 text-label font-medium whitespace-nowrap transition-colors ${
                   selectedSubtype === sub.id
-                    ? 'bg-brand text-white shadow-sm font-semibold'
-                    : 'bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/80'
+                    ? 'bg-brand text-white shadow-elevation-1 font-semibold'
+                    : 'bg-well text-ink-muted hover:text-ink border border-line-subtle'
                 }`}
               >
                 {sub.label}
@@ -192,9 +192,9 @@ export default function StudioLivePreviewer({
         )}
 
         {/* Scrollable Model Items List */}
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           {filteredModels.length === 0 ? (
-            <div className="py-12 text-center text-sm text-slate-400">
+            <div className="py-12 text-center text-body-sm text-ink-muted">
               {search ? '未检索到匹配的可见模型' : '当前分类暂无可见模型（请在左侧开启）'}
             </div>
           ) : (
@@ -209,48 +209,48 @@ export default function StudioLivePreviewer({
                 <div
                   key={model.id}
                   onClick={() => setSelectedModelId(model.id)}
-                  className={`rounded-xl border p-3 cursor-pointer transition-all shadow-sm ${
+                  className={`rounded-xl border p-3 cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-brand/5 border-brand/30'
-                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50'
+                      ? 'bg-brand/[0.08] border-brand/50 shadow-elevation-2'
+                      : 'bg-surface-raised border-line hover:border-line-strong hover:bg-well'
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
                     {/* Emblem Avatar */}
-                    <div className="size-8 rounded-lg border border-slate-200/80 flex items-center justify-center bg-brand/10 text-brand font-black text-xs shrink-0 shadow-sm">
+                    <div className="size-8 rounded-lg border border-line flex items-center justify-center bg-brand/10 text-brand font-black text-xs shrink-0 shadow-elevation-1">
                       {name.charAt(0) || 'M'}
                     </div>
 
                     {/* Title & Badges */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-bold text-slate-900 truncate">{name}</span>
+                        <span className="text-body-sm font-bold text-ink truncate">{name}</span>
                         {badge && (
-                          <span className="rounded-full bg-brand/10 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/20">
+                          <span className="rounded-full bg-brand/20 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/30">
                             {badge}
                           </span>
                         )}
                         {model.is_pinned && (
-                          <span className="rounded-full bg-amber-50 text-amber-700 px-1.5 py-0.2 text-[8px] font-bold border border-amber-200 flex items-center gap-0.5">
-                            <Pin className="size-2 fill-amber-500" /> 置顶
+                          <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[8px] font-bold border border-amber-500/30 flex items-center gap-0.5">
+                            <Pin className="size-2 fill-amber-300" /> 置顶
                           </span>
                         )}
                       </div>
 
                       {/* Subtype & Credits */}
-                      <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400">
-                        <span className="font-mono text-[10px] text-slate-500">
+                      <div className="flex items-center gap-1.5 mt-0.5 text-caption text-ink-subtle">
+                        <span className="font-mono text-[10px] text-ink-muted">
                           {subType.toUpperCase()}
                         </span>
                         <span>·</span>
-                        <span className="text-brand font-mono text-xs font-semibold">
+                        <span className="text-brand/80 font-mono text-[11px] font-medium">
                           {credits} 积分
                         </span>
                       </div>
 
                       {/* Description */}
                       {model.description && (
-                        <p className="mt-1 text-xs text-slate-500 leading-relaxed line-clamp-1">
+                        <p className="mt-1 text-caption text-ink-muted leading-relaxed line-clamp-1">
                           {model.description}
                         </p>
                       )}
@@ -258,7 +258,7 @@ export default function StudioLivePreviewer({
 
                     {/* Selection Indicator */}
                     {isSelected && (
-                      <div className="size-4 rounded-full bg-brand flex items-center justify-center text-white shrink-0 shadow-sm">
+                      <div className="size-4 rounded-full bg-brand flex items-center justify-center text-white shrink-0 shadow-elevation-1">
                         <Check className="size-2.5 stroke-[3]" />
                       </div>
                     )}
@@ -271,7 +271,7 @@ export default function StudioLivePreviewer({
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-slate-200/90 bg-slate-50/70 flex items-center justify-between text-xs text-slate-400">
+      <div className="p-4 border-t border-line-subtle bg-surface-raised/30 flex items-center justify-between text-caption text-ink-subtle">
         <span className="flex items-center gap-1">
           <Zap className="size-3 text-brand" />
           左侧任何配置更改实时同步渲染

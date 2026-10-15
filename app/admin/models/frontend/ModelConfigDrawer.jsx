@@ -242,23 +242,23 @@ export default function ModelConfigDrawer({
   const previewCredits = formData.credits || 10;
 
   return (
-    <div className="fixed inset-0 z-modal flex justify-end bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
       {/* Drawer Container */}
-      <div className="relative w-full max-w-2xl bg-white border-l border-slate-200 shadow-[-10px_0_40px_rgba(0,0,0,0.15)] flex flex-col h-full animate-slide-left text-slate-800">
+      <div className="relative w-full max-w-2xl bg-[#131519] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 border-b border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <BrandLogo model={formData} size="md" className="rounded-xl shrink-0" />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-bold text-slate-900 truncate">
+                <h2 className="text-body-lg font-bold text-ink truncate">
                   {isNew ? '添加前台展示模型' : `配置模型 · ${formData.display_name || formData.model_id}`}
                 </h2>
-                <span className="rounded-full bg-brand/10 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/20">
+                <span className="rounded-full bg-brand/15 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/30">
                   {brandInfo.shortName}
                 </span>
               </div>
-              <div className="flex items-center gap-2 mt-0.5 font-mono text-xs text-slate-400">
+              <div className="flex items-center gap-2 mt-0.5 font-mono text-caption text-ink-subtle">
                 <span>ID: {formData.model_id || '未绑定'}</span>
                 <span>·</span>
                 <span>分类: {CATEGORY_MAP[formData.category] || formData.category}</span>
@@ -273,7 +273,7 @@ export default function ModelConfigDrawer({
                 size="sm"
                 onClick={handleRunCheck}
                 disabled={checking}
-                className="h-8 text-xs font-mono border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm"
+                className="h-8 text-xs font-mono"
               >
                 {checking ? <Loader2 className="size-3 animate-spin mr-1" /> : <RefreshCw className="size-3 mr-1" />}
                 模拟路由
@@ -282,7 +282,7 @@ export default function ModelConfigDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors"
             >
               <X className="size-5" />
             </button>
@@ -291,31 +291,31 @@ export default function ModelConfigDrawer({
 
         {/* Check Result Alert */}
         {checkResult && (
-          <div className={`px-5 py-2.5 border-b text-xs flex items-center gap-2 ${
+          <div className={`px-5 py-2.5 border-b text-caption flex items-center gap-2 ${
             checkResult.ok
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-              : 'bg-rose-50 border-rose-200 text-rose-700'
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+              : 'bg-red-500/10 border-red-500/20 text-red-300'
           }`}>
-            {checkResult.ok ? <CheckCircle2 className="size-4 shrink-0 text-emerald-600" /> : <XCircle className="size-4 shrink-0 text-rose-600" />}
+            {checkResult.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <XCircle className="size-4 shrink-0" />}
             <span className="font-medium">{checkResult.msg}</span>
           </div>
         )}
 
         {/* Drawer Body (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar bg-slate-50/30">
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
           {/* Section 1: 实时前台卡片效果预览 (Studio Live Preview) */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-1">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+              <span className="text-caption font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
                 <Eye className="size-3.5 text-brand" />
                 前台卡片效果实时预览 (Studio Preview)
               </span>
-              <span className="rounded-full bg-white border border-slate-200 px-2 py-0.2 text-[10px] text-slate-600 font-medium">
+              <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[10px] text-ink-muted">
                 1:1 还原 C 端体验
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm transition-all hover:border-brand/40">
+            <div className="rounded-xl border border-white/10 bg-[#16181d] p-3.5 shadow-elevation-1 transition-all hover:border-brand/40">
               <div className="flex items-start gap-3">
                 <div className="size-9 rounded-xl border border-white/10 flex items-center justify-center bg-brand/10 text-brand font-black text-sm shrink-0">
                   {previewName.charAt(0) || 'M'}
@@ -365,19 +365,19 @@ export default function ModelConfigDrawer({
           </div>
 
           {/* Section 2: 渠道与可用性 (打通模型API) */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-body font-bold text-ink flex items-center gap-2">
                 <Zap className="size-4 text-brand" />
                 可用渠道与路由健康
               </h3>
               {formData.healthy_routes > 0 ? (
-                <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-xs font-bold flex items-center gap-1">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {formData.healthy_routes}/{formData.approved_routes} 已审可用
                 </span>
               ) : (
-                <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-xs font-bold flex items-center gap-1">
+                <span className="rounded-full bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1">
                   <AlertTriangle className="size-3" />
                   无可用渠道
                 </span>
@@ -386,7 +386,7 @@ export default function ModelConfigDrawer({
 
             {/* Smart Match recommendations if unrouted */}
             {inlineCandidates.length > 0 && (
-              <div className="rounded-xl border border-brand/20 bg-brand/5 p-3 space-y-2">
+              <div className="rounded-xl border border-brand/30 bg-brand/[0.04] p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-brand flex items-center gap-1">
                     <Sparkles className="size-3.5" /> 智能备选渠道推荐
@@ -395,7 +395,7 @@ export default function ModelConfigDrawer({
                     <button
                       type="button"
                       onClick={() => onSmartMatch(model || formData)}
-                      className="text-xs text-brand hover:underline font-medium"
+                      className="text-micro text-brand hover:underline font-medium"
                     >
                       匹配中心 →
                     </button>
@@ -405,13 +405,13 @@ export default function ModelConfigDrawer({
                   {inlineCandidates.slice(0, 2).map((cand, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between rounded-lg bg-white border border-slate-200 p-2 text-xs shadow-sm"
+                      className="flex items-center justify-between rounded-lg bg-black/40 border border-white/5 p-2 text-xs"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-slate-900 truncate">{cand.providerName || cand.providerId}</div>
-                        <div className="font-mono text-[10px] text-slate-400 truncate">{cand.providerModelId}</div>
+                        <div className="font-semibold text-white truncate">{cand.providerName || cand.providerId}</div>
+                        <div className="font-mono text-[10px] text-gray-400 truncate">{cand.providerModelId}</div>
                       </div>
-                      <span className="rounded bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-bold shrink-0 ml-2">
+                      <span className="rounded bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 text-[10px] font-bold shrink-0 ml-2">
                         匹配度 {Math.round(cand.confidence * 100)}%
                       </span>
                     </div>
@@ -422,29 +422,29 @@ export default function ModelConfigDrawer({
           </div>
 
           {/* Section 3: 采购成本与定价策略 (打通模型定价与毛利率) */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
+            <h3 className="text-body font-bold text-ink flex items-center gap-2">
               <DollarSign className="size-4 text-brand" />
               采购成本与定价测算
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Cost Box */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
-                <span className="text-[10px] text-slate-400 uppercase font-medium">采购底价 (成本)</span>
-                <div className="font-mono font-bold text-base text-slate-900">
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                <span className="text-micro text-ink-subtle uppercase">采购底价 (成本)</span>
+                <div className="font-mono font-bold text-body-lg text-white">
                   {formData.min_cost_cny !== null ? `¥${Number(formData.min_cost_cny).toFixed(3)}` : '—'}
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono block">
+                <span className="text-[10px] text-ink-muted font-mono block">
                   {formData.min_cost_usd !== null ? `($${Number(formData.min_cost_usd).toFixed(3)})` : '暂无通道底价'}
                 </span>
               </div>
 
               {/* Price / Credits Input */}
-              <div className="rounded-xl border border-brand/20 bg-brand/5 p-3 space-y-1">
+              <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-brand uppercase font-bold">单次生成积分</span>
-                  <span className="text-[10px] text-slate-400 font-mono">1积分=0.1元</span>
+                  <span className="text-micro text-brand uppercase font-bold">单次生成积分</span>
+                  <span className="text-[10px] text-ink-subtle font-mono">1积分=0.1元</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <input
@@ -454,33 +454,33 @@ export default function ModelConfigDrawer({
                     step="1"
                     value={formData.credits ?? ''}
                     onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
-                    className="w-full rounded-lg border border-brand/30 bg-white px-2.5 py-1 text-sm font-bold font-mono text-brand outline-none focus:border-brand"
+                    className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
                   />
-                  <span className="text-xs font-bold text-brand shrink-0">积分</span>
+                  <span className="text-caption font-bold text-brand shrink-0">积分</span>
                 </div>
-                <span className="text-[10px] text-slate-500 font-mono block">
+                <span className="text-[10px] text-ink-muted font-mono block">
                   折合 C 端售价: ¥{marginMetrics.userPriceCny}
                 </span>
               </div>
 
               {/* Real-time Profit Margin */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
-                <span className="text-[10px] text-slate-400 uppercase font-medium">预估毛利率</span>
-                <div className="font-mono font-bold text-base flex items-center gap-1">
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                <span className="text-micro text-ink-subtle uppercase">预估毛利率</span>
+                <div className="font-mono font-bold text-body-lg flex items-center gap-1">
                   {marginMetrics.hasData ? (
                     <span className={
-                      marginMetrics.status === 'high' ? 'text-emerald-700'
+                      marginMetrics.status === 'high' ? 'text-emerald-400'
                         : marginMetrics.status === 'healthy' ? 'text-brand'
-                        : marginMetrics.status === 'low' ? 'text-amber-700'
-                        : 'text-rose-700'
+                        : marginMetrics.status === 'low' ? 'text-amber-400'
+                        : 'text-red-400 animate-pulse'
                     }>
                       {marginMetrics.rate}%
                     </span>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="text-ink-subtle">—</span>
                   )}
                 </div>
-                <span className="text-[10px] text-slate-400 font-mono block">
+                <span className="text-[10px] text-ink-muted font-mono block">
                   {marginMetrics.hasData
                     ? `每单利润: +¥${marginMetrics.marginCny}`
                     : '待关联通道成本后计算'}
@@ -490,28 +490,28 @@ export default function ModelConfigDrawer({
           </div>
 
           {/* Section 4: 基础展示配置 */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">基础展示信息</h3>
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
+            <h3 className="text-body font-bold text-ink">基础展示信息</h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-600 block mb-1 font-medium">前台展示名称</label>
+                <label className="text-caption text-ink-muted block mb-1">前台展示名称</label>
                 <input
                   type="text"
                   value={formData.display_name}
                   onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
                   placeholder="例如: 字节跳动 Seedream 4.0"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-brand focus:bg-white"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-600 block mb-1 font-medium">子类型归属 (场景)</label>
+                  <label className="text-caption text-ink-muted block mb-1">子类型归属 (场景)</label>
                   <select
                     value={formData.sub_type}
                     onChange={(e) => setFormData((f) => ({ ...f, sub_type: e.target.value }))}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:border-brand focus:bg-white"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
                   >
                     <option value="">未指定 (通用)</option>
                     {(SUBTYPE_OPTIONS[formData.category] || []).map((sub) => (
@@ -521,21 +521,21 @@ export default function ModelConfigDrawer({
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-600 block mb-1 font-medium">排序权重 (越小越靠前)</label>
+                  <label className="text-caption text-ink-muted block mb-1">排序权重 (越小越靠前)</label>
                   <input
                     type="number"
                     min="1"
                     max="999"
                     value={formData.sort ?? 1}
                     onChange={(e) => setFormData((f) => ({ ...f, sort: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-brand focus:bg-white font-mono"
+                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
                   />
                 </div>
               </div>
 
               {/* Badge Selection */}
               <div>
-                <label className="text-xs text-slate-600 block mb-1.5 font-medium">运营角标</label>
+                <label className="text-caption text-ink-muted block mb-1.5">运营角标</label>
                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
                   {PRESET_BADGES.map((b) => {
                     const isCur = formData.badge === b;
@@ -544,10 +544,10 @@ export default function ModelConfigDrawer({
                         key={b}
                         type="button"
                         onClick={() => setFormData((f) => ({ ...f, badge: isCur ? '' : b }))}
-                        className={`rounded-full px-2.5 py-1 text-xs transition-all ${
+                        className={`rounded-full px-2.5 py-1 text-caption transition-all ${
                           isCur
-                            ? 'bg-brand text-white shadow-sm font-bold'
-                            : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'
+                            ? 'bg-brand text-white shadow-elevation-1 font-bold'
+                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
                         }`}
                       >
                         {b}
@@ -560,33 +560,33 @@ export default function ModelConfigDrawer({
                   value={formData.badge}
                   onChange={(e) => setFormData((f) => ({ ...f, badge: e.target.value }))}
                   placeholder="或自定义微章文本..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-brand focus:bg-white"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-caption text-ink outline-none focus:border-brand"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-600 block mb-1 font-medium">前台能力描述</label>
+                <label className="text-caption text-ink-muted block mb-1">前台能力描述</label>
                 <textarea
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
                   placeholder="给 C 端用户展示的模型核心卖点或特性描述..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 outline-none focus:border-brand focus:bg-white"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 5: 模型能力与参数矩阵 (Capabilities Matrix) */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
+            <h3 className="text-body font-bold text-ink flex items-center gap-2">
               <Layers className="size-4 text-brand" />
               能力与参数矩阵 (Capabilities Matrix)
             </h3>
 
             {/* Supported Ratios */}
             <div className="space-y-1.5">
-              <span className="text-xs text-slate-500 block">支持画幅比例 (点击切换可选比例)</span>
+              <span className="text-caption text-ink-muted block">支持画幅比例 (点击切换可选比例)</span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {PRESET_RATIOS.map((ratio) => {
                   const isSelected = (formData.supported_ratios || []).includes(ratio);
@@ -599,10 +599,10 @@ export default function ModelConfigDrawer({
                         const next = isSelected ? cur.filter((r) => r !== ratio) : [...cur, ratio];
                         setFormData((f) => ({ ...f, supported_ratios: next }));
                       }}
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-mono transition-all ${
+                      className={`rounded-full px-2.5 py-0.5 text-caption font-mono transition-all ${
                         isSelected
-                          ? 'bg-brand text-white font-bold shadow-sm'
-                          : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'
+                          ? 'bg-brand text-white font-bold shadow-elevation-1'
+                          : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
                       }`}
                     >
                       {ratio}
@@ -614,7 +614,7 @@ export default function ModelConfigDrawer({
 
             {/* Supported Resolutions */}
             <div className="space-y-1.5">
-              <span className="text-xs text-slate-500 block">支持分辨率规格</span>
+              <span className="text-caption text-ink-muted block">支持分辨率规格</span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {PRESET_RESOLUTIONS.map((res) => {
                   const isSelected = (formData.supported_resolutions || []).includes(res);
@@ -630,7 +630,7 @@ export default function ModelConfigDrawer({
                       className={`rounded-full px-2 py-0.5 text-[11px] font-mono transition-all ${
                         isSelected
                           ? 'bg-brand/10 text-brand border border-brand/20 font-bold'
-                          : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'
+                          : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
                       }`}
                     >
                       {res}
@@ -643,7 +643,7 @@ export default function ModelConfigDrawer({
             {/* Supported Durations (video or audio) */}
             {(formData.category === 'video' || formData.category === 'audio') && (
               <div className="space-y-1.5">
-                <span className="text-xs text-slate-500 block">可选生成时长 (秒)</span>
+                <span className="text-caption text-ink-muted block">可选生成时长 (秒)</span>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {PRESET_DURATIONS.map((dur) => {
                     const isSelected = (formData.supported_durations || []).includes(dur);
@@ -656,10 +656,10 @@ export default function ModelConfigDrawer({
                           const next = isSelected ? cur.filter((d) => d !== dur) : [...cur, dur];
                           setFormData((f) => ({ ...f, supported_durations: next }));
                         }}
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-mono transition-all ${
+                        className={`rounded-full px-2.5 py-0.5 text-caption font-mono transition-all ${
                           isSelected
-                            ? 'bg-purple-100 text-purple-700 border border-purple-300 font-bold'
-                            : 'bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900'
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold'
+                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
                         }`}
                       >
                         {dur}s
@@ -671,8 +671,8 @@ export default function ModelConfigDrawer({
             )}
 
             {/* Feature Flags */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-slate-100">
-              <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-white/[0.06]">
+              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.capabilities?.hires_fix)}
@@ -685,7 +685,7 @@ export default function ModelConfigDrawer({
                 <span>高清修复 (Hires Fix)</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.capabilities?.seed_control !== false)}
@@ -698,7 +698,7 @@ export default function ModelConfigDrawer({
                 <span>支持指定种子 (Seed)</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.capabilities?.camera_control)}
@@ -714,10 +714,10 @@ export default function ModelConfigDrawer({
           </div>
 
           {/* Section 6: 上架与展示开关 */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">展示控制与推荐</h3>
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-3">
+            <h3 className="text-body font-bold text-ink">展示控制与推荐</h3>
             <div className="flex flex-wrap items-center gap-5">
-              <label className="flex items-center gap-2 text-xs text-slate-800 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-body-sm text-ink cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.is_visible)}
@@ -727,25 +727,25 @@ export default function ModelConfigDrawer({
                 <span className="font-semibold text-brand">在前台模型库展示 (is_visible)</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-amber-700 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-body-sm text-amber-300 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.is_pinned)}
                   onChange={(e) => setFormData((f) => ({ ...f, is_pinned: e.target.checked }))}
                   className="rounded accent-amber-500 size-4"
                 />
-                <Pin className="size-3.5 fill-amber-500" />
+                <Pin className="size-3.5 fill-amber-300" />
                 <span>前台列表置顶 📌</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-amber-700 cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-body-sm text-yellow-300 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.is_featured)}
                   onChange={(e) => setFormData((f) => ({ ...f, is_featured: e.target.checked }))}
                   className="rounded accent-yellow-500 size-4"
                 />
-                <Star className="size-3.5 fill-yellow-500" />
+                <Star className="size-3.5 fill-yellow-300" />
                 <span>标记为推荐 ⭐</span>
               </label>
             </div>
@@ -753,13 +753,13 @@ export default function ModelConfigDrawer({
         </div>
 
         {/* Sticky Footer */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-          <div className="text-xs text-slate-500 font-mono">
-            ID: <span className="text-slate-900 font-semibold">{formData.model_id}</span>
+        <div className="p-4 border-t border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
+          <div className="text-caption text-ink-muted font-mono">
+            ID: <span className="text-white">{formData.model_id}</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs text-slate-600 hover:text-slate-900">
+            <Button variant="ghost" size="sm" onClick={onClose}>
               取消
             </Button>
             <Button
@@ -767,7 +767,7 @@ export default function ModelConfigDrawer({
               size="sm"
               onClick={handleSave}
               disabled={saving || !canWrite}
-              className="bg-brand hover:bg-brand-hover text-white rounded-lg px-4 text-xs font-semibold shadow-sm"
+              className="bg-brand hover:bg-brand-hover text-white rounded-lg px-4"
             >
               {saving ? <Loader2 className="size-3.5 mr-1.5 animate-spin" /> : <Save className="size-3.5 mr-1.5" />}
               保存展示配置
