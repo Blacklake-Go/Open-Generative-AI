@@ -1,4 +1,4 @@
-# KoyoSIM UI 规范
+# SupDance UI 规范
 
 本规范适用于面向用户的 Studio、社区、作品中心和账户页面。所有新 UI 以 shadcn/ui 的源代码组件为基础，通过语义 token 统一视觉，不直接复制页面级的颜色和交互实现。
 
@@ -7,7 +7,7 @@
 - 组件：优先使用 `components/ui` 中的 shadcn 组件；操作按钮使用 `Button`，信息容器使用 `Card`，状态使用 `Badge`，筛选使用 `Tabs` / `TabsList` / `TabsTrigger`，空状态使用 `Empty`，加载使用 `Skeleton`。
 - 图标：统一使用 `lucide-react` 的线性图标，默认 16–20px、1.8–2px 描边。按钮内图标必须标记 `data-icon="inline-start"` 或 `data-icon="inline-end"`。不再使用 emoji、内联 SVG 图标或来源不一致的图标库。
 - 字体：中文、英文和数字使用系统优先的 Apple 风格无衬线栈：`Inter`, `ui-sans-serif`, `system-ui`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`。正文保持轻微负字距，标题使用更紧的 tracking。
-- 文案：产品名称使用 `KoyoSIM`；页面名称使用“社区”，不使用“即梦社区”。
+- 文案：产品名称使用 `SupDance`；页面名称使用“社区”，不使用“即梦社区”。
 
 ## 颜色与层级
 

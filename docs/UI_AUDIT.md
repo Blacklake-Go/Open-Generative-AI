@@ -1,7 +1,7 @@
 # KOYO Studio 全站 UI/UX 深度审计报告 (UI Audit Report)
 
 **审计时间**：2026-09-16  
-**审计目标**：`https://go.koyosim.com/studio`（线上正式环境）+ `weysl33-boop/Open-Generative-AI`（代码仓库）  
+**审计目标**：`https://go.supdance.com/studio`（线上正式环境）+ `weysl33-boop/Open-Generative-AI`（代码仓库）  
 **审计方法**：Runtime UI Audit（Puppeteer/Chrome 跨 10 种分辨率全路由真实渲染与状态触发）+ Source Code Static Audit（全站 255 个源码文件 AST/Regex 深度扫描）
 
 ---

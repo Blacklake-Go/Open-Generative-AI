@@ -189,7 +189,7 @@
 
 ### 2.9 工作室深暗高斯毛玻璃空间体系（Studio Deep-Frosted Glassmorphism System）
 
-吸收自 KoyoSIM 音频工作室（`https://www.koyosim.com/zh/studio/audio`）及 AI 空间光影工作台的卓越视觉实践。这一页的毛玻璃质感之所以兼具高级电影感与极高可读性，关键在于它彻底摒弃了传统暗色模式下“死白灰雾”的廉价拟态，建立了一套严格基于物理光学漫散射与发丝高光的**深暗高斯毛玻璃体系（Deep-Frosted Glassmorphism）**。
+吸收自 SupDance 音频工作室（`https://www.supdance.com/zh/studio/audio`）及 AI 空间光影工作台的卓越视觉实践。这一页的毛玻璃质感之所以兼具高级电影感与极高可读性，关键在于它彻底摒弃了传统暗色模式下“死白灰雾”的廉价拟态，建立了一套严格基于物理光学漫散射与发丝高光的**深暗高斯毛玻璃体系（Deep-Frosted Glassmorphism）**。
 
 #### 2.9.1 暗夜模式毛玻璃的“防灰防浊”光学定律（The Optical Laws of Dark Glassmorphism）
 
@@ -633,7 +633,7 @@ KOYO Studio 在 3.7.0 中正式吸收即梦 AI（Dreamina / LightVelocity）全�
 
 ### 4.13 Studio 工作台与音频工作室全域 UI 契约（Studio Workbench & Audio Studio Specification）
 
-吸收自 KoyoSIM 音频工作室（`https://www.koyosim.com/zh/studio/audio`）的完整交互与组件架构，为全站所有 Studio 工作台（音频、图像、视频、数字人、重塑、分镜等）确立标准控制台与舞台界面规范。
+吸收自 SupDance 音频工作室（`https://www.supdance.com/zh/studio/audio`）的完整交互与组件架构，为全站所有 Studio 工作台（音频、图像、视频、数字人、重塑、分镜等）确立标准控制台与舞台界面规范。
 
 #### 4.13.1 工作台双栏与空间布局契约（Workbench Dual-Column Layout Contract）
 

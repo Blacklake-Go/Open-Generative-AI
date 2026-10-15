@@ -651,7 +651,11 @@ export default function StandaloneShell({
       setShowAuthModal(true);
     };
     window.addEventListener('muapi:auth-required', handleAuthRequired);
-    return () => window.removeEventListener('muapi:auth-required', handleAuthRequired);
+    window.addEventListener('supdance:auth-required', handleAuthRequired);
+    return () => {
+      window.removeEventListener('muapi:auth-required', handleAuthRequired);
+      window.removeEventListener('supdance:auth-required', handleAuthRequired);
+    };
   }, []);
 
   useEffect(() => {
