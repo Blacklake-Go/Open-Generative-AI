@@ -68,7 +68,7 @@ function aliasCanonicalRoot(pathname) {
 function isAllowedCanvasOrigin(origin) {
     if (!origin) return false;
     const lower = String(origin).trim().toLowerCase();
-    if (lower === 'https://www.supdance.com' || lower === 'https://supdance.com' || lower === 'https://canvas.supdance.com' || lower === 'https://canvas.koyosim.com') return true;
+    if (lower === 'https://www.supdance.com' || lower === 'https://supdance.com' || lower === 'https://canvas.supdance.com') return true;
     if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
     return false;
 }
@@ -85,19 +85,25 @@ export async function middleware(request) {
             preflight.headers.set('Access-Control-Allow-Origin', origin);
             preflight.headers.set('Access-Control-Allow-Credentials', 'true');
             preflight.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-            preflight.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-KoyoSIM-Canvas, Accept, X-Requested-With');
+            preflight.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-KoyoSIM-Canvas, X-SupDance-Canvas, Accept, X-Requested-With');
             preflight.headers.set('Access-Control-Max-Age', '86400');
             preflight.headers.set('Vary', 'Origin');
             return preflight;
         }
     }
 
-    // 1. 静态资源、系统探针、画布入口及 ACME 证书挑战路径免检放行
+    // 0.5. 无限画布 (/canvas 或 /:locale/canvas) 属于独立子站点，规范重定向至 https://canvas.supdance.com
+    if (pathname === '/canvas' || pathname.startsWith('/canvas/') || pathname.match(/^\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\/canvas(?:\/.*)?$/)) {
+        const tail = pathname.replace(/^(?:\/[a-zA-Z]{2}(?:-[a-zA-Z]{2})?)?\/canvas/, '') || '/';
+        const canvasOrigin = 'https://canvas.supdance.com';
+        const redirectUrl = new URL(`${tail}${url.search}`, canvasOrigin);
+        return addSecurityHeaders(NextResponse.redirect(redirectUrl, 308));
+    }
+
+    // 1. 静态资源、系统探针及 ACME 证书挑战路径免检放行
     const isExcluded =
         pathname.startsWith('/_next') ||
         pathname.startsWith('/.well-known') ||
-        pathname === '/canvas' ||
-        pathname.startsWith('/canvas/') ||
         pathname === '/favicon.ico' ||
         pathname === '/robots.txt' ||
         pathname === '/sitemap.xml';

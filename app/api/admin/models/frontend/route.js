@@ -15,6 +15,9 @@ async function handlePOST(request) {
   if (!modelId) {
     return errorResponse('VALIDATION_ERROR', '缺少目标模型 ID', 400, guard.requestId);
   }
+  if (baseCredits !== undefined) {
+    return errorResponse('PRICING_REVIEW_REQUIRED', '请在模型定价页核实并设置积分价格', 422, guard.requestId);
+  }
 
   // 1. 读取原模型配置
   const existing = await queryOne('SELECT id, capabilities, display_name, sort, is_visible FROM ai_studio.ai_models WHERE id = $1', [modelId]);
@@ -52,16 +55,6 @@ async function handlePOST(request) {
     SET ${updates.join(', ')}
     WHERE id = $1
   `, params);
-
-  // 2. 如果提供了 baseCredits，同步更新 model_pricing 表
-  if (baseCredits !== undefined && Number.isFinite(Number(baseCredits))) {
-    await query(`
-      INSERT INTO ai_studio.model_pricing (id, model_id, base_credits, pricing_type, pricing_mode, min_credits, min_gross_margin_rate, is_active, updated_at)
-      VALUES ($1, $1, $2, 'fixed', 'auto', 10, 0.3, true, NOW())
-      ON CONFLICT (model_id) DO UPDATE
-      SET base_credits = EXCLUDED.base_credits, updated_at = NOW()
-    `, [modelId, Number(baseCredits)]);
-  }
 
   return okResponse({ success: true, modelId }, guard.requestId);
 }

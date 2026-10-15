@@ -1,46 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/admin/authz';
+import { getUserFromRequest } from '@/lib/services/auth';
 import { getCanvasAllowedModelIds, getCanvasModelConfig, listCanvasModelCandidates, projectCanvasConfig } from '@/lib/services/canvasModelConfig';
+import { canvasJson, canvasOriginGuard, canvasPreflight } from '@/lib/canvas/http';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function isAllowedCanvasOrigin(origin) {
-  if (!origin) return false;
-  const lower = String(origin).trim().toLowerCase();
-  return lower === 'https://www.supdance.com' || lower === 'https://supdance.com' || lower === 'https://canvas.supdance.com' || lower === 'https://canvas.koyosim.com';
-}
-
-function getCorsHeaders(origin) {
-  return {
-    'Access-Control-Allow-Origin': origin || 'https://www.Supdance.com',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'X-SupDance-Canvas, X-KoyoSIM-Canvas, Content-Type',
-    'Cache-Control': 'private, no-store',
-    Vary: 'Origin',
-  };
-}
-
-function allowed(request) {
-  const origin = request.headers.get('origin');
-  const canvasHeader = request.headers.get('x-supdance-canvas') || request.headers.get('x-koyosim-canvas');
-  return isAllowedCanvasOrigin(origin) && canvasHeader === 'infinite-canvas-v1';
-}
-
-export async function OPTIONS(request) {
-  const origin = request.headers.get('origin');
-  if (!isAllowedCanvasOrigin(origin)) return new NextResponse(null, { status: 403 });
-  return new NextResponse(null, { status: 204, headers: getCorsHeaders(origin) });
+export function OPTIONS(request) {
+  return canvasPreflight(request, 'GET, OPTIONS');
 }
 
 export async function GET(request) {
-  const origin = request.headers.get('origin');
-  if (!allowed(request)) return NextResponse.json({ error: '禁止访问' }, { status: 403 });
-  const corsHeaders = getCorsHeaders(origin);
+  const blocked = canvasOriginGuard(request);
+  if (blocked) return blocked;
+  const user = await getUserFromRequest(request);
+  if (!user) return canvasJson(request, { error: '请先登录 SupDance', code: 'UNAUTHENTICATED' }, { status: 401 });
   try {
-    const user = await getUserFromRequest(request);
-    if (!user) return NextResponse.json({ error: '请先登录 SupDance', code: 'UNAUTHENTICATED' }, { status: 401, headers: corsHeaders });
     const config = await getCanvasModelConfig();
     const [candidates, allowedModelIds] = await Promise.all([
       config ? listCanvasModelCandidates() : [],
@@ -53,9 +27,10 @@ export async function GET(request) {
       if (!allowedModelIds.has(projected.defaults[defaultKey])) projected.defaults[defaultKey] = '';
     }
     projected.configured = Object.values(projected.mountedModelIds).some((ids) => ids.length > 0);
-    return NextResponse.json(projected, { headers: corsHeaders });
+    return canvasJson(request, projected);
   } catch (error) {
     console.error('[api/canvas/config]', error);
-    return NextResponse.json({ error: '画布配置暂时不可用' }, { status: 503, headers: corsHeaders });
+    return canvasJson(request, { error: '画布配置暂时不可用' }, { status: 503 });
   }
 }
+

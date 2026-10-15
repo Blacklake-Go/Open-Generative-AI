@@ -6,7 +6,7 @@ import { getModelPricingBreakdownList, getFrontendModelsMatrixList } from '@/lib
 import PricingManagerClient from './PricingManagerClient';
 
 export const metadata = {
-  title: '模型定价管理与价格明细 - KoyoSIM 后台',
+  title: '模型定价管理与价格明细 - SupDance 后台',
 };
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export default async function ModelPricingPage({ searchParams }) {
   const sp = await searchParams;
   const initialTab = sp?.tab || 'rules';
 
-  const [pricingList, strategy, breakdownList, frontendModelsList] = await Promise.all([
+  const [pricingList, strategy, breakdownList, frontendModelsList, pendingPrices] = await Promise.all([
     queryMany(`
       SELECT 
         m.id AS "modelId", 
@@ -25,11 +25,11 @@ export default async function ModelPricingPage({ searchParams }) {
         m.status AS "modelStatus",
         COALESCE(mp.pricing_type, 'fixed') AS "pricingType",
         COALESCE(mp.pricing_mode, 'auto') AS "pricingMode",
-        COALESCE(mp.base_credits, 10)::int AS "baseCredits",
+        mp.base_credits::int AS "baseCredits",
         COALESCE(mp.formula_config, '{}'::jsonb) AS "formulaConfig",
         COALESCE(mp.min_credits, 10)::int AS "minCredits",
         COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS "minGrossMarginRate",
-        COALESCE(mp.is_active, true) AS "isActive",
+        COALESCE(mp.is_active, false) AS "isActive",
         COALESCE(mp.price_locked, false) AS "manuallyLocked",
         mp.auto_suggested_price_cny AS "autoSuggestedPriceCny",
         mp.manual_override_price_cny AS "manualOverridePriceCny",
@@ -42,6 +42,38 @@ export default async function ModelPricingPage({ searchParams }) {
     queryOne(`SELECT * FROM ai_studio.pricing_strategy WHERE is_active = true LIMIT 1`).catch(() => null),
     getModelPricingBreakdownList().catch(() => []),
     getFrontendModelsMatrixList().catch(() => []),
+    queryMany(`
+      SELECT 
+        pv.id,
+        pv.provider_model_id,
+        pv.version_no,
+        pv.price_type,
+        pv.billing_unit,
+        pv.currency,
+        pv.price_config,
+        pv.applicability,
+        pv.source_url,
+        pv.source_api,
+        pv.source_observed_at,
+        pv.fetched_at,
+        pv.effective_at,
+        pv.expires_at,
+        pv.status,
+        pv.change_summary,
+        pm.model_id,
+        pm.provider_id,
+        pm.provider_model_id AS "providerModelId",
+        p.name AS "providerName",
+        COALESCE(m.display_name, m.name) AS "modelName",
+        m.category
+      FROM ai_studio.provider_model_price_versions pv
+      JOIN ai_studio.provider_models pm ON pm.id = pv.provider_model_id
+      JOIN ai_studio.ai_providers p ON p.id = pm.provider_id
+      LEFT JOIN ai_studio.ai_models m ON m.id = pm.model_id
+      WHERE pv.status IN ('staged', 'pending_review')
+      ORDER BY pv.fetched_at DESC, pv.id DESC
+      LIMIT 500
+    `).catch(() => []),
   ]);
 
   const initialPricing = (pricingList || []).map((p) => ({
@@ -51,7 +83,7 @@ export default async function ModelPricingPage({ searchParams }) {
     modelStatus: p.modelStatus,
     pricingType: p.pricingType,
     pricingMode: p.pricingMode,
-    baseCredits: Number(p.baseCredits ?? 10),
+    baseCredits: p.baseCredits == null ? null : Number(p.baseCredits),
     formulaConfig: p.formulaConfig || {},
     subscriptionDiscounts: {},
     minCredits: Number(p.minCredits ?? 10),
@@ -86,6 +118,7 @@ export default async function ModelPricingPage({ searchParams }) {
         initialStrategy={initialStrategy}
         initialBreakdown={breakdownList}
         initialFrontendModels={frontendModelsList}
+        initialPendingPrices={pendingPrices || []}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
       />
     </>

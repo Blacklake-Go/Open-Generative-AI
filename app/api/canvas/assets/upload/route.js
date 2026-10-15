@@ -110,7 +110,7 @@ export async function POST(request) {
       : error.code === 'STORAGE_FILE_TOO_LARGE' ? 413
       : String(error.code || '').startsWith('STORAGE_') ? 422 : 503;
     const response = canvasJson(request, { error: publicErrorMessage(error, '上传参考图片失败'), code: error.code || 'UPLOAD_FAILED', requestId }, { status });
-    response.headers.set('X-KoyoSIM-Request-ID', requestId);
+    response.headers.set('X-SupDance-Request-ID', requestId);
     return response;
   }
 }

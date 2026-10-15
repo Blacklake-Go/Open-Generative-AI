@@ -27,6 +27,10 @@ import {
   Flame,
   Star,
   Zap,
+  Clock,
+  ExternalLink,
+  RefreshCw,
+  Check,
 } from 'lucide-react';
 
 const CATEGORY_LABELS = { image: '图像', video: '视频', audio: '音乐', workflow: '工作流', text: '文本' };
@@ -39,9 +43,10 @@ export default function PricingManagerClient({
   initialStrategy = {},
   initialBreakdown = [],
   initialFrontendModels = [],
+  initialPendingPrices = [],
   canWrite = false,
 }) {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'rules' | 'breakdown' | 'frontend'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'rules' | 'breakdown' | 'frontend' | 'pending'
 
   // Tab 1 状态
   const [pricingList, setPricingList] = useState(initialPricing);
@@ -62,7 +67,6 @@ export default function PricingManagerClient({
   const [breakdownSearch, setBreakdownSearch] = useState('');
   const [breakdownCategory, setBreakdownCategory] = useState('');
   const [breakdownMarginFilter, setBreakdownMarginFilter] = useState('');
-  const [inspectingSpec, setInspectingSpec] = useState(null); // 查看多规格抽屉
   const [quickEditModel, setQuickEditModel] = useState(null); // 快速调价
 
   // Tab 3 状态 (当前前端模型)
@@ -72,6 +76,14 @@ export default function PricingManagerClient({
   const [frontendBadgeFilter, setFrontendBadgeFilter] = useState('');
   const [editingFrontendModel, setEditingFrontendModel] = useState(null);
   const [isSavingFrontend, setIsSavingFrontend] = useState(false);
+
+  // Tab 4 状态 (待审价格版本)
+  const [pendingPrices, setPendingPrices] = useState(initialPendingPrices);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
+  const [batchApproving, setBatchApproving] = useState(false);
+  const [pendingSearch, setPendingSearch] = useState('');
+  const [pendingProviderFilter, setPendingProviderFilter] = useState('');
 
   // ================= Tab 1 统计与计算 =================
   const statsRules = useMemo(() => ({
@@ -143,6 +155,150 @@ export default function PricingManagerClient({
     });
   }, [frontendList, frontendSearch, frontendStudioFilter, frontendBadgeFilter]);
 
+  // ================= Tab 4 统计与计算 (待审核价格) =================
+  const pendingProviders = useMemo(() => {
+    const set = new Set();
+    for (const p of pendingPrices) {
+      if (p.provider_id) set.add(p.provider_id);
+    }
+    return Array.from(set).sort();
+  }, [pendingPrices]);
+
+  const statsPending = useMemo(() => {
+    const modelsSet = new Set(pendingPrices.map((p) => p.model_id).filter(Boolean));
+    const providersSet = new Set(pendingPrices.map((p) => p.provider_id).filter(Boolean));
+    return {
+      total: pendingPrices.length,
+      modelsCount: modelsSet.size,
+      providersCount: providersSet.size,
+    };
+  }, [pendingPrices]);
+
+  const filteredPendingPrices = useMemo(() => {
+    return pendingPrices.filter((p) => {
+      if (pendingSearch) {
+        const kw = pendingSearch.toLowerCase();
+        const matchModel = (p.model_id && p.model_id.toLowerCase().includes(kw)) ||
+          (p.modelName && p.modelName.toLowerCase().includes(kw));
+        const matchProvider = (p.provider_id && p.provider_id.toLowerCase().includes(kw)) ||
+          (p.providerModelId && p.providerModelId.toLowerCase().includes(kw)) ||
+          (p.provider_model_id && String(p.provider_model_id).toLowerCase().includes(kw)) ||
+          (p.providerName && p.providerName.toLowerCase().includes(kw));
+        if (!matchModel && !matchProvider) return false;
+      }
+      if (pendingProviderFilter && p.provider_id !== pendingProviderFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [pendingPrices, pendingSearch, pendingProviderFilter]);
+
+  const parsePriceConfig = (config) => {
+    if (!config) return {};
+    if (typeof config === 'object') return config;
+    try {
+      return JSON.parse(config);
+    } catch {
+      return {};
+    }
+  };
+
+  const formatPendingPrice = (price) => {
+    const cfg = parsePriceConfig(price.price_config);
+    const cost = cfg.base_cost ?? cfg.amount ?? cfg.unit_cost ?? cfg.cost;
+    if (cost !== null && cost !== undefined) {
+      return `${price.currency || 'USD'} ${cost} / ${price.billing_unit || '次'}`;
+    }
+    return JSON.stringify(cfg);
+  };
+
+  const refreshPendingPrices = async () => {
+    setPendingLoading(true);
+    try {
+      const res = await fetch('/api/admin/models/control');
+      if (res.ok) {
+        const body = await res.json();
+        const raw = body.data?.pendingPrices || body.pendingPrices;
+        if (Array.isArray(raw)) {
+          setPendingPrices(raw);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to refresh pending prices:', err);
+    } finally {
+      setPendingLoading(false);
+    }
+  };
+
+  const handleApprovePrice = async (versionId) => {
+    if (!canWrite) return;
+    setApprovingId(versionId);
+    try {
+      const res = await fetch('/api/admin/models/control', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `approve_price_${versionId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        },
+        body: JSON.stringify({
+          action: 'approve_price',
+          versionId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error?.message || '批准价格版本失败');
+      }
+      setPendingPrices((prev) => prev.filter((p) => p.id !== versionId));
+      alert('价格版本已成功批准激活，已成为最新生效底价！');
+    } catch (err) {
+      alert(`审批失败: ${err.message}`);
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleBatchApprove = async () => {
+    if (!canWrite || filteredPendingPrices.length === 0) return;
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm(
+        `确定要批量批准并通过当前筛选的 ${filteredPendingPrices.length} 个待审价格版本吗？批准后将立即生效为活动成本版本，解除价格缺失状态。`
+      )
+    ) {
+      return;
+    }
+    setBatchApproving(true);
+    let successCount = 0;
+    let failCount = 0;
+    const targets = [...filteredPendingPrices];
+    for (const item of targets) {
+      try {
+        const res = await fetch('/api/admin/models/control', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': `approve_price_${item.id}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          },
+          body: JSON.stringify({
+            action: 'approve_price',
+            versionId: item.id,
+          }),
+        });
+        if (res.ok) {
+          successCount++;
+          setPendingPrices((prev) => prev.filter((p) => p.id !== item.id));
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+    setBatchApproving(false);
+    alert(`批量审批完成：成功批准 ${successCount} 个价格版本${failCount > 0 ? `，失败 ${failCount} 个` : ''}。`);
+  };
+
   // 保存策略
   const handleSaveStrategy = async () => {
     setIsSavingStrategy(true);
@@ -168,8 +324,13 @@ export default function PricingManagerClient({
   // 保存规则定价
   const handleSavePricing = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
     const form = e.target;
+    const enteredCredits = Number(form.baseCredits.value);
+    if (!Number.isInteger(enteredCredits) || enteredCredits <= 0) {
+      alert('请填写已核实的正整数积分价格');
+      return;
+    }
+    setIsSaving(true);
 
     let formulaConfig = editingPricing.formulaConfig || {};
     if (form.formulaConfig) {
@@ -186,7 +347,7 @@ export default function PricingManagerClient({
       modelId: editingPricing.modelId,
       pricingType: form.pricingType.value,
       pricingMode: form.pricingMode.value,
-      baseCredits: Number(form.baseCredits.value || 0),
+      baseCredits: enteredCredits,
       minCredits: Number(form.minCredits.value || 10),
       minGrossMarginRate: Math.max(Number(form.minGrossMarginRate.value || 30) / 100, 0.1),
       isActive: form.isActive.checked,
@@ -210,7 +371,7 @@ export default function PricingManagerClient({
                   ...item,
                   pricingType: payload.pricingType,
                   pricingMode: payload.pricingMode,
-                  baseCredits: payload.baseCredits,
+                  baseCredits: payload.baseCredits ?? item.baseCredits,
                   minCredits: payload.minCredits,
                   minGrossMarginRate: payload.minGrossMarginRate,
                   isActive: payload.isActive,
@@ -250,7 +411,11 @@ export default function PricingManagerClient({
     e.preventDefault();
     if (!quickEditModel) return;
     const form = e.target;
-    const baseCredits = Number(form.baseCredits.value || 10);
+    const baseCredits = Number(form.baseCredits.value);
+    if (!Number.isInteger(baseCredits) || baseCredits <= 0) {
+      alert('请填写已核实的正整数积分价格');
+      return;
+    }
     const pricingMode = form.pricingMode.value;
 
     setIsSaving(true);
@@ -309,7 +474,6 @@ export default function PricingManagerClient({
       pricingHint: form.pricingHint.value,
       badge: form.badge.value,
       sort: Number(form.sort.value || 100),
-      baseCredits: Number(form.baseCredits.value || 10),
       isVisible: form.isVisible.checked,
       isDefault: form.isDefault.checked,
       isPinned: form.isPinned.checked,
@@ -331,7 +495,6 @@ export default function PricingManagerClient({
                   pricingHint: payload.pricingHint,
                   badge: payload.badge,
                   sort: payload.sort,
-                  baseCredits: payload.baseCredits,
                   isVisible: payload.isVisible,
                   isDefault: payload.isDefault,
                   isPinned: payload.isPinned,
@@ -375,41 +538,97 @@ export default function PricingManagerClient({
 
   return (
     <div className="space-y-6">
-      {/* 顶部三位一体连续胶囊导航栏 (契约 40px Track, 32px Item, 100% 对齐 UI_REPAIR_INSTRUCTION.md) */}
+      {/* 待审价格警示 Banner */}
+      {pendingPrices.length > 0 && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-elevation-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="size-9 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
+              <AlertTriangle className="size-5" />
+            </div>
+            <div>
+              <div className="text-body font-bold text-ink flex items-center gap-2">
+                <span>有 {pendingPrices.length} 个渠道价格版本待审核 (pending_review)</span>
+                <span className="rounded-full bg-amber-500/20 text-amber-300 px-2 py-0.5 text-micro font-bold border border-amber-500/30">
+                  解除 PRICE_MISSING
+                </span>
+              </div>
+              <p className="text-caption text-ink-muted mt-0.5">
+                渠道价格版本处于待审核状态时不会成为活动成本，导致计价路由引擎报 PRICE_MISSING。请核验并批准发布。
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setActiveTab('pending')}
+              className="rounded-lg"
+            >
+              前往审核 ({pendingPrices.length}) →
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 顶部四位一体连续胶囊导航栏 (契约 40px Track, 32px Item, 100% 对齐 UI_REPAIR_INSTRUCTION.md) */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
-        <div className="inline-flex h-10 items-center rounded-full bg-black/40 p-1 border border-white/10">
+        <div data-pill-segmented className="inline-flex h-10 items-center rounded-full bg-black/40 p-1 border border-white/10">
           <button
+            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('rules')}
             className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
               activeTab === 'rules'
-                ? 'bg-white text-black shadow-md'
+                ? 'bg-white text-black shadow-elevation-1'
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             ⚙️ 定价策略与规则
           </button>
           <button
+            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('breakdown')}
             className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
               activeTab === 'breakdown'
-                ? 'bg-white text-black shadow-md'
+                ? 'bg-white text-black shadow-elevation-1'
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             📊 模型价格明细 (多渠道底价)
           </button>
           <button
+            data-pill-segment-item
             type="button"
             onClick={() => setActiveTab('frontend')}
             className={`h-8 rounded-full px-4 text-xs font-semibold transition-all ${
               activeTab === 'frontend'
-                ? 'bg-white text-black shadow-md'
+                ? 'bg-white text-black shadow-elevation-1'
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             🖥️ 当前前端模型 (C端态览)
+          </button>
+          <button
+            data-pill-segment-item
+            type="button"
+            onClick={() => setActiveTab('pending')}
+            className={`h-8 rounded-full px-4 text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              activeTab === 'pending'
+                ? 'bg-white text-black shadow-elevation-1'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <span>⚖️ 待审价格版本</span>
+            {pendingPrices.length > 0 && (
+              <span
+                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                  activeTab === 'pending' ? 'bg-amber-500 text-white' : 'bg-amber-500/20 text-amber-300'
+                }`}
+              >
+                {pendingPrices.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -611,7 +830,7 @@ export default function PricingManagerClient({
                         </StatusBadge>
                       </td>
                       <td className="px-4 py-3 font-mono font-bold text-cyan-300">
-                        {p.baseCredits}
+                        {p.baseCredits == null ? '未定价' : p.baseCredits}
                       </td>
                       <td className="px-4 py-3 font-mono text-gray-300">
                         {(p.minGrossMarginRate * 100).toFixed(0)}%
@@ -745,12 +964,26 @@ export default function PricingManagerClient({
                             <span className="text-[10px] text-emerald-400/80">{item.channelCount}条可用通道</span>
                           </div>
                         ) : (
-                          <span className="text-white/30 font-mono">— (暂无渠道)</span>
+                          <div>
+                            <span className="text-white/30 font-mono block">— (暂无渠道)</span>
+                            {pendingPrices.some((p) => p.model_id === item.modelId) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPendingSearch(item.modelId);
+                                  setActiveTab('pending');
+                                }}
+                                className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 text-[10px] font-bold hover:bg-amber-500/25 transition-colors"
+                              >
+                                待审价格 ({pendingPrices.filter((p) => p.model_id === item.modelId).length}) →
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-mono font-bold text-cyan-300 text-sm">{item.baseCredits} 算力</span>
-                        <span className="text-[11px] text-white/40 font-mono block">≈ ¥{item.userPriceCny.toFixed(2)}</span>
+                        <span className="font-mono font-bold text-cyan-300 text-sm">{item.baseCredits == null ? '未定价' : `${item.baseCredits} 算力`}</span>
+                        {item.userPriceCny != null && <span className="text-[11px] text-white/40 font-mono block">≈ ¥{item.userPriceCny.toFixed(2)}</span>}
                       </td>
                       <td className="px-4 py-3">
                         {item.grossMarginCny !== null ? (
@@ -797,14 +1030,6 @@ export default function PricingManagerClient({
                               调价
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setInspectingSpec(item)}
-                            className="h-7 text-xs text-white/60 hover:text-white"
-                          >
-                            规格明细
-                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -1015,6 +1240,232 @@ export default function PricingManagerClient({
       )}
 
       {/* ========================================================================= */}
+      {/* TAB 4: 待审价格版本 (Pending Price Versions & Approval) */}
+      {/* ========================================================================= */}
+      {activeTab === 'pending' && (
+        <div className="space-y-6">
+          {/* 指标卡 */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <MetricCard
+              label="待审核价格版本"
+              value={statsPending.total}
+              hint="等待管理员核准生效"
+              tone={statsPending.total > 0 ? 'warning' : 'good'}
+            />
+            <MetricCard
+              label="涉及规范模型"
+              value={statsPending.modelsCount}
+              hint="受影响模型数"
+              tone="info"
+            />
+            <MetricCard
+              label="涉及供应商数"
+              value={statsPending.providersCount}
+              hint="渠道商品来源"
+              tone="neutral"
+            />
+            <MetricCard
+              label="准入影响说明"
+              value={statsPending.total > 0 ? 'PRICE_MISSING 阻断' : '价盘全量已激活'}
+              hint="审批通过后解除阻断"
+              tone={statsPending.total > 0 ? 'danger' : 'good'}
+            />
+          </div>
+
+          {/* 工具条与筛选 */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-surface/80 p-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="搜索模型ID、名称或渠道商品..."
+                  value={pendingSearch}
+                  onChange={(e) => setPendingSearch(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
+                />
+              </div>
+
+              {/* 供应商筛选 */}
+              <select
+                value={pendingProviderFilter}
+                onChange={(e) => setPendingProviderFilter(e.target.value)}
+                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
+              >
+                <option value="">全部供应商渠道 ({pendingPrices.length})</option>
+                {pendingProviders.map((prov) => (
+                  <option key={prov} value={prov}>
+                    {prov}
+                  </option>
+                ))}
+              </select>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={refreshPendingPrices}
+                disabled={pendingLoading}
+                className="h-8 rounded-lg"
+              >
+                <RefreshCw className={`size-3.5 mr-1 ${pendingLoading ? 'animate-spin' : ''}`} />
+                刷新
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-white/40 font-mono">
+                命中 {filteredPendingPrices.length} / {pendingPrices.length} 个版本
+              </span>
+              {canWrite && filteredPendingPrices.length > 0 && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleBatchApprove}
+                  disabled={batchApproving}
+                  className="h-8 rounded-lg"
+                >
+                  {batchApproving ? (
+                    <Loader2 className="size-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-3.5 mr-1" />
+                  )}
+                  一键批量批准 ({filteredPendingPrices.length})
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* 待审版本数据表 */}
+          <Card className="overflow-hidden p-0 rounded-2xl border border-white/10 shadow-elevation-2">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[900px]">
+                <thead>
+                  <tr className="border-b border-white/[0.08] bg-white/[0.02] text-gray-400">
+                    <th className="px-4 py-3 font-medium">规范模型</th>
+                    <th className="px-4 py-3 font-medium">渠道商品 / 供应商</th>
+                    <th className="px-4 py-3 font-medium">版本 / 类型 / 状态</th>
+                    <th className="px-4 py-3 font-medium">底价配置与单位</th>
+                    <th className="px-4 py-3 font-medium">观测时间与来源</th>
+                    <th className="px-4 py-3 font-medium">差异摘要</th>
+                    <th className="px-4 py-3 font-medium text-right">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.05]">
+                  {filteredPendingPrices.map((price) => {
+                    const isApproving = approvingId === price.id;
+                    const priceFormatted = formatPendingPrice(price);
+                    return (
+                      <tr key={price.id} className="transition-colors hover:bg-white/[0.02]">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-white">
+                            {price.modelName || price.model_name || price.model_id}
+                          </div>
+                          <div className="font-mono text-caption text-ink-subtle mt-0.5">
+                            {price.model_id}
+                          </div>
+                          {price.category && (
+                            <span className="mt-1 inline-block rounded bg-white/[0.06] px-1.5 py-0.2 text-[10px] text-ink-muted">
+                              {CATEGORY_LABELS[price.category] || price.category}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-white">
+                            {price.providerName || price.provider_name || price.provider_id}
+                          </div>
+                          <div className="font-mono text-caption text-ink-subtle mt-0.5">
+                            {price.providerModelId || price.provider_model_id}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-ink">v{price.version_no}</span>
+                            <span className="rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 text-micro font-medium">
+                              {price.status}
+                            </span>
+                          </div>
+                          <span className="text-caption text-ink-muted mt-1 block">
+                            {price.price_type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-mono font-bold text-brand text-body-sm">
+                            {priceFormatted}
+                          </div>
+                          <div className="text-caption text-ink-subtle mt-0.5">
+                            计费单位: {price.billing_unit} · 币种: {price.currency}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-ink-muted">
+                          <div className="flex items-center gap-1 text-caption">
+                            <Clock className="size-3 text-ink-subtle" />
+                            <span>
+                              {price.source_observed_at
+                                ? new Date(price.source_observed_at).toLocaleString()
+                                : price.fetched_at
+                                ? new Date(price.fetched_at).toLocaleString()
+                                : '无来源时间'}
+                            </span>
+                          </div>
+                          {price.source_url && (
+                            <a
+                              href={price.source_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-1 inline-flex items-center gap-1 text-brand hover:underline text-micro"
+                            >
+                              <span>来源核验证据</span>
+                              <ExternalLink className="size-2.5" />
+                            </a>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-ink-subtle max-w-[14rem] truncate">
+                          {price.change_summary
+                            ? (typeof price.change_summary === 'object'
+                                ? JSON.stringify(price.change_summary)
+                                : String(price.change_summary))
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {canWrite && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleApprovePrice(price.id)}
+                              disabled={isApproving || batchApproving}
+                              className="h-8 rounded-lg"
+                            >
+                              {isApproving ? (
+                                <Loader2 className="size-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <Check className="size-3.5 mr-1" />
+                              )}
+                              批准发布
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {filteredPendingPrices.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-12 text-center text-ink-muted">
+                        <CheckCircle2 className="size-8 mx-auto mb-2 text-emerald-400/60" />
+                        <div className="text-body font-medium text-ink">没有待审核的价格版本</div>
+                        <div className="text-caption text-ink-subtle mt-1">
+                          所有渠道成本版本均已核准生效，定价引擎处于就绪状态。
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* 弹窗 1: 编辑规则定价 Modal (Tab 1) */}
       {/* ========================================================================= */}
       {editingPricing && (
@@ -1068,7 +1519,7 @@ export default function PricingManagerClient({
                     name="baseCredits"
                     type="number"
                     min="1"
-                    defaultValue={editingPricing.baseCredits}
+                    defaultValue={editingPricing.baseCredits ?? ''}
                     className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono text-sm"
                     required
                   />
@@ -1164,11 +1615,11 @@ export default function PricingManagerClient({
                 </div>
                 <div className="flex justify-between text-white/60">
                   <span>当前基础积分:</span>
-                  <span className="font-mono text-cyan-300 font-bold">{quickEditModel.baseCredits} 算力</span>
+                  <span className="font-mono text-cyan-300 font-bold">{quickEditModel.baseCredits == null ? '未定价' : `${quickEditModel.baseCredits} 算力`}</span>
                 </div>
                 <div className="flex justify-between text-white/60">
                   <span>当前折算售价:</span>
-                  <span className="font-mono text-white font-semibold">¥{quickEditModel.userPriceCny.toFixed(2)}</span>
+                  <span className="font-mono text-white font-semibold">{quickEditModel.userPriceCny == null ? '未定价' : `¥${quickEditModel.userPriceCny.toFixed(2)}`}</span>
                 </div>
               </div>
 
@@ -1178,7 +1629,7 @@ export default function PricingManagerClient({
                   name="baseCredits"
                   type="number"
                   min="1"
-                  defaultValue={quickEditModel.baseCredits}
+                  defaultValue={quickEditModel.baseCredits ?? ''}
                   className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono text-base font-bold"
                   required
                 />
@@ -1208,90 +1659,6 @@ export default function PricingManagerClient({
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 弹窗 3: 规格明细抽屉 (Tab 2) */}
-      {/* ========================================================================= */}
-      {inspectingSpec && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
-              <div>
-                <h3 className="text-base font-bold text-white">规格阶梯定价明细</h3>
-                <p className="text-xs text-gray-400">{inspectingSpec.modelName} ({inspectingSpec.modelId})</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setInspectingSpec(null)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="rounded-xl border border-white/10 bg-black/30 p-3 space-y-2">
-                <p className="text-xs font-semibold text-white">基准定价策略</p>
-                <div className="grid grid-cols-2 gap-2 text-white/70">
-                  <div>基准算力: <span className="font-mono text-cyan-300 font-bold">{inspectingSpec.baseCredits} 点</span></div>
-                  <div>最低有效渠道价: <span className="font-mono text-white">¥{inspectingSpec.minCostCny ?? '—'}</span></div>
-                  <div>折算法币单价: <span className="font-mono text-white">¥{inspectingSpec.userPriceCny}</span></div>
-                  <div>综合毛利率: <span className="font-mono text-emerald-400 font-bold">{inspectingSpec.marginRate}%</span></div>
-                </div>
-              </div>
-
-              {/* 阶梯规格说明 */}
-              <div>
-                <p className="text-xs font-semibold text-white mb-2">规格扣费规则阶梯</p>
-                {inspectingSpec.category === 'video' ? (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>5 秒标准视频 (720p)</span>
-                      <span className="font-mono font-bold text-cyan-300">{inspectingSpec.baseCredits} 算力</span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>10 秒高清视频 (1080p)</span>
-                      <span className="font-mono font-bold text-cyan-300">{Math.round(inspectingSpec.baseCredits * 1.8)} 算力</span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>4K 极限超分 / 复杂运镜</span>
-                      <span className="font-mono font-bold text-cyan-300">{Math.round(inspectingSpec.baseCredits * 2.5)} 算力</span>
-                    </div>
-                  </div>
-                ) : inspectingSpec.category === 'audio' ? (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>文生音频 / 流行全曲 (约2分钟)</span>
-                      <span className="font-mono font-bold text-cyan-300">{inspectingSpec.baseCredits} 算力</span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>音频延长 / 旋律衍生</span>
-                      <span className="font-mono font-bold text-cyan-300">{Math.round(inspectingSpec.baseCredits * 0.6)} 算力</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>标准图像生成 (1K 分辨率)</span>
-                      <span className="font-mono font-bold text-cyan-300">{inspectingSpec.baseCredits} 算力</span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/10">
-                      <span>高清商业渲染 (2K / 4K 分辨率)</span>
-                      <span className="font-mono font-bold text-cyan-300">{Math.round(inspectingSpec.baseCredits * 1.5)} 算力</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-3 border-t border-white/[0.08]">
-              <Button variant="ghost" onClick={() => setInspectingSpec(null)} className="rounded-lg">
-                关闭
-              </Button>
-            </div>
           </div>
         </div>
       )}
@@ -1338,7 +1705,7 @@ export default function PricingManagerClient({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-400">运营角标</label>
                   <select
@@ -1353,17 +1720,6 @@ export default function PricingManagerClient({
                     <option value="VIP">💎 VIP</option>
                     <option value="限免">🎁 限免</option>
                   </select>
-                </div>
-                <div>
-                  <label className="text-gray-400">基础扣除算力</label>
-                  <input
-                    name="baseCredits"
-                    type="number"
-                    min="1"
-                    defaultValue={editingFrontendModel.baseCredits}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono"
-                    required
-                  />
                 </div>
                 <div>
                   <label className="text-gray-400">排序权重 (越小越靠前)</label>
