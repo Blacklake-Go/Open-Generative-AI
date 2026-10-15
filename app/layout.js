@@ -11,6 +11,9 @@ import { getBrandConfig, getNavigationConfig } from '@/lib/services/branding';
 import { BrandingProvider } from '@/lib/hooks/useBranding';
 
 import DynamicFavicon from '@/components/site/DynamicFavicon';
+import VisitorAnalytics from '@/components/analytics/VisitorAnalytics';
+import { getVisitorAnalyticsConfig } from '@/lib/services/visitorAnalytics';
+import { getSeoConfig, buildMetadata } from '@/lib/services/seo';
 
 const inter = localFont({
   variable: "--font-inter",
@@ -39,23 +42,35 @@ export const viewport = {
   colorScheme: 'dark',
 };
 
-export const metadata = {
-  metadataBase: new URL('https://www.supdance.com'),
-  title: 'SupDance — Free AI Image & Video Studio',
-  description: 'Generate AI images and videos using 200+ models — Flux, Midjourney, Kling, Veo, Seedance and more.',
-  icons: {
-    icon: [
-      { url: '/branding/favicon.svg?v=3', type: 'image/svg+xml' },
-      { url: '/favicon.ico?v=3' },
-      { url: '/branding/favicon-32x32.png?v=3', sizes: '32x32', type: 'image/png' },
-      { url: '/branding/favicon-16x16.png?v=3', sizes: '16x16', type: 'image/png' },
-    ],
-    shortcut: ['/favicon.ico?v=3'],
-    apple: [
-      { url: '/branding/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-};
+export async function generateMetadata() {
+  try {
+    const seo = await getSeoConfig();
+    const meta = buildMetadata(seo);
+    return {
+      ...meta,
+      icons: {
+        icon: [
+          { url: '/branding/favicon.svg?v=3', type: 'image/svg+xml' },
+          { url: '/branding/favicon.ico', sizes: 'any' },
+        ],
+        shortcut: '/branding/favicon.svg?v=3',
+        apple: '/branding/favicon.svg?v=3',
+      },
+    };
+  } catch {
+    return {
+      metadataBase: new URL('https://www.supdance.com'),
+      title: 'SupDance — Free AI Image & Video Studio',
+      description: 'Generate AI images and videos using 200+ models — Flux, Midjourney, Kling, Veo, Seedance and more.',
+      icons: {
+        icon: [
+          { url: '/branding/favicon.svg?v=3', type: 'image/svg+xml' },
+          { url: '/branding/favicon.ico', sizes: 'any' },
+        ],
+      },
+    };
+  }
+}
 
 export default async function RootLayout({ children }) {
   // Locale is derived from the URL path by middleware.js and passed
@@ -72,11 +87,13 @@ export default async function RootLayout({ children }) {
   let maintenance = null;
   let brand = null;
   let navigation = null;
+  let visitorAnalytics = null;
   try {
     banner = (await getSettingByKey('site_banner'))?.value || null;
     maintenance = (await getSettingByKey('maintenance_mode'))?.value || null;
     brand = await getBrandConfig();
     navigation = await getNavigationConfig();
+    visitorAnalytics = await getVisitorAnalyticsConfig();
   } catch {}
 
   const currentLocale = getLocaleConfig(headerList.get('x-locale')).code;
@@ -93,6 +110,7 @@ export default async function RootLayout({ children }) {
       >
         <DynamicFavicon />
         <ChunkSelfHealing />
+        <VisitorAnalytics config={visitorAnalytics} />
         <GlobalSiteBanner banner={banner} />
         <BrandingProvider initialBrand={brand} initialNav={navigation}>
           <MaintenanceGate maintenance={maintenance} user={user}>

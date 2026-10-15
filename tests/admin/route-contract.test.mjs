@@ -156,6 +156,9 @@ test('Active 匹配采用路由段语义：子路径保持高亮、相似前缀�
     ['/admin/users', 'users'],
     ['/admin/users/usr_123', 'users'],
     ['/admin/invites', 'invites'],
+    ['/admin/visitors', 'visitors'],
+    ['/admin/visitors/anything', 'visitors'],
+    ['/admin/visitors-extra', 'ops-overview'],
     ['/admin/users-permissions', 'ops-overview'], // 不能误配 users；/admin 前缀兜底
     ['/admin/providers/payments', 'payment-channels'],
     ['/admin/system/login', 'login-methods'],
@@ -198,6 +201,10 @@ test('刷新深层 URL 与面包屑轨迹正确（Back/Forward 幂等）', () =>
     { label: '生成运营', href: null },
     { label: '生成任务', href: '/admin/generations' },
     { label: 'task_9', href: null },
+  ]);
+  assert.deepEqual(getAdminBreadcrumbs('/admin/visitors'), [
+    { label: '用户与权限', href: null },
+    { label: '访客', href: null },
   ]);
   assert.equal(getAdminBreadcrumbs('/admin/forbidden'), null);
 });
