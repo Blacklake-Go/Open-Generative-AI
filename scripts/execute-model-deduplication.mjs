@@ -129,16 +129,6 @@ export const CANONICAL_GROUPS = [
     preferredProvider: 'byteplus',
     aliases: ['bytedance-doubao-1.5-pro'],
   },
-  {
-    targetId: 'doubao-1.5-pro',
-    name: '豆包 1.5 Pro',
-    category: 'text',
-    display_name: '字节跳动 豆包 1.5 Pro',
-    sort: 1,
-    baseCredits: 5,
-    preferredProvider: 'byteplus',
-    aliases: ['bytedance-doubao-1.5-pro'],
-  },
 
   // === MiniMax / 海螺 ===
   {
@@ -267,6 +257,26 @@ export const CANONICAL_GROUPS = [
       'gemini-omni-flash-1-1-text-to-video', 'gemini-omni-flash-1-1-image-to-video',
       'gemini-omni-image-to-video', 'gemini-omni-text-to-video'
     ],
+  },
+  {
+    targetId: 'gemini-3-1-flash-tts',
+    name: 'Gemini 3.1 Flash TTS',
+    category: 'audio',
+    display_name: 'Google Gemini 3.1 Flash 极速拟真语音',
+    sort: 5,
+    baseCredits: 12,
+    preferredProvider: 'google',
+    aliases: [],
+  },
+  {
+    targetId: 'gemini-2-5-pro-tts',
+    name: 'Gemini 2.5 Pro TTS',
+    category: 'audio',
+    display_name: 'Google Gemini 2.5 Pro 深度情感语音',
+    sort: 6,
+    baseCredits: 16,
+    preferredProvider: 'google',
+    aliases: [],
   },
 
   // === OpenAI ===
@@ -586,17 +596,17 @@ export async function executeDeduplication() {
         await tx.execute(`
           INSERT INTO ai_studio.ai_models (
             id, slug, name, display_name, category, description, status,
-            tier, is_visible, sort, is_featured, created_at, updated_at
+            tier, is_visible, sort, is_featured, auto_route_eligible, created_at, updated_at
           ) VALUES (
             $1, $1, $2, $3, $4, $5, 'active',
-            'core', true, $6, true, now(), now()
+            'core', true, $6, true, true, now(), now()
           )
         `, [targetId, name, display_name, category, `${display_name} - 官方权威规范模型`, sort || 10]);
       } else {
         await tx.execute(`
           UPDATE ai_studio.ai_models
           SET name = $2, display_name = $3, category = $4, status = 'active',
-              tier = 'core', is_visible = true, sort = $5, updated_at = now()
+              tier = 'core', is_visible = true, auto_route_eligible = true, sort = $5, updated_at = now()
           WHERE id = $1
         `, [targetId, name, display_name, category, sort || 10]);
       }
@@ -623,19 +633,28 @@ export async function executeDeduplication() {
             );
             stats.channelsMigrated++;
           } else {
-            // 已存在相同通道映射，删除别名下的冗余通道
+            // 已存在相同通道映射，将目录条目重定向至 conflict.id，删除别名下的冗余通道及其价格版本
+            await tx.execute(
+              'UPDATE ai_studio.provider_catalog_entries SET mapped_provider_model_id = $1 WHERE mapped_provider_model_id = $2',
+              [conflict.id, ch.id]
+            );
+            await tx.execute(
+              'DELETE FROM ai_studio.provider_model_price_versions WHERE provider_model_id = $1',
+              [ch.id]
+            );
             await tx.execute('DELETE FROM ai_studio.provider_models WHERE id = $1', [ch.id]);
             stats.channelsDeduped++;
           }
         }
 
-        // 将被合并的别名模型置为 disabled + hidden
+        // 将被合并的别名模型置为 disabled + hidden + auto_route_eligible=false，并指向 backup_model_id
         await tx.execute(`
           UPDATE ai_studio.ai_models
           SET status = 'disabled', is_visible = false, tier = 'backup',
-              description = $2, updated_at = now()
+              auto_route_eligible = false, backup_model_id = $2,
+              description = $3, updated_at = now()
           WHERE id = $1
-        `, [aliasId, `已合并至规范模型 [${targetId}]`]);
+        `, [aliasId, targetId, `已合并至规范模型 [${targetId}]`]);
         stats.aliasesDisabled++;
       }
 
@@ -755,14 +774,22 @@ export async function executeDeduplication() {
             );
             stats.channelsMigrated++;
           } else {
+            await tx.execute(
+              'UPDATE ai_studio.provider_catalog_entries SET mapped_provider_model_id = $1 WHERE mapped_provider_model_id = $2',
+              [conflict.id, ch.id]
+            );
+            await tx.execute(
+              'DELETE FROM ai_studio.provider_model_price_versions WHERE provider_model_id = $1',
+              [ch.id]
+            );
             await tx.execute('DELETE FROM ai_studio.provider_models WHERE id = $1', [ch.id]);
             stats.channelsDeduped++;
           }
         }
 
         await tx.execute(
-          "UPDATE ai_studio.ai_models SET status = 'disabled', tier = 'deprecated', is_visible = false, description = $2, updated_at = now() WHERE id = $1",
-          [m.id, `已归并至平台规范模型 [${assignedTarget}]`]
+          "UPDATE ai_studio.ai_models SET status = 'disabled', tier = 'backup', is_visible = false, auto_route_eligible = false, backup_model_id = $2, description = $3, updated_at = now() WHERE id = $1",
+          [m.id, assignedTarget, `已归并至平台规范模型 [${assignedTarget}]`]
         );
         stats.aliasesDisabled++;
       }
@@ -773,7 +800,7 @@ export async function executeDeduplication() {
     // -------------------------------------------------------------
     const rhResult = await tx.execute(`
       UPDATE ai_studio.ai_models
-      SET tier = 'backup', is_visible = false, status = 'disabled', updated_at = now()
+      SET tier = 'backup', is_visible = false, status = 'disabled', auto_route_eligible = false, updated_at = now()
       WHERE id LIKE 'rh-%' AND tier != 'core'
     `);
     stats.rhModelsDemoted = rhResult.rowCount || 0;
@@ -783,7 +810,7 @@ export async function executeDeduplication() {
     // -------------------------------------------------------------
     const secondaryResult = await tx.execute(`
       UPDATE ai_studio.ai_models
-      SET tier = 'backup', is_visible = false, status = 'disabled', updated_at = now()
+      SET tier = 'backup', is_visible = false, status = 'disabled', auto_route_eligible = false, updated_at = now()
       WHERE id NOT IN (${Array.from(targetIdSet).map((_, i) => `$${i + 1}`).join(', ')})
     `, Array.from(targetIdSet));
     stats.secondaryModelsHidden = secondaryResult.rowCount || 0;
