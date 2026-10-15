@@ -2491,6 +2491,9 @@ export default function ImageStudio({
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
                     {selectedModelDisplayName}
                   </span>
+                  {getModelBadge(selectedModelId) === '✦' && (
+                    <span className="text-sky-400 font-bold text-xs select-none ml-0.5 leading-none">✦</span>
+                  )}
                   <PromptChevronIcon />
                 </button>
 

@@ -131,12 +131,10 @@ export default function FrontendModelPicker({
 
   // Current selected model display name for header
   const currentSelectedName = useMemo(() => {
-    const found = modelList.find(
-      (entry) =>
-        selectedModel === entry.id ||
-        entry.variantIds?.has(selectedModel) ||
-        (selectedModel && entry.id?.includes(selectedModel))
-    );
+    const found = modelList.find((entry) => {
+      const vIds = entry.variantIds instanceof Set ? entry.variantIds : new Set([entry.id]);
+      return selectedModel === entry.id || vIds.has(selectedModel) || entry.id?.split(':').includes(selectedModel);
+    });
     if (!found) return "";
     return getModelDisplayName(found.family?.id || found.id, found.name);
   }, [modelList, selectedModel]);
@@ -162,12 +160,13 @@ export default function FrontendModelPicker({
 
   return (
     <div className="flex flex-col w-full select-none overflow-hidden">
-      {/* ─── Top Header (Fig 2 Reference: "使用纳米香蕉生成") ─── */}
-      <div className="px-3 pt-2.5 pb-1.5 shrink-0 select-none">
-        <span className="text-caption font-medium text-ink-subtle">
-          {currentSelectedName
-            ? (locale?.startsWith("zh") ? `使用 ${currentSelectedName} 生成` : `Generate with ${currentSelectedName}`)
-            : (locale?.startsWith("zh") ? "选择生成模型" : "Select Generative Model")}
+      {/* ─── Top Header (Matching user screenshot: "选择模型:  Seedream 5.0 Pro") ─── */}
+      <div className="px-3.5 pt-3 pb-2 shrink-0 select-none flex items-center gap-1.5 text-caption">
+        <span className="font-normal text-ink-subtle">
+          {locale?.startsWith("zh") ? "选择模型:" : "Select Model:"}
+        </span>
+        <span className="font-medium text-ink truncate">
+          {currentSelectedName || (locale?.startsWith("zh") ? "未选择" : "None")}
         </span>
       </div>
 
@@ -183,10 +182,11 @@ export default function FrontendModelPicker({
           modelList.map((entry) => {
             const { family } = entry;
             const modelKey = family?.id || entry.id;
+            const vIds = entry.variantIds instanceof Set ? entry.variantIds : new Set([entry.id]);
             const isSelected =
               selectedModel === entry.id ||
-              entry.variantIds?.has(selectedModel) ||
-              (selectedModel && entry.id?.includes(selectedModel));
+              vIds.has(selectedModel) ||
+              entry.id?.split(':').includes(selectedModel);
 
             // Dynamic server-overridden metadata
             const serverMeta = getServerModelMeta(modelKey);
@@ -204,14 +204,14 @@ export default function FrontendModelPicker({
                 ref={isSelected ? activeItemRef : null}
                 onClick={() => handleItemClick(entry)}
                 aria-pressed={Boolean(isSelected)}
-                className={`group flex w-full items-center gap-3 px-3 py-2.5 text-left rounded-xl transition-colors cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${
+                className={`group flex w-full items-center gap-3 px-3.5 py-2.5 text-left rounded-xl transition-colors cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${
                   isSelected
                     ? "bg-white/[0.08] border border-white/[0.08] shadow-elevation-1"
-                    : "bg-transparent border border-transparent hover:bg-white/[0.05] hover:border-white/[0.04]"
+                    : "bg-transparent border border-transparent hover:bg-white/[0.04] hover:border-white/[0.04]"
                 }`}
               >
-                {/* Left: Emblem Logo Container (w-9 h-9, rounded-xl) */}
-                <div className="size-9 rounded-xl bg-white/[0.05] border border-white/[0.06] flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+                {/* Left: Emblem Logo Container (size-10, rounded-xl) */}
+                <div className="size-10 rounded-xl bg-white/[0.06] border border-white/[0.06] flex items-center justify-center p-2 shrink-0 overflow-hidden">
                   {providerLogo ? (
                     <img
                       src={providerLogo}
@@ -238,17 +238,21 @@ export default function FrontendModelPicker({
                       {displayName}
                     </span>
 
-                    {/* High-Contrast Badge */}
+                    {/* High-Contrast Badge / ✦ Sparkle */}
                     {badge && (
-                      <span className={`rounded px-1.5 py-0.2 text-[10px] font-medium border shrink-0 leading-none ${
-                        badge === '最新'
-                          ? 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
-                          : badge === '经济'
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                          : 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
-                      }`}>
-                        {badge}
-                      </span>
+                      badge === "✦" ? (
+                        <span className="text-sky-400 font-bold text-xs select-none leading-none ml-0.5">✦</span>
+                      ) : (
+                        <span className={`rounded px-1.5 py-0.2 text-[10px] font-medium border shrink-0 leading-none ${
+                          badge === '最新'
+                            ? 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
+                            : badge === '经济'
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                            : 'bg-[#3b82f6]/20 text-[#60a5fa] border-[#3b82f6]/30'
+                        }`}>
+                          {badge}
+                        </span>
+                      )
                     )}
 
                     {/* Credits Price Badge */}
@@ -264,7 +268,7 @@ export default function FrontendModelPicker({
                     )}
                   </div>
 
-                  {/* Description Line (Fig 2: Clean single line) */}
+                  {/* Description Line (Matching Fig 2 / user screenshot) */}
                   {desc && (
                     <p className="text-caption text-ink-muted leading-tight line-clamp-1 mt-0.5">
                       {desc}
@@ -272,10 +276,10 @@ export default function FrontendModelPicker({
                   )}
                 </div>
 
-                {/* Right: Selected checkmark or subtle state */}
+                {/* Right: Selected checkmark matching Fig 2 */}
                 {isSelected && (
-                  <div className="shrink-0 size-4 rounded-full flex items-center justify-center text-white/80">
-                    <Check className="size-3.5 stroke-[2.5]" />
+                  <div className="shrink-0 size-5 rounded-full flex items-center justify-center text-white/90">
+                    <Check className="size-4 stroke-[2.5]" />
                   </div>
                 )}
               </button>

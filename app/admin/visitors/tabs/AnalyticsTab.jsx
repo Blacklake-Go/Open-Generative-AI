@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Save, RefreshCw, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
 import { validateVisitorAnalyticsConfig, DEFAULT_VISITOR_ANALYTICS } from '@/lib/services/visitorAnalyticsCore';
 import AnalyticsOverviewCard from '../components/AnalyticsOverviewCard';
+import Ga4MetricsDashboardCard from '../components/Ga4MetricsDashboardCard';
 import GoogleAnalyticsCard from '../components/GoogleAnalyticsCard';
 import BaiduTongjiCard from '../components/BaiduTongjiCard';
 import MicrosoftClarityCard from '../components/MicrosoftClarityCard';
@@ -175,6 +176,9 @@ export default function AnalyticsTab() {
 
       {/* 概览数据与官方入口卡片 */}
       <AnalyticsOverviewCard config={config} links={links} />
+
+      {/* Google Analytics 4 数据源指标拉取看板 */}
+      <Ga4MetricsDashboardCard ga4Config={config?.googleAnalytics} />
 
       {/* 4 大分析工具卡片网格 */}
       <div className="grid gap-5 lg:grid-cols-2">

@@ -8,6 +8,7 @@ export const VOLCENGINE_LOGO = "data:image/svg+xml;base64,PHN2ZyBmaWxsPSJjdXJyZW
 export const MMAUDIO_LOGO = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMiAxMHY0Ii8+PHBhdGggZD0iTTYgNnYxMiIvPjxwYXRoIGQ9Ik0xMCAzdjE4Ii8+PHBhdGggZD0iTTE0IDh2OCIvPjxwYXRoIGQ9Ik0xOCA1djE0Ii8+PHBhdGggZD0iTTIyIDEwdjQiLz48L3N2Zz4=";
 export const TALK_LOGO = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjEgMTVhMiAyIDAgMCAxLTIgMkg3bC00IDRWNWEyIDIgMCAwIDEgMi0yaDE0YTIgMiAwIDAgMSAyIDJ6Ii8+PHBhdGggZD0iTTggOWg4Ii8+PHBhdGggZD0iTTggMTNoNSIvPjwvc3ZnPg==";
 export const VIDEO_LOGO = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIyIiB5PSI0IiB3aWR0aD0iMTUiIGhlaWdodD0iMTYiIHJ4PSIyIi8+PHBhdGggZD0ibTIyIDctNSA1IDUgNVY3eiIvPjwvc3ZnPg==";
+export const SEEDREAM_LOGO = "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJldmVub2RkIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0aXRsZT5TZWVkcmVhbTwvdGl0bGU+PHBhdGggZD0iTTUuMjU3IDEuODA4QzguNzY4IDYuNzQgMTQuNDMxIDkuNDUgMjAuMDY0IDguNDAzYTcuMzk4IDcuMzk4IDAgMDAxLjI4MS0uMzhjLjg1NS0uMzMgMS45NzUgMS4wMSAxLjMyNiAxLjY1OC0uNDMuNDI4LS44NC44Mi0xLjIwOCAxLjE0N2E1MS4xNDkgNTEuMTQ5IDAgMDEtOC4zODkgNi4wNDQgNTEuMTQ2IDUxLjE0NiAwIDAxLTkuNDkgNC4yNjNjLS40NTMuMTUtLjk4LjMwNC0xLjU0Ni40NTctLjg4NS4yMzgtMS40ODQtMS40LS43Ny0xLjk3NS4zNzgtLjMwNi43MTMtLjYxNy45NzgtLjkyN0M1Ljk2OSAxNC4zMzYgNi4yOTkgOC4xNzQgMy43MTcgMi42OTdhMTguMiAxOC4yIDAgMDEtLjM2NC0uODRDMi45OTUuOTggNC4wNDIuMzM1IDQuNjU2IDEuMDU1Yy4yNDMuMjg0LjQ1My41NDUuNjAxLjc1M3pNMTkuNTMgMTMuNjk1Yy0yLjMyNCAyLjg2My0yLjgxNiA1Ljk0NC0yLjM3OCA4LjU4M2wuMDI0LjE2Yy4xMTcuNzktLjgxNiAxLjI3Ny0xLjQ0OC43ODhhMTIuODEzIDEyLjgxMyAwIDAwLS4wOTMtLjA3MmMtMi4xMi0xLjYxNC00LjYyLTIuODI4LTcuOTQ4LTIuNDQ2YTI3Ljk1IDI3Ljk1IDAgMDA2LjA4Ni0yLjYyN2MyLjIxLTEuMjc1IDQuMTQ3LTIuNzc0IDUuNzU2LTQuMzg2eiI+PC9wYXRoPjwvc3ZnPg==";
 
 export const PROVIDER_LOGOS = {
   openai: "/assets/brands/openai.svg",
@@ -50,6 +51,8 @@ export const PROVIDER_LOGOS = {
   lightricks: "https://cdn.muapi.ai/models/lightricks.png",
   pixverse: "https://cdn.muapi.ai/models/pixverse.png",
   reve: "https://cdn.muapi.ai/models/reve.png",
+  seedream: SEEDREAM_LOGO,
+  jimeng: SEEDREAM_LOGO,
   krea: KREA_LOGO,
   meta: META_LOGO,
   mmaudio: MMAUDIO_LOGO,
@@ -67,10 +70,14 @@ export function getProviderLogo(provider, modelKey) {
   const full = `${p} ${m}`.trim();
   if (!full) return null;
 
+  if (full.includes('seedream') || full.includes('jimeng') || full.includes('seed') || full.includes('doubao') || full.includes('youchuan') || full.includes('aesthetic')) {
+    return SEEDREAM_LOGO;
+  }
+
   if (PROVIDER_LOGOS[p]) return PROVIDER_LOGOS[p];
   if (PROVIDER_LOGOS[m]) return PROVIDER_LOGOS[m];
 
-  if (full.includes('bytedance') || full.includes('seed') || full.includes('doubao') || full.includes('volcengine')) return PROVIDER_LOGOS.bytedance;
+  if (full.includes('bytedance') || full.includes('volcengine')) return PROVIDER_LOGOS.bytedance;
   if (full.includes('kling') || full.includes('kuaishou') || full.includes('happy-horse')) return PROVIDER_LOGOS.kling;
   if (full.includes('flux') || full.includes('bfl') || full.includes('blackforest')) return PROVIDER_LOGOS.bfl;
   if (full.includes('openai') || full.includes('gpt') || full.includes('sora') || full.includes('dall-e') || full.includes('dalle')) return PROVIDER_LOGOS.openai;

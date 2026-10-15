@@ -931,4 +931,64 @@ describe('Admin Visitors & SEO Analytics Comprehensive Test Suite', () => {
       }
     });
   });
+
+  // --------------------------------------------------------------------------
+  // GA4 Data API & Property ID Integration
+  // --------------------------------------------------------------------------
+  describe('GA4 Data API & Property ID Integration', () => {
+    it('normalizes and validates GA4 propertyId and service account fields', async () => {
+      const { normalizeVisitorAnalyticsConfig, validateVisitorAnalyticsConfig } = await import('../../lib/services/visitorAnalyticsCore.js');
+      const valid = normalizeVisitorAnalyticsConfig({
+        googleAnalytics: {
+          enabled: true,
+          measurementId: 'G-BP6RZPLRZ2',
+          propertyId: '558360595',
+          serviceAccountEmail: 'test@supdance.iam.gserviceaccount.com',
+          serviceAccountPrivateKey: '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgk...\n-----END PRIVATE KEY-----',
+        },
+      });
+
+      assert.equal(valid.googleAnalytics.enabled, true);
+      assert.equal(valid.googleAnalytics.measurementId, 'G-BP6RZPLRZ2');
+      assert.equal(valid.googleAnalytics.propertyId, '558360595');
+      assert.equal(valid.googleAnalytics.serviceAccountEmail, 'test@supdance.iam.gserviceaccount.com');
+
+      const check = validateVisitorAnalyticsConfig(valid);
+      assert.equal(check.valid, true);
+
+      // Check invalid propertyId
+      const invalid = validateVisitorAnalyticsConfig({
+        googleAnalytics: {
+          enabled: true,
+          measurementId: 'G-BP6RZPLRZ2',
+          propertyId: 'invalid-alpha-id',
+        },
+      });
+      assert.equal(invalid.valid, false);
+      assert.ok(invalid.errors.some((e) => e.includes('Property ID')));
+    });
+
+    it('resolves GA4 credentials and tests connection gracefully', async () => {
+      const { resolveGa4Credentials, testGa4DataApiConnection, normalizePrivateKey } = await import('../../lib/services/ga4DataApi.js');
+
+      assert.equal(normalizePrivateKey('line1\\nline2'), 'line1\nline2');
+
+      const resolved = resolveGa4Credentials({
+        propertyId: '558360595',
+        clientEmail: 'test@supdance.iam.gserviceaccount.com',
+        privateKey: 'mock-key',
+      });
+      assert.ok(resolved);
+      assert.equal(resolved.propertyId, '558360595');
+      assert.equal(resolved.clientEmail, 'test@supdance.iam.gserviceaccount.com');
+
+      const testResult = await testGa4DataApiConnection({
+        propertyId: '558360595',
+        clientEmail: 'test@supdance.iam.gserviceaccount.com',
+        privateKey: 'mock-key',
+      });
+      assert.equal(testResult.ok, false);
+      assert.ok(testResult.message);
+    });
+  });
 });

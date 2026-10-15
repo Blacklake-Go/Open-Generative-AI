@@ -4,26 +4,58 @@
  */
 
 export const MODEL_DESCRIPTIONS = {
-  // ── Seedream / ByteDance 系列 ──
-  "seedream-5.0": {
-    zh: "针对电影级和文字丰富的视觉效果进行了优化。",
-    en: "Optimized for cinematic and text-rich visual effects.",
+  // ── Seedream / ByteDance 系列 (规格矩阵 1:1 还原) ──
+  "seedream-5.0-pro": {
+    zh: "商业设计、影视、高密度图文等场景效果全面提升",
+    en: "Comprehensive enhancement in commercial design, film, and dense text visuals.",
     tag: "Pro",
-    badge: "新的",
+    badge: "✦",
+    recommended: true,
+  },
+  "seedream-5.0-flash": {
+    zh: "轻量化版 Seedream 5.0 Pro，更快更便宜",
+    en: "Lightweight Seedream 5.0 Pro, faster and more affordable.",
+    tag: "Flash",
+    badge: null,
+  },
+  "image-aesthetic-v8.2": {
+    zh: "专注美学创作，生成高美感、艺术感图片",
+    en: "Dedicated to aesthetic creation, generating artistic and high-aesthetic visuals.",
+    tag: "Aesthetic",
+    badge: "✦",
+    recommended: true,
+  },
+  "seedream-5.0-lite": {
+    zh: "指令响应更精准，生成效果更智能",
+    en: "More accurate prompt following and intelligent generative performance.",
+    tag: "Lite",
+    badge: null,
+  },
+  "seedream-4.5": {
+    zh: "画质全面优化，指令响应能力再次提升",
+    en: "Full image quality optimization, improved prompt response.",
+    tag: "4.7",
+    badge: null,
+  },
+  "seedream-5.0": {
+    zh: "商业设计、影视、高密度图文等场景效果全面提升",
+    en: "Comprehensive enhancement in commercial design, film, and dense text visuals.",
+    tag: "Pro",
+    badge: "✦",
     recommended: true,
   },
   "bytedance-seedream-5.0-pro": {
-    zh: "针对电影级和文字丰富的视觉效果进行了优化。",
-    en: "Optimized for cinematic and text-rich visual effects.",
+    zh: "商业设计、影视、高密度图文等场景效果全面提升",
+    en: "Comprehensive enhancement in commercial design, film, and dense text visuals.",
     tag: "Pro",
-    badge: "新的",
+    badge: "✦",
     recommended: true,
   },
   "bytedance-seedream-v5.0": {
-    zh: "针对电影级和文字丰富的视觉效果进行了优化。",
-    en: "Optimized for cinematic and text-rich visual effects.",
+    zh: "商业设计、影视、高密度图文等场景效果全面提升",
+    en: "Comprehensive enhancement in commercial design, film, and dense text visuals.",
     tag: "Pro",
-    badge: "新的",
+    badge: "✦",
     recommended: true,
   },
   // ── OpenAI / GPT 图像系列 ──

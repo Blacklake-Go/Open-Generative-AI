@@ -4100,7 +4100,16 @@ export const t2iModels = [
   }
 ];
 
-export const getModelById = (id) => t2iModels.find(m => m.id === id);
+export const getModelById = (id) => {
+  if (!id) return undefined;
+  const match = t2iModels.find(m => m.id === id || m.endpoint === id);
+  if (match) return match;
+  if (String(id).includes('seedream') || String(id).includes('seededit')) {
+    const fallback = t2iModels.find(m => m.id.includes('seedream'));
+    if (fallback) return { ...fallback, id, endpoint: id };
+  }
+  return undefined;
+};
 
 export const getSelectableAspectRatiosForModel = (modelId) => {
   const model = getModelById(modelId);
@@ -31550,7 +31559,16 @@ export function applyActiveModelDirectory(rows) {
   const activeIds = new Set(
     list
       .filter(isServerModelGenerationEligible)
-      .map((row) => String(row.id)),
+      .flatMap((row) => [
+        String(row.id),
+        String(row.endpoint || ''),
+        ...(row.id === 'seedream-5.0-pro' ? ['bytedance-seedream-5.0-pro', 'bytedance-seedream-v5.0', 'seedream-5.0', 'seedream-5.0-edit'] : []),
+        ...(row.id === 'seedream-5.0-flash' ? ['bytedance-seedream-5.0-flash'] : []),
+        ...(row.id === 'seedream-5.0-lite' ? ['bytedance-seedream-5.0-lite'] : []),
+        ...(row.id === 'seedream-4.5' ? ['bytedance-seedream-v4.5', 'bytedance-seedream-v4.5-edit'] : []),
+        ...(row.id === 'imagen-4' ? ['google-imagen4'] : []),
+      ])
+      .filter(Boolean),
   );
 
   // An empty successful server snapshot is authoritative: keep static fallback entries hidden.
@@ -31559,10 +31577,21 @@ export function applyActiveModelDirectory(rows) {
   modelPricingById = new Map(
     list
       .filter(isServerModelGenerationEligible)
-      .map((row) => [String(row.id), {
-        credits: Number(row.creditsPrice),
-        formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
-      }]),
+      .flatMap((row) => {
+        const item = {
+          credits: Number(row.creditsPrice),
+          formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
+        };
+        const entries = [[String(row.id), item]];
+        if (row.id === 'seedream-5.0-pro') {
+          entries.push(['bytedance-seedream-5.0-pro', item], ['seedream-5.0', item]);
+        } else if (row.id === 'seedream-4.5') {
+          entries.push(['bytedance-seedream-v4.5', item]);
+        } else if (row.id === 'imagen-4') {
+          entries.push(['google-imagen4', item]);
+        }
+        return entries;
+      }),
   );
 
   if (typeof globalThis !== 'undefined') {
@@ -31577,7 +31606,9 @@ export function applyActiveModelDirectory(rows) {
 
   for (let index = 0; index < MODEL_DIRECTORY_ARRAYS.length; index += 1) {
     const catalog = MODEL_DIRECTORY_ARRAYS[index];
-    const active = ORIGINAL_MODEL_DIRECTORY_ARRAYS[index].filter((model) => activeIds.has(String(model.id)));
+    const active = ORIGINAL_MODEL_DIRECTORY_ARRAYS[index].filter((model) => 
+      activeIds.has(String(model.id)) || (model.endpoint && activeIds.has(String(model.endpoint)))
+    );
     catalog.splice(0, catalog.length, ...active);
   }
 
