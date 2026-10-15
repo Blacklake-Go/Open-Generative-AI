@@ -95,23 +95,15 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
-              <BarChart3 className="size-5" />
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-400">
+              <BarChart3 className="size-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-sm">Google Analytics 4 (GA4)</h3>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-400">
-                  国际站主力
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-gray-400">
-                基于事件模型，提供全链路转化漏斗与全球访客受众洞察。
-              </p>
+              <h3 className="font-semibold text-white text-sm">Google Analytics 4</h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <StatusBadge tone={ga4.enabled ? 'good' : 'neutral'}>
               {ga4.enabled ? '已启用' : '未启用'}
             </StatusBadge>
@@ -137,46 +129,36 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
         </div>
 
         {/* 基础配置：衡量 ID 与 媒体资源 ID */}
-        <div className="mt-5 space-y-4">
-          <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="ga4-id-input" className="text-xs font-medium text-gray-300">
-                Measurement ID (衡量 ID)
-              </label>
-              <span className="text-[11px] text-gray-400">格式：G-XXXXXXXXXX</span>
-            </div>
+        <div className="mt-4 space-y-3">
+          <div>
+            <label htmlFor="ga4-id-input" className="block text-xs font-medium text-gray-300 mb-1">
+              Measurement ID (衡量 ID)
+            </label>
             <input
               id="ga4-id-input"
               type="text"
               disabled={disabled}
               value={ga4.measurementId || ''}
               onChange={(e) => handleFieldChange('measurementId', e.target.value.trim())}
-              placeholder="例如：G-BP6RZPLRZ2"
-              className={`w-full rounded-xl border px-3.5 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
+              placeholder="G-XXXXXXXXXX"
+              className={`w-full rounded-xl border px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
                 hasError
                   ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
                   : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
               }`}
             />
             {hasError && (
-              <p className="flex items-center gap-1.5 text-xs text-red-400">
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-red-400">
                 <AlertCircle className="size-3.5 shrink-0" />
-                <span>Google Analytics 4 衡量 ID 格式错误，必须形如 G-XXXXXXXXXX</span>
+                <span>格式错误，必须形如 G-XXXXXXXXXX</span>
               </p>
             )}
-            <p className="text-[11px] leading-4 text-gray-400 flex items-start gap-1">
-              <HelpCircle className="size-3.5 shrink-0 text-gray-400 mt-0.5" />
-              <span>在 Google Analytics 管理员 → 数据流 → 网站数据流中复制以 G- 开头的 ID。</span>
-            </p>
           </div>
 
-          <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="ga4-prop-id-input" className="text-xs font-medium text-gray-300">
-                Property ID (媒体资源数字 ID)
-              </label>
-              <span className="text-[11px] text-cyan-400/80">用于后台直拉数据源</span>
-            </div>
+          <div>
+            <label htmlFor="ga4-prop-id-input" className="block text-xs font-medium text-gray-300 mb-1">
+              Property ID (媒体资源数字 ID)
+            </label>
             <input
               id="ga4-prop-id-input"
               type="text"
@@ -184,44 +166,32 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
               value={ga4.propertyId || ''}
               onChange={(e) => handleFieldChange('propertyId', e.target.value.trim())}
               placeholder="例如：558360595"
-              className="w-full rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors focus:border-cyan-500/60"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors focus:border-cyan-500/60"
             />
-            <p className="text-[11px] leading-4 text-gray-400 flex items-start gap-1">
-              <HelpCircle className="size-3.5 shrink-0 text-gray-400 mt-0.5" />
-              <span>可在 Google Analytics 管理员 → 媒体资源详情中查看，例如 558360595。</span>
-            </p>
           </div>
 
           {/* 高级设置开关：Google Analytics Data API 服务账号密钥 */}
-          <div className="rounded-xl border border-white/[0.06] bg-black/20 p-4">
+          <div className="rounded-xl border border-white/[0.06] bg-black/20 p-3.5">
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="flex w-full items-center justify-between text-xs font-medium text-gray-300 hover:text-white transition-colors"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <KeyRound className="size-3.5 text-cyan-400" />
-                <span>Google Analytics Data API 服务账号凭据 (拉取数据源)</span>
+                <span>Data API 服务账号凭据</span>
               </div>
               <div className="flex items-center gap-1 text-[11px] text-gray-400">
-                <span>{showAdvanced ? '收起凭据配置' : '展开凭据配置'}</span>
-                {showAdvanced ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                <span>{showAdvanced ? '收起' : '展开'}</span>
+                {showAdvanced ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
               </div>
             </button>
 
             {showAdvanced && (
-              <div className="mt-4 space-y-3 pt-3 border-t border-white/[0.06]">
-                <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/[0.03] p-2.5 text-[11px] text-cyan-300/90 leading-relaxed">
-                  <div className="flex items-center gap-1.5 font-medium mb-1">
-                    <Sparkles className="size-3 text-cyan-400 shrink-0" />
-                    <span>支持粘贴 Google Cloud 服务账号 JSON 自动解析</span>
-                  </div>
-                  <div>在 Google Cloud Console 创建服务账号，并在 GA4「媒体资源访问权限管理」中添加该邮箱为「查看者 Viewer」。</div>
-                </div>
-
+              <div className="mt-3 space-y-2.5 pt-2.5 border-t border-white/[0.06]">
                 <div>
                   <label className="text-[11px] font-medium text-gray-400 block mb-1">
-                    Service Account Client Email (服务账号邮箱)
+                    Service Account Client Email
                   </label>
                   <input
                     type="text"
@@ -233,20 +203,17 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                         handleFieldChange('serviceAccountEmail', text);
                       }
                     }}
-                    placeholder="例如：ga4-reader@my-project.iam.gserviceaccount.com"
+                    placeholder="ga4-reader@project.iam.gserviceaccount.com"
                     className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white placeholder-white/20 outline-none focus:border-cyan-500/60"
                   />
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-medium text-gray-400">
-                      Private Key (私钥内容或直接粘贴 JSON)
-                    </label>
-                    <span className="text-[10px] text-gray-500">仅用于服务端签名，加密存储</span>
-                  </div>
+                  <label className="text-[11px] font-medium text-gray-400 block mb-1">
+                    Private Key (支持直接粘贴 JSON)
+                  </label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     disabled={disabled}
                     value={ga4.serviceAccountPrivateKey || ''}
                     onChange={(e) => {
@@ -255,8 +222,8 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                         handleFieldChange('serviceAccountPrivateKey', text);
                       }
                     }}
-                    placeholder="-----BEGIN PRIVATE KEY----- ... 或直接粘贴整个 JSON 密钥文件"
-                    className="w-full rounded-lg border border-white/10 bg-black/40 p-2.5 font-mono text-[11px] text-white/80 placeholder-white/20 outline-none focus:border-cyan-500/60 resize-y"
+                    placeholder="-----BEGIN PRIVATE KEY----- 或直接粘贴 JSON 密钥"
+                    className="w-full rounded-lg border border-white/10 bg-black/40 p-2 font-mono text-[11px] text-white/80 placeholder-white/20 outline-none focus:border-cyan-500/60 resize-y"
                   />
                 </div>
 
@@ -265,12 +232,12 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                     type="button"
                     disabled={disabled || testing || !ga4.propertyId}
                     onClick={handleTestConnection}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
                   >
                     {testing ? (
                       <>
                         <Loader2 className="size-3 animate-spin" />
-                        <span>正在校验 Google Data API 连通性...</span>
+                        <span>校验中...</span>
                       </>
                     ) : (
                       <>
@@ -286,25 +253,25 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                     rel="noopener noreferrer"
                     className="text-[11px] text-gray-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
                   >
-                    <span>Google Cloud 凭证中心</span>
+                    <span>Google Cloud 凭据</span>
                     <ExternalLink className="size-2.5" />
                   </a>
                 </div>
 
                 {testResult && (
                   <div
-                    className={`rounded-lg border p-2.5 text-xs flex items-start gap-2 ${
+                    className={`rounded-lg border p-2 text-xs flex items-start gap-1.5 ${
                       testResult.ok
                         ? 'border-emerald-500/30 bg-emerald-500/[0.05] text-emerald-300'
                         : 'border-red-500/30 bg-red-500/[0.05] text-red-300'
                     }`}
                   >
                     {testResult.ok ? (
-                      <CheckCircle2 className="size-4 shrink-0 text-emerald-400 mt-0.5" />
+                      <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400 mt-0.5" />
                     ) : (
-                      <AlertCircle className="size-4 shrink-0 text-red-400 mt-0.5" />
+                      <AlertCircle className="size-3.5 shrink-0 text-red-400 mt-0.5" />
                     )}
-                    <span className="leading-relaxed">{testResult.message}</span>
+                    <span>{testResult.message}</span>
                   </div>
                 )}
               </div>

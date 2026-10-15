@@ -20,11 +20,6 @@ const TAB_OPTIONS = [
   },
 ];
 
-const TAB_HINTS = {
-  analytics: '配置主流第三方访客分析工具（Google Analytics 4、百度统计、微软 Clarity 与自定义埋点脚本），提供前台异步零阻塞加载与控制台直达。',
-  seo: '管理全站 TDK 规则、社交分享卡片、搜索引擎站长平台站内验证，并提供动态站点地图 (Sitemap.xml)、Robots.txt 及搜索引擎实时主动推送。',
-};
-
 export default function VisitorsWorkbenchClient() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -65,18 +60,13 @@ export default function VisitorsWorkbenchClient() {
   return (
     <div className="space-y-6">
       {/* 顶部分段选择胶囊导航 */}
-      <div className="flex flex-col gap-2.5">
-        <div className="w-full max-w-lg">
-          <SegmentedControl
-            ariaLabel="访客与 SEO 工作台分区"
-            value={tab}
-            onValueChange={handleTabChange}
-            options={TAB_OPTIONS}
-          />
-        </div>
-        <p className="text-xs text-gray-400">
-          {TAB_HINTS[tab]}
-        </p>
+      <div className="w-full max-w-sm">
+        <SegmentedControl
+          ariaLabel="访客与 SEO 工作台分区"
+          value={tab}
+          onValueChange={handleTabChange}
+          options={TAB_OPTIONS}
+        />
       </div>
 
       {/* 选项卡内容区：采用 hidden 控制无闪烁/无 DOM 重挂载切换 */}

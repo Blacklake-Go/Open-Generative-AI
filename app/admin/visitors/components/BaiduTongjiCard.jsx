@@ -23,23 +23,15 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-blue-400">
-              <BarChart3 className="size-5" />
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-blue-400">
+              <BarChart3 className="size-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-sm">百度统计 (Baidu Tongji)</h3>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-400">
-                  国内站必备
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-gray-400">
-                国内主流流量统计平台，提供地域分布与百度搜索收录诊断监控。
-              </p>
+              <h3 className="font-semibold text-white text-sm">百度统计</h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <StatusBadge tone={baidu.enabled ? 'good' : 'neutral'}>
               {baidu.enabled ? '已启用' : '未启用'}
             </StatusBadge>
@@ -64,13 +56,10 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <label htmlFor="baidu-id-input" className="text-xs font-medium text-gray-300">
-              Site ID (站点代码哈希)
-            </label>
-            <span className="text-[11px] text-gray-400">32 位十六进制字符</span>
-          </div>
+        <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/30 p-3.5 space-y-2">
+          <label htmlFor="baidu-id-input" className="block text-xs font-medium text-gray-300">
+            Site ID (站点代码哈希)
+          </label>
           <input
             id="baidu-id-input"
             type="text"
@@ -78,7 +67,7 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
             value={baidu.siteId || ''}
             onChange={handleIdChange}
             placeholder="例如：e0c656d0124d262a4b86895b6c318ab4"
-            className={`w-full rounded-xl border px-3.5 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
+            className={`w-full rounded-xl border px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
               hasError
                 ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
                 : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
@@ -90,41 +79,18 @@ export default function BaiduTongjiCard({ value, onChange, disabled }) {
               <span>百度统计站点 ID 格式错误，必须为 32 位十六进制哈希</span>
             </p>
           )}
-          <p className="text-[11px] leading-4 text-gray-400 flex items-start gap-1">
-            <HelpCircle className="size-3.5 shrink-0 text-gray-400 mt-0.5" />
-            <span>在百度统计代码管理中提取 hm.js? 后的 32 位 Token 字符串。</span>
-          </p>
         </div>
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
-        <div className="flex items-center gap-3">
-          <a
-            href="https://tongji.baidu.com/web/welcome/login"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
-          >
-            <span>登录与实时概览</span>
-            <ExternalLink className="size-3" />
-          </a>
-          <a
-            href="https://tongji.baidu.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-          >
-            <span>官网控制台</span>
-            <ExternalLink className="size-3" />
-          </a>
-        </div>
         <a
-          href="https://tongji.baidu.com/help/getstart/code.html"
+          href="https://tongji.baidu.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
         >
-          代码获取指引 ↗
+          <span>百度统计控制台</span>
+          <ExternalLink className="size-3" />
         </a>
       </div>
     </Card>

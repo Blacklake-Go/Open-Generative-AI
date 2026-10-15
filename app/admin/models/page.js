@@ -150,8 +150,8 @@ export default async function ModelsPage() {
     <>
       <PageHeader
         eyebrow="AI 模型中心"
-        title="前端模型管理"
-        description="统一查看展示意向和真实目录准入状态；编辑名称、分类、排序与徽章。可见开关不能替代渠道、价格和真实生成验收。"
+        title="模型管理中心"
+        description="统一管理模型资产、前台展示、规格能力与定价利润。"
       />
       <FrontendConfigClient
         initialModels={JSON.parse(JSON.stringify(models))}

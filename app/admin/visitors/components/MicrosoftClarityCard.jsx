@@ -23,23 +23,15 @@ export default function MicrosoftClarityCard({ value, onChange, disabled }) {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-purple-400">
-              <Sparkles className="size-5" />
+            <div className="flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-purple-400">
+              <Sparkles className="size-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-sm">微软 Clarity (Microsoft Clarity)</h3>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-gray-400">
-                  行为热力图
-                </span>
-              </div>
-              <p className="mt-0.5 text-xs text-gray-400">
-                提供真实用户会话录屏 (Session Recordings)、点击/滑动热力图及无意乱点分析。
-              </p>
+              <h3 className="font-semibold text-white text-sm">微软 Clarity</h3>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <StatusBadge tone={clarity.enabled ? 'good' : 'neutral'}>
               {clarity.enabled ? '已启用' : '未启用'}
             </StatusBadge>
@@ -64,13 +56,10 @@ export default function MicrosoftClarityCard({ value, onChange, disabled }) {
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <label htmlFor="clarity-id-input" className="text-xs font-medium text-gray-300">
-              Project ID (项目标识)
-            </label>
-            <span className="text-[11px] text-gray-400">8-16 位字母数字</span>
-          </div>
+        <div className="mt-4 rounded-xl border border-white/[0.06] bg-black/30 p-3.5 space-y-2">
+          <label htmlFor="clarity-id-input" className="block text-xs font-medium text-gray-300">
+            Project ID (项目标识)
+          </label>
           <input
             id="clarity-id-input"
             type="text"
@@ -78,7 +67,7 @@ export default function MicrosoftClarityCard({ value, onChange, disabled }) {
             value={clarity.projectId || ''}
             onChange={handleIdChange}
             placeholder="例如：cl89abcd12"
-            className={`w-full rounded-xl border px-3.5 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
+            className={`w-full rounded-xl border px-3 py-2 text-xs text-white placeholder-white/20 outline-none transition-colors ${
               hasError
                 ? 'border-red-500/60 bg-red-500/[0.04] focus:border-red-500'
                 : 'border-white/10 bg-black/40 focus:border-cyan-500/60'
@@ -90,41 +79,18 @@ export default function MicrosoftClarityCard({ value, onChange, disabled }) {
               <span>Microsoft Clarity 项目 ID 格式错误，必须为 8-16 位字母数字组合</span>
             </p>
           )}
-          <p className="text-[11px] leading-4 text-emerald-400/90 flex items-start gap-1">
-            <Sparkles className="size-3.5 shrink-0 text-emerald-400 mt-0.5" />
-            <span>采用 Next.js lazyOnload 延迟注水，浏览器空闲执行，保障 INP 与 TBT 性能指标。</span>
-          </p>
         </div>
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
-        <div className="flex items-center gap-3">
-          <a
-            href="https://clarity.microsoft.com/projects"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
-          >
-            <span>项目录屏与热力图</span>
-            <ExternalLink className="size-3" />
-          </a>
-          <a
-            href="https://clarity.microsoft.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-          >
-            <span>官网控制台</span>
-            <ExternalLink className="size-3" />
-          </a>
-        </div>
         <a
-          href="https://learn.microsoft.com/en-us/clarity/"
+          href="https://clarity.microsoft.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-gray-400 hover:text-gray-300 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
         >
-          官方配置指南 ↗
+          <span>Microsoft Clarity 控制台</span>
+          <ExternalLink className="size-3" />
         </a>
       </div>
     </Card>

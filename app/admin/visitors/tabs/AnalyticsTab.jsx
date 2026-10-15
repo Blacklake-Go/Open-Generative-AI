@@ -114,12 +114,9 @@ export default function AnalyticsTab() {
   return (
     <div className="space-y-6">
       {/* 顶部操作与反馈栏 */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-white tracking-[-0.01em]">第三方访客统计分析中心</h2>
-          <p className="mt-0.5 text-xs text-gray-400">
-            配置 Google Analytics 4、百度统计、微软 Clarity 及自定义脚本。前台已启用工具将在注水完成后异步无阻塞加载。
-          </p>
+          <h2 className="text-base font-semibold text-white tracking-[-0.01em]">访客统计与分析</h2>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -128,9 +125,9 @@ export default function AnalyticsTab() {
               type="button"
               disabled={saving}
               onClick={handleReset}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3.5 text-xs font-medium text-gray-300 hover:bg-white/[0.08] hover:text-white transition-all active:scale-[0.98] disabled:opacity-40"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs font-medium text-gray-300 hover:bg-white/[0.08] hover:text-white transition-all active:scale-[0.98] disabled:opacity-40"
             >
-              <RotateCcw className="size-3.5" />
+              <RotateCcw className="size-3" />
               <span>放弃更改</span>
             </button>
           )}
@@ -139,16 +136,16 @@ export default function AnalyticsTab() {
             type="button"
             disabled={saving || !isDirty || !validation.valid}
             onClick={handleSave}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-4 text-xs font-semibold text-cyan-200 shadow-elevation-1 hover:bg-cyan-500/30 hover:text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-3.5 text-xs font-semibold text-cyan-200 shadow-elevation-1 hover:bg-cyan-500/30 hover:text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {saving ? (
               <>
-                <RefreshCw className="size-3.5 animate-spin" />
+                <RefreshCw className="size-3 animate-spin" />
                 <span>保存中...</span>
               </>
             ) : (
               <>
-                <Save className="size-3.5" />
+                <Save className="size-3" />
                 <span>保存配置</span>
               </>
             )}
@@ -159,29 +156,28 @@ export default function AnalyticsTab() {
       {/* 状态提示反馈条 */}
       {statusMessage && (
         <div
-          className={`flex items-start gap-2.5 rounded-xl border p-3.5 text-xs transition-all ${
+          className={`flex items-start gap-2.5 rounded-xl border p-3 text-xs transition-all ${
             statusMessage.type === 'success'
               ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
               : 'border-red-500/30 bg-red-500/10 text-red-300'
           }`}
         >
           {statusMessage.type === 'success' ? (
-            <CheckCircle2 className="size-4 shrink-0 text-emerald-400 mt-0.5" />
+            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400 mt-0.5" />
           ) : (
-            <AlertCircle className="size-4 shrink-0 text-red-400 mt-0.5" />
+            <AlertCircle className="size-3.5 shrink-0 text-red-400 mt-0.5" />
           )}
           <span className="leading-5">{statusMessage.text}</span>
         </div>
       )}
 
-      {/* 概览数据与官方入口卡片 */}
-      <AnalyticsOverviewCard config={config} links={links} />
-
       {/* Google Analytics 4 数据源指标拉取看板 */}
       <Ga4MetricsDashboardCard ga4Config={config?.googleAnalytics} />
 
       {/* 4 大分析工具卡片网格 */}
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="pt-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">统计工具与代码集成</h3>
+        <div className="grid gap-4 lg:grid-cols-2">
         <GoogleAnalyticsCard
           value={config.googleAnalytics}
           disabled={loading || saving}
@@ -207,5 +203,7 @@ export default function AnalyticsTab() {
         />
       </div>
     </div>
-  );
+  </div>
+);
 }
+
