@@ -32,7 +32,7 @@ export default function DesignSystemGallery() {
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-cyan-400" />
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-            KOYO Studio Design System
+            SupDance Design System
           </h1>
           <Badge variant="accent">v2.0 Premium</Badge>
         </div>

@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 import { getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import { getUserBySession } from '@/lib/services/auth';
 import JimengHomePortal from '@/components/home/JimengHomePortal';
 
 export const metadata = {
-  title: 'KOYO Studio — AI Creative Workspace',
+  title: 'SupDance — AI Creative Workspace',
   description: 'AI Image, Video, Audio and Creative Workflow Studio.',
 };
 
@@ -16,5 +17,13 @@ export default async function Home() {
   const headerLocale = headerList.get('x-locale');
   const targetLocale = normalizeLocale(cookieLocale || headerLocale || 'en');
 
-  return <JimengHomePortal locale={targetLocale} />;
+  let user = null;
+  try {
+    const sessionToken = cookieStore.get('ko_session')?.value;
+    if (sessionToken) {
+      user = await getUserBySession(sessionToken);
+    }
+  } catch {}
+
+  return <JimengHomePortal locale={targetLocale} initialUser={user} />;
 }

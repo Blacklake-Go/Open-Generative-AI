@@ -167,7 +167,7 @@ export default function AssetCard({
         <div className="absolute bottom-2.5 right-2.5 pointer-events-none select-none z-10">
           <span className="flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-medium text-white/70 backdrop-blur-md border border-white/10 tracking-wider">
             <Sparkles className="w-2.5 h-2.5 text-brand" />
-            KOYO AI
+            SupDance AI
           </span>
         </div>
 

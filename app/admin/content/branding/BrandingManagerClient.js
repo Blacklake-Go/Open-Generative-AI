@@ -75,6 +75,8 @@ export default function BrandingManagerClient({
 }) {
   const [brand, setBrand] = useState({
     brandName: 'supdance',
+    siteTitle: 'SupDance — Free AI Image & Video Studio',
+    titleTemplate: '%s | SupDance AI Studio',
     brandSlogan: 'AI 创意工作室',
     logoType: 'image',
     logoUrl: '',
@@ -550,6 +552,13 @@ export default function BrandingManagerClient({
           {/* 快速定位锚点导航 */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
             <a
+              href="#title-settings"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand/30 bg-brand/10 hover:bg-brand/20 text-xs font-medium text-brand transition"
+            >
+              <Globe className="w-3.5 h-3.5 text-brand" />
+              站点标题设置
+            </a>
+            <a
               href="#logo-settings"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-xs font-medium text-slate-200 transition"
             >
@@ -743,7 +752,139 @@ export default function BrandingManagerClient({
         </div>
       </Card>
 
-      {/* 模块 2：网站 Logo 替换工具（核心交互区） */}
+      {/* 模块 2：站点标题与浏览器标签页设置（核心基础设置） */}
+      <Card id="title-settings" className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden scroll-mt-20">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="size-9 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-white">站点标题与浏览器标签页设置</h2>
+              <p className="text-xs text-slate-400">配置全站默认主标题及各级子页面的标题后缀规则，修改后全站即刻生效并同步至搜索引擎收录</p>
+            </div>
+          </div>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-mono">
+            TDK / Title Engine
+          </span>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 站点主标题 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                <span>站点主标题 (首页及全局默认标题)</span>
+                <span className="text-[11px] text-slate-500 font-normal">建议 10–60 字符</span>
+              </label>
+              <input
+                type="text"
+                value={brand.siteTitle || ''}
+                onChange={(e) => setBrand((prev) => ({ ...prev, siteTitle: e.target.value }))}
+                placeholder="例如 SupDance — Free AI Image & Video Studio"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-brand transition shadow-inner font-mono"
+              />
+              <p className="text-[11px] text-slate-400">
+                展示在网站首页、各未单独指定标题子页面以及搜索引擎收录的主展示标题。
+              </p>
+            </div>
+
+            {/* 子页面标题模板 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                <span>子页面标题后缀模板 (Title Template)</span>
+                <span className="text-[11px] text-brand font-mono font-normal">需包含 %s 通配符</span>
+              </label>
+              <input
+                type="text"
+                value={brand.titleTemplate || ''}
+                onChange={(e) => setBrand((prev) => ({ ...prev, titleTemplate: e.target.value }))}
+                placeholder="例如 %s | SupDance AI Studio"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-brand transition shadow-inner font-mono"
+              />
+              <p className="text-[11px] text-slate-400">
+                其中 <code className="text-brand font-mono">%s</code> 将被自动替换为各子页面自身名称（如：图像工坊 | SupDance AI Studio）。
+              </p>
+            </div>
+          </div>
+
+          {/* 浏览器真实标签页仿真器 (Real Browser Tab Simulator) */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-brand" />
+                浏览器标签页实时仿真预览
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBrand((prev) => ({
+                      ...prev,
+                      siteTitle: 'SupDance — Free AI Image & Video Studio',
+                      titleTemplate: '%s | SupDance AI Studio',
+                    }))
+                  }
+                  className="text-[11px] text-brand hover:underline cursor-pointer"
+                >
+                  填入官方标准标题方案
+                </button>
+              </div>
+            </div>
+
+            {/* 拟物化浏览器窗口外壳 */}
+            <div className="rounded-xl border border-slate-800 bg-[#16181d] overflow-hidden shadow-lg">
+              {/* 标签栏 */}
+              <div className="bg-[#0f1117] px-3 pt-2 flex items-center gap-2 border-b border-slate-800/80">
+                {/* 窗口三色操作圆点 */}
+                <div className="flex items-center gap-1.5 pr-2">
+                  <span className="size-2.5 rounded-full bg-[#ff5f56]" />
+                  <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
+                  <span className="size-2.5 rounded-full bg-[#27c93f]" />
+                </div>
+
+                {/* 仿真 Tab 1：网站首页 */}
+                <div className="flex-1 max-w-[260px] bg-[#16181d] border-t border-x border-slate-700/60 rounded-t-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-200">
+                  <img
+                    src={brand.faviconUrl || '/branding/favicon.svg?v=3'}
+                    alt="Favicon"
+                    className="size-3.5 shrink-0 object-contain rounded-sm"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                  <span className="truncate font-medium text-[11px]">
+                    {brand.siteTitle || 'SupDance — Free AI Image & Video Studio'}
+                  </span>
+                </div>
+
+                {/* 仿真 Tab 2：子页面 */}
+                <div className="flex-1 max-w-[240px] bg-slate-900/40 hover:bg-slate-900/70 border-t border-x border-transparent rounded-t-lg px-3 py-1.5 flex items-center gap-2 text-xs text-slate-400">
+                  <img
+                    src={brand.faviconUrl || '/branding/favicon.svg?v=3'}
+                    alt="Favicon"
+                    className="size-3.5 shrink-0 object-contain rounded-sm opacity-70"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                  <span className="truncate text-[11px]">
+                    {(brand.titleTemplate || '%s | SupDance AI Studio').replace('%s', '图像生图工坊')}
+                  </span>
+                </div>
+              </div>
+
+              {/* 地址栏 */}
+              <div className="bg-[#16181d] px-4 py-1.5 flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                <span className="size-2 rounded-full bg-emerald-400" />
+                <span className="text-slate-300">https://www.supdance.com/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* 模块 3：网站 Logo 替换工具（核心交互区） */}
       <Card id="logo-settings" className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden scroll-mt-20">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">

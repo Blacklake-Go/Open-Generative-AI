@@ -379,7 +379,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-lg text-white tracking-tight group-hover:text-[#00f5d4] transition-colors">
-                  KOYO Studio
+                  SupDance
                 </span>
                 <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
                   Generative AI Workspace
@@ -469,7 +469,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
             </div>
             <p className="text-xs text-white/50 leading-relaxed">
               {isChinese
-                ? '订阅 KOYO Studio 技术周报，第一时间获取前沿大模型权重迭代、全球节点扩容与 API 升级公告。'
+                ? '订阅 SupDance 技术周报，第一时间获取前沿大模型权重迭代、全球节点扩容与 API 升级公告。'
                 : 'Subscribe to receive foundation model updates, SLA announcements, and technical releases.'}
             </p>
 
@@ -515,7 +515,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
         {/* ========================================================= */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-white/40">
           <div className="flex flex-wrap items-center gap-2">
-            <span>© 2026 KOYO Studio (Supdance.com). All Rights Reserved.</span>
+            <span>© 2026 SupDance (supdance.com). All Rights Reserved.</span>
             <span className="hidden sm:inline">·</span>
             <span className="text-white/30 hidden sm:inline">Next-Gen Creative AI Operating System</span>
           </div>

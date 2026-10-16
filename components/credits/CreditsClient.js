@@ -667,7 +667,7 @@ export default function CreditsClient() {
                     type="text"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="请输入卡密兑换码，例如：KOYO-ABCD-1234-EFGH"
+                    placeholder="请输入卡密兑换码，例如：SUP-ABCD-1234-EFGH"
                     className="flex-1 rounded-xl border border-line bg-well px-3.5 py-2.5 text-xs text-ink placeholder:text-ink-muted/50 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-ring font-mono uppercase transition-[border-color,box-shadow] duration-fast ease-standard"
                   />
                   <Button

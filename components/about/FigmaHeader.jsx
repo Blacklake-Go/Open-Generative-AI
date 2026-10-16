@@ -95,7 +95,7 @@ export default function FigmaHeader({ locale = 'zh' }) {
                   </span>
                 </div>
                 <span className="text-[9px] font-mono text-white/40 tracking-wider -mt-0.5">
-                  KOYO STUDIO
+                  SUPDANCE
                 </span>
               </div>
             </Link>

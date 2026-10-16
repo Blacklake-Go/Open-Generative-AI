@@ -881,7 +881,7 @@ export default function RechargeModal({
                       setCouponCode(e.target.value.toUpperCase());
                       if (error) setError(null);
                     }}
-                    placeholder="例如：KOYO-8888-AAAA-9999"
+                    placeholder="例如：SUP-8888-AAAA-9999"
                     className="mt-2 w-full rounded-xl border border-line bg-well px-4 py-2.5 font-mono text-sm uppercase tracking-wider text-ink placeholder:text-ink-subtle focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring"
                   />
                   <p className="mt-1.5 text-caption text-ink-subtle">

@@ -7,7 +7,7 @@ import JimengAssetCenter from '@/components/assets/JimengAssetCenter';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: '资产中心 — KOYO Studio',
+  title: '资产中心 — SupDance AI Studio',
   description: '个人 AI 创作资产与生成历史管理中心。',
 };
 

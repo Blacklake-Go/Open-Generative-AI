@@ -44,17 +44,26 @@ export const viewport = {
 
 export async function generateMetadata() {
   try {
-    const seo = await getSeoConfig();
-    const meta = buildMetadata(seo);
+    const [seo, brand] = await Promise.all([
+      getSeoConfig().catch(() => null),
+      getBrandConfig().catch(() => null),
+    ]);
+    const mergedSeo = {
+      ...seo,
+      title: brand?.siteTitle || seo?.title || 'SupDance — Free AI Image & Video Studio',
+      titleTemplate: brand?.titleTemplate || seo?.titleTemplate || '%s | SupDance AI Studio',
+    };
+    const meta = buildMetadata(mergedSeo);
+    const favicon = brand?.faviconUrl || '/branding/favicon.svg?v=3';
     return {
       ...meta,
       icons: {
         icon: [
-          { url: '/branding/favicon.svg?v=3', type: 'image/svg+xml' },
+          { url: favicon, type: 'image/svg+xml' },
           { url: '/branding/favicon.ico', sizes: 'any' },
         ],
-        shortcut: '/branding/favicon.svg?v=3',
-        apple: '/branding/favicon.svg?v=3',
+        shortcut: favicon,
+        apple: favicon,
       },
     };
   } catch {

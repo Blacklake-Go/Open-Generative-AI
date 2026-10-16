@@ -69,7 +69,7 @@ const getSkillPresets = (locale, tHome) => {
   ];
 };
 
-// 最近上新展台卡片（全站 KOYO 真实生态与同款参数装配）
+// 最近上新展台卡片（全站 SupDance 真实生态与同款参数装配）
 const getRecentFeatures = (locale, tHome, rootPath) => {
   const norm = normalizeLocale(locale);
   const isZh = norm.startsWith('zh');
@@ -89,8 +89,8 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
       prompt: 'MANGO GLASS PRO 时尚概念人像摄影，复古太阳镜，冷峻高级面部光影，杂志封面构图，超高分辨率电影级质感',
     },
     {
-      id: 'koyo-mcp-cli',
-      title: isZh ? 'KOYO MCP / CLI\n开发生态' : 'KOYO MCP & CLI\nDev Ecosystem',
+      id: 'supdance-mcp-cli',
+      title: isZh ? 'SupDance MCP / CLI\n开发生态' : 'SupDance MCP & CLI\nDev Ecosystem',
       desc: isZh ? '支持 Cursor / Claude 等任意 Agent 自动化调用' : 'Automated calls from Cursor, Claude & custom agents',
       category: isZh ? '开发生态' : 'Ecosystem',
       badge: 'NEW',
@@ -112,8 +112,8 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
       prompt: '巨石阵日出史诗全景，电影级空镜，广角远景与迷雾缭绕，4K超高清画质',
     },
     {
-      id: 'koyo-cinema-studio',
-      title: isZh ? 'KOYO 电影片场\nCinema Studio' : 'KOYO Cinema Studio\nCinematic Craft',
+      id: 'supdance-cinema-studio',
+      title: isZh ? 'SupDance 电影片场\nCinema Studio' : 'SupDance Cinema Studio\nCinematic Craft',
       desc: isZh ? '大师镜头语言与多机位导演拍摄控制台' : 'Master camera builder & multi-angle directorial shooting',
       category: isZh ? '全新上线' : 'New Launch',
       badge: 'HOT',
@@ -125,9 +125,9 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
   ];
 };
 
-export default function JimengHomePortal({ locale = 'zh' }) {
+export default function JimengHomePortal({ locale = 'zh', initialUser = undefined }) {
   const router = useRouter();
-  const { user } = useUserSession();
+  const { user } = useUserSession(initialUser);
   const [activeMode, setActiveMode] = useState('generate'); // 'generate' | 'canvas'
   const composerRef = useRef(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -269,8 +269,8 @@ export default function JimengHomePortal({ locale = 'zh' }) {
       <SpatialBackground />
       <div className="absolute inset-0 bg-dot-grid opacity-40 pointer-events-none z-0" />
 
-      {/* 2. 统一顶栏：显式透传服务端一致的 locale */}
-      <StudioHeader locale={normLocale} activeTab={null} className="relative z-40" />
+      {/* 2. 统一顶栏：显式透传服务端一致的 locale 与 user */}
+      <StudioHeader locale={normLocale} activeTab={null} className="relative z-40" initialUser={user} />
 
       {/* 3. 首页主舞台黄金视口区 */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-24 md:pt-32 pb-16 px-4 max-w-6xl mx-auto w-full">
@@ -320,7 +320,7 @@ export default function JimengHomePortal({ locale = 'zh' }) {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">
-                    {isZh ? 'KOYO 创意画布工作台' : 'KOYO Creative Canvas Workspaces'}
+                    {isZh ? 'SupDance 创意画布工作台' : 'SupDance Creative Canvas Workspaces'}
                   </h3>
                   <p className="text-xs text-ink-muted mt-0.5">
                     {isZh ? '选择适合您创作流程的画布空间：专业分层画板或无限灵感白板' : 'Choose your canvas workspace: Layered Studio or Infinite Visual Canvas'}
@@ -487,7 +487,7 @@ export default function JimengHomePortal({ locale = 'zh' }) {
 
       {/* 底部极简 Footer */}
       <footer className="relative z-10 py-6 text-center text-xs text-ink-subtle/50 border-t border-white/[0.04]">
-        <span>KOYO Studio · Premium AI Creative Workspace</span>
+        <span>SupDance · Premium AI Creative Workspace</span>
       </footer>
 
       {/* 登录弹窗 */}

@@ -8,7 +8,7 @@ export async function generateMetadata({ params }) {
   const { locale } = await params;
   const normalized = normalizeLocale(locale);
   return {
-    title: normalized === 'zh-CN' ? 'KOYO Studio 创作中心' : 'KOYO Studio — AI Creative Workspace',
+    title: normalized === 'zh-CN' ? 'SupDance 创作中心' : 'SupDance — AI Creative Workspace',
     description: 'AI Creative Creation Portal & Studio.',
   };
 }

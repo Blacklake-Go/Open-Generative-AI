@@ -142,7 +142,7 @@ const LEARN_CARDS = [
     badge: 'MODEL ARCHITECTURE',
     title: 'FLUX.1 [dev] rectified flow transformer & 4K commercial typography',
     titleZh: '深入解析 FLUX.1 [dev] 架构与 4K 超清商业排印实操',
-    author: 'KOYO Research Lab',
+    author: 'SupDance Research Lab',
     date: '2026-10-08',
     imageBg: 'from-[#3772FF]/30 to-[#00f5d4]/20',
   },
@@ -279,7 +279,7 @@ export default function AboutPageClient({ locale = 'en' }) {
                       <Cpu className="w-8 h-8 text-[#00f5d4]" />
                     </div>
                   </div>
-                  <div className="text-xl font-black text-white tracking-tight">KOYO MODEL HUB</div>
+                  <div className="text-xl font-black text-white tracking-tight">SUPDANCE MODEL HUB</div>
                   <div className="text-[11px] font-mono text-emerald-400 mt-1 flex items-center gap-1.5 justify-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span>{isChinese ? '45+ 旗舰模型 · 实时全域遥测' : '45+ Foundation Models · Live Sync'}</span>

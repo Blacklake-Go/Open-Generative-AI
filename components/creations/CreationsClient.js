@@ -121,7 +121,7 @@ function CreationCard({ item, onPreview, onRemix, onShare, onCopy, onDelete }) {
           )}
           <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white/70 backdrop-blur-md">
             <Sparkles className="size-2.5 text-brand" />
-            KOYO AI
+            SupDance AI
           </span>
         </div>
 

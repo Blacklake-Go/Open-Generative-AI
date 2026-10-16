@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   const { locale } = await params;
   const normalized = normalizeLocale(locale);
   return {
-    title: normalized === 'zh-CN' ? '资产中心 — KOYO Studio' : 'Asset Center — KOYO Studio',
+    title: normalized === 'zh-CN' ? '资产中心 — SupDance AI Studio' : 'Asset Center — SupDance AI Studio',
     description: 'Personal AI creation asset library and generation history.',
   };
 }
