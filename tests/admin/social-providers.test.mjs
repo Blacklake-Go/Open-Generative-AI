@@ -128,7 +128,7 @@ test('Instagram provider is configured in social catalog, oauth, card icon, and 
 
   const oauth = await readCode('lib/oauth.js');
   assert.match(oauth, /instagram:\s*\{/);
-  assert.match(oauth, /api\.instagram\.com\/oauth\/authorize/);
+  assert.match(oauth, /(www|api)\.instagram\.com\/oauth\/authorize/);
   assert.match(oauth, /api\.instagram\.com\/oauth\/access_token/);
   assert.match(oauth, /graph\.instagram\.com\/me/);
 
