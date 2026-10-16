@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -48,6 +48,8 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
   const [infoMsg, setInfoMsg] = useState('');
   const [agreed, setAgreed] = useState(true);
   const [socialProviders, setSocialProviders] = useState([]);
+  const [socialRegion, setSocialRegion] = useState(null);
+  const [isSwitchingRegion, setIsSwitchingRegion] = useState(false);
 
   const timerRef = useRef(null);
 
@@ -65,22 +67,48 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
     }
   }, [searchParams]);
 
-  // 获取当前区域启用的第三方社交平台列表
-  useEffect(() => {
-    let active = true;
-    fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
+  const fetchSocialOptions = useCallback((targetRegion = null) => {
+    const url = targetRegion
+      ? `/api/auth/social-options?region=${encodeURIComponent(targetRegion)}`
+      : '/api/auth/social-options';
+    return fetch(url, { cache: 'no-store', credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!active || !Array.isArray(data?.providers)) return;
-        setSocialProviders(
-          data.providers.filter((p) => Boolean(p?.id && SOCIAL_ICONS[p.id]))
-        );
+        if (!data) return;
+        if (Array.isArray(data.providers)) {
+          setSocialProviders(
+            data.providers.filter((p) => Boolean(p?.id && SOCIAL_ICONS[p.id]))
+          );
+        }
+        if (data.region) {
+          setSocialRegion(data.region);
+        }
       })
       .catch(() => {});
-    return () => {
-      active = false;
-    };
   }, []);
+
+  // 获取当前区域启用的第三方社交平台列表
+  useEffect(() => {
+    fetchSocialOptions();
+  }, [fetchSocialOptions]);
+
+  const handleToggleRegion = async () => {
+    const nextRegion = socialRegion === 'international' ? 'mainland_china' : 'international';
+    setIsSwitchingRegion(true);
+    try {
+      if (typeof document !== 'undefined') {
+        const domain = window.location.hostname.endsWith('supdance.com')
+          ? '; domain=.supdance.com'
+          : window.location.hostname.endsWith('koyosim.com')
+            ? '; domain=.koyosim.com'
+            : '';
+        document.cookie = `ko_social_region=${nextRegion}; path=/${domain}; max-age=31536000; SameSite=Lax`;
+      }
+      await fetchSocialOptions(nextRegion);
+    } finally {
+      setIsSwitchingRegion(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -381,7 +409,7 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
       </form>
 
       {/* 第三方社交平台快捷注册与登录 */}
-      {socialProviders.length > 0 && (
+      {(socialProviders.length > 0 || socialRegion) && (
         <div className="flex flex-col gap-3">
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 flex items-center">
@@ -392,26 +420,43 @@ export default function RegisterForm({ locale = 'zh-CN' }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            {socialProviders.map((provider) => {
-              const item = SOCIAL_ICONS[provider.id];
-              if (!item) return null;
-              const Icon = item.icon;
-              const isZh = String(locale || '').startsWith('zh');
-              const btnLabel = isZh ? `${item.label} 快捷注册` : item.label;
-              return (
-                <button
-                  key={provider.id}
-                  type="button"
-                  onClick={() => handleOAuth(provider.id)}
-                  title={btnLabel}
-                  className="h-10 px-3.5 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center gap-2 text-xs font-medium text-white/90 hover:text-white transition-all active:scale-[0.98] shadow-elevation-1 cursor-pointer"
-                >
-                  <Icon size={18} />
-                  <span className="truncate">{btnLabel}</span>
-                </button>
-              );
-            })}
+          {socialProviders.length > 0 && (
+            <div className="grid grid-cols-2 gap-2.5">
+              {socialProviders.map((provider) => {
+                const item = SOCIAL_ICONS[provider.id];
+                if (!item) return null;
+                const Icon = item.icon;
+                const isZh = String(locale || '').startsWith('zh');
+                const btnLabel = isZh ? `${item.label} 快捷注册` : item.label;
+                return (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    onClick={() => handleOAuth(provider.id)}
+                    title={btnLabel}
+                    className="h-10 px-3.5 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center gap-2 text-xs font-medium text-white/90 hover:text-white transition-all active:scale-[0.98] shadow-elevation-1 cursor-pointer"
+                  >
+                    <Icon size={18} />
+                    <span className="truncate">{btnLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex justify-center pt-0.5">
+            <button
+              type="button"
+              disabled={isSwitchingRegion}
+              onClick={handleToggleRegion}
+              className="text-[11px] text-white/50 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <span>
+                {socialRegion === 'international'
+                  ? '🇨🇳 切换为国内快捷登录 (QQ / 微信 / 抖音)'
+                  : '🌐 切换为海外快捷登录 (Google / X / TikTok)'}
+              </span>
+            </button>
           </div>
         </div>
       )}

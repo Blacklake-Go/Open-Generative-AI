@@ -19,7 +19,7 @@ export default function LoginSummaryModal({ user, onComplete, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-5 backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in"
+      className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-5 backdrop-blur-xl transition-opacity duration-base ease-enter animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-summary-title"

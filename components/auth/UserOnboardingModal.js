@@ -207,7 +207,7 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
   if (rewardSuccess) {
     return (
       <div
-        className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-modal ease-enter animate-fade-in"
+        className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-base ease-enter animate-fade-in"
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-reward-title"
@@ -286,12 +286,12 @@ export default function UserOnboardingModal({ user, onComplete, onClose }) {
   // 视图一：创作者入驻设定视图
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-modal ease-enter animate-fade-in"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl p-4 transition-opacity duration-base ease-enter animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
     >
-      <div className="relative w-full max-w-[500px] rounded-2xl border border-line bg-overlay backdrop-blur-2xl p-5 sm:p-7 shadow-elevation-4 max-h-[92vh] overflow-y-auto select-none">
+      <div className="relative w-full max-w-[500px] rounded-2xl border border-line bg-overlay backdrop-blur-2xl p-5 sm:p-7 shadow-elevation-4 max-h-[92vh] overflow-y-auto select-none animate-scale-in">
         {/* 顶部微透环境漫反射高光 */}
         <div
           className="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full pointer-events-none opacity-30 blur-2xl"

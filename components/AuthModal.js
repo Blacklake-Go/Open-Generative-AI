@@ -342,7 +342,7 @@ export default function AuthModal({
   // 浮窗弹窗模式：半透明毛玻璃背景 + 居中组件化卡片
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-modal flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-scrim backdrop-blur-xl transition-opacity duration-base ease-enter animate-fade-in overflow-y-auto cursor-pointer"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           handleClose();

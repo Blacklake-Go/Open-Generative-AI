@@ -27,9 +27,13 @@ export default function SocialLoginButtons({
   providers = [],
   dividerText = '或使用快捷方式',
   actionLabel = '登录',
+  region = 'mainland_china',
+  onToggleRegion,
+  isSwitchingRegion = false,
   onSocialLogin,
 }) {
-  if (!providers || providers.length === 0) return null;
+  const hasProviders = Array.isArray(providers) && providers.length > 0;
+  if (!hasProviders && !onToggleRegion) return null;
 
   const handleTrigger = (providerId) => {
     if (onSocialLogin) {
@@ -62,26 +66,45 @@ export default function SocialLoginButtons({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {providers.map((provider) => {
-          const meta = SOCIAL_PROVIDER_META[provider.id];
-          if (!meta) return null;
-          const Icon = meta.icon;
-          const labelText = actionLabel ? `${meta.label} ${actionLabel}` : meta.label;
-          return (
-            <button
-              key={provider.id}
-              type="button"
-              onClick={() => handleTrigger(provider.id)}
-              title={`使用 ${meta.label} ${actionLabel || '登录'}`}
-              className="h-9 px-3 rounded-full bg-wash hover:bg-surface-raised active:bg-base border border-line-subtle hover:border-line flex items-center justify-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-all cursor-pointer shadow-elevation-1 active:scale-[0.98]"
-            >
-              <Icon size={16} />
-              <span className="truncate">{labelText}</span>
-            </button>
-          );
-        })}
-      </div>
+      {hasProviders && (
+        <div className="grid grid-cols-2 gap-2">
+          {providers.map((provider) => {
+            const meta = SOCIAL_PROVIDER_META[provider.id];
+            if (!meta) return null;
+            const Icon = meta.icon;
+            const labelText = actionLabel ? `${meta.label} ${actionLabel}` : meta.label;
+            return (
+              <button
+                key={provider.id}
+                type="button"
+                onClick={() => handleTrigger(provider.id)}
+                title={`使用 ${meta.label} ${actionLabel || '登录'}`}
+                className="h-9 px-3 rounded-full bg-wash hover:bg-surface-raised active:bg-base border border-line-subtle hover:border-line flex items-center justify-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink transition-all cursor-pointer shadow-elevation-1 active:scale-[0.98]"
+              >
+                <Icon size={16} />
+                <span className="truncate">{labelText}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {onToggleRegion && (
+        <div className="flex justify-center pt-0.5">
+          <button
+            type="button"
+            disabled={isSwitchingRegion}
+            onClick={onToggleRegion}
+            className="text-[11px] text-ink-muted hover:text-brand transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          >
+            <span>
+              {region === 'international'
+                ? '🇨🇳 切换为国内快捷登录 (QQ / 微信 / 抖音)'
+                : '🌐 切换为海外快捷登录 (Google / X / TikTok)'}
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

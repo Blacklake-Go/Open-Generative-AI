@@ -7,10 +7,10 @@ const GRID_STEP = 16;
 const DOT_RADIUS = 1.0;
 const INFLUENCE_RADIUS = 725;
 const MAX_DISPLACEMENT = 28;
-const SPRING_FACTOR = 0.035;
+const SPRING_FACTOR = 0.075;
 const NOISE_AMP = 6.0;
 const NOISE_SCALE = 0.04;
-const TIME_SPEED = 0.0008;
+const TIME_SPEED = 0.0022;
 
 const BASE_COLOR = [68, 68, 68];
 const AURORA_PURPLE = [96, 86, 240];

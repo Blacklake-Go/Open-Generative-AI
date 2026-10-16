@@ -61,8 +61,8 @@ export default function DeletionGracePeriodModal({
   };
 
   return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-scrim backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-line bg-overlay shadow-elevation-4 p-6 text-white sm:p-8">
+    <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-scrim backdrop-blur-xl transition-opacity duration-base ease-enter animate-fade-in">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-line bg-overlay shadow-elevation-4 p-6 text-white sm:p-8 animate-scale-in">
         {/* 背景光效 */}
         <div className="pointer-events-none absolute -top-24 -left-24 size-60 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-24 size-60 rounded-full bg-danger/10 blur-3xl" />

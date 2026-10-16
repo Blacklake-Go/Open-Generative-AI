@@ -43,9 +43,9 @@ export default function PointerGlow({
 
     const animate = () => {
       const c = coords.current;
-      // 优雅的极缓阻尼追踪 (lerp factor = 0.055)
-      c.currentX += (c.targetX - c.currentX) * 0.055;
-      c.currentY += (c.targetY - c.currentY) * 0.055;
+      // 灵敏流畅的阻尼追踪 (lerp factor = 0.12)
+      c.currentX += (c.targetX - c.currentX) * 0.12;
+      c.currentY += (c.targetY - c.currentY) * 0.12;
 
       if (el) {
         el.style.transform = `translate3d(${c.currentX - 350}px, ${c.currentY - 350}px, 0)`;

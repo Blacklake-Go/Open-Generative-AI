@@ -558,10 +558,10 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeIn 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .animate-scale-in {
-  animation: scaleIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: scaleIn 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Modal & Dialog Optical Animations (v3.7.0 §4.14.1) */
@@ -587,10 +587,10 @@
 }
 
 .animate-modal-enter {
-  animation: modalEnter 400ms var(--ease-enter) both;
+  animation: modalEnter 150ms var(--ease-enter) both;
 }
 .animate-modal-exit {
-  animation: modalExit 200ms var(--ease-exit) both;
+  animation: modalExit 100ms var(--ease-exit) both;
 }
 
 /* Drawer Optical Slide Animations (v3.7.0 §4.14.2) */
@@ -848,22 +848,22 @@
 }
 
 .animate-aurora-drift-a {
-  animation: auroraDriftA 22s ease-in-out infinite alternate;
+  animation: auroraDriftA 10s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
 .animate-aurora-drift-b {
-  animation: auroraDriftB 28s ease-in-out infinite alternate;
+  animation: auroraDriftB 12s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
 .animate-aurora-breathe-c {
-  animation: auroraBreatheC 18s ease-in-out infinite alternate;
+  animation: auroraBreatheC 8s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
 .animate-aurora-arc {
-  animation: auroraArcSweep 24s ease-in-out infinite alternate;
+  animation: auroraArcSweep 10s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 

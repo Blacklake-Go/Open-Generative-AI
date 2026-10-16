@@ -116,7 +116,7 @@ export default function LoginSuccessOverlay({ user, onComplete }) {
   const handleContinue = () => onComplete?.(snapshot);
 
   return (
-    <div className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-6 backdrop-blur-xl transition-opacity duration-modal ease-enter animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="login-welcome-title">
+    <div className="fixed inset-0 z-toast flex items-center justify-center bg-scrim px-4 py-6 backdrop-blur-xl transition-opacity duration-base ease-enter animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="login-welcome-title">
       <div className="relative w-full max-w-[480px] overflow-hidden rounded-2xl border border-line-strong bg-overlay p-6 sm:p-8 shadow-elevation-4 animate-scale-in text-ink">
         <button type="button" onClick={handleContinue} aria-label="关闭欢迎面板" className="absolute right-5 top-5 flex size-8 items-center justify-center rounded-full text-ink-muted transition-[background-color,color,transform] duration-fast ease-standard hover:bg-wash hover:text-ink active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
           <X className="size-4" />

@@ -75,6 +75,8 @@ export default function AuthCard({
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
   const [socialProviders, setSocialProviders] = useState([]);
+  const [socialRegion, setSocialRegion] = useState(null);
+  const [isSwitchingRegion, setIsSwitchingRegion] = useState(false);
 
   // Timers cleanup
   useEffect(() => {
@@ -85,22 +87,48 @@ export default function AuthCard({
     };
   }, []);
 
-  // Fetch Regional Social Providers
-  useEffect(() => {
-    let active = true;
-    fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
+  const fetchSocialOptions = useCallback((targetRegion = null) => {
+    const url = targetRegion
+      ? `/api/auth/social-options?region=${encodeURIComponent(targetRegion)}`
+      : '/api/auth/social-options';
+    return fetch(url, { cache: 'no-store', credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!active || !Array.isArray(data?.providers)) return;
-        setSocialProviders(
-          data.providers.filter((p) => Boolean(p?.id && SOCIAL_PROVIDER_META[p.id]))
-        );
+        if (!data) return;
+        if (Array.isArray(data.providers)) {
+          setSocialProviders(
+            data.providers.filter((p) => Boolean(p?.id && SOCIAL_PROVIDER_META[p.id]))
+          );
+        }
+        if (data.region) {
+          setSocialRegion(data.region);
+        }
       })
       .catch(() => {});
-    return () => {
-      active = false;
-    };
   }, []);
+
+  // Fetch Regional Social Providers
+  useEffect(() => {
+    fetchSocialOptions();
+  }, [fetchSocialOptions]);
+
+  const handleToggleRegion = async () => {
+    const nextRegion = socialRegion === 'international' ? 'mainland_china' : 'international';
+    setIsSwitchingRegion(true);
+    try {
+      if (typeof document !== 'undefined') {
+        const domain = window.location.hostname.endsWith('supdance.com')
+          ? '; domain=.supdance.com'
+          : window.location.hostname.endsWith('koyosim.com')
+            ? '; domain=.koyosim.com'
+            : '';
+        document.cookie = `ko_social_region=${nextRegion}; path=/${domain}; max-age=31536000; SameSite=Lax`;
+      }
+      await fetchSocialOptions(nextRegion);
+    } finally {
+      setIsSwitchingRegion(false);
+    }
+  };
 
   // Surface OAuth errors from popup or query string
   useEffect(() => {
@@ -409,7 +437,7 @@ export default function AuthCard({
 
   const containerClasses = embedded
     ? `w-full text-ink select-none ${className}`
-    : `relative w-full max-w-[450px] my-auto rounded-2xl bg-overlay backdrop-blur-2xl border border-line-strong shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden ${className}`;
+    : `relative w-full max-w-[450px] my-auto rounded-2xl bg-overlay backdrop-blur-2xl border border-line-strong shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden animate-scale-in ${className}`;
 
   return (
     <div
@@ -532,11 +560,14 @@ export default function AuthCard({
             />
           )}
 
-          {socialProviders.length > 0 && (
+          {(socialProviders.length > 0 || socialRegion) && (
             <SocialLoginButtons
               providers={socialProviders}
               dividerText={copy.login.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '登录' : ''}
+              region={socialRegion || 'mainland_china'}
+              onToggleRegion={handleToggleRegion}
+              isSwitchingRegion={isSwitchingRegion}
             />
           )}
 
@@ -576,11 +607,14 @@ export default function AuthCard({
             routes={routes}
           />
 
-          {socialProviders.length > 0 && (
+          {(socialProviders.length > 0 || socialRegion) && (
             <SocialLoginButtons
               providers={socialProviders}
               dividerText={copy.register?.socialDivider || copy.login?.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '快捷注册' : ''}
+              region={socialRegion || 'mainland_china'}
+              onToggleRegion={handleToggleRegion}
+              isSwitchingRegion={isSwitchingRegion}
             />
           )}
         </div>

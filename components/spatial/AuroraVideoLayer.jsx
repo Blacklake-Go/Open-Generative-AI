@@ -26,7 +26,12 @@ export default function AuroraVideoLayer({
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise
-        .then(() => setVideoLoaded(true))
+        .then(() => {
+          setVideoLoaded(true);
+          try {
+            video.playbackRate = 1.75;
+          } catch {}
+        })
         .catch(() => {
           // If browser restricts autoplay, fallback gracefully
           setVideoFailed(false);
@@ -63,7 +68,17 @@ export default function AuroraVideoLayer({
           muted
           playsInline
           poster={posterSrc}
-          onCanPlay={() => setVideoLoaded(true)}
+          onCanPlay={(e) => {
+            setVideoLoaded(true);
+            try {
+              e.currentTarget.playbackRate = 1.75;
+            } catch {}
+          }}
+          onPlay={(e) => {
+            try {
+              e.currentTarget.playbackRate = 1.75;
+            } catch {}
+          }}
           onError={() => setVideoFailed(true)}
           className="h-full w-full object-cover"
           style={{
