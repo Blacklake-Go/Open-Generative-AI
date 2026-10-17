@@ -188,7 +188,7 @@ test('CHALLENGE-1.2: Boundary precision test around exact 75% margin threshold',
   );
 });
 
-test('CHALLENGE-1.3: Tampering clamp — passing min_gross_margin_rate < 0.75 cannot lower the 75% floor', async () => {
+test('CHALLENGE-1.3: Tampering clamp — passing min_gross_margin_rate < 0.30 cannot lower the 30% floor', async () => {
   const modelData = { id: 'test-model-clamp', name: 'Clamp Model', category: 'image' };
   // Malicious / misconfigured pricing attempt to set 10% margin floor
   const pricingData = {
@@ -201,11 +201,11 @@ test('CHALLENGE-1.3: Tampering clamp — passing min_gross_margin_rate < 0.75 ca
   };
   const tx = mockTransaction(modelData, pricingData);
 
-  // Candidate has cost = 5.0 CNY. Margin = (10 - 5 * 1.1) / 10 = 45% (passes 10%, fails 75%)
+  // Candidate has cost = 7.0 CNY. Margin = (10 - 7 * 1.1) / 10 = 23% (passes 10%, fails 30%)
   const candidate = createCandidate({
     providerId: 'prov-mid',
     providerModelId: 'pm-mid',
-    estimatedCostCny: 5.0,
+    estimatedCostCny: 7.0,
   });
 
   await assert.rejects(
@@ -225,7 +225,7 @@ test('CHALLENGE-1.3: Tampering clamp — passing min_gross_margin_rate < 0.75 ca
     },
     (err) => {
       assert.equal(err.code, 'PRICING_MARGIN_BELOW_FLOOR');
-      assert.ok(err.message.includes('75% 毛利底线'), 'Must enforce clamped 75% floor, not 10%');
+      assert.ok(err.message.includes('30% 毛利底线'), 'Must enforce clamped 30% floor, not 10%');
       return true;
     }
   );
@@ -287,13 +287,13 @@ test('CHALLENGE-1.4: Multi-candidate filtering — sub-75% margin candidates are
   );
 });
 
-test('CHALLENGE-1.5: quoteCreditsFromProviderCostCny mathematically guarantees >= 75% contribution margin', () => {
+test('CHALLENGE-1.5: quoteCreditsFromProviderCostCny mathematically guarantees >= 30% contribution margin', () => {
   const testCosts = [0.001, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0, 100.0, 1000.0];
   for (const costCny of testCosts) {
     const result = quoteCreditsFromProviderCostCny(costCny);
     assert.ok(
-      result.contributionMarginRate >= 0.75,
-      `Cost ${costCny} yielded margin ${result.contributionMarginRate} which is below 0.75`
+      result.contributionMarginRate >= 0.30,
+      `Cost ${costCny} yielded margin ${result.contributionMarginRate} which is below 0.30`
     );
     assert.ok(result.credits >= 10, 'Must satisfy minimum credits of 10');
     assert.equal(result.credits % 5, 0, 'Must satisfy credit rounding of 5');
