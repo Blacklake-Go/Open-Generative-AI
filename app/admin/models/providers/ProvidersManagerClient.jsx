@@ -86,17 +86,18 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
       const data = await res.json();
       if (res.ok && data.data) {
         const result = data.data;
-        const msg = result.message || `已成功拉取 ${result.fetched || 0} 个模型`;
+        const msg = result.message || (result.status === 'empty' ? '渠道返回空目录（0 个模型）' : `已成功拉取 ${result.fetched || 0} 个模型`);
         setProbeResults((prev) => ({
           ...prev,
           [providerId]: {
-            type: 'good',
+            type: result.status === 'empty' ? 'warning' : 'good',
             text: msg,
           },
         }));
         await refreshChannels();
       } else {
-        const errMsg = data.error?.message || data.data?.message || '模型目录拉取失败';
+        const rawErr = typeof data.error === 'string' ? data.error : data.error?.message;
+        const errMsg = rawErr || data.data?.message || '模型目录拉取失败';
         setProbeResults((prev) => ({
           ...prev,
           [providerId]: {
@@ -138,19 +139,23 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
             });
             const data = await res.json();
             if (res.ok && data.data) {
+              const resData = data.data;
+              const msg = resData.message || (resData.status === 'empty' ? '渠道返回空目录（0 个模型）' : `已成功拉取 ${resData.fetched || 0} 个模型`);
               setProbeResults((prev) => ({
                 ...prev,
                 [c.id]: {
-                  type: 'good',
-                  text: data.data.message || `已成功拉取 ${data.data.fetched || 0} 个模型`,
+                  type: resData.status === 'empty' ? 'warning' : 'good',
+                  text: msg,
                 },
               }));
             } else {
+              const rawErr = typeof data.error === 'string' ? data.error : data.error?.message;
+              const errMsg = rawErr || data.data?.message || '拉取失败';
               setProbeResults((prev) => ({
                 ...prev,
                 [c.id]: {
                   type: 'danger',
-                  text: `模型抽取异常：${data.error?.message || data.data?.message || '拉取失败'}`,
+                  text: `模型抽取异常：${errMsg}`,
                 },
               }));
             }
