@@ -31,9 +31,3 @@ WHERE id IN (
   'wan2.1-text-to-image',
   'wan-2.2'
 ) AND is_visible = true;
-
--- 2. Normalize gross margin safety floor from legacy 75% to platform standard 30%
-UPDATE ai_studio.model_pricing
-SET min_gross_margin_rate = 0.3000, updated_at = NOW()
-WHERE min_gross_margin_rate = 0.7500;
-
