@@ -16,7 +16,7 @@ function addSecurityHeaders(response) {
     // font-src includes fonts.gstatic.com for actual font files
     response.headers.set(
         'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://muapi.ai https://*.muapi.ai; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://*.alipay.com https://openapi.alipay.com https://excashier.alipay.com https://unitradeprod.alipay.com https://*.alipayobjects.com;"
+        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.googletagmanager.com https://hm.baidu.com https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://canvas.supdance.com https://*.supdance.com https://muapi.ai https://*.muapi.ai https://www.runninghub.ai https://*.runninghub.ai https://*.runninghub.cn https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://hm.baidu.com https://www.clarity.ms https://*.clarity.ms; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self' https://*.alipay.com https://openapi.alipay.com https://excashier.alipay.com https://unitradeprod.alipay.com https://*.alipayobjects.com;"
     );
     // 强制 HTML 页面与动态 API 不被浏览器协商强缓存，防止版本发布后旧 HTML 错位
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
@@ -65,6 +65,15 @@ function aliasCanonicalRoot(pathname) {
     return rootPath;
 }
 
+function getCookieDomain(request) {
+    const rawHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || request.nextUrl.host || '';
+    const cleanHost = rawHost.split(',')[0].trim().toLowerCase().split(':')[0];
+    if (cleanHost.endsWith('.supdance.com') || cleanHost === 'supdance.com') {
+        return '.supdance.com';
+    }
+    return undefined;
+}
+
 function isAllowedCanvasOrigin(origin) {
     if (!origin) return false;
     const lower = String(origin).trim().toLowerCase();
@@ -111,27 +120,35 @@ export async function middleware(request) {
     // 2. 别名语言前缀收敛：/ja/studio → /ja-JP/studio，/zh-CN/… → /zh/…，/en/… → /…（保留其余段与 query）
     if (!isExcluded && !pathname.startsWith('/api/')) {
         const origin = getPublicOrigin(request);
+        const cookieDomain = getCookieDomain(request);
+        const cookieOpts = { path: '/', maxAge: 31536000, sameSite: 'lax', ...(cookieDomain ? { domain: cookieDomain } : {}) };
         const seg = pathname.split('/')[1] || '';
         if (seg === 'en') {
             const tail = pathname.slice(3) || '/';
             const redirectUrl = new URL(`${tail}${url.search}`, origin);
             const response = NextResponse.redirect(redirectUrl, 308);
-            response.cookies.set('NEXT_LOCALE', 'en', { path: '/', maxAge: 31536000 });
+            response.cookies.set('NEXT_LOCALE', 'en', cookieOpts);
+            response.cookies.set('locale', 'en', cookieOpts);
             return addSecurityHeaders(response);
         }
         // 首页永远是根域名 https://www.Supdance.com：访问 /zh 或 /zh/ 直接规范收敛回 /，并在 cookie 中记录中文偏好
         if (pathname === '/zh' || pathname === '/zh/') {
             const redirectUrl = new URL(`/${url.search}`, origin);
             const response = NextResponse.redirect(redirectUrl, 308);
-            response.cookies.set('NEXT_LOCALE', 'zh-CN', { path: '/', maxAge: 31536000 });
+            response.cookies.set('NEXT_LOCALE', 'zh-CN', cookieOpts);
+            response.cookies.set('locale', 'zh-CN', cookieOpts);
             return addSecurityHeaders(response);
         }
         const aliasRoot = aliasCanonicalRoot(pathname);
         if (aliasRoot) {
             const tail = pathname.slice(1 + (pathname.split('/')[1] || '').length);
-            return addSecurityHeaders(
-                NextResponse.redirect(`${origin}${aliasRoot}${tail}${url.search}`, 308)
-            );
+            const segLocale = normalizeLocale(seg);
+            const response = NextResponse.redirect(`${origin}${aliasRoot}${tail}${url.search}`, 308);
+            if (segLocale) {
+                response.cookies.set('NEXT_LOCALE', segLocale, cookieOpts);
+                response.cookies.set('locale', segLocale, cookieOpts);
+            }
+            return addSecurityHeaders(response);
         }
     }
 
@@ -162,13 +179,13 @@ export async function middleware(request) {
         }
     }
 
-    // 5. 工作台多语言直达：若非默认英文语言且访问未加前缀的 /studio，跳转至对应工作台根路径（如 /zh/studio）
+    // 5. 工作台与登录多语言直达：若非默认英文语言且访问未加前缀的 /studio 或 /login，跳转至对应工作台/登录页根路径（如 /zh/studio, /zh/login）
     // 注意：首页根路径 (pathname === '/') 绝对不跳转，永远稳定停留在 https://www.Supdance.com
     const publicOrigin = getPublicOrigin(request);
-    if (pathname === '/studio' && locale !== 'en') {
+    if ((pathname === '/studio' || pathname.startsWith('/studio/') || pathname === '/login') && locale !== 'en') {
         const config = getLocaleConfig(locale);
         if (config?.rootPath) {
-            const redirectUrl = new URL(`${config.rootPath}/studio${url.search}`, publicOrigin);
+            const redirectUrl = new URL(`${config.rootPath}${pathname}${url.search}`, publicOrigin);
             const response = NextResponse.redirect(redirectUrl, 307);
             response.headers.set('x-locale', locale);
             return addSecurityHeaders(response);

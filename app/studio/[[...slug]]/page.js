@@ -19,9 +19,17 @@ export default async function StudioPage({ params, searchParams }) {
   const cookieStore = await cookies();
   const headerList = await headers();
 
+  let user = null;
+  try {
+    const sessionToken = cookieStore.get('ko_session')?.value;
+    if (sessionToken) {
+      user = await getUserBySession(sessionToken);
+    }
+  } catch {}
+
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
   const headerLocale = headerList.get('x-locale');
-  const targetLocale = normalizeLocale(cookieLocale || headerLocale || 'en');
+  const targetLocale = normalizeLocale(user?.locale || cookieLocale || headerLocale || 'en');
 
   // 若用户偏好为非英文，自动服务端重定向至对应的多语言专属路由，同时透传 query 参数 (如 ?tab=...&model=...)
   if (targetLocale !== 'en') {
@@ -46,14 +54,6 @@ export default async function StudioPage({ params, searchParams }) {
       redirect(`${config.rootPath}/studio${slugPath}${queryString}`);
     }
   }
-
-  let user = null;
-  try {
-    const sessionToken = cookieStore.get('ko_session')?.value;
-    if (sessionToken) {
-      user = await getUserBySession(sessionToken);
-    }
-  } catch {}
 
   const rawQuery = searchParams ? await searchParams : {};
   const initialModel = typeof rawQuery?.model === 'string' ? rawQuery.model : '';

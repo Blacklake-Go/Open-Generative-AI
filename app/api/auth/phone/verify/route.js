@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifySmsCode } from '@/lib/sms';
-import { findOrCreateUserByPhone, createSession, setSessionCookie, json } from '@/lib/services/auth';
+import { findOrCreateUserByPhone, createSession, getSessionCookieDomain, setSessionCookie, json } from '@/lib/services/auth';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
+import { normalizeLocale } from '@/lib/locales';
 
 export const runtime = 'nodejs';
 
@@ -64,9 +65,10 @@ export async function POST(request) {
     });
 
     setSessionCookie(response, session.token, session.expires, request);
-    const userLocale = user.locale || 'zh-CN';
-    response.cookies.set('NEXT_LOCALE', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
-    response.cookies.set('locale', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+    const userLocale = normalizeLocale(user.locale || 'zh-CN');
+    const domain = getSessionCookieDomain(request);
+    response.cookies.set('NEXT_LOCALE', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
+    response.cookies.set('locale', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     return response;
   } catch (error) {
     console.error('[auth/phone/verify]', error);

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES } from '@/lib/locales';
+import { getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
 import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
 import { Bell, Eye, Globe, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -12,27 +12,48 @@ const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES.map((code) => ({
   label: LOCALE_CONFIGS[code]?.nativeName || code,
 }));
 
-export default function SystemPreferencesSection({ className = '' }) {
-  const [notifications, setNotifications] = useState(true);
-  const [highQualityPreview, setHighQualityPreview] = useState(true);
-  const [currentLocale, setCurrentLocale] = useState('zh-CN');
+export default function SystemPreferencesSection({ user = null, className = '' }) {
+  const [notifications, setNotifications] = useState(() => user?.preferences?.notifyOnComplete ?? true);
+  const [highQualityPreview, setHighQualityPreview] = useState(() => user?.preferences?.highQualityPreview ?? true);
+  const [currentLocale, setCurrentLocale] = useState(() => normalizeLocale(user?.locale || 'zh-CN'));
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
-  const activeLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === currentLocale)?.label || currentLocale;
 
-  // 1. 从后端加载真实偏好设置
+  const normalizedLocale = normalizeLocale(currentLocale);
+  const activeLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === normalizedLocale)?.label || normalizedLocale;
+
+  // 1. 从后端加载真实偏好设置，若有本地快照先即时应用
   useEffect(() => {
     let mounted = true;
+    if (typeof window !== 'undefined') {
+      try {
+        const local = JSON.parse(localStorage.getItem('supdance_user_preferences') || '{}');
+        if (local.notifyOnComplete !== undefined) setNotifications(local.notifyOnComplete);
+        if (local.highQualityPreview !== undefined) setHighQualityPreview(local.highQualityPreview);
+        if (local.locale) setCurrentLocale(normalizeLocale(local.locale));
+      } catch {}
+    }
+
     async function loadPreferences() {
       try {
         const res = await fetch('/api/user/preferences');
         if (res.ok) {
           const data = await res.json();
           if (mounted && data.preferences) {
-            setNotifications(data.preferences.notifyOnComplete ?? true);
-            setHighQualityPreview(data.preferences.highQualityPreview ?? true);
-            setCurrentLocale(data.preferences.locale || 'zh-CN');
+            const notif = data.preferences.notifyOnComplete ?? true;
+            const hq = data.preferences.highQualityPreview ?? true;
+            const loc = normalizeLocale(data.preferences.locale || 'zh-CN');
+            setNotifications(notif);
+            setHighQualityPreview(hq);
+            setCurrentLocale(loc);
+            try {
+              localStorage.setItem('supdance_user_preferences', JSON.stringify({
+                notifyOnComplete: notif,
+                highQualityPreview: hq,
+                locale: loc,
+              }));
+            } catch {}
           }
         }
       } catch (err) {
@@ -47,8 +68,20 @@ export default function SystemPreferencesSection({ className = '' }) {
     };
   }, []);
 
-  // 2. 实时保存偏好设置至数据库
+  // 2. 实时保存偏好设置至本地与后端数据库
   const savePreference = async (updates) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const current = JSON.parse(localStorage.getItem('supdance_user_preferences') || '{}');
+        const next = { ...current, ...updates };
+        localStorage.setItem('supdance_user_preferences', JSON.stringify(next));
+        if (updates.highQualityPreview !== undefined) {
+          localStorage.setItem('supdance_high_quality_preview', String(updates.highQualityPreview));
+        }
+        window.dispatchEvent(new CustomEvent('supdance-preferences-changed', { detail: next }));
+      } catch {}
+    }
+
     try {
       const res = await fetch('/api/user/preferences', {
         method: 'PUT',
@@ -75,6 +108,11 @@ export default function SystemPreferencesSection({ className = '' }) {
 
   const handleToggleNotifications = async (val) => {
     setNotifications(val);
+    if (val && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch {}
+    }
     await savePreference({ notifyOnComplete: val });
   };
 
@@ -84,10 +122,13 @@ export default function SystemPreferencesSection({ className = '' }) {
   };
 
   const handleLanguageChange = async (val) => {
-    setCurrentLocale(val);
-    await savePreference({ locale: val });
+    const norm = normalizeLocale(val);
+    setCurrentLocale(norm);
+    await savePreference({ locale: norm });
     try {
-      await switchLocaleVia(val);
+      const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      await switchLocaleVia({ targetLocale: norm, pathname, search });
     } catch (err) {
       console.warn('Locale cookie write failed, falling back to reload', err);
       window.location.reload();
@@ -175,7 +216,7 @@ export default function SystemPreferencesSection({ className = '' }) {
               </div>
             </div>
             <div className="w-40">
-              <Select value={currentLocale} onValueChange={handleLanguageChange} disabled={loading}>
+              <Select value={normalizedLocale} onValueChange={handleLanguageChange} disabled={loading}>
                 <SelectTrigger className="w-full bg-well border-line-subtle text-xs rounded-xl h-9">
                   <SelectValue placeholder="选择语言" />
                 </SelectTrigger>

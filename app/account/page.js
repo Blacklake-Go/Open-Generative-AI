@@ -9,13 +9,23 @@ export const metadata = {
 
 import { cookies, headers } from 'next/headers';
 import { getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import { getUserBySession } from '@/lib/services/auth';
 
 export default async function AccountPage({ searchParams }) {
   const cookieStore = await cookies();
   const headerList = await headers();
+
+  let user = null;
+  try {
+    const sessionToken = cookieStore.get('ko_session')?.value;
+    if (sessionToken) {
+      user = await getUserBySession(sessionToken);
+    }
+  } catch {}
+
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
   const headerLocale = headerList.get('x-locale');
-  const targetLocale = normalizeLocale(cookieLocale || headerLocale || 'en');
+  const targetLocale = normalizeLocale(user?.locale || cookieLocale || headerLocale || 'en');
   const config = getLocaleConfig(targetLocale);
   const studioRoot = config.rootPath ? `${config.rootPath}/studio` : '/studio';
 

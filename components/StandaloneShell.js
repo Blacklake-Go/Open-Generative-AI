@@ -1200,12 +1200,29 @@ export default function StandaloneShell({
 
   const makeSuccessCallback = useCallback((tabId) => (data) => {
     const tab = TABS.find(t => t.id === tabId);
-    pushNotification({
-      type: 'success',
-      tabId,
-      label: tab?.label || tabId,
-      resultUrl: data?.url || null,
-    });
+    let shouldNotify = true;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = JSON.parse(localStorage.getItem('supdance_user_preferences') || '{}');
+        if (stored.notifyOnComplete === false) shouldNotify = false;
+      } catch {}
+    }
+    if (shouldNotify) {
+      pushNotification({
+        type: 'success',
+        tabId,
+        label: tab?.label || tabId,
+        resultUrl: data?.url || null,
+      });
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(`${tab?.label || 'SupDance'} 生成完成`, {
+            body: '您的生成任务已顺利完成，点击查看结果',
+            icon: '/branding/logo.png',
+          });
+        } catch {}
+      }
+    }
     refreshAccount();
   }, [pushNotification, refreshAccount]);
 

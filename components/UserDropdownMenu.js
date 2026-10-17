@@ -79,6 +79,8 @@ export default function UserDropdownMenu({
     })() : null)
   );
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [kcoins, setKcoins] = useState(0);
   const [dailyLoginClaimed, setDailyLoginClaimed] = useState(false);

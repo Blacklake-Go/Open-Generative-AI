@@ -13,10 +13,6 @@ export default async function Home() {
   const cookieStore = await cookies();
   const headerList = await headers();
 
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
-  const headerLocale = headerList.get('x-locale');
-  const targetLocale = normalizeLocale(cookieLocale || headerLocale || 'en');
-
   let user = null;
   try {
     const sessionToken = cookieStore.get('ko_session')?.value;
@@ -24,6 +20,10 @@ export default async function Home() {
       user = await getUserBySession(sessionToken);
     }
   } catch {}
+
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
+  const headerLocale = headerList.get('x-locale');
+  const targetLocale = normalizeLocale(user?.locale || cookieLocale || headerLocale || 'en');
 
   return <JimengHomePortal locale={targetLocale} initialUser={user} />;
 }

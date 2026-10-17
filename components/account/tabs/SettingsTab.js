@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES } from '@/lib/locales';
+import { getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
 import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
 
 const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES.map((code) => ({
@@ -17,7 +17,8 @@ export default function SettingsTab() {
   const [currentLocale, setCurrentLocale] = useState('zh-CN');
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
-  const activeLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === currentLocale)?.label || currentLocale;
+  const normalizedLocale = normalizeLocale(currentLocale);
+  const activeLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === normalizedLocale)?.label || normalizedLocale;
 
   // 1. 从后端数据库加载真实偏好设置
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function SettingsTab() {
           if (mounted && data.preferences) {
             setNotifications(data.preferences.notifyOnComplete ?? true);
             setHighQualityPreview(data.preferences.highQualityPreview ?? true);
-            setCurrentLocale(data.preferences.locale || 'zh-CN');
+            setCurrentLocale(normalizeLocale(data.preferences.locale || 'zh-CN'));
           }
         }
       } catch (err) {
@@ -45,6 +46,18 @@ export default function SettingsTab() {
 
   // 2. 实时保存偏好设置至数据库
   const savePreference = async (updates) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const current = JSON.parse(localStorage.getItem('supdance_user_preferences') || '{}');
+        const next = { ...current, ...updates };
+        localStorage.setItem('supdance_user_preferences', JSON.stringify(next));
+        if (updates.highQualityPreview !== undefined) {
+          localStorage.setItem('supdance_high_quality_preview', String(updates.highQualityPreview));
+        }
+        window.dispatchEvent(new CustomEvent('supdance-preferences-changed', { detail: next }));
+      } catch {}
+    }
+
     try {
       const res = await fetch('/api/user/preferences', {
         method: 'PUT',
@@ -77,10 +90,11 @@ export default function SettingsTab() {
   };
 
   const handleSelectLanguage = (code) => {
-    setCurrentLocale(code);
+    const norm = normalizeLocale(code);
+    setCurrentLocale(norm);
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
     const search = typeof window !== 'undefined' ? window.location.search : '';
-    switchLocaleVia({ targetLocale: code, pathname, search });
+    switchLocaleVia({ targetLocale: norm, pathname, search });
   };
 
   return (
@@ -154,7 +168,7 @@ export default function SettingsTab() {
           </div>
 
           <div className="shrink-0">
-            <Select value={currentLocale} onValueChange={handleSelectLanguage}>
+            <Select value={normalizedLocale} onValueChange={handleSelectLanguage}>
               <SelectTrigger size="sm" className="w-36 text-caption" aria-label="界面语言">
                 <SelectValue placeholder="选择语言" />
               </SelectTrigger>

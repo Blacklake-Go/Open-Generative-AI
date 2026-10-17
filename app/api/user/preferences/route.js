@@ -1,4 +1,4 @@
-import { getUserFromRequest, json } from '@/lib/services/auth';
+import { getSessionCookieDomain, getUserFromRequest, json } from '@/lib/services/auth';
 import { queryOne, execute } from '@/lib/application/dataAccess.js';
 import { isSupportedLocale, normalizeLocale } from '@/lib/locales';
 import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
@@ -20,7 +20,7 @@ export async function GET(request) {
     preferences: {
       notifyOnComplete: preferences.notifyOnComplete ?? true,
       highQualityPreview: preferences.highQualityPreview ?? true,
-      locale: row?.locale || 'zh-CN',
+      locale: normalizeLocale(row?.locale || 'zh-CN'),
     },
   });
 }
@@ -52,7 +52,7 @@ export async function PUT(request) {
       preferences: updatedPreferences,
     };
 
-    let targetLocale = row?.locale || 'zh-CN';
+    let targetLocale = normalizeLocale(row?.locale || 'zh-CN');
     if (locale !== undefined) {
       if (isSupportedLocale(locale)) {
         targetLocale = normalizeLocale(locale);
@@ -73,15 +73,18 @@ export async function PUT(request) {
     });
 
     if (locale !== undefined) {
+      const domain = getSessionCookieDomain(request);
       response.cookies.set('NEXT_LOCALE', targetLocale, {
         path: '/',
         maxAge: 31536000,
         sameSite: 'lax',
+        ...(domain ? { domain } : {}),
       });
       response.cookies.set('locale', targetLocale, {
         path: '/',
         maxAge: 31536000,
         sameSite: 'lax',
+        ...(domain ? { domain } : {}),
       });
     }
 

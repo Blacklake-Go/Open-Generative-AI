@@ -1,5 +1,6 @@
-import { authenticateUser, createSession, json, setSessionCookie } from '@/lib/services/auth';
+import { authenticateUser, createSession, getSessionCookieDomain, json, setSessionCookie } from '@/lib/services/auth';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
+import { normalizeLocale } from '@/lib/locales';
 
 export const runtime = 'nodejs';
 
@@ -21,8 +22,10 @@ export async function POST(request) {
     const response = json({ user });
     setSessionCookie(response, session.token, session.expires, request);
     if (user.locale) {
-      response.cookies.set('NEXT_LOCALE', user.locale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
-      response.cookies.set('locale', user.locale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+      const norm = normalizeLocale(user.locale);
+      const domain = getSessionCookieDomain(request);
+      response.cookies.set('NEXT_LOCALE', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
+      response.cookies.set('locale', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     }
     return response;
   } catch (error) {
