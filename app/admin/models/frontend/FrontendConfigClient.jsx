@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, Fragment } from 'react';
 import Link from 'next/link';
 import {
   Eye, EyeOff, Search, ChevronDown, ChevronUp,
   X, Save, Loader2, Layers, Pin, Sparkles, Filter,
   Check, ShieldCheck, Zap, DollarSign, Plus, Copy,
   CheckCircle2, ArrowRight, ExternalLink, RefreshCw, AlertTriangle,
+  GitMerge, Server,
   Image as ImageIcon, Video, Music, MessageSquare
 } from 'lucide-react';
 import { Card, Button } from '@/components/admin/AdminUi';
@@ -133,6 +134,35 @@ export default function FrontendConfigClient({
   const [hygieneDrawerOpen, setHygieneDrawerOpen] = useState(false);
   const [unroutedConfirmModel, setUnroutedConfirmModel] = useState(null);
   const [smartMatchModel, setSmartMatchModel] = useState(null);
+
+  // In-shelf Accordion Sub-row Expansion & Inline 1-Click Merge States
+  const [expandedVariants, setExpandedVariants] = useState(new Set());
+  const [mergeConfirmModel, setMergeConfirmModel] = useState(null);
+  const [inlineTargetOverride, setInlineTargetOverride] = useState('');
+  const [mergingInline, setMergingInline] = useState(false);
+
+  useEffect(() => {
+    if (!mergeConfirmModel) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !mergingInline) {
+        setMergeConfirmModel(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mergeConfirmModel, mergingInline]);
+
+  const toggleExpandVariants = useCallback((modelId) => {
+    setExpandedVariants((prev) => {
+      const next = new Set(prev);
+      if (next.has(modelId)) {
+        next.delete(modelId);
+      } else {
+        next.add(modelId);
+      }
+      return next;
+    });
+  }, []);
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
@@ -312,6 +342,34 @@ export default function FrontendConfigClient({
       lossCount,
     };
   }, [models, computeModelMargin]);
+
+  // 规范治理与变体指标 (Hygiene & Consolidation Metrics)
+  const hygieneMetrics = useMemo(() => {
+    let orphanCount = 0;
+    let canonicalCount = 0;
+    let aliasCount = 0;
+
+    models.forEach((m) => {
+      if (m.is_orphan_candidate) orphanCount++;
+      if (m.is_canonical || (m.aliases && m.aliases.length > 0)) {
+        canonicalCount++;
+        aliasCount += (m.aliases?.length || 0);
+      }
+    });
+
+    return {
+      orphanCount,
+      canonicalCount,
+      aliasCount,
+    };
+  }, [models]);
+
+  // 可供孤立变体归并的目标规范模型列表
+  const canonicalOptions = useMemo(() => {
+    const list = models.filter((m) => m.is_canonical || (m.aliases && m.aliases.length > 0));
+    if (list.length > 0) return list;
+    return models.filter((m) => m.tier === 'core' || m.is_visible);
+  }, [models]);
 
   // 最终过滤后的模型列表
   const currentModels = useMemo(() => {
@@ -730,6 +788,48 @@ export default function FrontendConfigClient({
     [models, callAPI, showToast, refreshPublicDirectory]
   );
 
+  // 孤立候选变体一键就地吸收归并
+  const handleInlineMergeClick = useCallback((model) => {
+    if (!canWrite) {
+      showToast('当前账号无权执行模型归并写操作', 'error');
+      return;
+    }
+    const defaultTarget = model.suggested_target || canonicalOptions[0]?.id || 'kling-3.0';
+    setInlineTargetOverride(defaultTarget);
+    setMergeConfirmModel(model);
+  }, [canWrite, showToast, canonicalOptions]);
+
+  const handleExecuteInlineMerge = useCallback(async (sourceModelId, targetModelId) => {
+    if (!sourceModelId || !targetModelId) return;
+    setMergingInline(true);
+    setSaving(sourceModelId);
+    try {
+      await callAPI({
+        action: 'hygiene_merge',
+        sourceModelId,
+        targetModelId,
+      });
+      showToast(`已成功将【${sourceModelId}】合并至规范模型【${targetModelId}】✓`);
+      setMergeConfirmModel(null);
+      refreshPublicDirectory();
+      setModels((prev) =>
+        prev.map((m) =>
+          m.id === sourceModelId
+            ? { ...m, is_visible: false, status: 'disabled', tier: 'backup', is_orphan_candidate: false }
+            : m
+        )
+      );
+      setTimeout(() => {
+        window.location.reload();
+      }, 700);
+    } catch (err) {
+      showToast(`归并失败: ${err.message}`, 'error');
+    } finally {
+      setMergingInline(false);
+      setSaving(null);
+    }
+  }, [callAPI, showToast, refreshPublicDirectory]);
+
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       {/* Toast Alert */}
@@ -853,6 +953,28 @@ export default function FrontendConfigClient({
           >
             <span>⚠️ 负毛利预警</span>
             <span className="font-mono font-bold">{statusMetrics.lossCount}</span>
+          </button>
+
+          {/* 🛡️ 规范治理健康指标胶囊 (融入大盘状态条，点击呼出规范治理与去重抽屉) */}
+          <button
+            type="button"
+            onClick={() => setHygieneDrawerOpen(true)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border text-xs font-semibold cursor-pointer ${
+              hygieneMetrics.orphanCount > 0
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/35 hover:bg-amber-500/25 shadow-sm'
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+            }`}
+            title="全库体检与去重：规范模型与动作变体收敛治理"
+          >
+            <ShieldCheck className={`size-3.5 ${hygieneMetrics.orphanCount > 0 ? 'text-amber-400' : 'text-emerald-400'}`} />
+            <span>规范治理:</span>
+            {hygieneMetrics.orphanCount > 0 ? (
+              <span className="font-mono font-bold text-amber-300">{hygieneMetrics.orphanCount} 个待归并别名</span>
+            ) : (
+              <span className="font-mono font-bold text-emerald-400">
+                {hygieneMetrics.canonicalCount}家族 / {hygieneMetrics.aliasCount}变体收敛
+              </span>
+            )}
           </button>
         </div>
 
@@ -1067,16 +1189,18 @@ export default function FrontendConfigClient({
                   const marginInfo = computeModelMargin(model);
                   const credits = Number(model.base_credits || 0);
                   const healthyRoutes = Number(model.healthy_routes || 0);
+                  const isExpanded = expandedVariants.has(model.id);
 
                   return (
-                    <tr
-                      key={model.id}
-                      className={`group transition-colors ${
-                        isVisible
-                          ? 'hover:bg-white/[0.02]'
-                          : 'bg-white/[0.005] opacity-75 hover:opacity-100 hover:bg-white/[0.02]'
-                      }`}
-                    >
+                    <Fragment key={model.id}>
+                      <tr
+                        key={model.id}
+                        className={`group transition-colors ${
+                          isVisible
+                            ? 'hover:bg-white/[0.02]'
+                            : 'bg-white/[0.005] opacity-75 hover:opacity-100 hover:bg-white/[0.02]'
+                        }`}
+                      >
                       {/* Col 1: 模型主体 (BrandLogo + display_name + 徽章 + modelId + 品牌标签) */}
                       <td className="px-3.5 py-3 align-middle">
                         <div className="flex items-start gap-2.5">
@@ -1096,12 +1220,21 @@ export default function FrontendConfigClient({
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setHygieneDrawerOpen(true);
+                                    toggleExpandVariants(model.id);
                                   }}
-                                  className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.2 text-[10px] font-semibold hover:bg-emerald-500/20 transition-colors"
-                                  title={`已收敛 ${model.aliases.length} 个动作变体: ${model.aliases.slice(0, 4).join(', ')}...（点击查看治理规范）`}
+                                  className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.2 text-[10px] font-semibold transition-all border cursor-pointer ${
+                                    expandedVariants.has(model.id)
+                                      ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/40 shadow-sm'
+                                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+                                  }`}
+                                  title={`已收敛 ${model.aliases.length} 个动作变体。点击${expandedVariants.has(model.id) ? '收起' : '展开'}变体与通道下钻明细`}
                                 >
-                                  +{model.aliases.length} 变体
+                                  <span>+{model.aliases.length} 变体</span>
+                                  {expandedVariants.has(model.id) ? (
+                                    <ChevronUp className="size-2.5" />
+                                  ) : (
+                                    <ChevronDown className="size-2.5" />
+                                  )}
                                 </button>
                               )}
                               {model.is_orphan_candidate && (
@@ -1109,10 +1242,14 @@ export default function FrontendConfigClient({
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setHygieneDrawerOpen(true);
+                                    handleInlineMergeClick(model);
                                   }}
-                                  className="rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-semibold hover:bg-amber-500/25 transition-colors"
-                                  title={`疑似孤立动作别名，推荐归并至规范: ${model.suggested_target || '未指定'}`}
+                                  className="rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-semibold hover:bg-amber-500/25 transition-colors cursor-pointer"
+                                  title={
+                                    model.suggested_target
+                                      ? `疑似孤立动作别名，点击一键吸收归并至规范模型: ${model.suggested_target}`
+                                      : '疑似孤立动作别名，点击打开治理抽屉手动指定规范目标'
+                                  }
                                 >
                                   ⚠️ 待归并别名
                                 </button>
@@ -1329,6 +1466,21 @@ export default function FrontendConfigClient({
                                 <ChevronDown className="size-3.5" />
                               </button>
 
+                              {/* 孤立别名一键归并快捷操作 */}
+                              {model.is_orphan_candidate && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => handleInlineMergeClick(model)}
+                                  disabled={isSavingThis || mergingInline}
+                                  className="h-7 text-xs px-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30 font-semibold shrink-0"
+                                  title={model.suggested_target ? `一键将此孤立别名归并入规范模型【${model.suggested_target}】` : '一键将此孤立别名归并入规范模型'}
+                                >
+                                  <GitMerge className="size-3 mr-1" />
+                                  归并入 {model.suggested_target || '规范模型'}
+                                </Button>
+                              )}
+
                               {/* 一站式配置 */}
                               <Button
                                 variant="secondary"
@@ -1343,9 +1495,140 @@ export default function FrontendConfigClient({
                         </div>
                       </td>
                     </tr>
-                  );
-                })
-              )}
+
+                    {/* Accordion Sub-row: 动作变体与挂载渠道拓扑明细 */}
+                    {isExpanded && (
+                      <tr key={`${model.id}-variants-accordion`} className="bg-well/40 border-b border-line-subtle animate-fade-in">
+                        <td colSpan={8} className="px-5 py-3.5">
+                          <div className="space-y-3 pl-8">
+                            {/* Sub-row Header */}
+                            <div className="flex items-center justify-between border-b border-line-subtle/60 pb-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Layers className="size-4 text-emerald-400 shrink-0" />
+                                <span className="text-xs font-semibold text-ink">
+                                  【{model.display_name || model.name}】已收敛动作变体与渠道拓扑
+                                </span>
+                                <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.2 text-[10px] font-mono font-bold">
+                                  {model.aliases.length} 个已收敛别名
+                                </span>
+                                <span className="rounded-full bg-white/5 text-ink-subtle border border-white/10 px-2 py-0.2 text-[10px] font-mono">
+                                  {model.routes?.length || 0} 个聚合通道
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setHygieneDrawerOpen(true)}
+                                  className="h-6 text-[11px] px-2 text-ink-muted hover:text-ink"
+                                >
+                                  全库治理抽屉
+                                </Button>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpandVariants(model.id)}
+                                  className="p-1 rounded text-ink-subtle hover:text-ink hover:bg-white/5 transition-colors"
+                                  title="收起变体明细"
+                                >
+                                  <ChevronUp className="size-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* 1. Aliases Pills (with channel count calculation) */}
+                            <div className="space-y-1.5">
+                              <div className="text-[11px] font-medium text-ink-muted">
+                                历史动作别名 (对外统一收敛至本模型，由智能路由统一调度):
+                              </div>
+                              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto custom-scrollbar p-1">
+                                {model.aliases.map((alias) => {
+                                  const aliasRouteCount = (Array.isArray(model.routes) ? model.routes : []).filter(
+                                    (r) => r.provider_model_id === alias || (r.provider_model_id && r.provider_model_id.includes(alias))
+                                  ).length;
+                                  return (
+                                    <span
+                                      key={alias}
+                                      onClick={() => handleCopyId(alias)}
+                                      className="inline-flex items-center gap-1.5 text-[11px] font-mono text-ink-muted bg-surface-raised border border-line-subtle px-2 py-0.5 rounded-md hover:text-ink hover:border-line transition-colors cursor-pointer group/alias"
+                                      title="点击复制别名 ID"
+                                    >
+                                      <code className="text-[10px] text-ink">{alias}</code>
+                                      {aliasRouteCount > 0 ? (
+                                        <span className="text-[9px] text-brand font-medium">({aliasRouteCount}通道)</span>
+                                      ) : (
+                                        <span className="text-[9px] text-emerald-400/80 font-sans">已收敛</span>
+                                      )}
+                                      <Copy className="size-2 text-ink-subtle opacity-0 group-hover/alias:opacity-100 transition-opacity" />
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* 2. Mounted Channels */}
+                            <div className="space-y-1.5 pt-1">
+                              <div className="text-[11px] font-medium text-ink-muted flex items-center justify-between">
+                                <span>已挂载上游多通道 ({model.routes?.length || 0}):</span>
+                                <Link
+                                  href="/admin/models/routing"
+                                  className="text-[11px] text-brand hover:underline inline-flex items-center gap-0.5"
+                                >
+                                  <span>价盘与路由拓扑</span>
+                                  <ExternalLink className="size-2.5" />
+                                </Link>
+                              </div>
+                              {model.routes && model.routes.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {model.routes.map((route, rIdx) => {
+                                    const isHealthy = (route.health_status === 'healthy' || !route.health_status) && route.enabled;
+                                    return (
+                                      <div
+                                        key={route.id || rIdx}
+                                        className="rounded-lg border border-line-subtle bg-surface-raised/70 p-2.5 flex items-center justify-between text-xs hover:border-line transition-colors"
+                                      >
+                                        <div className="min-w-0 space-y-0.5">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className={`size-1.5 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                                            <span className="font-semibold text-ink truncate text-[11px]">
+                                              {route.provider_name || route.provider_id}
+                                            </span>
+                                            <span className="rounded bg-white/5 px-1 py-0.2 text-[9px] font-mono text-ink-subtle">
+                                              P{route.priority ?? 0}
+                                            </span>
+                                            {route.review_status && route.review_status !== 'approved' && (
+                                              <span className="rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 px-1 py-0.2 text-[9px]">
+                                                待审
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="font-mono text-[10px] text-ink-subtle truncate">
+                                            {route.provider_model_id || '默认上游模型'}
+                                          </div>
+                                        </div>
+                                        <div className="text-right shrink-0 font-mono text-[11px] pl-2">
+                                          <span className="text-ink font-semibold">
+                                            {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : Number(route.cost_usd) > 0 ? `$${Number(route.cost_usd).toFixed(4)}` : '免计费'}
+                                          </span>
+                                          <span className="block text-[9px] text-ink-subtle">/次</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="p-3 rounded-lg border border-line-subtle bg-surface-raised/40 text-center text-xs text-ink-subtle">
+                                  ⓘ 当前规范模型尚未绑定任何活跃上游通道。可通过【一站式配置】或【智能匹配】挂载通道。
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })
+            )}
             </tbody>
           </table>
         </div>
@@ -1460,6 +1743,114 @@ export default function FrontendConfigClient({
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ─── 孤立别名一键吸收归并确认浮层 (Inline Merge Modal) ─── */}
+      {mergeConfirmModel && (
+        <div
+          className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !mergingInline) {
+              setMergeConfirmModel(null);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="一键吸收归并孤立变体"
+            className="w-full max-w-md rounded-2xl bg-surface-raised border border-line p-5 shadow-elevation-4 space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-line-subtle pb-3">
+              <div className="flex items-center gap-2">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/25">
+                  <GitMerge className="size-4" />
+                </span>
+                <h3 className="text-body font-semibold text-ink">一键吸收归并孤立别名</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMergeConfirmModel(null)}
+                className="text-ink-subtle hover:text-ink p-1 rounded-md"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-well/60 border border-line-subtle space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">待归并源别名</span>
+                  <span className="font-mono font-bold text-amber-300">{mergeConfirmModel.id}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">显示名称</span>
+                  <span className="text-ink font-medium">{mergeConfirmModel.display_name || mergeConfirmModel.name}</span>
+                </div>
+                <div className="space-y-1.5 border-t border-line-subtle/50 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-ink-muted">归并目标规范模型</span>
+                    {mergeConfirmModel.suggested_target && (
+                      <span className="text-[10px] text-brand font-medium">推荐: {mergeConfirmModel.suggested_target}</span>
+                    )}
+                  </div>
+                  <select
+                    value={inlineTargetOverride || mergeConfirmModel.suggested_target || canonicalOptions[0]?.id || ''}
+                    onChange={(e) => setInlineTargetOverride(e.target.value)}
+                    className="w-full rounded-lg bg-surface border border-line-subtle px-2.5 py-1.5 text-xs text-ink font-mono focus:border-brand outline-none cursor-pointer"
+                  >
+                    {canonicalOptions.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.display_name || opt.name} ({opt.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 space-y-1">
+                <div className="font-semibold flex items-center gap-1">
+                  <AlertTriangle className="size-3.5" />
+                  <span>非破坏性治理操作</span>
+                </div>
+                <p className="text-[11px] text-amber-400/90 leading-relaxed">
+                  执行后，该别名名下的全部供应商通道将自动迁移至【{inlineTargetOverride || mergeConfirmModel.suggested_target || '目标规范模型'}】名下，原模型将转为备用下沉并禁用，历史任务记录与前台调度完全不受影响。
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-line-subtle">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMergeConfirmModel(null)}
+                disabled={mergingInline}
+              >
+                取消
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleExecuteInlineMerge(mergeConfirmModel.id, inlineTargetOverride || mergeConfirmModel.suggested_target || canonicalOptions[0]?.id)}
+                disabled={mergingInline}
+                className="bg-amber-600 hover:bg-amber-500 text-white font-semibold"
+              >
+                {mergingInline ? (
+                  <>
+                    <Loader2 className="size-3.5 mr-1 animate-spin" />
+                    正在归并...
+                  </>
+                ) : (
+                  <>
+                    <GitMerge className="size-3.5 mr-1" />
+                    确认一键归并
+                  </>
+                )}
+              </Button>
+            </div>
+          </section>
         </div>
       )}
 

@@ -22,6 +22,25 @@ export default function ModelHygieneDrawer({
   const [mergingId, setMergingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
+  const [hasMutated, setHasMutated] = useState(false);
+
+  const handleSafeClose = useCallback(() => {
+    if (hasMutated && onHygieneCompleted) {
+      onHygieneCompleted();
+    }
+    onClose();
+  }, [hasMutated, onHygieneCompleted, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !syncing && !mergingId) {
+        handleSafeClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, syncing, mergingId, handleSafeClose]);
 
   const fetchHygieneData = useCallback(async () => {
     setLoading(true);
@@ -96,9 +115,9 @@ export default function ModelHygieneDrawer({
           throw new Error(json.error?.message || '执行收敛失败');
         }
       }
+      setHasMutated(true);
       showToast('全库模型规范化与变体收敛执行成功！');
       await fetchHygieneData();
-      if (onHygieneCompleted) onHygieneCompleted();
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -134,9 +153,9 @@ export default function ModelHygieneDrawer({
           throw new Error(json.error?.message || '合并失败');
         }
       }
+      setHasMutated(true);
       showToast(`已成功将【${sourceModelId}】合并至【${targetModelId}】✓`);
       await fetchHygieneData();
-      if (onHygieneCompleted) onHygieneCompleted();
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -177,10 +196,23 @@ export default function ModelHygieneDrawer({
   const unmergedCount = data?.unmergedCandidates?.length || 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border border-line bg-surface shadow-elevation-4 overflow-hidden text-ink">
+    <div
+      className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !syncing && !mergingId) {
+          handleSafeClose();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="模型库规范与变体收敛治理"
+        className="relative w-full max-w-3xl xl:w-[860px] bg-[#131519] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-line-subtle px-6 py-4 bg-surface-raised">
+        <div className="flex items-center justify-between border-b border-line-subtle px-6 py-4 bg-surface-raised shrink-0">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
               <ShieldCheck className="size-5" />
@@ -229,8 +261,9 @@ export default function ModelHygieneDrawer({
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleSafeClose}
               className="rounded-lg p-2 text-ink-muted hover:bg-wash hover:text-ink transition-colors ml-1"
+              title="关闭"
             >
               <X className="size-5" />
             </button>
@@ -240,7 +273,7 @@ export default function ModelHygieneDrawer({
         {/* Toast */}
         {toast && (
           <div
-            className={`px-4 py-2 text-caption font-medium text-center transition-all ${
+            className={`px-4 py-2 text-caption font-medium text-center transition-all shrink-0 ${
               toast.type === 'error' ? 'bg-danger/15 text-danger border-b border-danger/20' : 'bg-emerald-500/15 text-emerald-400 border-b border-emerald-500/20'
             }`}
           >
@@ -249,7 +282,7 @@ export default function ModelHygieneDrawer({
         )}
 
         {/* 4-Card Compact Metric Strip (High Density, No Text Walls) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-4 border-b border-line-subtle bg-well/30">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-4 border-b border-line-subtle bg-well/30 shrink-0">
           <div className="rounded-xl border border-line-subtle bg-well/60 p-3">
             <div className="text-caption text-ink-muted">全库模型总数</div>
             <div className="text-h3 font-bold text-ink mt-0.5">{summary.totalModels}</div>
@@ -294,13 +327,13 @@ export default function ModelHygieneDrawer({
           </div>
         </div>
 
-        {/* Tab Navigation (WeChat Underline / Clean Pill Track) */}
-        <div className="flex items-center justify-between px-6 py-2.5 border-b border-line-subtle bg-well/20">
-          <div className="inline-flex rounded-lg border border-line-subtle bg-well p-1">
+        {/* Tab Navigation (WeChat Standard h-10 Track) */}
+        <div className="flex items-center justify-between px-6 py-2.5 border-b border-line-subtle bg-well/20 shrink-0">
+          <div className="inline-flex h-10 items-center rounded-lg border border-line-subtle bg-well p-1">
             <button
               type="button"
               onClick={() => setActiveTab('families')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+              className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-all ${
                 activeTab === 'families'
                   ? 'bg-surface-raised text-ink shadow-sm'
                   : 'text-ink-muted hover:text-ink'
@@ -312,7 +345,7 @@ export default function ModelHygieneDrawer({
             <button
               type="button"
               onClick={() => setActiveTab('candidates')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+              className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-all ${
                 activeTab === 'candidates'
                   ? 'bg-surface-raised text-ink shadow-sm'
                   : 'text-ink-muted hover:text-ink'
@@ -474,7 +507,7 @@ export default function ModelHygieneDrawer({
           <span className="text-[11px] text-ink-subtle">
             非破坏性收敛：历史生成与通道配置完整保留，源别名模型自动转为备用沉降。
           </span>
-          <Button variant="secondary" size="sm" onClick={onClose} className="text-xs">
+          <Button variant="secondary" size="sm" onClick={handleSafeClose} className="text-xs">
             完成并关闭
           </Button>
         </div>

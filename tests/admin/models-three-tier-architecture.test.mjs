@@ -244,10 +244,11 @@ test('Step 7: Model Specification & Hygiene Consolidation (Zero Text Walls, SSOT
   assert.ok(klingGroup, 'Kling 3.0 canonical group must exist');
   assert.ok(klingGroup.aliases.includes('kling-v3.0-standard-text-to-video'), 'Kling 3.0 must consolidate action aliases');
 
-  // Test orphan candidate detection
+  // Test orphan candidate detection & smart suggestion
   assert.equal(isOrphanVariantCandidate('unknown-model-t2v', 'backup'), true, 'Should detect orphan variant candidate');
   assert.equal(isOrphanVariantCandidate('kling-3.0', 'core'), false, 'Canonical model is not an orphan candidate');
   assert.equal(suggestCanonicalTarget('kling-unknown-i2v'), 'kling-3.0', 'Should suggest kling-3.0 for kling variants');
+  assert.equal(suggestCanonicalTarget('kling-v2.6-standard-i2v'), 'kling-2.6', 'Should accurately suggest kling-2.6 for v2.6 variants');
 
   // 2. Check Control Route SSOT contract
   const controlRouteContent = fs.readFileSync(path.join(repoRoot, 'app/api/admin/models/control/route.js'), 'utf8');
@@ -265,10 +266,31 @@ test('Step 7: Model Specification & Hygiene Consolidation (Zero Text Walls, SSOT
   // Must call SSOT control actions
   assert.match(hygieneDrawerContent, /hygiene_merge/);
   assert.match(hygieneDrawerContent, /hygiene_sync/);
+  // Drawer layout and WeChat standards
+  assert.match(hygieneDrawerContent, /flex justify-end/, 'Drawer must be right-side sliding drawer');
+  assert.match(hygieneDrawerContent, /animate-slide-left/, 'Drawer panel must animate sliding from right');
+  assert.match(hygieneDrawerContent, /h-10/, 'Tab navigation track must have standard h-10 height');
+  assert.match(hygieneDrawerContent, /handleSafeClose/, 'Drawer must provide safe close handling');
 
-  // 4. Check FrontendConfigClient.jsx in-shelf badges
+  // 4. Check FrontendConfigClient.jsx in-shelf badges, accordion sub-row and inline 1-click merge
   const frontendClientContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/FrontendConfigClient.jsx'), 'utf8');
   assert.match(frontendClientContent, /model\.aliases\?\.length > 0/);
   assert.match(frontendClientContent, /model\.is_orphan_candidate/);
   assert.match(frontendClientContent, /全库体检与去重/);
+  assert.match(frontendClientContent, /hygieneMetrics/, 'Must compute hygiene metrics for status bar');
+  assert.match(frontendClientContent, /规范治理:/, 'Must render specification governance health capsule in status bar');
+
+  // In-shelf accordion sub-row expansion assertions
+  assert.match(frontendClientContent, /toggleExpandVariants\(model\.id\)/, 'Must toggle sub-row expansion on badge click');
+  assert.match(frontendClientContent, /expandedVariants\.has\(model\.id\)/, 'Must conditionally render accordion sub-row');
+  assert.match(frontendClientContent, /colSpan=\{8\}/, 'Sub-row must span all 8 columns');
+  assert.match(frontendClientContent, /model\.aliases\.map/, 'Sub-row must list consolidated action aliases');
+  assert.match(frontendClientContent, /model\.routes/, 'Sub-row must list mounted provider channels');
+  assert.match(frontendClientContent, /aliasRouteCount/, 'Sub-row must calculate alias route contribution');
+
+  // In-shelf 1-click merge action for orphan candidates assertions
+  assert.match(frontendClientContent, /handleInlineMergeClick\(model\)/, 'Must handle inline merge click on orphan badge');
+  assert.match(frontendClientContent, /mergeConfirmModel/, 'Must provide inline merge confirmation modal');
+  assert.match(frontendClientContent, /action:\s*'hygiene_merge'/, 'Must call SSOT hygiene_merge');
+  assert.match(frontendClientContent, /showToast\(.*合并至.*✓/, 'Must provide toast feedback on merge');
 });
