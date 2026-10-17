@@ -22,7 +22,9 @@ export default function ModelNavTabs({
 
   const tabs = [
     { id: 'models', label: '模型管理', href: '/admin/models', count: modelCount },
-    { id: 'providers', label: '供应商管理（模型API）', href: '/admin/models/providers' },
+    { id: 'providers', label: '供应商管理', href: '/admin/models/providers' },
+    { id: 'brands', label: '品牌模型映射', href: '/admin/models/brands' },
+    { id: 'routing', label: '智能路由与策略', href: '/admin/models/routing' },
     { id: 'pricing', label: '模型定价与利润', href: '/admin/models/pricing' },
   ];
 
@@ -31,17 +33,21 @@ export default function ModelNavTabs({
       className={`flex items-center justify-between border-b border-line-subtle h-12 ${className}`}
     >
       {/* 左侧下划线选项卡 (WeChat Underline Tabs) */}
-      <nav aria-label="模型中心二级导航" className="flex items-center gap-8 h-full overflow-x-auto scrollbar-none">
+      <nav aria-label="模型中心二级导航" className="flex items-center gap-6 sm:gap-8 h-full overflow-x-auto scrollbar-none">
         {tabs.map((tab) => {
           const isActive = propActiveTab
             ? propActiveTab === tab.id
             : tab.id === 'models'
             ? pathname === '/admin/models' || pathname === '/admin/models/frontend'
             : tab.id === 'providers'
-            ? pathname === '/admin/models/providers' || pathname?.startsWith('/admin/models/providers')
+            ? pathname === '/admin/models/providers'
+            : tab.id === 'brands'
+            ? pathname === '/admin/models/brands' || pathname?.startsWith('/admin/models/brands')
+            : tab.id === 'routing'
+            ? pathname === '/admin/models/routing' || pathname?.startsWith('/admin/models/routing')
             : tab.id === 'pricing'
             ? pathname === '/admin/models/pricing' || pathname?.startsWith('/admin/models/pricing')
-            : pathname?.startsWith(tab.href);
+            : pathname === tab.href;
 
           return (
             <Link

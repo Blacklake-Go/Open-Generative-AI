@@ -12,6 +12,7 @@ async function getFrontendModels() {
         m.id, m.name, m.display_name, m.category, m.description,
         COALESCE(m.capabilities->>'badge', '') AS badge,
         COALESCE(m.capabilities->>'sub_type', '') AS sub_type,
+        COALESCE(m.capabilities->>'pricing_hint', '') AS pricing_hint,
         COALESCE((m.capabilities->>'is_default')::boolean, false) AS is_default,
         m.status, m.tier, m.is_visible, m.auto_route_eligible, m.is_featured,
         COALESCE(m.is_pinned, (m.capabilities->>'is_pinned')::boolean, false) AS is_pinned,
@@ -83,6 +84,9 @@ async function getFrontendModels() {
     return await queryMany(`
       SELECT
         m.id, m.name, m.display_name, m.category, m.description,
+        COALESCE(m.capabilities->>'badge', '') AS badge,
+        COALESCE(m.capabilities->>'sub_type', '') AS sub_type,
+        COALESCE(m.capabilities->>'pricing_hint', '') AS pricing_hint,
         m.status, m.tier, m.is_visible, m.auto_route_eligible, m.is_featured,
         COALESCE((m.capabilities->>'is_pinned')::boolean, false) AS is_pinned,
         m.sort,

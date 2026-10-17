@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_IP="${DEPLOY_SERVER_IP:-43.155.166.90}"
+SERVER_IP="${DEPLOY_SERVER_IP:-43.133.253.76}"
 REMOTE_USER="${DEPLOY_USER:-ubuntu}"
 REMOTE="${REMOTE_USER}@${SERVER_IP}"
 REMOTE_WEB_DIR="/home/wwwroot/AI/domain/supdance.com/web"
@@ -95,8 +95,8 @@ rsync -a \"\$STAGE/packages/studio/\" \"\$WEB_DIR/packages/studio/\"
 mkdir -p \"\$WEB_DIR/node_modules/studio/src\" \"\$WEB_DIR/node_modules/studio/dist\"
 rsync -a \"\$STAGE/packages/studio/src/\" \"\$WEB_DIR/node_modules/studio/src/\"
 rsync -a \"\$STAGE/packages/studio/dist/\" \"\$WEB_DIR/node_modules/studio/dist/\"
-rsync -a \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
-rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
+rsync -a --delete \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
+rsync -a --delete \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
 rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
 rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
@@ -167,12 +167,16 @@ curl -s -X POST http://127.0.0.1:3200/api/generation/quote \
   -H 'Content-Type: application/json' \
   -d '{\"modelId\":\"koyo-cinematic-v2\",\"studioId\":\"cinema\",\"specs\":{\"aspectRatio\":\"2.39:1\"}}'
 echo ''
+
+echo '=== Onboarding 新人引导页面验证 ==='
+curl -s -o /dev/null -w 'Onboarding Preview: HTTP %{http_code}\n' 'http://127.0.0.1:3200/onboarding?preview=1'
 "
 
 # 5. 公网域名验证
 echo "[5/5] 公网域名 (https://www.supdance.com) 验收..."
 curl -s -I https://www.supdance.com/zh | grep -E "HTTP|set-cookie|content-type" || true
 curl -s -I https://www.supdance.com/sitemap.xml | grep -E "HTTP|content-type" || true
+curl -s -o /dev/null -w 'Public Onboarding: HTTP %{http_code}\n' 'https://www.supdance.com/onboarding?preview=1'
 echo '=== 线上 robots.txt 预览 ==='
 curl -s https://www.supdance.com/robots.txt | head -n 6 || true
 curl -s https://www.supdance.com/api/ready

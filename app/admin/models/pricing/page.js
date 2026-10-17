@@ -2,7 +2,7 @@ import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
-import { getModelPricingBreakdownList, getFrontendModelsMatrixList } from '@/lib/modelCenter/pricingMatrix';
+import { getModelPricingBreakdownList } from '@/lib/modelCenter/pricingMatrix';
 import PricingManagerClient from './PricingManagerClient';
 
 export const metadata = {
@@ -16,7 +16,7 @@ export default async function ModelPricingPage({ searchParams }) {
   const sp = await searchParams;
   const initialTab = sp?.tab || 'rules';
 
-  const [pricingList, strategy, breakdownList, frontendModelsList, pendingPrices] = await Promise.all([
+  const [pricingList, strategy, breakdownList, pendingPrices] = await Promise.all([
     queryMany(`
       SELECT 
         m.id AS "modelId", 
@@ -41,7 +41,6 @@ export default async function ModelPricingPage({ searchParams }) {
     `),
     queryOne(`SELECT * FROM ai_studio.pricing_strategy WHERE is_active = true LIMIT 1`).catch(() => null),
     getModelPricingBreakdownList().catch(() => []),
-    getFrontendModelsMatrixList().catch(() => []),
     queryMany(`
       SELECT 
         pv.id,
@@ -113,7 +112,6 @@ export default async function ModelPricingPage({ searchParams }) {
         initialPricing={initialPricing}
         initialStrategy={initialStrategy}
         initialBreakdown={breakdownList}
-        initialFrontendModels={frontendModelsList}
         initialPendingPrices={pendingPrices || []}
         canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
       />

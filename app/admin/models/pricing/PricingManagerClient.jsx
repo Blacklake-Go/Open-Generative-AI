@@ -17,16 +17,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   HelpCircle,
-  Eye,
-  EyeOff,
-  Sparkles,
-  Layers,
-  Film,
-  Music,
-  Image as ImageIcon,
-  Flame,
-  Star,
-  Zap,
   Clock,
   ExternalLink,
   RefreshCw,
@@ -42,11 +32,10 @@ export default function PricingManagerClient({
   initialPricing = [],
   initialStrategy = {},
   initialBreakdown = [],
-  initialFrontendModels = [],
   initialPendingPrices = [],
   canWrite = false,
 }) {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'rules' | 'breakdown' | 'frontend' | 'pending'
+  const [activeTab, setActiveTab] = useState(initialTab === 'frontend' ? 'rules' : initialTab); // 'rules' | 'breakdown' | 'pending'
 
   // Tab 1 状态
   const [pricingList, setPricingList] = useState(initialPricing);
@@ -69,15 +58,7 @@ export default function PricingManagerClient({
   const [breakdownMarginFilter, setBreakdownMarginFilter] = useState('');
   const [quickEditModel, setQuickEditModel] = useState(null); // 快速调价
 
-  // Tab 3 状态 (当前前端模型)
-  const [frontendList, setFrontendList] = useState(initialFrontendModels);
-  const [frontendSearch, setFrontendSearch] = useState('');
-  const [frontendStudioFilter, setFrontendStudioFilter] = useState('');
-  const [frontendBadgeFilter, setFrontendBadgeFilter] = useState('');
-  const [editingFrontendModel, setEditingFrontendModel] = useState(null);
-  const [isSavingFrontend, setIsSavingFrontend] = useState(false);
-
-  // Tab 4 状态 (待审价格版本)
+  // Tab 3 状态 (待审价格版本)
   const [pendingPrices, setPendingPrices] = useState(initialPendingPrices);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [approvingId, setApprovingId] = useState(null);
@@ -130,32 +111,8 @@ export default function PricingManagerClient({
     });
   }, [breakdownList, breakdownSearch, breakdownCategory, breakdownMarginFilter]);
 
-  // ================= Tab 3 统计与计算 (前端模型) =================
-  const statsFrontend = useMemo(() => ({
-    total: frontendList.length,
-    visible: frontendList.filter((f) => f.isVisible).length,
-    withBadge: frontendList.filter((f) => Boolean(f.badge)).length,
-    defaults: frontendList.filter((f) => f.isDefault).length,
-  }), [frontendList]);
 
-  const filteredFrontendList = useMemo(() => {
-    return frontendList.filter((item) => {
-      if (frontendSearch) {
-        const kw = frontendSearch.toLowerCase();
-        if (!item.id.toLowerCase().includes(kw) && !item.displayName.toLowerCase().includes(kw) && !item.brand.toLowerCase().includes(kw)) {
-          return false;
-        }
-      }
-      if (frontendStudioFilter && item.studioId !== frontendStudioFilter) return false;
-      if (frontendBadgeFilter) {
-        if (frontendBadgeFilter === 'has_badge' && !item.badge) return false;
-        if (frontendBadgeFilter !== 'has_badge' && item.badge !== frontendBadgeFilter) return false;
-      }
-      return true;
-    });
-  }, [frontendList, frontendSearch, frontendStudioFilter, frontendBadgeFilter]);
-
-  // ================= Tab 4 统计与计算 (待审核价格) =================
+  // ================= Tab 3 统计与计算 (待审核价格) =================
   const pendingProviders = useMemo(() => {
     const set = new Set();
     for (const p of pendingPrices) {
@@ -461,80 +418,6 @@ export default function PricingManagerClient({
     }
   };
 
-  // 保存前台展示配置
-  const handleSaveFrontendModel = async (e) => {
-    e.preventDefault();
-    if (!editingFrontendModel) return;
-    setIsSavingFrontend(true);
-    const form = e.target;
-
-    const payload = {
-      modelId: editingFrontendModel.id,
-      displayName: form.displayName.value,
-      pricingHint: form.pricingHint.value,
-      badge: form.badge.value,
-      sort: Number(form.sort.value || 100),
-      isVisible: form.isVisible.checked,
-      isDefault: form.isDefault.checked,
-      isPinned: form.isPinned.checked,
-    };
-
-    try {
-      const res = await fetch('/api/admin/models/frontend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setFrontendList((prev) =>
-          prev.map((item) =>
-            item.id === payload.modelId
-              ? {
-                  ...item,
-                  displayName: payload.displayName,
-                  pricingHint: payload.pricingHint,
-                  badge: payload.badge,
-                  sort: payload.sort,
-                  isVisible: payload.isVisible,
-                  isDefault: payload.isDefault,
-                  isPinned: payload.isPinned,
-                }
-              : item
-          )
-        );
-        setEditingFrontendModel(null);
-      } else {
-        const data = await res.json();
-        alert(data.error?.message || '更新前端配置失败');
-      }
-    } catch (err) {
-      alert('保存异常: ' + err.message);
-    } finally {
-      setIsSavingFrontend(false);
-    }
-  };
-
-  // 快速切换前端可见性
-  const handleToggleFrontendVisibility = async (modelId, currentVisible) => {
-    try {
-      const nextVisible = !currentVisible;
-      const res = await fetch('/api/admin/models/frontend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          modelId,
-          isVisible: nextVisible,
-        }),
-      });
-      if (res.ok) {
-        setFrontendList((prev) =>
-          prev.map((item) => (item.id === modelId ? { ...item, isVisible: nextVisible } : item))
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -570,7 +453,7 @@ export default function PricingManagerClient({
         </div>
       )}
 
-      {/* 顶部四位一体下划线选项卡导航 (WeChat Underline Tabs 契约，消除卡片割裂) */}
+      {/* 顶部下划线选项卡导航 (WeChat Underline Tabs 契约，消除卡片割裂) */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line-subtle h-12">
         <div className="flex items-center gap-6 sm:gap-8 h-full overflow-x-auto scrollbar-none">
           <button
@@ -598,20 +481,6 @@ export default function PricingManagerClient({
           >
             <span>模型价格明细 (多渠道底价)</span>
             {activeTab === 'breakdown' && (
-              <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('frontend')}
-            className={`relative h-full inline-flex items-center gap-1.5 text-xs sm:text-sm transition-colors select-none whitespace-nowrap cursor-pointer ${
-              activeTab === 'frontend'
-                ? 'text-brand font-semibold'
-                : 'text-ink-muted hover:text-ink font-medium'
-            }`}
-          >
-            <span>当前前端模型 (C端态览)</span>
-            {activeTab === 'frontend' && (
               <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
             )}
           </button>
@@ -1050,205 +919,7 @@ export default function PricingManagerClient({
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 3: 当前前端模型 (Frontend Models Matrix) */}
-      {/* ========================================================================= */}
-      {activeTab === 'frontend' && (
-        <div className="space-y-6">
-          {/* 指标卡 */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <MetricCard label="前台可见模型" value={`${statsFrontend.visible} / ${statsFrontend.total}`} hint="真实暴露给C端用户" tone="good" />
-            <MetricCard label="带有运营角标" value={statsFrontend.withBadge} hint="HOT / NEW / PRO 等高亮" tone="info" />
-            <MetricCard label="覆盖 Studio 工作室" value="4 个" hint="图像/视频/音频/工作流" tone="neutral" />
-            <MetricCard label="默认推荐模型" value={statsFrontend.defaults} hint="各工作台预选默认模型" tone="warn" />
-          </div>
-
-          {/* 筛选与搜索工具条 */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-surface/80 p-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="搜索前台模型标识、名称或品牌..."
-                  value={frontendSearch}
-                  onChange={(e) => setFrontendSearch(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 py-1.5 pl-9 pr-3 text-xs text-white placeholder-gray-500 focus:border-brand focus:outline-none"
-                />
-              </div>
-
-              {/* 工作室筛选 */}
-              <select
-                value={frontendStudioFilter}
-                onChange={(e) => setFrontendStudioFilter(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
-              >
-                <option value="">全部 Studio 工作室</option>
-                <option value="ImageStudio">图像创作 (ImageStudio)</option>
-                <option value="VideoStudio">视频创作 (VideoStudio)</option>
-                <option value="AudioStudio">音频音乐 (AudioStudio)</option>
-                <option value="WorkflowStudio">工作流 (WorkflowStudio)</option>
-              </select>
-
-              {/* 角标筛选 */}
-              <select
-                value={frontendBadgeFilter}
-                onChange={(e) => setFrontendBadgeFilter(e.target.value)}
-                className="rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/70 outline-none focus:border-brand"
-              >
-                <option value="">全部角标状态</option>
-                <option value="has_badge">所有带角标模型</option>
-                <option value="HOT">HOT (热门推荐)</option>
-                <option value="NEW">NEW (最新上线)</option>
-                <option value="PRO">PRO (专业旗舰)</option>
-                <option value="VIP">VIP (专属模型)</option>
-                <option value="限免">限免 (免费体验)</option>
-              </select>
-            </div>
-
-            <div className="text-xs text-white/40 font-mono">
-              前台展示中 {filteredFrontendList.filter(f => f.isVisible).length} / {filteredFrontendList.length} 个
-            </div>
-          </div>
-
-          {/* 前端模型矩阵大表 */}
-          <Card className="overflow-hidden p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/[0.08] bg-white/[0.02] text-gray-400">
-                    <th className="px-4 py-3 font-medium">前台模型主体</th>
-                    <th className="px-4 py-3 font-medium">所属 Studio</th>
-                    <th className="px-4 py-3 font-medium">前台扣费文案说明</th>
-                    <th className="px-4 py-3 font-medium">运营角标</th>
-                    <th className="px-4 py-3 font-medium">排序权重</th>
-                    <th className="px-4 py-3 font-medium">底层通道连通性</th>
-                    <th className="px-4 py-3 font-medium">前台可见性</th>
-                    <th className="px-4 py-3 font-medium text-right">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.05]">
-                  {filteredFrontendList.map((item) => (
-                    <tr key={item.id} className="transition-colors hover:bg-white/[0.02]">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <BrandLogo model={{ id: item.id, name: item.displayName, brand: item.brand }} size="sm" className="rounded-md shrink-0" />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-semibold text-white truncate">{item.displayName}</span>
-                              {item.isDefault && (
-                                <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.2 text-[10px] text-amber-300">
-                                  默认推荐
-                                </span>
-                              )}
-                              {item.isPinned && (
-                                <span className="rounded-full border border-brand/20 bg-brand/10 px-1.5 py-0.2 text-[10px] text-brand">
-                                  置顶
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[11px] text-gray-500 font-mono truncate">{item.id}</span>
-                              {item.brand && (
-                                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.2 text-[10px] text-white/50">
-                                  {item.brand}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/80">
-                          {item.studioId === 'VideoStudio' ? <Film size={12} className="text-pink-400" /> : item.studioId === 'AudioStudio' ? <Music size={12} className="text-amber-400" /> : <ImageIcon size={12} className="text-brand" />}
-                          <span>{item.studioId}</span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="font-medium text-brand bg-brand/10 border border-brand/20 rounded-lg px-2.5 py-1 inline-block">
-                          {item.pricingHint}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {item.badge ? (
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              item.badge === 'HOT'
-                                ? 'border border-rose-500/40 bg-rose-500/20 text-rose-300'
-                                : item.badge === 'NEW'
-                                ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
-                                : item.badge === 'PRO'
-                                ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
-                                : item.badge === 'VIP'
-                                ? 'border border-amber-500/40 bg-amber-500/20 text-amber-300'
-                                : 'border border-brand/40 bg-brand/20 text-brand'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        ) : (
-                          <span className="text-white/30">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-gray-300">
-                        {item.sort}
-                      </td>
-                      <td className="px-4 py-3">
-                        {item.healthyCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            {item.healthyCount} 条通道正常
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-red-400">
-                            <AlertTriangle size={12} />
-                            无可用通道
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => handleToggleFrontendVisibility(item.id, item.isVisible)}
-                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
-                            item.isVisible
-                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
-                              : 'border-white/10 bg-white/5 text-white/40 hover:bg-white/10'
-                          }`}
-                        >
-                          {item.isVisible ? (
-                            <>
-                              <Eye size={12} /> 前台展示中
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff size={12} /> 已隐藏
-                            </>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {canWrite && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingFrontendModel(item)}
-                            className="h-7 text-xs text-brand hover:underline font-semibold"
-                          >
-                            <Edit3 className="mr-1 h-3 w-3" /> 编辑前台配置
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 4: 待审价格版本 (Pending Price Versions & Approval) */}
+      {/* TAB 3: 待审价格版本 (Pending Price Versions & Approval) */}
       {/* ========================================================================= */}
       {activeTab === 'pending' && (
         <div className="space-y-6">
@@ -1671,122 +1342,6 @@ export default function PricingManagerClient({
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 弹窗 4: 编辑前台模型展示配置 Modal (Tab 3) */}
-      {/* ========================================================================= */}
-      {editingFrontendModel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
-              <div>
-                <h3 className="text-base font-bold text-white">编辑前台模型展示与售卖配置</h3>
-                <p className="text-xs text-gray-400 font-mono">{editingFrontendModel.id}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingFrontendModel(null)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveFrontendModel} className="space-y-4 text-xs">
-              <div>
-                <label className="text-gray-400">前台展示名称 (用户在 Studio 下拉框看到的名称)</label>
-                <input
-                  name="displayName"
-                  defaultValue={editingFrontendModel.displayName}
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-medium"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-gray-400">前台扣费文案说明 (提示用户所需算力规格)</label>
-                <input
-                  name="pricingHint"
-                  defaultValue={editingFrontendModel.pricingHint}
-                  placeholder="如: 🎬 基础 10 算力 (5秒视频)"
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-gray-400">运营角标</label>
-                  <select
-                    name="badge"
-                    defaultValue={editingFrontendModel.badge || ''}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white"
-                  >
-                    <option value="">无角标</option>
-                    <option value="HOT">🔥 HOT</option>
-                    <option value="NEW">✨ NEW</option>
-                    <option value="PRO">👑 PRO</option>
-                    <option value="VIP">💎 VIP</option>
-                    <option value="限免">🎁 限免</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-gray-400">排序权重 (越小越靠前)</label>
-                  <input
-                    name="sort"
-                    type="number"
-                    defaultValue={editingFrontendModel.sort}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/[0.08] pt-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    id="feIsVisible"
-                    name="isVisible"
-                    type="checkbox"
-                    defaultChecked={editingFrontendModel.isVisible}
-                    className="rounded border-white/20 bg-black/40 text-brand focus:ring-brand"
-                  />
-                  <label htmlFor="feIsVisible" className="text-white">前台展示可见</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="feIsDefault"
-                    name="isDefault"
-                    type="checkbox"
-                    defaultChecked={editingFrontendModel.isDefault}
-                    className="rounded border-white/20 bg-black/40 text-brand focus:ring-brand"
-                  />
-                  <label htmlFor="feIsDefault" className="text-white">默认推荐</label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="feIsPinned"
-                    name="isPinned"
-                    type="checkbox"
-                    defaultChecked={editingFrontendModel.isPinned}
-                    className="rounded border-white/20 bg-black/40 text-brand focus:ring-brand"
-                  />
-                  <label htmlFor="feIsPinned" className="text-white">置顶显示</label>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-white/[0.08]">
-                <Button type="button" variant="ghost" onClick={() => setEditingFrontendModel(null)} className="rounded-lg">
-                  取消
-                </Button>
-                <Button type="submit" disabled={isSavingFrontend} className="bg-brand hover:bg-brand-hover text-white rounded-lg">
-                  {isSavingFrontend ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
-                  保存前台配置
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

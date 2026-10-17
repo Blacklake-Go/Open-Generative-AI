@@ -10,6 +10,9 @@ import {
 import { Card, Button } from '@/components/admin/AdminUi';
 import ModelRepositoryDrawer from './ModelRepositoryDrawer';
 import ModelConfigDrawer from './ModelConfigDrawer';
+import ModelHygieneDrawer from './ModelHygieneDrawer';
+import UnroutedConfirmModal from './UnroutedConfirmModal';
+import SmartMatchModal from './SmartMatchModal';
 import BrandLogo from '@/components/admin/BrandLogo';
 import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { BRANDS, resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
@@ -102,8 +105,11 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
   const [quickPriceInput, setQuickPriceInput] = useState('');
   const [savingQuickPrice, setSavingQuickPrice] = useState(false);
 
-  // Operational Drawers
+  // Operational Drawers & Safety Modals
   const [repoDrawerOpen, setRepoDrawerOpen] = useState(false);
+  const [hygieneDrawerOpen, setHygieneDrawerOpen] = useState(false);
+  const [unroutedConfirmModel, setUnroutedConfirmModel] = useState(null);
+  const [smartMatchModel, setSmartMatchModel] = useState(null);
 
   const showToast = useCallback((msg, type = 'success') => {
     setToast({ msg, type });
@@ -267,6 +273,13 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     async (model) => {
       if (!canWrite) return;
       const newVisible = !model.is_visible;
+
+      // 0 渠道模型上线安全拦截：无可用已审核正常通道时拦截开启，避免用户下单遇阻
+      if (newVisible && (!model.healthy_routes || Number(model.healthy_routes) <= 0)) {
+        setUnroutedConfirmModel(model);
+        return;
+      }
+
       const previous = [...models];
       setSaving(model.id);
 
@@ -421,6 +434,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
             updated[idx] = {
               ...updated[idx],
               display_name: formData.display_name,
+              pricing_hint: formData.pricing_hint,
               description: formData.description,
               badge: formData.badge,
               sub_type: formData.sub_type,
@@ -533,20 +547,32 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── ROW 1: 顶层业务三位一体下划线选项卡 (模型管理 / 供应商管理 / 模型定价) ─── */}
+      {/* ─── ROW 1: 顶层业务选项卡 ─── */}
       <ModelNavTabs
+        activeTab="models"
         modelCount={models.length}
         rightAction={
           canWrite && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setRepoDrawerOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold shadow-elevation-1 shrink-0 bg-brand hover:bg-brand-hover text-white transition-all active:scale-[0.98]"
-            >
-              <Plus className="size-3.5" />
-              从模型库引入
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setHygieneDrawerOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold shrink-0"
+              >
+                <ShieldCheck className="size-3.5 text-brand" />
+                全库体检与去重
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setRepoDrawerOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold shadow-elevation-1 shrink-0 bg-brand hover:bg-brand-hover text-white transition-all active:scale-[0.98]"
+              >
+                <Plus className="size-3.5" />
+                从模型库引入
+              </Button>
+            </div>
           )
         }
       />
@@ -1118,6 +1144,32 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           window.location.reload();
         }}
         onSelectForEdit={(m) => startEdit(m)}
+      />
+
+      {/* ─── 全库体检与去重抽屉 (ModelHygieneDrawer) ─── */}
+      <ModelHygieneDrawer
+        isOpen={hygieneDrawerOpen}
+        onClose={() => setHygieneDrawerOpen(false)}
+        onHygieneCompleted={() => window.location.reload()}
+      />
+
+      {/* ─── 0 渠道上线拦截确认弹窗 (UnroutedConfirmModal) ─── */}
+      <UnroutedConfirmModal
+        model={unroutedConfirmModel}
+        onCancel={() => setUnroutedConfirmModel(null)}
+        onSmartMatch={(m) => {
+          setUnroutedConfirmModel(null);
+          setSmartMatchModel(m);
+        }}
+      />
+
+      {/* ─── 智能候选匹配弹窗 (SmartMatchModal) ─── */}
+      <SmartMatchModal
+        isOpen={Boolean(smartMatchModel)}
+        onClose={() => setSmartMatchModel(null)}
+        initialModel={smartMatchModel}
+        allModels={models}
+        activeCategory={activeScene === 'all' ? 'all' : activeScene}
       />
     </div>
   );

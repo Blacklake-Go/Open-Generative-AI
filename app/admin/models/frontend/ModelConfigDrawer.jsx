@@ -74,6 +74,7 @@ export default function ModelConfigDrawer({
       setFormData({
         model_id: '',
         display_name: '',
+        pricing_hint: '',
         description: '',
         badge: 'New',
         sub_type: activeCategory === 'image' ? 't2i' : activeCategory === 'video' ? 't2v' : '',
@@ -100,6 +101,7 @@ export default function ModelConfigDrawer({
       setFormData({
         model_id: model.id,
         display_name: model.display_name || model.name || '',
+        pricing_hint: model.pricing_hint || (model.capabilities?.pricing_hint) || '',
         description: model.description || '',
         badge: model.badge || '',
         sub_type: model.sub_type || (model.capabilities?.sub_type) || '',
@@ -225,7 +227,14 @@ export default function ModelConfigDrawer({
 
     setSaving(true);
     try {
-      await onSave(formData);
+      const payload = {
+        ...formData,
+        capabilities: {
+          ...(formData.capabilities || {}),
+          pricing_hint: (formData.pricing_hint || '').trim(),
+        },
+      };
+      await onSave(payload);
       onClose();
     } catch (err) {
       console.error(err);
@@ -345,7 +354,7 @@ export default function ModelConfigDrawer({
                     </span>
                     <span className="text-ink-subtle">·</span>
                     <span className="text-caption text-brand font-semibold font-mono">
-                      {previewCredits} 积分 / 次
+                      {formData.pricing_hint ? formData.pricing_hint : `${previewCredits} 积分 / 次`}
                     </span>
                     {marginMetrics.hasData && (
                       <span className="text-[10px] text-ink-muted">
@@ -503,6 +512,20 @@ export default function ModelConfigDrawer({
                   placeholder="例如: 字节跳动 Seedream 4.0"
                   className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
                 />
+              </div>
+
+              <div>
+                <label className="text-caption text-ink-muted block mb-1">前台扣费说明 (Pricing Hint)</label>
+                <input
+                  type="text"
+                  value={formData.pricing_hint || ''}
+                  onChange={(e) => setFormData((f) => ({ ...f, pricing_hint: e.target.value }))}
+                  placeholder="如: 🎬 基础 10 算力 (5秒视频)"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
+                />
+                <span className="text-[11px] text-ink-subtle mt-1 block">
+                  显示在 Studio 工作台下拉框副标题，未填则默认显示“X 积分/次”
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

@@ -26,19 +26,19 @@
 
 | 语言码 | 前缀 | 有独立路由树 | 服务它的目录 | 树内路由数 | 会造出重复 URL 的别名 |
 | --- | --- | --- | --- | --- | --- |
-| `en` | `（无前缀）` | 否 | `app/[locale]/**` | 5 | — |
+| `en` | `（无前缀）` | 否 | `app/[locale]/**` | 6 | — |
 | `zh-CN` | `/zh` | 是 | `app/zh/**` | 22 | `/zh-cn` `/zh-CN` |
-| `ja-JP` | `/ja-JP` | 否 | `app/[locale]/**` | 5 | `/ja` |
-| `ko-KR` | `/ko-KR` | 否 | `app/[locale]/**` | 5 | `/ko` |
-| `zh-TW` | `/zh-TW` | 否 | `app/[locale]/**` | 5 | `/zh-tw` |
-| `es` | `/es` | 否 | `app/[locale]/**` | 5 | `/es-es` `/es-la` `/es-mx` `/es-ar` |
+| `ja-JP` | `/ja-JP` | 否 | `app/[locale]/**` | 6 | `/ja` |
+| `ko-KR` | `/ko-KR` | 否 | `app/[locale]/**` | 6 | `/ko` |
+| `zh-TW` | `/zh-TW` | 否 | `app/[locale]/**` | 6 | `/zh-tw` |
+| `es` | `/es` | 否 | `app/[locale]/**` | 6 | `/es-es` `/es-la` `/es-mx` `/es-ar` |
 
 ## 带前缀路径的三种命运
 
 `app/[locale]/[...slug]/page.js` 按这个顺序判定，闸门拿同一批表求差：
 1. 别名/非规范码（`ja`、`zh-CN`、`es-ES`…）→ **308** 到规范前缀（正常由中间件先做掉，页面层留一条给 matcher 之外的入口）；
-2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`assets` `studio`）→ 就地渲染，永不走到这里；
-3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `forgot-password` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `studio` `subscription` `terms` `u` `workflow`；
+2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`assets` `login` `studio`）→ 就地渲染，永不走到这里；
+3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `forgot-password` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
 4. 都不满足 → **404**（品牌化 404 页，按 `x-locale` 出文案）。
 
 已本地化的前缀与子路径：`/zh` → `about` `assets` `assistant` `benefits` `call-api` `change-password` `coins` `community` `credits` `forgot-password` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
@@ -51,6 +51,7 @@
 | `/:loc` | `app/[locale]/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/{*}` | `app/[locale]/[...slug]/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `${config.rootPath}/${path}${suffix}` `/${path}${suffix}` |
 | `/:loc/assets` | `app/[locale]/assets/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | `${rootPath}/login?redirect=${encodeURIComponent(targetPath)}` |
+| `/:loc/login` | `app/[locale]/login/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | `/login` `${config.rootPath}/login` |
 | `/:loc/studio/{**}` | `app/[locale]/studio/[[...slug]]/page.js` | **onboarding** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/studio/assets` | `app/[locale]/studio/assets/page.js` | **onboarding** | index | force-dynamic | 1 | `（根）` | 有 | `${rootPath}/assets` |
 | `/about` | `app/about/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
@@ -82,7 +83,7 @@
 | `/admin/models/catalog` | `app/admin/models/catalog/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/providers` |
 | `/admin/models/cost-center` | `app/admin/models/cost-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/frontend` | `app/admin/models/frontend/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/models/health` | `app/admin/models/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/models/health` | `app/admin/models/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/providers` |
 | `/admin/models/pricing` | `app/admin/models/pricing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/profit-center` | `app/admin/models/profit-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/providers` | `app/admin/models/providers/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -112,6 +113,7 @@
 | `/admin/users` | `app/admin/users/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/{*}` | `app/admin/users/[id]/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/dashboard` | `app/admin/users/dashboard/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/visitors` | `app/admin/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/webhooks` | `app/admin/webhooks/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/agents` | `app/agents/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents` |
 | `/agents/{*}` | `app/agents/[agent_id]/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents/${encodeURIComponent(agent_id)}` |
@@ -222,7 +224,7 @@
 
 ## API 路由
 
-- 处理器总数：206（其中 `/api/**` 203，`/api/admin/**` 93 个全部经 `requirePermission`）
+- 处理器总数：212（其中 `/api/**` 208，`/api/admin/**` 96 个全部经 `requirePermission`）
 - 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
@@ -242,7 +244,7 @@
 | `api-mutation-without-guard` | 0 | 0 |
 | `api-mutation-without-rate-limit` | 11 | 11 |
 | `api-spoofed-client-user-id` | 0 | 0 |
-| `raw-unprefixed-href` | 89 | 94 |
+| `raw-unprefixed-href` | 90 | 86 |
 | `locale-zh-branch-outside-onboarding` | 12 | 12 |
 
 ## 服务器 A 边缘层
