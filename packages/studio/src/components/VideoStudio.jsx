@@ -905,10 +905,15 @@ export default function VideoStudio({
   // ── model / params ──
   const defaultModel = t2vModels.find((m) => m.id === "kling-v3.0-standard-text-to-video") ||
                        t2vModels.find((m) => m.id === "seedance-2.5-text-to-video") ||
-                       t2vModels[0] || {};
-  const defaultFamily = videoModelCatalog.familyByVariantId.get(defaultModel.id);
-  const [selectedModel, setSelectedModel] = useState(defaultModel.id || "");
-  const [selectedFamilyId, setSelectedFamilyId] = useState(defaultFamily?.id || defaultModel.id || "");
+                       t2vModels[0] ||
+                       videoModelCatalog.families[0]?.variants?.t2v?.[0]?.model ||
+                       { id: "kling-v3.0-standard-text-to-video", name: "Kling 3.0 Standard" };
+  const defaultFamily = (defaultModel?.id ? videoModelCatalog.familyByVariantId.get(defaultModel.id) : null) ||
+                        videoModelCatalog.familyById.get("kling-v3") ||
+                        videoModelCatalog.families[0] ||
+                        { id: "kling-v3", name: "Kling v3" };
+  const [selectedModel, setSelectedModel] = useState(defaultModel.id || "kling-v3.0-standard-text-to-video");
+  const [selectedFamilyId, setSelectedFamilyId] = useState(defaultFamily?.id || defaultModel.id || "kling-v3");
   const [selectedAr, setSelectedAr] = useState(
     defaultModel.inputs?.aspect_ratio?.default || "16:9",
   );
@@ -1221,7 +1226,10 @@ export default function VideoStudio({
   }, [modelDirectoryRevision, selectedModel, imageMode, v2vMode, applyControlsForModel]);
 
   const selectedFamily =
-    videoModelCatalog.familyById.get(selectedFamilyId) || defaultFamily;
+    videoModelCatalog.familyById.get(selectedFamilyId) ||
+    (selectedModel ? videoModelCatalog.familyByVariantId.get(selectedModel) : null) ||
+    defaultFamily ||
+    { id: selectedFamilyId || selectedModel || "kling-v3", name: "Video" };
   const currentFamilyMode = v2vMode ? "v2v" : imageMode ? "i2v" : "t2v";
 
   // A saved studio draft can restore values after applyControlsForModel has
@@ -1295,8 +1303,8 @@ export default function VideoStudio({
   const selectedVeoSource = veoSources.find((entry) => entry.requestId === selectedVeoSourceId) || veoSources[0];
   const selectedPickerLabel = selectedTool
     ? seedanceToolLabel(selectedTool, copy, true)
-    : selectedVeoTool ? copy.veo.toolNames[selectedVeoTool.key]
-    : selectedPickerEntry?.name || selectedFamily.name;
+    : selectedVeoTool ? (copy.veo?.toolNames?.[selectedVeoTool.key] || selectedVeoTool.key)
+    : selectedPickerEntry?.name || selectedFamily?.name || defaultFamily?.name || selectedModel || "Video";
   const getSelectionPlan = useCallback((options = {}) => planGroupedVideoSelection({
     familyId: selectedFamilyId,
     workflowId: selectedWorkflowId,
@@ -1658,10 +1666,10 @@ export default function VideoStudio({
       if (stored) {
         const data = JSON.parse(stored);
         let restoredMode = data.v2vMode ? "v2v" : data.imageMode ? "i2v" : "t2v";
-        let restoredModelId = data.selectedModel || defaultModel.id;
+        let restoredModelId = data.selectedModel || defaultModel?.id || "kling-v3.0-standard-text-to-video";
         let restoredWorkflowId = null;
-        let restoredModel = defaultModel;
-        let restoredFamilyId = defaultFamily.id;
+        let restoredModel = defaultModel || { id: restoredModelId, name: "Video" };
+        let restoredFamilyId = defaultFamily?.id || "kling-v3";
         let restoredResolution = data.selectedResolution;
         if (data.selectedModel) {
           const restored = resolvePersistedVideoWorkflowSelection(
@@ -1761,7 +1769,7 @@ export default function VideoStudio({
     } finally {
       hasRestored.current = true;
     }
-  }, [applyControlsForModel, defaultModel.id]);
+  }, [applyControlsForModel, defaultModel?.id]);
 
   // ── Persistence: Save ────────────────────────────────────────────────────
   useEffect(() => {
@@ -2169,7 +2177,7 @@ export default function VideoStudio({
   // Initialise controls for default model on mount
   useEffect(() => {
     if (hasRestored.current) return;
-    applyControlsForModel(defaultModel.id, false, false);
+    applyControlsForModel(defaultModel?.id || "kling-v3.0-standard-text-to-video", false, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -2490,7 +2498,7 @@ export default function VideoStudio({
     } : {};
     const isExtendMode = currentModel?.requiresRequestId;
     const capabilities = getModelMediaCapabilities(currentModel);
-    const requestSource = selectedVeoTool ? selectedVeoSource : generationSources[selectedFamily.id];
+    const requestSource = selectedVeoTool ? selectedVeoSource : (selectedFamily?.id ? generationSources[selectedFamily.id] : null);
     const trimmedPrompt = promptDisabled ? "" : prompt.trim();
     const workflowMedia = selectedWorkflowId
       ? activeWorkflowMediaDraft || {}
@@ -2502,15 +2510,15 @@ export default function VideoStudio({
         };
 
     if (!selectedWorkflowId && uploadedVideoUrls.length > 0 && capabilities.video.maxItems === 0) {
-      toast.error(`${selectedFamily.name} does not support video references.`);
+      toast.error(`${selectedFamily?.name || "This model"} does not support video references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedImageUrls.length > 0 && capabilities.image.maxItems === 0) {
-      toast.error(`${selectedFamily.name} does not support image references.`);
+      toast.error(`${selectedFamily?.name || "This model"} does not support image references.`);
       return;
     }
     if (!selectedWorkflowId && uploadedAudioUrls.length > 0 && capabilities.audio.maxItems === 0) {
-      toast.error(`${selectedFamily.name} does not support audio references.`);
+      toast.error(`${selectedFamily?.name || "This model"} does not support audio references.`);
       return;
     }
     if ((currentModel?.promptRequired || veoContinuation?.promptRequired) && !trimmedPrompt) {
@@ -2538,8 +2546,8 @@ export default function VideoStudio({
         return;
       }
     } else if (isExtendMode) {
-      if (!requestSource?.requestId || (selectedFamily.id === "seedance-2" && !isContinuationSourceModel(currentModel, requestSource.modelId))) {
-        toast.error(copy.errors.noContinuationSource.replace("{family}", selectedFamily.name));
+      if (!requestSource?.requestId || (selectedFamily?.id === "seedance-2" && !isContinuationSourceModel(currentModel, requestSource.modelId))) {
+        toast.error(copy.errors.noContinuationSource.replace("{family}", selectedFamily?.name || "Video"));
         return;
       }
     } else if (imageMode) {
@@ -2626,7 +2634,7 @@ export default function VideoStudio({
 
         const genId = res.request_id || res.id || Date.now().toString();
         setGenerationSources((sources) =>
-          recordGenerationSource(sources, selectedFamily.id, genId, selectedModel),
+          recordGenerationSource(sources, selectedFamily?.id || selectedModel, genId, selectedModel),
         );
         const entry = {
           id: genId,
@@ -2670,7 +2678,7 @@ export default function VideoStudio({
 
         const genId = res.request_id || res.id || Date.now().toString();
         setGenerationSources((sources) =>
-          recordGenerationSource(sources, selectedFamily.id, genId, selectedModel),
+          recordGenerationSource(sources, selectedFamily?.id || selectedModel, genId, selectedModel),
         );
         const entry = {
           id: genId,
@@ -2793,7 +2801,7 @@ export default function VideoStudio({
   // ── derived UI values ────────────────────────────────────────────────────
   const currentModelObj = selectedVariant?.model;
   const isExtendMode = currentModelObj?.requiresRequestId;
-  const continuationSource = generationSources[selectedFamily.id];
+  const continuationSource = selectedFamily?.id ? generationSources[selectedFamily.id] : null;
   const hasContinuationSource = continuationSource?.requestId &&
     (!selectedTool || isContinuationSourceModel(currentModelObj, continuationSource.modelId));
   const isMotionControlModel = isMotionControlSelection(selectedModel, v2vMode);
@@ -2805,7 +2813,7 @@ export default function VideoStudio({
     : workflowFamily
       ? currentModelCapabilities.image.maxItems > 0
     : currentModelCapabilities.image.maxItems > 0 ||
-      (!v2vMode && selectedFamily.supports.i2v);
+      (!v2vMode && Boolean(selectedFamily?.supports?.i2v));
   const imageTargetVariant = workflowFamily
     ? selectedVariant
     : currentModelCapabilities.image.maxItems > 0
@@ -3073,12 +3081,12 @@ export default function VideoStudio({
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-center px-4 flex flex-col items-center">
               {!selectedTool && !selectedVeoTool && <span className="text-white font-black uppercase text-xl sm:text-3xl tracking-wide mb-1 opacity-90">{copy.empty.heading}</span>}
               <span className="text-brand font-black uppercase text-2xl sm:text-4xl sm:mt-1 tracking-tight">
-                {selectedTool || selectedVeoTool || selectedPickerEntry?.groupedVideo ? selectedPickerLabel : selectedFamily.name}
+                {selectedTool || selectedVeoTool || selectedPickerEntry?.groupedVideo ? selectedPickerLabel : (selectedFamily?.name || defaultFamily?.name || "Video")}
               </span>
             </h1>
             {!selectedTool && !selectedVeoTool && (
               <p className="text-white/40 text-xs sm:text-sm font-medium tracking-wide text-center max-w-lg leading-relaxed px-4">
-                {groupedConfiguration
+                {groupedConfiguration && selectedVariant?.model
                   ? getVideoModeDescription(selectedVariant.model, selectedWorkflowId, groupCopy)
                   : copy.empty.subtitle}
               </p>
@@ -3363,12 +3371,12 @@ export default function VideoStudio({
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
               <span>{hasContinuationSource
-                ? copy.extend.continuingGeneration.replace('{family}', selectedFamily.name)
-                : copy.errors.noContinuationSource.replace("{family}", selectedFamily.name)}</span>
+                ? copy.extend.continuingGeneration.replace('{family}', selectedFamily?.name || "Video")
+                : copy.errors.noContinuationSource.replace("{family}", selectedFamily?.name || "Video")}</span>
             </div>
           )}
 
-          {groupedConfiguration && selectedVariant.model.aspectRatioMode === "inherited" && (
+          {groupedConfiguration && selectedVariant?.model?.aspectRatioMode === "inherited" && (
             <p className="px-2 text-[10px] text-white/40">{groupCopy.inheritedFormat}</p>
           )}
           {groupedConfiguration && selectedWorkflowId === "extend_uploaded_video" && groupedResolution.options.length === 0 && (
@@ -3392,8 +3400,8 @@ export default function VideoStudio({
                 >
                   <div className="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
                     {(() => {
-                      const selectedModelProvider = selectedFamily.provider || 'muapi';
-                      const logo = getProviderLogo(selectedModelProvider, selectedFamily.id || selectedModel);
+                      const selectedModelProvider = selectedFamily?.provider || 'muapi';
+                      const logo = getProviderLogo(selectedModelProvider, selectedFamily?.id || selectedModel);
                       const style = getProviderStyle(selectedModelProvider);
                       return logo ? (
                         <img 

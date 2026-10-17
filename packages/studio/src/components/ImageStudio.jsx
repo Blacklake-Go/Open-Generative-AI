@@ -1481,6 +1481,16 @@ export default function ImageStudio({
     applySelectedVariant(variant, mode, family);
   }, [applySelectedVariant]);
 
+  // Saved selections and old links can point to a model removed from the live
+  // directory. Move to an actually available text-to-image model after it loads.
+  useEffect(() => {
+    if (modelDirectoryRevision === 0 || isModelActive(selectedModelId)) return;
+    const fallback = t2iModels.find((model) => isModelActive(model.id));
+    const variant = fallback && imageModelCatalog.variantById.get(fallback.id);
+    const family = fallback && imageModelCatalog.familyByVariantId.get(fallback.id);
+    if (variant && family) applyUserSelectedVariant(variant, "t2i", family);
+  }, [modelDirectoryRevision, selectedModelId, applyUserSelectedVariant]);
+
   const IMAGE_MODEL_ALIASES = {
     'flux-1-pro': 'flux-2-pro',
     'flux-pro': 'flux-2-pro',
@@ -1657,11 +1667,15 @@ export default function ImageStudio({
   // ── Model selection ──────────────────────────────────────────────────────
   const handleModelSelect = (pickerEntry, category = "all") => {
     const { family, variantsByMode, defaultVariant } = pickerEntry;
-    const target = category !== "all"
+    const preferred = category !== "all"
       ? variantsByMode[category]
       : uploadedImageUrls.length > 0 && variantsByMode.i2i
         ? variantsByMode.i2i
         : variantsByMode[currentMode] || defaultVariant;
+    const target = preferred && isModelActive(preferred.model.id)
+      ? preferred
+      : [variantsByMode.t2i, variantsByMode.i2i, defaultVariant]
+        .find((variant) => variant && isModelActive(variant.model.id));
     if (!target) return;
 
     applyUserSelectedVariant(target, target.mode, family);

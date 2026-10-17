@@ -1,6 +1,7 @@
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
+import { CANONICAL_GROUPS, isOrphanVariantCandidate, suggestCanonicalTarget } from '@/lib/modelCenter/canonicalModels.js';
 import FrontendConfigClient from './frontend/FrontendConfigClient';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,8 @@ async function getFrontendModels() {
         COALESCE(m.supported_ratios, '[]'::jsonb) AS supported_ratios,
         COALESCE(m.supported_resolutions, '[]'::jsonb) AS supported_resolutions,
         COALESCE(m.supported_durations, '[]'::jsonb) AS supported_durations,
+        m.backup_model_id, m.backup_provider_id,
+        mc.provider AS default_provider,
         m.created_at, m.updated_at,
         COALESCE(rc.approved_count, 0)::int AS approved_routes,
         COALESCE(rc.healthy_count, 0)::int AS healthy_routes,
@@ -99,7 +102,7 @@ async function getFrontendModels() {
           AND att.created_at >= NOW() - INTERVAL '24 hours'
       ) act ON TRUE
       LEFT JOIN LATERAL (
-        SELECT mc.credits_price FROM ai_studio.models_config mc
+        SELECT mc.credits_price, mc.provider FROM ai_studio.models_config mc
         WHERE LOWER(mc.id) = LOWER(m.id) AND mc.credits_price > 0 LIMIT 1
       ) mc ON TRUE
       LEFT JOIN ai_studio.model_pricing mp ON mp.model_id = m.id
@@ -124,6 +127,8 @@ async function getFrontendModels() {
         COALESCE(m.supported_ratios, '[]'::jsonb) AS supported_ratios,
         COALESCE(m.supported_resolutions, '[]'::jsonb) AS supported_resolutions,
         COALESCE(m.supported_durations, '[]'::jsonb) AS supported_durations,
+        m.backup_model_id, m.backup_provider_id,
+        mc.provider AS default_provider,
         m.created_at, m.updated_at,
         COALESCE(rc.approved_count, 0)::int AS approved_routes,
         COALESCE(rc.healthy_count, 0)::int AS healthy_routes,
@@ -186,7 +191,7 @@ async function getFrontendModels() {
         FROM ai_studio.provider_models pm WHERE pm.model_id = m.id
       ) rc ON TRUE
       LEFT JOIN LATERAL (
-        SELECT mc.credits_price FROM ai_studio.models_config mc
+        SELECT mc.credits_price, mc.provider FROM ai_studio.models_config mc
         WHERE LOWER(mc.id) = LOWER(m.id) AND mc.credits_price > 0 LIMIT 1
       ) mc ON TRUE
       LEFT JOIN ai_studio.model_pricing mp ON mp.model_id = m.id
@@ -217,7 +222,25 @@ export default async function ModelsPage({ searchParams }) {
         WHERE status IN ('staged', 'pending_review')
       `).catch(() => ({ count: 0 })),
     ]);
-    models = fetchedModels || [];
+    const canonicalMap = new Map();
+    CANONICAL_GROUPS.forEach((g) => {
+      canonicalMap.set(g.targetId, g.aliases || []);
+    });
+
+    models = (fetchedModels || []).map((m) => {
+      const aliases = canonicalMap.get(m.id) || [];
+      const isCanonical = canonicalMap.has(m.id);
+      const isOrphan = isOrphanVariantCandidate(m.id, m.tier);
+      const suggestedTarget = isOrphan ? suggestCanonicalTarget(m.id) : null;
+      return {
+        ...m,
+        aliases,
+        alias_count: aliases.length,
+        is_canonical: isCanonical,
+        is_orphan_candidate: isOrphan,
+        suggested_target: suggestedTarget,
+      };
+    });
     pendingPricesCount = Number(pendingRow?.count || 0);
   } catch (error) {
     console.error('[admin/models] Failed to load models for frontend management:', error.message);

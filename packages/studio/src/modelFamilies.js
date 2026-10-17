@@ -93,7 +93,7 @@ const IMAGE_FAMILY_NAMES = {
   "seedream-5.0-flash": "Seedream 5.0 Flash",
   "image-aesthetic-v8.2": "图片美学模型 V8.2",
   "seedream-5.0-lite": "Seedream 5.0 Lite",
-  "seedream-4.5": "Seedream 4.7",
+  "seedream-4.5": "Seedream 4.5",
   "seedream-5.0": "Seedream 5.0 Pro",
   "gpt-image-2.5-flash": "GPT 图像 2.5 闪光",
   "gpt-image-2.5-sunrise": "GPT 图像 2.5 旭日",

@@ -70,12 +70,13 @@ export default function StudioHeader({
   customNavItems = null,
   headerVariant = 'default',
   initialAccountTab = null,
+  initialUser = undefined,
   className = '',
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const { brand } = useBranding();
-  const { user, credits, entitlements, mutate } = useUserSession();
+  const { user, credits, entitlements, mutate } = useUserSession(initialUser);
 
   const getCookieLocale = () => {
     if (typeof document === 'undefined') return null;

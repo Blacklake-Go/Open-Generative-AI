@@ -1,22 +1,34 @@
+import { headers } from 'next/headers';
 import AuthLayout from '@/components/auth/AuthLayout';
 import LoginForm from '@/components/auth/LoginForm';
+import { getAuthCopy, normalizeAuthLocale } from '@/lib/authCopy';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Sign In — supdance',
-  description: 'Sign in to access 200+ generative AI models and unified creative compute.',
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  const headersList = await headers();
+  const reqLocale = headersList.get('x-locale') || 'en';
+  const locale = normalizeAuthLocale(reqLocale);
+  const copy = getAuthCopy(locale);
+  return {
+    title: `${copy.login.title} — supdance`,
+    description: copy.login.subtitle,
+    robots: { index: false, follow: false },
+  };
+}
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const headersList = await headers();
+  const reqLocale = headersList.get('x-locale') || 'en';
+  const locale = normalizeAuthLocale(reqLocale);
+  const copy = getAuthCopy(locale);
   return (
     <AuthLayout
-      locale="en"
-      title="Creator Account Login"
-      subtitle="Access 200+ generative AI models and unified creative compute"
+      locale={locale}
+      title={copy.login.title}
+      subtitle={copy.login.subtitle}
     >
-      <LoginForm locale="en" />
+      <LoginForm locale={locale} />
     </AuthLayout>
   );
 }

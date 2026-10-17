@@ -8,7 +8,7 @@ import {
   getRedirectUri,
   getResolvedOAuthConfig,
 } from "@/lib/oauth";
-import { getUserFromRequest } from "@/lib/services/auth.js";
+import { getSessionCookieDomain, getUserFromRequest } from "@/lib/services/auth.js";
 
 export const runtime = "nodejs";
 
@@ -18,11 +18,11 @@ function safeReturnTo(value) {
     candidate = "/studio";
   }
   const purePath = candidate.split('?')[0].replace(/\/+$/, '');
-  if (purePath === '/login' || purePath === '/register' || purePath === '/forgot-password' || purePath === '/reset-password') {
-    return '/studio';
-  }
-  if (purePath === '/zh/login' || purePath === '/zh/register' || purePath === '/zh/forgot-password' || purePath === '/zh/reset-password') {
-    return '/zh/studio';
+  const authPageRegex = /^(?:\/(zh|zh-CN|zh-TW|ja|ja-JP|ko|ko-KR|es))?\/(?:login|register|forgot-password|reset-password)$/;
+  const match = purePath.match(authPageRegex);
+  if (match) {
+    const prefix = match[1] ? `/${match[1]}` : '';
+    return prefix ? `${prefix}/studio` : '/studio';
   }
   return candidate;
 }
@@ -64,24 +64,36 @@ export async function GET(request, { params }) {
         const message = { type: "supdance-auth-complete", ok: false, message: ${JSON.stringify(msg)} };
         const isPopup = Boolean(
           (window.name && (window.name === 'supdance-oauth' || window.name.includes('oauth'))) ||
-          (window.opener && window.opener !== window)
+          (window.opener && window.opener !== window) ||
+          (typeof window !== 'undefined' && window.menubar && !window.menubar.visible && window.innerWidth <= 600)
         );
 
         try {
           if (typeof BroadcastChannel !== 'undefined') {
             const bc = new BroadcastChannel('supdance_auth_channel');
             bc.postMessage(message);
-            setTimeout(() => { try { bc.close(); } catch(e) {} }, 1000);
+            const bcKoyo = new BroadcastChannel('koyosim_auth_channel');
+            bcKoyo.postMessage({ ...message, type: 'koyosim-auth-complete' });
+            setTimeout(() => {
+              try { bc.close(); } catch(e) {}
+              try { bcKoyo.close(); } catch(e) {}
+            }, 1000);
           }
         } catch(e) {}
 
         try {
-          localStorage.setItem('supdance_auth_event', JSON.stringify({ ...message, _time: Date.now() }));
+          const serialized = JSON.stringify({ ...message, _time: Date.now() });
+          localStorage.setItem('supdance_auth_event', serialized);
+          localStorage.setItem('koyosim_auth_event', serialized);
+          localStorage.setItem('supdance-oauth-sync', serialized);
+          localStorage.setItem('koyosim-oauth-sync', serialized);
         } catch(e) {}
 
         if (window.opener && window.opener !== window) {
           try { window.opener.postMessage(message, ${JSON.stringify(origin)}); } catch(e) {}
+          try { window.opener.postMessage({ ...message, type: 'koyosim-auth-complete' }, ${JSON.stringify(origin)}); } catch(e) {}
           try { window.opener.postMessage(message, "*"); } catch(e) {}
+          try { window.opener.postMessage({ ...message, type: 'koyosim-auth-complete' }, "*"); } catch(e) {}
         }
 
         function closeOrBack() {
@@ -104,17 +116,20 @@ export async function GET(request, { params }) {
     verifier,
     returnTo,
     redirectUri,
+    returnOrigin: origin,
     mode: isBind ? "bind" : "login",
     bindUserId: isBind ? sessionUser.id : null,
   });
   const authUrl = await buildAuthorizationUrl(provider, redirectUri, state, verifier, resolved);
   const response = NextResponse.redirect(authUrl);
+  const cookieDomain = getSessionCookieDomain(request);
   response.cookies.set("ko_oauth_state", state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 600,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
   return response;
 }

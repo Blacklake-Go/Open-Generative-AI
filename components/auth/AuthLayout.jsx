@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Globe, ChevronDown, Check } from 'lucide-react';
 import BrandLogo from '@/components/site/BrandLogo';
 import { useBranding } from '@/lib/hooks/useBranding';
 import { SpatialBackground } from '@/components/spatial';
-import { getAuthCopy, getAuthRoutes } from '@/lib/authCopy';
+import { getAuthCopy, getAuthRoutes, normalizeAuthLocale } from '@/lib/authCopy';
 
 export default function AuthLayout({
   children,
@@ -14,8 +15,35 @@ export default function AuthLayout({
   subtitle = '',
 }) {
   const { brand } = useBranding();
-  const copy = getAuthCopy(locale).layout;
-  const routes = getAuthRoutes(locale);
+  const normalizedLocale = normalizeAuthLocale(locale);
+  const copy = getAuthCopy(normalizedLocale).layout;
+  const routes = getAuthRoutes(normalizedLocale);
+  const currentLocale = routes.localeOptions.find((opt) => opt.active) || routes.localeOptions[0];
+
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const langMenuRef = useRef(null);
+
+  const handleSelectLocale = (code) => {
+    setShowLangMenu(false);
+    try {
+      document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `locale=${code}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {}
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+        setShowLangMenu(false);
+      }
+    };
+    if (showLangMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLangMenu]);
 
   return (
     <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden bg-base text-ink select-none font-sans">
@@ -48,14 +76,42 @@ export default function AuthLayout({
           <BrandLogo brand={brand} />
         </Link>
 
-        {/* 语言切换辅助导航 */}
-        <div className="flex items-center gap-2 text-xs text-white/60">
-          <Link
-            href={routes.switchLocaleUrl}
-            className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 hover:text-white border border-white/5 transition-colors"
+        {/* 语言切换辅助导航 (6 语言胶囊下拉器) */}
+        <div className="relative" ref={langMenuRef}>
+          <button
+            type="button"
+            onClick={() => setShowLangMenu((prev) => !prev)}
+            className="h-8 px-3 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 text-white/80 hover:text-white text-xs font-medium inline-flex items-center gap-1.5 transition-all active:scale-95 shadow-elevation-1 cursor-pointer"
+            aria-expanded={showLangMenu}
+            aria-label="Select Language"
           >
-            {routes.switchLocaleLabel}
-          </Link>
+            <Globe size={13} className="text-white/70" />
+            <span>{currentLocale?.label || 'Language'}</span>
+            <ChevronDown
+              size={12}
+              className={`text-white/60 transition-transform duration-200 ${showLangMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showLangMenu && (
+            <div className="absolute right-0 top-full mt-1.5 min-w-[130px] p-1.5 rounded-xl bg-[#14171d]/95 backdrop-blur-2xl border border-white/10 shadow-elevation-3 z-50 animate-fade-in flex flex-col gap-0.5">
+              {routes.localeOptions.map((opt) => (
+                <Link
+                  key={opt.code}
+                  href={opt.url}
+                  onClick={() => handleSelectLocale(opt.code)}
+                  className={`h-7 px-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                    opt.active
+                      ? 'bg-white/15 text-white font-semibold'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  {opt.active && <Check size={12} className="text-brand" />}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 

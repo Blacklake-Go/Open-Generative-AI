@@ -106,6 +106,9 @@ export default function ModelConfigDrawer({
       const routesList = Array.isArray(model.routes) ? model.routes : [];
       setChannelRoutes(routesList.map((r) => ({ ...r })));
 
+      const primaryRoute = routesList.find((r) => r.provider_id === model.provider || r.provider_id === model.default_provider) || routesList[0];
+      const backupRoute = routesList.find((r) => r.provider_id === model.backup_provider_id);
+
       setFormData({
         model_id: model.id,
         display_name: model.display_name || model.name || '',
@@ -132,9 +135,10 @@ export default function ModelConfigDrawer({
         capabilities: typeof model.capabilities === 'object' && model.capabilities ? model.capabilities : {},
         min_cost_cny: model.min_cost_cny !== undefined && model.min_cost_cny !== null ? Number(model.min_cost_cny) : null,
         min_cost_usd: model.min_cost_usd !== undefined && model.min_cost_usd !== null ? Number(model.min_cost_usd) : null,
-        primary_provider: model.provider || (routesList[0]?.provider_id) || '',
+        primary_provider: model.provider || model.default_provider || (routesList[0]?.provider_id) || '',
+        primary_route_id: primaryRoute?.id || '',
         backup_provider_id: model.backup_provider_id || '',
-        backup_model_id: model.backup_model_id || '',
+        backup_route_id: backupRoute?.id || '',
         approved_routes: model.approved_routes ?? routesList.filter((r) => r.review_status === 'approved').length,
         healthy_routes: model.healthy_routes ?? routesList.filter((r) => r.enabled && r.review_status === 'approved').length,
         provider_ids: model.provider_ids || [],
@@ -172,11 +176,19 @@ export default function ModelConfigDrawer({
 
   // Margin calculation with real-time recalculation & loss detection
   const marginMetrics = useMemo(() => {
-    const costCny = formData.min_cost_cny;
+    let costCny = formData.min_cost_cny !== null && formData.min_cost_cny !== undefined ? Number(formData.min_cost_cny) : null;
+    if (costCny === null || !Number.isFinite(costCny) || costCny <= 0) {
+      const validRouteCosts = channelRoutes
+        .map((r) => Number(r.cost_cny))
+        .filter((c) => Number.isFinite(c) && c > 0);
+      if (validRouteCosts.length > 0) {
+        costCny = Math.min(...validRouteCosts);
+      }
+    }
     const credits = Number(formData.credits || 0);
     const userPriceCny = credits * 0.1; // 1 credit = 0.1 CNY
 
-    if (costCny !== null && costCny !== undefined && costCny > 0 && userPriceCny > 0) {
+    if (costCny !== null && costCny > 0 && userPriceCny > 0) {
       const marginCny = userPriceCny - costCny;
       const rate = Number(((marginCny / userPriceCny) * 100).toFixed(1));
       let status = 'healthy';
@@ -194,7 +206,7 @@ export default function ModelConfigDrawer({
       };
     }
     return { hasData: false, userPriceCny: userPriceCny.toFixed(2), costCny: '—', rate: null, status: 'unknown' };
-  }, [formData.min_cost_cny, formData.credits]);
+  }, [formData.min_cost_cny, formData.credits, channelRoutes]);
 
   const handleRunCheck = async () => {
     const id = formData.model_id;
@@ -231,6 +243,24 @@ export default function ModelConfigDrawer({
     );
   };
 
+  const handleCategoryChange = (newCat) => {
+    const validSubTypes = SUBTYPE_OPTIONS[newCat] || [];
+    const currentSubType = formData.sub_type;
+    const isValid = validSubTypes.some((s) => s.id === currentSubType);
+    const nextSubType = isValid ? currentSubType : (validSubTypes[0]?.id || '');
+    setFormData((f) => {
+      const nextDurations = (newCat === 'video' || newCat === 'audio')
+        ? ((f.supported_durations && f.supported_durations.length > 0) ? f.supported_durations : [5, 10])
+        : f.supported_durations;
+      return {
+        ...f,
+        category: newCat,
+        sub_type: nextSubType,
+        supported_durations: nextDurations,
+      };
+    });
+  };
+
   const handleRouteEnabledToggle = (routeId) => {
     setChannelRoutes((prev) =>
       prev.map((r) => (r.id === routeId ? { ...r, enabled: !r.enabled } : r))
@@ -238,7 +268,13 @@ export default function ModelConfigDrawer({
   };
 
   const handleSetPrimaryRoute = (route) => {
-    setFormData((f) => ({ ...f, primary_provider: route.provider_id }));
+    setFormData((f) => ({
+      ...f,
+      primary_provider: route.provider_id,
+      primary_route_id: route.id,
+      backup_provider_id: (f.backup_route_id === route.id || f.backup_provider_id === route.provider_id) ? '' : f.backup_provider_id,
+      backup_route_id: f.backup_route_id === route.id ? '' : f.backup_route_id,
+    }));
     setChannelRoutes((prev) => {
       const maxPriority = prev.reduce((m, r) => Math.max(m, Number(r.priority) || 0), 0);
       return prev.map((r) => {
@@ -267,9 +303,10 @@ export default function ModelConfigDrawer({
 
     // 计算当前健康可用通道数
     const healthyRoutesCount = channelRoutes.filter(
-      (r) => r.enabled && r.review_status === 'approved' && r.health_status === 'healthy'
+      (r) => r.enabled && (r.review_status === 'approved' || !r.review_status) && (r.health_status === 'healthy' || !r.health_status)
     ).length;
-    const isZeroRoutes = healthyRoutesCount === 0 || (!formData.healthy_routes || Number(formData.healthy_routes) <= 0);
+    const activeHealthyCount = channelRoutes.length > 0 ? healthyRoutesCount : Number(formData.healthy_routes || 0);
+    const isZeroRoutes = activeHealthyCount <= 0;
 
     // 负毛利安全红线拦截与二次确认
     if (marginMetrics.hasData && marginMetrics.status === 'loss') {
@@ -291,10 +328,15 @@ export default function ModelConfigDrawer({
     try {
       const payload = {
         ...formData,
+        category: formData.category,
+        sub_type: formData.sub_type,
         primary_provider: formData.primary_provider,
         backup_provider_id: formData.backup_provider_id,
         backup_model_id: formData.backup_model_id,
         channel_routes: channelRoutes,
+        supported_ratios: formData.supported_ratios || [],
+        supported_resolutions: formData.supported_resolutions || [],
+        supported_durations: formData.supported_durations || [],
         capabilities: {
           ...(formData.capabilities || {}),
           pricing_hint: (formData.pricing_hint || '').trim(),
@@ -315,12 +357,15 @@ export default function ModelConfigDrawer({
   const previewBadge = formData.badge || '';
   const previewDesc = formData.description || '超高质感写实，精准理解提示词，极速出图。';
   const previewCredits = formData.credits || 10;
-  const hasZeroRoutes = !formData.healthy_routes || Number(formData.healthy_routes) <= 0;
+  const activeHealthyCount = channelRoutes.length > 0
+    ? channelRoutes.filter((r) => r.enabled && (r.review_status === 'approved' || !r.review_status) && (r.health_status === 'healthy' || !r.health_status)).length
+    : Number(formData.healthy_routes || 0);
+  const hasZeroRoutes = activeHealthyCount <= 0;
 
   return (
     <div className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
       {/* Drawer Container */}
-      <div className="relative w-full max-w-2xl bg-[#131519] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
+      <div className="relative w-full max-w-3xl xl:w-[820px] bg-[#131519] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -348,7 +393,7 @@ export default function ModelConfigDrawer({
                 variant="secondary"
                 size="sm"
                 onClick={handleRunCheck}
-                disabled={checking}
+                disabled={checking || saving}
                 className="h-8 text-xs font-mono"
               >
                 {checking ? <Loader2 className="size-3 animate-spin mr-1" /> : <RefreshCw className="size-3 mr-1" />}
@@ -358,7 +403,8 @@ export default function ModelConfigDrawer({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors"
+              disabled={saving}
+              className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <X className="size-5" />
             </button>
@@ -377,8 +423,9 @@ export default function ModelConfigDrawer({
           </div>
         )}
 
-        {/* Drawer Body (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+        {/* Drawer Body (Scrollable) with disabled fieldset during save */}
+        <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+          <fieldset disabled={saving} className={`space-y-6 border-0 p-0 m-0 transition-opacity duration-150 ${saving ? 'opacity-50 pointer-events-none select-none' : ''}`}>
           {/* Section 1: 实时前台卡片效果 1:1 预览 (Studio Live Preview) */}
           <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-1">
             <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
@@ -566,36 +613,36 @@ export default function ModelConfigDrawer({
 
             {/* Channel List Table */}
             {channelRoutes.length > 0 ? (
-              <div className="rounded-xl border border-white/10 bg-black/30 overflow-hidden text-xs">
+              <div className="rounded-xl border border-white/10 bg-black/30 overflow-x-auto text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/[0.08] bg-white/[0.02] text-caption text-ink-muted">
-                      <th className="px-3 py-2">上游供应商</th>
-                      <th className="px-3 py-2">状态</th>
-                      <th className="px-3 py-2 text-right">单价</th>
-                      <th className="px-3 py-2 text-center">主通道</th>
-                      <th className="px-3 py-2 text-center">备用通道</th>
-                      <th className="px-3 py-2 w-20 text-center">权重</th>
-                      <th className="px-3 py-2 text-center">启用</th>
+                      <th className="px-3.5 py-2.5 min-w-[200px]">上游供应商</th>
+                      <th className="px-3 py-2.5 w-[90px] text-center whitespace-nowrap">状态</th>
+                      <th className="px-3 py-2.5 w-[85px] text-right whitespace-nowrap">单价</th>
+                      <th className="px-3 py-2.5 w-[75px] text-center whitespace-nowrap">主通道</th>
+                      <th className="px-3 py-2.5 w-[85px] text-center whitespace-nowrap">备用通道</th>
+                      <th className="px-3 py-2.5 w-[80px] text-center whitespace-nowrap">权重</th>
+                      <th className="px-3 py-2.5 w-[65px] text-center whitespace-nowrap">启用</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.06]">
                     {channelRoutes.map((route) => {
-                      const isPrimary = formData.primary_provider === route.provider_id;
-                      const isBackup = formData.backup_provider_id === route.provider_id;
+                      const isPrimary = formData.primary_route_id ? formData.primary_route_id === route.id : formData.primary_provider === route.provider_id;
+                      const isBackup = formData.backup_route_id ? formData.backup_route_id === route.id : (Boolean(formData.backup_provider_id) && formData.backup_provider_id === route.provider_id);
                       const isHealthy = route.health_status === 'healthy';
 
                       return (
                         <tr key={route.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="px-3 py-2.5">
-                            <div className="font-semibold text-white truncate max-w-[150px]">
+                          <td className="px-3.5 py-2.5">
+                            <div className="font-semibold text-white break-words" title={route.provider_name || route.provider_id}>
                               {route.provider_name || route.provider_id}
                             </div>
-                            <div className="font-mono text-[10px] text-ink-subtle truncate max-w-[150px]">
+                            <div className="font-mono text-[10px] text-ink-subtle break-all" title={route.provider_model_id}>
                               {route.provider_model_id}
                             </div>
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
                               route.review_status === 'approved' && isHealthy
                                 ? 'bg-emerald-500/15 text-emerald-300'
@@ -605,10 +652,10 @@ export default function ModelConfigDrawer({
                               {route.review_status === 'approved' ? '已核准' : '待审核'}
                             </span>
                           </td>
-                          <td className="px-3 py-2.5 text-right font-mono text-ink">
+                          <td className="px-3 py-2.5 text-right font-mono text-ink whitespace-nowrap">
                             {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : '—'}
                           </td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
                             <input
                               type="radio"
                               name="primary_provider_radio"
@@ -618,24 +665,25 @@ export default function ModelConfigDrawer({
                               title="设为主通道（提权并确保启用）"
                             />
                           </td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
                             <input
                               type="radio"
                               name="backup_provider_radio"
                               checked={isBackup}
                               onClick={() => {
                                 if (isBackup) {
-                                  setFormData((f) => ({ ...f, backup_provider_id: '' }));
+                                  setFormData((f) => ({ ...f, backup_provider_id: '', backup_route_id: '' }));
                                 }
                               }}
                               onChange={() => {
-                                setFormData((f) => ({ ...f, backup_provider_id: route.provider_id }));
+                                if (isPrimary) return;
+                                setFormData((f) => ({ ...f, backup_provider_id: route.provider_id, backup_route_id: route.id }));
                               }}
                               className="size-3.5 accent-amber-500 cursor-pointer"
                               title={isBackup ? '点击取消备用通道' : '设为备用通道'}
                             />
                           </td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
                             <input
                               type="number"
                               min="0"
@@ -645,7 +693,7 @@ export default function ModelConfigDrawer({
                               className="w-14 rounded bg-black/60 border border-white/10 px-1 py-0.5 text-center font-mono text-xs text-ink outline-none focus:border-brand"
                             />
                           </td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
                             <input
                               type="checkbox"
                               checked={Boolean(route.enabled)}
@@ -919,11 +967,82 @@ export default function ModelConfigDrawer({
                   min="1"
                   max="999"
                   value={formData.sort ?? 1}
-                  onChange={(e) => setFormData((f) => ({ ...f, sort: Number(e.target.value) }))}
+                  onChange={(e) => setFormData((f) => ({ ...f, sort: e.target.value === '' ? '' : Number(e.target.value) }))}
                   className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
                 />
               </div>
             </div>
+
+            {/* Category & Subtype Selection */}
+            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+              <div>
+                <label className="text-caption text-ink-muted block mb-1.5">
+                  模型分类归属 (Category)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(CATEGORY_MAP).map(([catKey, catLabel]) => {
+                    const isSelected = formData.category === catKey;
+                    return (
+                      <button
+                        key={catKey}
+                        type="button"
+                        onClick={() => handleCategoryChange(catKey)}
+                        className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all border text-center ${
+                          isSelected
+                            ? 'bg-brand/20 border-brand text-brand shadow-elevation-1'
+                            : 'bg-black/40 border-white/10 text-ink-muted hover:text-ink hover:bg-white/[0.04]'
+                        }`}
+                      >
+                        {catLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {SUBTYPE_OPTIONS[formData.category]?.length > 0 && (
+                <div>
+                  <label className="text-caption text-ink-muted block mb-1.5">
+                    工作台子场景 (Sub-Type)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {SUBTYPE_OPTIONS[formData.category].map((st) => {
+                      const isCur = formData.sub_type === st.id;
+                      return (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => setFormData((f) => ({ ...f, sub_type: st.id }))}
+                          className={`rounded-full px-3 py-1 text-caption transition-all font-mono ${
+                            isCur
+                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold shadow-elevation-1'
+                              : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                          }`}
+                        >
+                          {st.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* If New Model: Model ID input */}
+            {isNew && (
+              <div className="pt-2 border-t border-white/[0.06]">
+                <label className="text-caption text-ink-muted block mb-1">
+                  模型唯一标识符 (Model ID / Slug) <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.model_id || ''}
+                  onChange={(e) => setFormData((f) => ({ ...f, model_id: e.target.value.toLowerCase().replace(/[^a-z0-9-_.]/g, '') }))}
+                  placeholder="例如: seedream-5.0-ultra 或 kling-v2.0"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
+                />
+              </div>
+            )}
 
             {/* Description & Badge Details */}
             <div className="space-y-3 pt-2 border-t border-white/[0.06]">
@@ -931,7 +1050,7 @@ export default function ModelConfigDrawer({
                 <label className="text-caption text-ink-muted block mb-1">前台展示名称</label>
                 <input
                   type="text"
-                  value={formData.display_name}
+                  value={formData.display_name || ''}
                   onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
                   placeholder="例如: 字节跳动 Seedream 4.5"
                   className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
@@ -981,27 +1100,37 @@ export default function ModelConfigDrawer({
               </div>
             </div>
           </div>
+          </fieldset>
         </div>
 
         {/* Sticky Footer */}
         <div className="p-4 border-t border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
           <div className="text-caption text-ink-muted font-mono">
-            ID: <span className="text-white">{formData.model_id}</span>
+            ID: <span className="text-white">{formData.model_id || '未设定'}</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
               取消
             </Button>
             <Button
               variant="primary"
               size="sm"
               onClick={handleSave}
-              disabled={saving || !canWrite}
+              disabled={saving || !canWrite || (!formData.model_id && isNew)}
               className="bg-brand hover:bg-brand-hover text-white rounded-lg px-4 font-semibold"
             >
-              {saving ? <Loader2 className="size-3.5 mr-1.5 animate-spin" /> : <Save className="size-3.5 mr-1.5" />}
-              保存一站式配置
+              {saving ? (
+                <>
+                  <Loader2 className="size-3.5 mr-1.5 animate-spin" />
+                  正在保存...
+                </>
+              ) : (
+                <>
+                  <Save className="size-3.5 mr-1.5" />
+                  保存一站式配置
+                </>
+              )}
             </Button>
           </div>
         </div>

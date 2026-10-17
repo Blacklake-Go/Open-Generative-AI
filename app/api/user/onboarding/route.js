@@ -83,11 +83,27 @@ export async function POST(request) {
       });
     }
 
-    // 3. 分步模式：第二步 偏好问卷提交
-    if (step === 2 && body.answers && typeof body.answers === 'object') {
+    // 3. 两步式问卷提交 (无论是 step: 2 还是直接包含 occupation & purpose)
+    const rawAnswers = body.answers || (body.occupation ? {
+      occupation: body.occupation,
+      purpose: body.purpose,
+      purposeCodes: body.purposeCodes,
+      commitment: body.commitment,
+      usageIntent: body.usageIntent,
+      styleCodes: body.styleCodes,
+      customText: body.customText || body.otherText,
+      allowTraining: body.allowTraining,
+    } : null);
+
+    if (rawAnswers && typeof rawAnswers === 'object' && (rawAnswers.occupation || body.step === 2)) {
+      const displayName = typeof body.displayName === 'string' ? body.displayName.trim() : null;
+      const avatarUrl = typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : null;
+
       const result = await submitOnboardingPreferences({
         userId: user.id,
-        answers: body.answers,
+        answers: rawAnswers,
+        displayName,
+        avatarUrl,
       });
 
       return NextResponse.json({
@@ -96,6 +112,8 @@ export async function POST(request) {
         data: {
           completed: true,
           userId: user.id,
+          displayName: result.profile?.display_name || displayName || user.displayName,
+          avatarUrl: result.profile?.avatar_url || avatarUrl || user.avatar,
           rewardCredits: result.rewardCredits,
           personaCode: result.personaCode,
           tagIds: result.tagIds,
@@ -103,7 +121,7 @@ export async function POST(request) {
       });
     }
 
-    // 4. 一体化弹窗表单模式 (UserOnboardingModal 提交)
+    // 4. 一体化弹窗表单模式 (Legacy 兼容)
     const displayName = typeof body.displayName === 'string' ? body.displayName.trim() : null;
     const avatarUrl = typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : null;
     const zodiac = typeof body.zodiac === 'string' ? body.zodiac.trim() : null;

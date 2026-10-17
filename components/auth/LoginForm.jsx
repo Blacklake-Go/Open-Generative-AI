@@ -14,6 +14,7 @@ import {
   BilibiliIcon,
 } from '@/components/SocialIcons';
 import { getAuthCopy, getAuthRoutes } from '@/lib/authCopy';
+import { openOAuthPopup } from '@/lib/auth/oauthPopup';
 
 const COUNTRY_CODES = [
   { code: '+86', label: '中国大陆 (+86)' },
@@ -64,7 +65,6 @@ export default function LoginForm({ locale = 'zh-CN' }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [socialProviders, setSocialProviders] = useState([]);
   const [socialRegion, setSocialRegion] = useState(null);
-  const [isSwitchingRegion, setIsSwitchingRegion] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -72,11 +72,8 @@ export default function LoginForm({ locale = 'zh-CN' }) {
     };
   }, []);
 
-  const fetchSocialOptions = useCallback((targetRegion = null) => {
-    const url = targetRegion
-      ? `/api/auth/social-options?region=${encodeURIComponent(targetRegion)}`
-      : '/api/auth/social-options';
-    return fetch(url, { cache: 'no-store', credentials: 'same-origin' })
+  const fetchSocialOptions = useCallback(() => {
+    return fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data) return;
@@ -96,24 +93,6 @@ export default function LoginForm({ locale = 'zh-CN' }) {
   useEffect(() => {
     fetchSocialOptions();
   }, [fetchSocialOptions]);
-
-  const handleToggleRegion = async () => {
-    const nextRegion = socialRegion === 'international' ? 'mainland_china' : 'international';
-    setIsSwitchingRegion(true);
-    try {
-      if (typeof document !== 'undefined') {
-        const domain = window.location.hostname.endsWith('supdance.com')
-          ? '; domain=.supdance.com'
-          : window.location.hostname.endsWith('koyosim.com')
-            ? '; domain=.koyosim.com'
-            : '';
-        document.cookie = `ko_social_region=${nextRegion}; path=/${domain}; max-age=31536000; SameSite=Lax`;
-      }
-      await fetchSocialOptions(nextRegion);
-    } finally {
-      setIsSwitchingRegion(false);
-    }
-  };
 
   // Send SMS verification code
   const handleSendPhoneCode = async () => {
@@ -221,7 +200,7 @@ export default function LoginForm({ locale = 'zh-CN' }) {
     if (typeof window === 'undefined') return undefined;
 
     const handleOAuthEvent = (data) => {
-      if (!data || data.type !== 'supdance-auth-complete') return;
+      if (!data || (data.type !== 'supdance-auth-complete' && data.type !== 'koyosim-auth-complete')) return;
       if (data.action === 'bind') return;
       if (data.ok) {
         router.push(redirectUrl);
@@ -233,7 +212,7 @@ export default function LoginForm({ locale = 'zh-CN' }) {
 
     const handleWindowMessage = (event) => handleOAuthEvent(event?.data);
     const handleStorageChange = (event) => {
-      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync') && event.newValue) {
+      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync' || event.key === 'koyosim_auth_event' || event.key === 'koyosim-oauth-sync') && event.newValue) {
         try {
           handleOAuthEvent(JSON.parse(event.newValue));
         } catch {}
@@ -241,10 +220,13 @@ export default function LoginForm({ locale = 'zh-CN' }) {
     };
 
     let channel = null;
+    let channelKoyo = null;
     try {
       if ('BroadcastChannel' in window) {
         channel = new BroadcastChannel('supdance_auth_channel');
         channel.onmessage = (event) => handleOAuthEvent(event.data);
+        channelKoyo = new BroadcastChannel('koyosim_auth_channel');
+        channelKoyo.onmessage = (event) => handleOAuthEvent(event.data);
       }
     } catch {}
 
@@ -252,6 +234,7 @@ export default function LoginForm({ locale = 'zh-CN' }) {
     window.addEventListener('storage', handleStorageChange);
     return () => {
       if (channel) channel.close();
+      if (channelKoyo) channelKoyo.close();
       window.removeEventListener('message', handleWindowMessage);
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -259,17 +242,7 @@ export default function LoginForm({ locale = 'zh-CN' }) {
 
   const handleOAuth = (providerId) => {
     const url = `/api/auth/oauth/${providerId}?returnTo=${encodeURIComponent(redirectUrl)}&redirect=${encodeURIComponent(redirectUrl)}`;
-    const isMobile =
-      typeof navigator !== 'undefined' &&
-      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (typeof window !== 'undefined' && window.innerWidth < 768));
-
-    if (isMobile || typeof window === 'undefined') {
-      window.location.assign(url);
-    } else {
-      const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
-      if (!popup) window.location.assign(url);
-    }
+    openOAuthPopup(url);
   };
 
   return (
@@ -396,7 +369,7 @@ export default function LoginForm({ locale = 'zh-CN' }) {
                 >
                   {COUNTRY_CODES.map((item) => (
                     <option key={item.code} value={item.code} className="bg-[#181a20] text-white">
-                      {item.code}
+                      {copy.countryLabels?.[item.code] || item.label}
                     </option>
                   ))}
                 </select>
@@ -470,7 +443,9 @@ export default function LoginForm({ locale = 'zh-CN' }) {
                 if (!item) return null;
                 const Icon = item.icon;
                 const isZh = String(locale || '').startsWith('zh');
-                const btnLabel = isZh ? `${item.label} 登录` : item.label;
+                const btnLabel = typeof copy.socialLoginLabel === 'function'
+                  ? copy.socialLoginLabel(item.label)
+                  : (isZh ? `${item.label} 登录` : item.label);
                 return (
                   <button
                     key={provider.id}
@@ -486,21 +461,6 @@ export default function LoginForm({ locale = 'zh-CN' }) {
               })}
             </div>
           )}
-
-          <div className="flex justify-center pt-0.5">
-            <button
-              type="button"
-              disabled={isSwitchingRegion}
-              onClick={handleToggleRegion}
-              className="text-[11px] text-white/50 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <span>
-                {socialRegion === 'international'
-                  ? '🇨🇳 切换为国内快捷登录 (QQ / 微信 / 抖音)'
-                  : '🌐 切换为海外快捷登录 (Google / X / TikTok)'}
-              </span>
-            </button>
-          </div>
         </div>
       )}
 

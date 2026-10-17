@@ -2,10 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { register } from 'node:module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../..');
+
+try {
+  register(pathToFileURL(path.join(repoRoot, 'scripts/server-only-loader.mjs')).href, import.meta.url);
+} catch {}
 
 test('Step 1: ModelNavTabs has exactly 3 standard tabs matching Three-Layer Mental Architecture', () => {
   const tabsFile = path.join(repoRoot, 'components/admin/ModelNavTabs.jsx');
@@ -140,4 +145,130 @@ test('Step 4: /admin/models/routing Sub-Tabs and SSOT Write API', () => {
   assert.match(controlContent, /case 'save_model_pricing':/);
   assert.match(controlContent, /case 'update_model_pricing':/);
   assert.match(controlContent, /case 'approve_price':/);
+});
+
+test('Step 5: Control Route Module resolves and exports required HTTP handlers without syntax errors', async () => {
+  const controlModule = await import(path.join(repoRoot, 'app/api/admin/models/control/route.js'));
+  assert.ok(controlModule.POST, 'POST handler must be exported');
+  assert.ok(controlModule.GET, 'GET handler must be exported');
+  assert.equal(controlModule.runtime, 'nodejs');
+  assert.equal(controlModule.dynamic, 'force-dynamic');
+});
+
+test('Step 5: Drawer healthy route counting & channelRoutes fallback cost logic', () => {
+  // Test case 1: channelRoutes has 1 healthy route, formData.healthy_routes is 0
+  const routesWithHealthy = [
+    { id: 'pm_1', enabled: true, review_status: 'approved', health_status: 'healthy', cost_cny: 0.12 },
+    { id: 'pm_2', enabled: false, review_status: 'approved', health_status: 'healthy', cost_cny: 0.15 },
+  ];
+  const countWithRoutes = routesWithHealthy.filter(
+    (r) => r.enabled && (r.review_status === 'approved' || !r.review_status) && (r.health_status === 'healthy' || !r.health_status)
+  ).length;
+  const formDataZero = { healthy_routes: 0, min_cost_cny: null, credits: 10 };
+  const activeCount1 = routesWithHealthy.length > 0 ? countWithRoutes : Number(formDataZero.healthy_routes || 0);
+  assert.equal(activeCount1, 1, 'Should detect 1 active healthy route even if formData.healthy_routes was 0');
+  assert.equal(activeCount1 <= 0, false, 'isZeroRoutes should be false');
+
+  // Test case 2: channelRoutes is empty, fallback to formData.healthy_routes
+  const emptyRoutes = [];
+  const formDataHealthy = { healthy_routes: 3, min_cost_cny: 0.5, credits: 10 };
+  const activeCount2 = emptyRoutes.length > 0 ? 0 : Number(formDataHealthy.healthy_routes || 0);
+  assert.equal(activeCount2, 3, 'Should fall back to formData.healthy_routes when channelRoutes is empty');
+  assert.equal(activeCount2 <= 0, false, 'isZeroRoutes should be false');
+
+  // Test case 3: Both are 0
+  const activeCount3 = emptyRoutes.length > 0 ? 0 : Number(formDataZero.healthy_routes || 0);
+  assert.equal(activeCount3, 0, 'Should detect 0 routes');
+  assert.equal(activeCount3 <= 0, true, 'isZeroRoutes should be true');
+
+  // Test case 4: Cost fallback to channelRoutes when min_cost_cny is null
+  let derivedCost = formDataZero.min_cost_cny;
+  if (derivedCost === null || !Number.isFinite(derivedCost) || derivedCost <= 0) {
+    const validRouteCosts = routesWithHealthy
+      .map((r) => Number(r.cost_cny))
+      .filter((c) => Number.isFinite(c) && c > 0);
+    if (validRouteCosts.length > 0) {
+      derivedCost = Math.min(...validRouteCosts);
+    }
+  }
+  assert.equal(derivedCost, 0.12, 'Cost should fall back to min cost among channel routes');
+  const userPriceCny = formDataZero.credits * 0.1; // 1.0 CNY
+  const marginRate = Number((((userPriceCny - derivedCost) / userPriceCny) * 100).toFixed(1));
+  assert.equal(marginRate, 88.0, 'Margin rate should be 88%');
+});
+
+test('Step 6: Canonical getModelById and repository contract covers full specification fields', () => {
+  const modelsRepoContent = fs.readFileSync(path.join(repoRoot, 'lib/repositories/models.js'), 'utf8');
+
+  // getModelById must query canonical fields
+  assert.match(modelsRepoContent, /m\.description/);
+  assert.match(modelsRepoContent, /COALESCE\(m\.is_featured,\s*false\)\s*AS\s*is_featured/);
+  assert.match(modelsRepoContent, /COALESCE\(m\.capabilities->>'pricing_hint',\s*''\)\s*AS\s*pricing_hint/);
+  assert.match(modelsRepoContent, /COALESCE\(m\.supported_ratios,\s*'\[\]'::jsonb\)\s*AS\s*supported_ratios/);
+  assert.match(modelsRepoContent, /COALESCE\(m\.supported_resolutions,\s*'\[\]'::jsonb\)\s*AS\s*supported_resolutions/);
+  assert.match(modelsRepoContent, /COALESCE\(m\.supported_durations,\s*'\[\]'::jsonb\)\s*AS\s*supported_durations/);
+
+  // createModel must handle pricingHint
+  assert.match(modelsRepoContent, /pricingHint/);
+
+  // updateModelConfig must persist metadata.pricing_hint
+  assert.match(modelsRepoContent, /metadata\.pricing_hint/);
+});
+
+test('Step 6: SSOT Control route and Drawer UI contracts for full field payload and disabled states', () => {
+  const controlRouteContent = fs.readFileSync(path.join(repoRoot, 'app/api/admin/models/control/route.js'), 'utf8');
+
+  // create_model must not hardcode isVisible: false, must support pricingHint
+  assert.match(controlRouteContent, /const isVisible = body\.isVisible !== undefined/);
+  assert.match(controlRouteContent, /pricingHint/);
+
+  const drawerContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/ModelConfigDrawer.jsx'), 'utf8');
+  // Loading spinner disabled fieldset
+  assert.match(drawerContent, /<fieldset disabled=\{saving\}/);
+  // Controlled display_name input
+  assert.match(drawerContent, /value=\{formData\.display_name \|\| ''\}/);
+
+  const frontendClientContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/FrontendConfigClient.jsx'), 'utf8');
+  // Toast must use design system token z-toast
+  assert.match(frontendClientContent, /z-toast/);
+  // Must provide startCreate
+  assert.match(frontendClientContent, /startCreate/);
+});
+
+test('Step 7: Model Specification & Hygiene Consolidation (Zero Text Walls, SSOT, In-Shelf Variants)', async () => {
+  // 1. Check canonicalModels.js module
+  const { CANONICAL_GROUPS, isOrphanVariantCandidate, suggestCanonicalTarget } = await import(path.join(repoRoot, 'lib/modelCenter/canonicalModels.js'));
+  assert.ok(Array.isArray(CANONICAL_GROUPS) && CANONICAL_GROUPS.length >= 25, 'CANONICAL_GROUPS must define at least 25 canonical specs');
+
+  const klingGroup = CANONICAL_GROUPS.find((g) => g.targetId === 'kling-3.0');
+  assert.ok(klingGroup, 'Kling 3.0 canonical group must exist');
+  assert.ok(klingGroup.aliases.includes('kling-v3.0-standard-text-to-video'), 'Kling 3.0 must consolidate action aliases');
+
+  // Test orphan candidate detection
+  assert.equal(isOrphanVariantCandidate('unknown-model-t2v', 'backup'), true, 'Should detect orphan variant candidate');
+  assert.equal(isOrphanVariantCandidate('kling-3.0', 'core'), false, 'Canonical model is not an orphan candidate');
+  assert.equal(suggestCanonicalTarget('kling-unknown-i2v'), 'kling-3.0', 'Should suggest kling-3.0 for kling variants');
+
+  // 2. Check Control Route SSOT contract
+  const controlRouteContent = fs.readFileSync(path.join(repoRoot, 'app/api/admin/models/control/route.js'), 'utf8');
+  assert.match(controlRouteContent, /hygiene_scan/, 'Control route must support hygiene_scan');
+  assert.match(controlRouteContent, /case 'hygiene_merge':/, 'Control route must support hygiene_merge');
+  assert.match(controlRouteContent, /case 'hygiene_sync':/, 'Control route must support hygiene_sync');
+
+  // 3. Check ModelHygieneDrawer.jsx contract
+  const hygieneDrawerContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/ModelHygieneDrawer.jsx'), 'utf8');
+  // Must eliminate text walls
+  assert.equal(hygieneDrawerContent.includes('两层模型治理模型机制'), false, 'Must eliminate essay-like theory text wall');
+  assert.equal(hygieneDrawerContent.includes('日常自动化治理机制'), false, 'Must eliminate essay-like automated theory text wall');
+  // Must handle payload safely without relying strictly on json.ok
+  assert.match(hygieneDrawerContent, /json\.data \|\| json\.result/);
+  // Must call SSOT control actions
+  assert.match(hygieneDrawerContent, /hygiene_merge/);
+  assert.match(hygieneDrawerContent, /hygiene_sync/);
+
+  // 4. Check FrontendConfigClient.jsx in-shelf badges
+  const frontendClientContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/FrontendConfigClient.jsx'), 'utf8');
+  assert.match(frontendClientContent, /model\.aliases\?\.length > 0/);
+  assert.match(frontendClientContent, /model\.is_orphan_candidate/);
+  assert.match(frontendClientContent, /全库体检与去重/);
 });

@@ -1,4 +1,4 @@
-import { getUserFromRequest, json } from '@/lib/services/auth';
+import { getSessionCookieDomain, getUserFromRequest, json } from '@/lib/services/auth';
 import { getProfile, updateProfile } from '@/lib/services/profile';
 import { isSupportedLocale, normalizeLocale } from '@/lib/locales';
 import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
@@ -78,8 +78,10 @@ export async function PUT(request) {
     }
     const response = json({ user: updated });
     if (locale !== undefined) {
-      response.cookies.set('NEXT_LOCALE', locale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
-      response.cookies.set('locale', locale, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+      const norm = normalizeLocale(locale);
+      const domain = getSessionCookieDomain(request);
+      response.cookies.set('NEXT_LOCALE', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
+      response.cookies.set('locale', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     }
     return response;
   } catch (error) {

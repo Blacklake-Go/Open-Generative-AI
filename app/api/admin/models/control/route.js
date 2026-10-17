@@ -24,12 +24,17 @@ import {
 } from '@/lib/services/modelPricingControl.js';
 import { applyPriceImport, parsePriceImport, previewPriceImport, rollbackPriceImport } from '@/lib/services/modelPriceImport.js';
 import { updateModel, createModel } from '@/lib/services/models.js';
-import { savePricingStrategy } from '@/lib/services/pricingStrategy';
+import { savePricingStrategy } from '@/lib/services/pricingStrategy.js';
 import { upsertModelPricing } from '@/lib/repositories/aiCatalog.js';
 import { invalidateActiveModelsCache } from '@/app/api/models/active/route.js';
 import {
   findMatchingChannelCandidates,
 } from '@/lib/modelCenter/smartChannelMatcher.js';
+import {
+  scanModelHygiene,
+  mergeModelAlias,
+  runFullHygieneSync,
+} from '@/lib/services/modelHygiene.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +52,7 @@ async function handleGET(request) {
 async function handlePOST(request) {
   const body = await request.json().catch(() => ({}));
   const action = String(body.action || '').trim();
-  const readOnly = ['simulate', 'preview_site_price', 'match_channel_candidates'].includes(action);
+  const readOnly = ['simulate', 'preview_site_price', 'match_channel_candidates', 'hygiene_scan'].includes(action);
   const requiredPermission = readOnly ? PERMISSIONS.modelsRead
     : ['probe_health', 'provider_enabled', 'sync_models'].includes(action) ? PERMISSIONS.providersWrite : PERMISSIONS.modelsWrite;
   const guard = await requirePermission(request, requiredPermission,
@@ -55,6 +60,14 @@ async function handlePOST(request) {
   if (!guard.ok) return guard.response;
 
   if (readOnly) {
+    if (action === 'hygiene_scan') {
+      try {
+        const data = await scanModelHygiene();
+        return okResponse(data, guard.requestId);
+      } catch (error) {
+        return errorResponse(error.code || 'HYGIENE_SCAN_FAILED', publicErrorMessage(error, '模型治理体检扫描失败'), 422, guard.requestId);
+      }
+    }
     const targetModelId = String(body.modelId || body.id || '').trim();
     if (!targetModelId) return errorResponse('VALIDATION_ERROR', '规范模型 ID 为必填项', 422, guard.requestId);
     try {
@@ -181,14 +194,23 @@ async function handlePOST(request) {
           throw Object.assign(new Error('必须提供已核实的正整数积分价格'), { code: 'VALIDATION_ERROR' });
         }
         const pricingType = body.pricingType || body.pricing_type || 'fixed';
+        const pricingMode = body.pricingMode || body.pricing_mode || 'auto';
+        const manualOverridePriceCny = body.manualOverridePriceCny !== undefined && body.manualOverridePriceCny !== null
+          ? Number(body.manualOverridePriceCny)
+          : (pricingMode === 'manual' || pricingMode === 'locked') ? Number((baseCredits * 0.1).toFixed(4)) : null;
+        const minGrossMarginRate = Number(body.minGrossMarginRate ?? body.min_gross_margin_rate ?? 0.3);
+
         const updated = await upsertModelPricing({
           model_id: modelId,
           pricing_type: pricingType,
+          pricing_mode: pricingMode,
           base_credits: baseCredits,
+          manual_override_price_cny: manualOverridePriceCny,
+          price_locked: pricingMode === 'locked' || Boolean(body.priceLocked || body.price_locked),
           formula_config: body.formulaConfig || body.formula_config || {},
           subscription_discounts: {},
           min_credits: Number(body.minCredits ?? body.min_credits ?? 10),
-          min_gross_margin_rate: Math.max(Number(body.minGrossMarginRate ?? body.min_gross_margin_rate ?? 0.75), 0.75),
+          min_gross_margin_rate: minGrossMarginRate,
           is_active: body.isActive !== false && body.is_active !== false,
         });
         invalidateActiveModelsCache();
@@ -236,6 +258,10 @@ async function handlePOST(request) {
         break;
       }
       case 'create_model': {
+        const isVisible = body.isVisible !== undefined
+          ? Boolean(body.isVisible)
+          : (body.is_visible !== undefined ? Boolean(body.is_visible) : false);
+        const pricingHint = body.pricingHint || body.pricing_hint || '';
         const createRes = await createModel({
           actor: guard.user,
           model: {
@@ -245,13 +271,14 @@ async function handlePOST(request) {
             category: body.category || 'image',
             description: body.description || '',
             badge: body.badge || 'New',
-            subType: body.subType || '',
+            subType: body.subType || body.sub_type || '',
+            pricingHint,
             sort: body.sort !== undefined ? Number(body.sort) : 1,
             creditsPrice: body.creditsPrice !== undefined ? Number(body.creditsPrice) : undefined,
-            isVisible: false,
-            isPinned: Boolean(body.isPinned),
-            isFeatured: Boolean(body.isFeatured),
-            tier: body.tier || 'core',
+            isVisible,
+            isPinned: Boolean(body.isPinned ?? body.is_pinned),
+            isFeatured: Boolean(body.isFeatured ?? body.is_featured),
+            tier: body.tier || (isVisible ? 'core' : 'backup'),
             supportedRatios: body.supportedRatios ?? body.supported_ratios,
             supportedResolutions: body.supportedResolutions ?? body.supported_resolutions,
             supportedDurations: body.supportedDurations ?? body.supported_durations,
@@ -312,6 +339,25 @@ async function handlePOST(request) {
         result = await rollbackPriceImport({ batchId: body.batchId, actor: guard.user });
         targetType = 'model_price_import_batch'; targetId = body.batchId; riskLevel = 'high';
         break;
+      case 'hygiene_merge': {
+        const { sourceModelId, targetModelId } = body;
+        if (!sourceModelId || !targetModelId) {
+          throw Object.assign(new Error('缺少 sourceModelId 或 targetModelId'), { code: 'VALIDATION_ERROR' });
+        }
+        result = await mergeModelAlias({ sourceModelId, targetModelId, actor: guard.user });
+        targetType = 'ai_model';
+        targetId = targetModelId;
+        riskLevel = 'medium';
+        break;
+      }
+      case 'hygiene_sync': {
+        const stats = await runFullHygieneSync();
+        result = { stats };
+        targetType = 'ai_model';
+        targetId = 'all';
+        riskLevel = 'high';
+        break;
+      }
       default:
         throw Object.assign(new Error('未知的模型定价操作'), { code: 'MODEL_CONTROL_ACTION_UNKNOWN' });
     }

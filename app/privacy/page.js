@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <div className="border-b border-white/[0.08] pb-6 mb-8">
             <div className="flex items-center gap-2 mb-3">
               <PageEyebrow>Privacy & Security</PageEyebrow>
-              <span className="text-xs text-gray-500 font-mono">v2.4 · 2026-09-16</span>
+              <span className="text-xs text-gray-500 font-mono">v2.5 · 2026-10-17</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               <span className="font-jost font-medium">supdance</span> 平台隐私保护政策
@@ -62,6 +62,24 @@ export default function PrivacyPage() {
               <p className="text-gray-400">
                 创作者拥有对其资产数据的完整知情权与删除权。您可以在个人作品中心随时导出、下架或彻底物理删除历史创作记录，或联系技术支持申请注销账户。
               </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-base/60 p-5">
+              <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-cyan-400" />
+                5. SupDance Canvas Codex 插件与本地 Agent
+              </h2>
+              <div className="space-y-3 text-gray-400">
+                <p>
+                  使用 SupDance Canvas Codex 插件时，您设备上的本地 Agent 会按您的请求读取或操作当前画布，因此可能处理画布标题、节点内容、选中内容、提示词、参考素材及完成连接和任务所需的 Agent 运行数据。相关信息用于建立画布连接、读取或编辑画布，以及执行您请求的工作流。只有在您请求生成内容时，必要的提示词、参考素材和任务参数才会发送给该任务所选的模型或算力服务商。
+                </p>
+                <p>
+                  SupDance 服务端对通过此插件接收的画布内容、提示词及 Agent 运行数据保留 3 天，期限届满后自动删除。此期限只适用于 SupDance 服务端保存的数据，不适用于您设备上由 Codex 或本地 Agent 保存的会话记录、任务历史、配置和调试日志；本机数据会保留到您或本机软件设置将其删除。您可以停止使用插件，并通过 SupDance 账户提供的画布和资产管理功能删除在线内容。
+                </p>
+                <p lang="en">
+                  When you use the SupDance Canvas Codex plugin, its local Agent processes canvas titles, node content, selected content, prompts, reference media, and Agent runtime data as needed to connect to, read, or edit the canvas and to run workflows you request. When you request content generation, the prompt, reference media, and task parameters needed for that request are sent to the model or compute provider selected for that task. SupDance retains plugin-related canvas content, prompts, and Agent runtime data received by SupDance for 3 days, then automatically deletes them. This server-side period does not apply to Codex or local Agent session records, task history, configuration, or debug logs stored on your device; local data remains until you or your local software settings delete it. You can stop using the plugin and delete online canvas content through the canvas and asset controls available in your SupDance account.
+                </p>
+              </div>
             </div>
           </section>
 

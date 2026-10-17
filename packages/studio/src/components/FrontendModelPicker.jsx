@@ -88,6 +88,19 @@ export default function FrontendModelPicker({
 
     // Dynamic fallback: include any active server models of this category not already covered in static catalog
     const coveredIds = new Set(catalogEntries.flatMap((e) => [...(e.variantIds || [e.id])]));
+    const KNOWN_CATALOG_ALIASES = {
+      'seedream-5.0': ['seedream-4.5', 'seedream-5.0-lite', 'bytedance-seedream-v4.5', 'bytedance-seedream-5.0-lite', 'seedream-5.0'],
+      'seedream-5.0-pro': ['bytedance-seedream-5.0-pro', 'bytedance-seedream-v5.0', 'seedream-5.0', 'seedream-5.0-edit'],
+      'seedream-4.5': ['bytedance-seedream-v4.5', 'bytedance-seedream-v4.5-edit', 'seedream-4.5'],
+      'imagen-4': ['google-imagen4', 'google-imagen4-ultra', 'google-imagen4-fast', 'google-imagen-4'],
+    };
+    for (const [serverId, catalogList] of Object.entries(KNOWN_CATALOG_ALIASES)) {
+      if (catalogList.some((alias) => coveredIds.has(alias))) {
+        coveredIds.add(serverId);
+        for (const alias of catalogList) coveredIds.add(alias);
+      }
+    }
+
     const dynamicServerEntries = [];
     if (typeof globalThis !== "undefined" && globalThis.__SUPDANCE_SERVER_MODEL_META__) {
       for (const [id, meta] of globalThis.__SUPDANCE_SERVER_MODEL_META__.entries()) {

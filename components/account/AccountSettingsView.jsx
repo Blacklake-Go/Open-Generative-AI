@@ -60,7 +60,7 @@ export default function AccountSettingsView({
           busy={busy}
         />
       ) : (
-        <SystemPreferencesSection />
+        <SystemPreferencesSection user={user} />
       )}
     </div>
   );

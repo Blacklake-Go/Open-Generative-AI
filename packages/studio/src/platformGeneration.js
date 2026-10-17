@@ -284,6 +284,14 @@ export async function submitPlatformGeneration({
   onRequestId?.(creationId);
   reportPhase(onPhase, 'reserved', creationId);
 
+  const initialCreation = submitData.creation || submitData.task || submitData;
+  const initialStatus = String(initialCreation?.status || '').toLowerCase();
+  if (SUCCESS_STATUSES.has(initialStatus)) {
+    clearGenerationIntent(generationIntent);
+    reportPhase(onPhase, 'completed', creationId);
+    return completedGeneration(initialCreation, creationId);
+  }
+
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     await waitImpl(intervalMs);
     const pollResponse = await fetchImpl(`/api/generations?id=${encodeURIComponent(creationId)}`, {

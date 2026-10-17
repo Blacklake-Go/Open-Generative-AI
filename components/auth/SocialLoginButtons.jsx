@@ -11,6 +11,7 @@ import {
   DouyinIcon,
   BilibiliIcon,
 } from '@/components/SocialIcons';
+import { openOAuthPopup } from '@/lib/auth/oauthPopup';
 
 export const SOCIAL_PROVIDER_META = {
   google: { label: 'Google', icon: GoogleIcon },
@@ -28,12 +29,10 @@ export default function SocialLoginButtons({
   dividerText = '或使用快捷方式',
   actionLabel = '登录',
   region = 'mainland_china',
-  onToggleRegion,
-  isSwitchingRegion = false,
   onSocialLogin,
 }) {
   const hasProviders = Array.isArray(providers) && providers.length > 0;
-  if (!hasProviders && !onToggleRegion) return null;
+  if (!hasProviders) return null;
 
   const handleTrigger = (providerId) => {
     if (onSocialLogin) {
@@ -42,17 +41,7 @@ export default function SocialLoginButtons({
     }
     const returnTo = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/studio';
     const url = `/api/auth/oauth/${providerId}?returnTo=${encodeURIComponent(returnTo)}&redirect=${encodeURIComponent(returnTo)}`;
-    const isMobile =
-      typeof navigator !== 'undefined' &&
-      (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (typeof window !== 'undefined' && window.innerWidth < 768));
-
-    if (isMobile || typeof window === 'undefined') {
-      window.location.assign(url);
-    } else {
-      const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
-      if (!popup) window.location.assign(url);
-    }
+    openOAuthPopup(url);
   };
 
   return (
@@ -86,23 +75,6 @@ export default function SocialLoginButtons({
               </button>
             );
           })}
-        </div>
-      )}
-
-      {onToggleRegion && (
-        <div className="flex justify-center pt-0.5">
-          <button
-            type="button"
-            disabled={isSwitchingRegion}
-            onClick={onToggleRegion}
-            className="text-[11px] text-ink-muted hover:text-brand transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
-          >
-            <span>
-              {region === 'international'
-                ? '🇨🇳 切换为国内快捷登录 (QQ / 微信 / 抖音)'
-                : '🌐 切换为海外快捷登录 (Google / X / TikTok)'}
-            </span>
-          </button>
         </div>
       )}
     </div>

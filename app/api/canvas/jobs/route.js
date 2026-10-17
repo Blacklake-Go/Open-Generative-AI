@@ -151,10 +151,17 @@ export async function POST(request) {
       return canvasJson(request, { error: '生成任务必须提供有效的幂等键', code: 'IDEMPOTENCY_REQUIRED' }, { status: 422 });
     }
     if (!quoteId) return canvasJson(request, { error: '生成任务必须先取得服务器报价', code: 'QUOTE_REQUIRED' }, { status: 422 });
-    const project = await getCanvasProject(user.id, projectId);
+    let project = await getCanvasProject(user.id, projectId);
     if (!project) return canvasJson(request, { error: '画布不存在或不属于当前账户', code: 'PROJECT_NOT_FOUND' }, { status: 404 });
     if (!canvasSnapshotContainsNode(project.snapshot_json, nodeId)) {
-      return canvasJson(request, { error: '目标节点尚未保存到云端，请等画布同步完成后重试', code: 'CANVAS_NODE_NOT_SAVED' }, { status: 409 });
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        project = await getCanvasProject(user.id, projectId);
+        if (project && canvasSnapshotContainsNode(project.snapshot_json, nodeId)) break;
+      }
+      if (!project || !canvasSnapshotContainsNode(project.snapshot_json, nodeId)) {
+        return canvasJson(request, { error: '目标节点尚未保存到云端，请等画布同步完成后重试', code: 'CANVAS_NODE_NOT_SAVED' }, { status: 409 });
+      }
     }
     const catalog = await listActiveModels();
     const model = catalog.find((item) => item.id === modelId);

@@ -71,15 +71,6 @@ async function run() {
 
   // Check if Instagram button exists
   const instaButton = await page.$('button:has-text("Instagram")');
-  if (!instaButton) {
-    // If on mainland mode, toggle to overseas
-    const toggleBtn = await page.$('button:has-text("切换为海外快捷登录")');
-    if (toggleBtn) {
-      console.log('Clicking toggle to overseas...');
-      await toggleBtn.click();
-      await page.waitForTimeout(2000);
-    }
-  }
 
   const buttons = await page.$$eval('button', els => els.map(e => e.innerText.trim()).filter(Boolean));
   console.log('Login buttons found:', buttons.filter(b => b.includes('Google') || b.includes('Instagram') || b.includes('TikTok') || b.includes('X') || b.includes('微信') || b.includes('QQ')));

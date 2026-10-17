@@ -489,10 +489,17 @@ export default function FrontendConfigClient({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // 打开右侧高级配置抽屉
+  // 打开右侧高级配置抽屉 (编辑模式)
   const startEdit = useCallback((model) => {
     setDrawerModel(model);
     setIsDrawerNew(false);
+    setDrawerOpen(true);
+  }, []);
+
+  // 打开右侧高级配置抽屉 (新建/引入模式)
+  const startCreate = useCallback(() => {
+    setDrawerModel(null);
+    setIsDrawerNew(true);
     setDrawerOpen(true);
   }, []);
 
@@ -508,6 +515,31 @@ export default function FrontendConfigClient({
 
       setSaving(targetId);
       try {
+        const isNewModel = isDrawerNew || !models.some((m) => m.id === targetId);
+        if (isNewModel) {
+          await callAPI({
+            action: 'create_model',
+            modelId: targetId,
+            name: formData.display_name || targetId,
+            displayName: formData.display_name || targetId,
+            category: formData.category || 'image',
+            description: formData.description || '',
+            badge: formData.badge || '',
+            subType: formData.sub_type || '',
+            pricingHint: formData.pricing_hint || '',
+            sort: Number(formData.sort) || 1,
+            creditsPrice,
+            isVisible,
+            isPinned: formData.is_pinned,
+            isFeatured: formData.is_featured,
+            tier: formData.tier || (isVisible ? 'core' : 'backup'),
+            supportedRatios: formData.supported_ratios,
+            supportedResolutions: formData.supported_resolutions,
+            supportedDurations: formData.supported_durations,
+            capabilities: formData.capabilities,
+          });
+        }
+
         await callAPI({
           action: 'update_model_tiering',
           modelId: targetId,
@@ -515,6 +547,7 @@ export default function FrontendConfigClient({
           description: formData.description,
           badge: formData.badge || '',
           subType: formData.sub_type || '',
+          category: formData.category,
           pricingHint: formData.pricing_hint || '',
           sort: Number(formData.sort),
           tier: formData.tier || (isVisible ? 'core' : 'backup'),
@@ -536,33 +569,82 @@ export default function FrontendConfigClient({
 
         setModels((prev) => {
           const idx = prev.findIndex((m) => m.id === targetId);
+          const newRoutes = formData.channel_routes || [];
+          const newApprovedCount = newRoutes.filter((r) => r.review_status === 'approved' || !r.review_status).length;
+          const newHealthyCount = newRoutes.filter((r) => r.enabled && (r.review_status === 'approved' || !r.review_status) && (r.health_status === 'healthy' || !r.health_status)).length;
+          const validRouteCosts = newRoutes
+            .map((r) => Number(r.cost_cny))
+            .filter((c) => Number.isFinite(c) && c > 0);
+          const newMinCostCny = validRouteCosts.length > 0 ? Math.min(...validRouteCosts) : null;
+          const userPriceCny = creditsPrice * 0.1;
+          const newMarginRate = (newMinCostCny !== null && userPriceCny > 0)
+            ? Number((((userPriceCny - newMinCostCny) / userPriceCny) * 100).toFixed(1))
+            : null;
+
           if (idx >= 0) {
             const updated = [...prev];
+            const prevItem = updated[idx];
             updated[idx] = {
-              ...updated[idx],
+              ...prevItem,
               display_name: formData.display_name,
+              category: formData.category || prevItem.category,
               pricing_hint: formData.pricing_hint,
               description: formData.description,
               badge: formData.badge,
               sub_type: formData.sub_type,
-              sort: Number(formData.sort),
+              sort: Number(formData.sort) || prevItem.sort,
               tier: formData.tier || (isVisible ? 'core' : 'backup'),
               is_featured: formData.is_featured,
               is_pinned: formData.is_pinned,
               is_visible: isVisible,
               base_credits: creditsPrice,
-              provider: formData.primary_provider,
+              provider: formData.primary_provider || prevItem.provider,
               backup_provider_id: formData.backup_provider_id,
               backup_model_id: formData.backup_model_id,
-              routes: formData.channel_routes || updated[idx].routes,
+              routes: newRoutes.length > 0 ? newRoutes : prevItem.routes,
+              approved_routes: newRoutes.length > 0 ? newApprovedCount : prevItem.approved_routes,
+              healthy_routes: newRoutes.length > 0 ? newHealthyCount : prevItem.healthy_routes,
+              min_cost_cny: newMinCostCny !== null ? newMinCostCny : prevItem.min_cost_cny,
+              gross_margin_rate: newMarginRate !== null ? newMarginRate : prevItem.gross_margin_rate,
               supported_ratios: formData.supported_ratios,
-              supportedResolutions: formData.supported_resolutions,
+              supported_resolutions: formData.supported_resolutions,
               supported_durations: formData.supported_durations,
               capabilities: formData.capabilities,
             };
             return updated;
+          } else {
+            return [
+              {
+                id: targetId,
+                name: formData.display_name || targetId,
+                display_name: formData.display_name || targetId,
+                category: formData.category || 'image',
+                pricing_hint: formData.pricing_hint,
+                description: formData.description,
+                badge: formData.badge,
+                sub_type: formData.sub_type,
+                sort: Number(formData.sort) || 1,
+                tier: formData.tier || (isVisible ? 'core' : 'backup'),
+                is_featured: formData.is_featured,
+                is_pinned: formData.is_pinned,
+                is_visible: isVisible,
+                base_credits: creditsPrice,
+                provider: formData.primary_provider,
+                backup_provider_id: formData.backup_provider_id,
+                backup_model_id: formData.backup_model_id,
+                routes: newRoutes,
+                approved_routes: newApprovedCount,
+                healthy_routes: newHealthyCount,
+                min_cost_cny: newMinCostCny,
+                gross_margin_rate: newMarginRate,
+                supported_ratios: formData.supported_ratios,
+                supported_resolutions: formData.supported_resolutions,
+                supported_durations: formData.supported_durations,
+                capabilities: formData.capabilities,
+              },
+              ...prev,
+            ];
           }
-          return prev;
         });
 
         showToast(`模型【${formData.display_name || targetId}】全生命周期配置已保存 ✓`);
@@ -574,7 +656,7 @@ export default function FrontendConfigClient({
         setSaving(null);
       }
     },
-    [canWrite, callAPI, showToast, refreshPublicDirectory]
+    [canWrite, models, isDrawerNew, callAPI, showToast, refreshPublicDirectory]
   );
 
   // 极速改价保存
@@ -652,8 +734,14 @@ export default function FrontendConfigClient({
     <div className="space-y-6 max-w-[1600px] mx-auto pb-16">
       {/* Toast Alert */}
       {toast && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-surface-raised border border-line px-4 py-2.5 text-body-sm shadow-elevation-3 animate-fade-in text-ink font-medium">
-          <CheckCircle2 className="size-4 text-brand" />
+        <div className={`fixed top-6 right-6 z-toast flex items-center gap-2 rounded-xl bg-surface-raised border px-4 py-2.5 text-body-sm shadow-elevation-3 animate-fade-in font-medium ${
+          toast.type === 'error' ? 'border-rose-500/40 text-rose-300' : 'border-line text-ink'
+        }`}>
+          {toast.type === 'error' ? (
+            <AlertTriangle className="size-4 text-rose-400 shrink-0" />
+          ) : (
+            <CheckCircle2 className="size-4 text-brand shrink-0" />
+          )}
           <span>{toast.msg}</span>
         </div>
       )}
@@ -779,6 +867,15 @@ export default function FrontendConfigClient({
             >
               <ShieldCheck className="size-3 text-brand" />
               全库体检与去重
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={startCreate}
+              className="inline-flex items-center justify-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold shrink-0 border-brand/30 text-brand hover:bg-brand/10 hover:text-white"
+            >
+              <Sparkles className="size-3 text-brand" />
+              一站式新建
             </Button>
             <Button
               variant="primary"
@@ -927,14 +1024,14 @@ export default function FrontendConfigClient({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-line bg-surface-raised/80 text-caption font-semibold text-ink-muted">
-                <th className="px-3.5 py-3 min-w-[240px]">模型主体</th>
-                <th className="px-3 py-3 w-[120px]">归属工作台</th>
-                <th className="px-3.5 py-3 w-[140px]">通道状态</th>
-                <th className="px-3 py-3 w-[120px] text-right">采购底价</th>
-                <th className="px-3.5 py-3 w-[140px] text-center">C 端售价</th>
-                <th className="px-3 py-3 w-[120px] text-center">实时毛利率</th>
-                <th className="px-3 py-3 w-[120px] text-center">前台可见性</th>
-                <th className="px-3.5 py-3 w-[150px] text-right">操作</th>
+                <th className="px-3.5 py-3 min-w-[280px] lg:min-w-[320px]">模型主体</th>
+                <th className="px-3 py-3 w-[130px] min-w-[120px] whitespace-nowrap">归属工作台</th>
+                <th className="px-3.5 py-3 w-[140px] min-w-[130px] whitespace-nowrap">通道状态</th>
+                <th className="px-3 py-3 w-[120px] min-w-[110px] text-right whitespace-nowrap">采购底价</th>
+                <th className="px-3.5 py-3 w-[130px] min-w-[130px] text-center whitespace-nowrap">C 端售价</th>
+                <th className="px-3 py-3 w-[110px] min-w-[110px] text-center whitespace-nowrap">实时毛利率</th>
+                <th className="px-3 py-3 w-[120px] min-w-[120px] text-center whitespace-nowrap">前台可见性</th>
+                <th className="px-3.5 py-3 w-[180px] min-w-[180px] text-right whitespace-nowrap">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle text-body-sm">
@@ -994,6 +1091,32 @@ export default function FrontendConfigClient({
                                   {model.badge}
                                 </span>
                               )}
+                              {model.aliases?.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setHygieneDrawerOpen(true);
+                                  }}
+                                  className="rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.2 text-[10px] font-semibold hover:bg-emerald-500/20 transition-colors"
+                                  title={`已收敛 ${model.aliases.length} 个动作变体: ${model.aliases.slice(0, 4).join(', ')}...（点击查看治理规范）`}
+                                >
+                                  +{model.aliases.length} 变体
+                                </button>
+                              )}
+                              {model.is_orphan_candidate && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setHygieneDrawerOpen(true);
+                                  }}
+                                  className="rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 text-[10px] font-semibold hover:bg-amber-500/25 transition-colors"
+                                  title={`疑似孤立动作别名，推荐归并至规范: ${model.suggested_target || '未指定'}`}
+                                >
+                                  ⚠️ 待归并别名
+                                </button>
+                              )}
                               {model.is_pinned && (
                                 <span className="text-[11px]" title="已置顶首位 📌">
                                   📌
@@ -1027,7 +1150,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 2: 归属工作台 (Studio 场景图标与分类) */}
-                      <td className="px-3 py-3 align-middle">
+                      <td className="px-3 py-3 align-middle whitespace-nowrap">
                         {(() => {
                           const badge = getModelSceneBadge(model);
                           const BadgeIcon = badge.Icon;
@@ -1041,7 +1164,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 3: 通道状态 (healthy_routes 状态圆点) */}
-                      <td className="px-3.5 py-3 align-middle">
+                      <td className="px-3.5 py-3 align-middle whitespace-nowrap">
                         {healthyRoutes > 0 ? (
                           <div className="flex items-center gap-1.5">
                             <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -1070,7 +1193,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 4: 采购底价 (采购底价 Mono 小字) */}
-                      <td className="px-3 py-3 align-middle text-right font-mono">
+                      <td className="px-3 py-3 align-middle text-right font-mono whitespace-nowrap">
                         {Number(model.min_cost_cny) > 0 ? (
                           <div>
                             <span className="text-ink font-semibold text-caption">¥{Number(model.min_cost_cny).toFixed(3)}</span>
@@ -1087,7 +1210,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 5: C 端售价 (一键就地气泡快速改积分) */}
-                      <td className="px-3.5 py-3 align-middle text-center">
+                      <td className="px-3.5 py-3 align-middle text-center whitespace-nowrap">
                         {canWrite ? (
                           <button
                             type="button"
@@ -1113,7 +1236,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 6: 实时毛利率 (彩色徽章: <0% 赤红 / <30% 琥珀 / >=30% 翠绿) */}
-                      <td className="px-3 py-3 align-middle text-center">
+                      <td className="px-3 py-3 align-middle text-center whitespace-nowrap">
                         {marginInfo.hasData ? (
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-mono font-bold border ${
@@ -1132,7 +1255,7 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 7: 前台可见性 (开关，0 通道拦截) */}
-                      <td className="px-3 py-3 align-middle text-center">
+                      <td className="px-3 py-3 align-middle text-center whitespace-nowrap">
                         {canWrite ? (
                           <button
                             type="button"
@@ -1167,8 +1290,8 @@ export default function FrontendConfigClient({
                       </td>
 
                       {/* Col 8: 操作 (一站式配置唤起全能抽屉) */}
-                      <td className="px-3.5 py-3 align-middle text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-3.5 py-3 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1 whitespace-nowrap">
                           {canWrite && (
                             <>
                               {/* 快速置顶 */}
@@ -1374,13 +1497,18 @@ export default function FrontendConfigClient({
           window.location.reload();
         }}
         onSelectForEdit={(m) => startEdit(m)}
+        onOpenCreateDrawer={startCreate}
       />
 
-      {/* ─── 全库体检与去重抽屉 (ModelHygieneDrawer) ─── */}
+      {/* ─── 全库规范治理与去重抽屉 (ModelHygieneDrawer) ─── */}
       <ModelHygieneDrawer
         isOpen={hygieneDrawerOpen}
         onClose={() => setHygieneDrawerOpen(false)}
-        onHygieneCompleted={() => window.location.reload()}
+        onHygieneCompleted={() => {
+          refreshPublicDirectory();
+          window.location.reload();
+        }}
+        callAPI={callAPI}
       />
 
       {/* ─── 0 渠道上线拦截确认弹窗 (UnroutedConfirmModal) ─── */}

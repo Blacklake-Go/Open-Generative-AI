@@ -60,6 +60,7 @@ export default function ModelRepositoryDrawer({
   onAddModel,
   onCreateCustomModel,
   onSelectForEdit,
+  onOpenCreateDrawer,
 }) {
   const [activeTab, setActiveTab] = useState('browse'); // browse | register
   const [search, setSearch] = useState('');
@@ -467,11 +468,25 @@ export default function ModelRepositoryDrawer({
         {/* TAB 2: REGISTER CUSTOM MODEL */}
         {activeTab === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-            <div className="rounded-xl bg-brand/10 border border-brand/20 p-3 text-caption text-brand leading-relaxed flex items-start gap-2">
-              <Sparkles className="size-4 shrink-0 mt-0.5" />
-              <div>
-                <strong>自定义模型注册</strong>：当上游服务商上线了新模型 ID，您可在此快速注册并直接暴露到前台展示池中。
+            <div className="rounded-xl bg-brand/10 border border-brand/20 p-3 text-caption text-brand leading-relaxed flex items-center justify-between gap-2">
+              <div className="flex items-start gap-2">
+                <Sparkles className="size-4 shrink-0 mt-0.5" />
+                <div>
+                  <strong>自定义模型注册</strong>：当上游服务商上线了新模型 ID，您可在此快速注册并直接暴露到前台展示池中。
+                </div>
               </div>
+              {onOpenCreateDrawer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenCreateDrawer();
+                  }}
+                  className="rounded-lg bg-brand/20 hover:bg-brand/30 text-brand border border-brand/40 px-2.5 py-1 text-micro font-bold shrink-0 whitespace-nowrap transition-colors"
+                >
+                  去全能抽屉配置 →
+                </button>
+              )}
             </div>
 
             {/* Model ID */}

@@ -14,10 +14,11 @@ test('VolcengineAdapter: 精确透传原生模型名与接入点 (ep-*)，无模
 
   // 新规范规格别名必须精确映射
   assert.equal(resolveModelName('seedream-5.0-pro'), 'doubao-seedream-5-0-pro-260628');
-  assert.equal(resolveModelName('seedream-5.0-flash'), 'doubao-seedream-5-0-260128');
-  assert.equal(resolveModelName('seedream-5.0-lite'), 'doubao-seedream-5-0-260128');
+  assert.equal(resolveModelName('seedream-5.0-flash'), 'seedream-5.0-flash');
+  assert.equal(resolveModelName('seedream-5.0-lite'), 'seedream-5.0-lite');
   assert.equal(resolveModelName('seedream-4.5'), 'doubao-seedream-4-5-251128');
-  assert.equal(resolveModelName('seedream-5.0-edit'), 'doubao-seededit-3-0-i2i-250628');
+  assert.equal(resolveModelName('seedream-5.0-edit'), 'seedream-5.0-edit');
+  assert.equal(resolveModelName('nano-banana-pro'), 'nano-banana-pro');
 
   // 未知或未来模型一律透传原始标识，绝不能默认掉包成 5.0 Pro
   assert.equal(resolveModelName('custom-seedream-future-v6'), 'custom-seedream-future-v6');

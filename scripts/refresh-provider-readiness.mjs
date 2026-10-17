@@ -1,20 +1,30 @@
 import { closePgPool } from '../lib/db/index.js';
 import { probeProviderChannel } from '../lib/services/healthProbe.js';
 
-const providerIds = ['runninghub', 'muapi'];
+const providerIds = ['runninghub', 'volcengine', 'muapi', 'google'];
 const results = [];
 let failureCode = null;
 
 try {
   for (const providerId of providerIds) {
-    const result = await probeProviderChannel(providerId);
-    results.push({
-      providerId,
-      healthStatus: result.healthStatus || 'unknown',
-      latencyMs: Number.isFinite(result.latencyMs) ? result.latencyMs : null,
-      probeKind: result.probeKind || null,
-      ...(result.errorCode ? { errorCode: String(result.errorCode).slice(0, 64) } : {}),
-    });
+    try {
+      const result = await probeProviderChannel(providerId);
+      results.push({
+        providerId,
+        healthStatus: result.healthStatus || 'unknown',
+        latencyMs: Number.isFinite(result.latencyMs) ? result.latencyMs : null,
+        probeKind: result.probeKind || null,
+        ...(result.errorCode ? { errorCode: String(result.errorCode).slice(0, 64) } : {}),
+      });
+    } catch (err) {
+      results.push({
+        providerId,
+        healthStatus: 'unhealthy',
+        latencyMs: null,
+        probeKind: null,
+        errorCode: String(err?.code || 'PROBE_FAILED').slice(0, 64),
+      });
+    }
   }
 } catch (error) {
   failureCode = String(error?.code || 'HEALTH_REFRESH_FAILED').toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 64);

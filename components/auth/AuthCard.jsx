@@ -76,7 +76,6 @@ export default function AuthCard({
   const [infoMsg, setInfoMsg] = useState('');
   const [socialProviders, setSocialProviders] = useState([]);
   const [socialRegion, setSocialRegion] = useState(null);
-  const [isSwitchingRegion, setIsSwitchingRegion] = useState(false);
 
   // Timers cleanup
   useEffect(() => {
@@ -87,11 +86,8 @@ export default function AuthCard({
     };
   }, []);
 
-  const fetchSocialOptions = useCallback((targetRegion = null) => {
-    const url = targetRegion
-      ? `/api/auth/social-options?region=${encodeURIComponent(targetRegion)}`
-      : '/api/auth/social-options';
-    return fetch(url, { cache: 'no-store', credentials: 'same-origin' })
+  const fetchSocialOptions = useCallback(() => {
+    return fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data) return;
@@ -112,24 +108,6 @@ export default function AuthCard({
     fetchSocialOptions();
   }, [fetchSocialOptions]);
 
-  const handleToggleRegion = async () => {
-    const nextRegion = socialRegion === 'international' ? 'mainland_china' : 'international';
-    setIsSwitchingRegion(true);
-    try {
-      if (typeof document !== 'undefined') {
-        const domain = window.location.hostname.endsWith('supdance.com')
-          ? '; domain=.supdance.com'
-          : window.location.hostname.endsWith('koyosim.com')
-            ? '; domain=.koyosim.com'
-            : '';
-        document.cookie = `ko_social_region=${nextRegion}; path=/${domain}; max-age=31536000; SameSite=Lax`;
-      }
-      await fetchSocialOptions(nextRegion);
-    } finally {
-      setIsSwitchingRegion(false);
-    }
-  };
-
   // Surface OAuth errors from popup or query string
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -140,7 +118,7 @@ export default function AuthCard({
     } catch {}
 
     const handleOAuthEvent = (data) => {
-      if (!data || data.type !== 'supdance-auth-complete') return;
+      if (!data || (data.type !== 'supdance-auth-complete' && data.type !== 'koyosim-auth-complete')) return;
       if (data.action === 'bind') return;
       if (!data.ok && data.message) {
         setErrorMsg(data.message);
@@ -149,7 +127,7 @@ export default function AuthCard({
 
     const handleWindowMessage = (event) => handleOAuthEvent(event?.data);
     const handleStorageChange = (event) => {
-      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync') && event.newValue) {
+      if ((event.key === 'supdance_auth_event' || event.key === 'supdance-oauth-sync' || event.key === 'koyosim_auth_event' || event.key === 'koyosim-oauth-sync') && event.newValue) {
         try {
           handleOAuthEvent(JSON.parse(event.newValue));
         } catch {}
@@ -157,10 +135,13 @@ export default function AuthCard({
     };
 
     let channel = null;
+    let channelKoyo = null;
     try {
       if ('BroadcastChannel' in window) {
         channel = new BroadcastChannel('supdance_auth_channel');
         channel.onmessage = (event) => handleOAuthEvent(event.data);
+        channelKoyo = new BroadcastChannel('koyosim_auth_channel');
+        channelKoyo.onmessage = (event) => handleOAuthEvent(event.data);
       }
     } catch {}
 
@@ -168,6 +149,7 @@ export default function AuthCard({
     window.addEventListener('storage', handleStorageChange);
     return () => {
       if (channel) channel.close();
+      if (channelKoyo) channelKoyo.close();
       window.removeEventListener('message', handleWindowMessage);
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -566,8 +548,6 @@ export default function AuthCard({
               dividerText={copy.login.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '登录' : ''}
               region={socialRegion || 'mainland_china'}
-              onToggleRegion={handleToggleRegion}
-              isSwitchingRegion={isSwitchingRegion}
             />
           )}
 
@@ -613,8 +593,6 @@ export default function AuthCard({
               dividerText={copy.register?.socialDivider || copy.login?.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '快捷注册' : ''}
               region={socialRegion || 'mainland_china'}
-              onToggleRegion={handleToggleRegion}
-              isSwitchingRegion={isSwitchingRegion}
             />
           )}
         </div>

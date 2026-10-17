@@ -135,17 +135,30 @@ export async function GET(request) {
   if (userRow?.avatar_object_key) {
     const assetUrl = await getAssetUrl({ objectKey: userRow.avatar_object_key, visibility: 'private' });
     if (assetUrl) {
-      const redirectUrl = /^https?:\/\//i.test(assetUrl) ? assetUrl : new URL(assetUrl, request.url);
-      return Response.redirect(redirectUrl);
+      const redirectLocation = /^https?:\/\//i.test(assetUrl)
+        ? assetUrl
+        : (assetUrl.startsWith('/') ? assetUrl : `/${assetUrl}`);
+      return new Response(null, {
+        status: 307,
+        headers: { Location: redirectLocation },
+      });
     }
   }
 
-  if (userRow?.avatar_url && /^\//.test(userRow.avatar_url) && !userRow.avatar_url.startsWith('/api/user/avatar')) {
-    return Response.redirect(new URL(userRow.avatar_url, request.url));
+  if (userRow?.avatar_url && !userRow.avatar_url.startsWith('/api/user/avatar')) {
+    if (/^https?:\/\//i.test(userRow.avatar_url) || /^\//.test(userRow.avatar_url)) {
+      return new Response(null, {
+        status: 307,
+        headers: { Location: userRow.avatar_url },
+      });
+    }
   }
 
   // 杜绝向 <img> 请求返回 401/404 JSON 导致前端图片破碎，统一平滑重定向至默认 SVG 头像
-  return Response.redirect(new URL('/assets/avatars/default-01.svg', request.url), 307);
+  return new Response(null, {
+    status: 307,
+    headers: { Location: '/assets/avatars/default-01.svg' },
+  });
 }
 
 export async function DELETE(request) {

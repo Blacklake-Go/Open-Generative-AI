@@ -7,20 +7,20 @@ test('getSocialLoginRegion respects query override parameter', () => {
   assert.equal(getSocialLoginRegion(headers, 'international'), 'international');
 });
 
-test('getSocialLoginRegion respects cookie override', () => {
-  // China IP, but user toggled to international via cookie
+test('getSocialLoginRegion ignores cookie override and strictly detects by IP', () => {
+  // China IP, even with cookie set to international
   const headers = {
     'x-forwarded-for': '116.148.99.110',
     cookie: 'session_id=abc; ko_social_region=international; theme=dark',
   };
-  assert.equal(getSocialLoginRegion(headers), 'international');
+  assert.equal(getSocialLoginRegion(headers), 'mainland_china');
 
-  // Overseas IP (Korea), but user toggled to mainland_china via cookie
+  // Overseas IP (Korea), even with cookie set to mainland_china
   const headersKr = {
     'x-forwarded-for': '138.2.120.119',
     cookie: 'session_id=xyz; ko_social_region=mainland_china',
   };
-  assert.equal(getSocialLoginRegion(headersKr), 'mainland_china');
+  assert.equal(getSocialLoginRegion(headersKr), 'international');
 });
 
 test('getSocialLoginRegion respects x-social-region header', () => {

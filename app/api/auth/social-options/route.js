@@ -59,14 +59,22 @@ export async function GET(request) {
     }
   );
 
-  if (validQueryRegion) {
+  const cookieHeader = request.headers.get('cookie') || '';
+  if (cookieHeader.includes('ko_social_region=')) {
     const domain = getCookieDomain(url.hostname);
-    response.cookies.set('ko_social_region', validQueryRegion, {
+    response.cookies.set('ko_social_region', '', {
       path: '/',
       domain,
-      maxAge: 31536000,
+      maxAge: 0,
       sameSite: 'lax',
     });
+    if (domain) {
+      response.cookies.set('ko_social_region', '', {
+        path: '/',
+        maxAge: 0,
+        sameSite: 'lax',
+      });
+    }
   }
 
   return response;

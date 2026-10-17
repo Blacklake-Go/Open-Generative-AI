@@ -1,14 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { register } from 'node:module';
 
-import {
+try {
+  register('../scripts/server-only-loader.mjs', import.meta.url);
+} catch {}
+
+const {
   RunningHubAdapter,
   mapRunningHubErrorCode,
   extractRunningHubResults,
   normalizeRunningHubStatus,
   validateRunningHubPayload,
-} from '../lib/adapters/RunningHubAdapter.js';
-import { PROVIDER_ERROR_CODES } from '../lib/adapters/BaseAdapter.js';
+} = await import('../lib/adapters/RunningHubAdapter.js');
+const { PROVIDER_ERROR_CODES } = await import('../lib/adapters/BaseAdapter.js');
 
 test('1. RunningHub 错误码归一化映射', () => {
   // 余额不足
@@ -311,4 +316,195 @@ test('8. getAccountStatus 与 healthCheck 探针契约', async () => {
   assert.equal(zeroHealth.healthy, false);
   assert.equal(zeroHealth.probeKind, 'http');
   assert.ok(zeroHealth.message.includes('余额为 0'));
+});
+
+test('9. 文生图端点契约：imageUrls 不得强制必填并安全默认为空数组', async () => {
+  const t2iEndpointConfig = {
+    taskType: 'text-to-image',
+    params: [
+      { fieldKey: 'prompt', label: '提示词', required: true, type: 'TEXT' },
+      { fieldKey: 'imageUrls', label: '参考图列表', required: true, type: 'LIST' },
+    ],
+  };
+
+  // 1) validateRunningHubPayload 在文生图端点下不将 imageUrls 判定为必填项错误
+  const payloadWithoutImages = { prompt: 'a beautiful sunset' };
+  const valResult = validateRunningHubPayload(payloadWithoutImages, t2iEndpointConfig);
+  assert.equal(valResult.ok, true);
+  assert.equal(valResult.problems.length, 0);
+
+  // 2) createTask 在文生图端点提交时自动将缺失的 imageUrls 补全为空数组 []
+  let capturedBody = null;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ code: '0', data: { taskId: 't2i-task-123', status: 'QUEUED' } }),
+    };
+  };
+
+  const adapter = new RunningHubAdapter({ apiKey: 'test_key', fetchImpl: mockFetch });
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/bytedance/jimeng-4.6/text-to-image',
+    prompt: 'a cinematic mountain',
+    endpointConfig: t2iEndpointConfig,
+    parameters: {},
+  });
+
+  assert.ok(capturedBody);
+  assert.equal(capturedBody.prompt, 'a cinematic mountain');
+  assert.ok(Array.isArray(capturedBody.imageUrls));
+  assert.equal(capturedBody.imageUrls.length, 0);
+});
+
+test('10. 连贯生图 sequentialImageGeneration：非法/空值安全清理或移除，避免 301 报错', async () => {
+  const contract = {
+    params: [
+      { fieldKey: 'prompt', required: true },
+      { fieldKey: 'sequentialImageGeneration', required: false, options: ['disabled', 'auto'] },
+    ],
+  };
+
+  // 1) 传入空字符串、null 或非法枚举值（如 'none', 'off', 'false'），validateRunningHubPayload 不报 301
+  assert.equal(validateRunningHubPayload({ prompt: 'test', sequentialImageGeneration: '' }, contract).ok, true);
+  assert.equal(validateRunningHubPayload({ prompt: 'test', sequentialImageGeneration: 'none' }, contract).ok, true);
+  assert.equal(validateRunningHubPayload({ prompt: 'test', sequentialImageGeneration: 'off' }, contract).ok, true);
+  assert.equal(validateRunningHubPayload({ prompt: 'test', sequentialImageGeneration: 'auto' }, contract).ok, true);
+
+  // 2) createTask 提交时，非法值被清除，合法值保留
+  let capturedBody = null;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ code: '0', data: { taskId: 'seq-task-123', status: 'QUEUED' } }),
+    };
+  };
+
+  const adapter = new RunningHubAdapter({ apiKey: 'test_key', fetchImpl: mockFetch });
+
+  // 测试非法枚举被安全移除
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/test/endpoint',
+    prompt: 'test prompt',
+    endpointConfig: contract,
+    parameters: { sequentialImageGeneration: 'invalid_mode' },
+  });
+  assert.equal(capturedBody.sequentialImageGeneration, undefined);
+
+  // 测试合法枚举正常透传
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/test/endpoint',
+    prompt: 'test prompt',
+    endpointConfig: contract,
+    parameters: { sequentialImageGeneration: 'auto' },
+  });
+  assert.equal(capturedBody.sequentialImageGeneration, 'auto');
+});
+
+test('11. 分辨率 resolution：空/默认值正确对齐端点枚举（如 2k 或 ""）', async () => {
+  // 端点配置 A: 支持 ['1k', '2k', '4k']
+  const configWith2k = {
+    params: [
+      { fieldKey: 'prompt', required: true },
+      { fieldKey: 'resolution', required: false, options: ['1k', '2k', '4k'] },
+    ],
+  };
+
+  let capturedBody = null;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ code: '0', data: { taskId: 'res-task-123', status: 'QUEUED' } }),
+    };
+  };
+  const adapter = new RunningHubAdapter({ apiKey: 'test_key', fetchImpl: mockFetch });
+
+  // 空值自动映射为 '2k'
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/test/endpoint',
+    prompt: 'test prompt',
+    endpointConfig: configWith2k,
+    parameters: { resolution: '' },
+  });
+  assert.equal(capturedBody.resolution, '2k');
+
+  // 大写 '2K' 自动归一化为小写 '2k'
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/test/endpoint',
+    prompt: 'test prompt',
+    endpointConfig: configWith2k,
+    parameters: { resolution: '2K' },
+  });
+  assert.equal(capturedBody.resolution, '2k');
+
+  // 端点配置 B: 包含 '' 空枚举选项
+  const configWithEmpty = {
+    params: [
+      { fieldKey: 'prompt', required: true },
+      { fieldKey: 'resolution', required: false, options: ['', 'standard', 'hd'] },
+    ],
+  };
+  await adapter.createTask({
+    providerEndpoint: 'openapi/v2/test/endpoint',
+    prompt: 'test prompt',
+    endpointConfig: configWithEmpty,
+    parameters: { resolution: 'default' },
+  });
+  assert.equal(capturedBody.resolution, '');
+});
+
+test('12. 边界契约：无内置 params 配置或直接调用 validate 时安全处理三要素', async () => {
+  let capturedBody = null;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ code: '0', data: { taskId: 'edge-task-999', status: 'QUEUED' } }),
+    };
+  };
+  const adapter = new RunningHubAdapter({ apiKey: 'test_key', fetchImpl: mockFetch });
+
+  // 1) 模拟真实数据库 pm_seedream_5_0_lite_runninghub 的空 endpointConfig
+  await adapter.createTask({
+    providerModelId: 'openapi/v2/bytedance/jimeng-4.6/text-to-image',
+    prompt: 'a tranquil lake',
+    endpointConfig: {},
+    parameters: {
+      sequentialImageGeneration: 'invalid_choice',
+      resolution: '',
+    },
+  });
+
+  assert.ok(capturedBody);
+  assert.equal(capturedBody.prompt, 'a tranquil lake');
+  assert.ok(Array.isArray(capturedBody.imageUrls), 'T2I 端点在空配置下也必须默认补全为 []');
+  assert.equal(capturedBody.imageUrls.length, 0);
+  assert.equal(capturedBody.sequentialImageGeneration, undefined, '非法 sequentialImageGeneration 必须被移除');
+  assert.equal(capturedBody.resolution, '2k', '空分辨率在无 options 情况下映射为 2k');
+
+  // 2) 直接调用 validateRunningHubPayload 时在 body 上对 resolution/sequential 进行安全规范化
+  const bodyToValidate = {
+    prompt: 'cat',
+    sequentialImageGeneration: 'not-valid',
+    resolution: 'default',
+  };
+  const res = validateRunningHubPayload(bodyToValidate, {
+    taskType: 'text-to-image',
+    params: [
+      { fieldKey: 'prompt', required: true },
+      { fieldKey: 'resolution', required: true, options: ['1k', '2k'] },
+      { fieldKey: 'imageUrls', required: true },
+      { fieldKey: 'sequentialImageGeneration', required: false, options: ['disabled', 'auto'] },
+    ],
+  });
+  assert.equal(res.ok, true, 'validateRunningHubPayload 规范化后不应报错误');
+  assert.equal(bodyToValidate.sequentialImageGeneration, undefined, '非法 sequentialImageGeneration 必须被移除');
+  assert.equal(bodyToValidate.resolution, '2k', 'default 分辨率必须被对齐到 2k');
+  assert.ok(Array.isArray(bodyToValidate.imageUrls), 'imageUrls 在 T2I 必须被自动填充为 []');
 });

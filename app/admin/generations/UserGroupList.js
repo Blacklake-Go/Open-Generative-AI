@@ -259,3 +259,5 @@ export function UserGroupList({ groups, baseParams }) {
     </div>
   );
 }
+
+export default UserGroupList;

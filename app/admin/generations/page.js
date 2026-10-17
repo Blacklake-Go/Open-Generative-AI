@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { listCreations } from '@/lib/services/adminRead';
+import { listCreations, listCreationUserGroups } from '@/lib/services/adminRead';
 import { toSearchParams } from '@/lib/admin/pagination';
 import { Card, DataTable, PageHeader, Pagination, StatusBadge, CopyableId, EmptyState } from '@/components/admin/AdminUi';
-import UserGroupList from './UserGroupList';
+import { UserGroupList } from './UserGroupList';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 
@@ -16,7 +16,24 @@ function formatDate(value) {
 export default async function GenerationsPage({ searchParams }) {
   await requireAdminPagePermission(PERMISSIONS.generationsRead);
   const params = toSearchParams(await searchParams);
-  const result = await listCreations(params);
+  const view = params.get('view') || 'users';
+  const userId = params.get('user_id') || '';
+
+  const backParams = new URLSearchParams(params);
+  backParams.delete('user_id');
+  backParams.delete('cursor');
+  const backHref = `?${backParams.toString()}`;
+
+  const viewHref = (key) => {
+    const next = new URLSearchParams(params);
+    next.set('view', key);
+    next.delete('cursor');
+    return `?${next.toString()}`;
+  };
+
+  const result = view === 'users'
+    ? await listCreationUserGroups(params)
+    : await listCreations(params);
 
   const columns = [
     {

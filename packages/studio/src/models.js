@@ -31551,6 +31551,75 @@ export function getModelPricing(modelId) {
   return modelPricingById.get(String(modelId)) || null;
 }
 
+const SERVER_TO_CATALOG_ALIASES = {
+  'seedream-5.0-pro': ['bytedance-seedream-5.0-pro', 'bytedance-seedream-v5.0', 'seedream-5.0', 'seedream-5.0-edit'],
+  'seedream-5.0-flash': ['bytedance-seedream-5.0-flash'],
+  'seedream-5.0-lite': ['bytedance-seedream-5.0-lite'],
+  'seedream-4.5': ['bytedance-seedream-v4.5', 'bytedance-seedream-v4.5-edit'],
+  'seedream-5.0': [
+    'seedream-5.0',
+    'bytedance-seedream-5.0',
+    'bytedance-seedream-v5.0',
+    'seedream-4.5',
+    'bytedance-seedream-v4.5',
+    'bytedance-seedream-v4.5-edit',
+    'seedream-5.0-lite',
+    'bytedance-seedream-5.0-lite',
+  ],
+  'imagen-4': ['google-imagen4', 'google-imagen4-ultra', 'google-imagen4-fast', 'google-imagen-4'],
+  'kling-3.0': [
+    'kling-v3.0-standard-text-to-video', 'kling-v3.0-pro-text-to-video', 'kling-v3.0-4k-text-to-video',
+    'kling-v3-turbo-standard-text-to-video', 'kling-v3-turbo-pro-text-to-video',
+    'kling-v3.0-standard-image-to-video', 'kling-v3.0-pro-image-to-video', 'kling-v3.0-4k-image-to-video',
+    'kling-v3-turbo-standard-image-to-video', 'kling-v3-turbo-pro-image-to-video',
+    'kling-v3.0-std-motion-control', 'kling-v3.0-pro-motion-control', 'kling-v3.0-pro-recast'
+  ],
+  'kling-2.6': [
+    'kling-v2.6-standard-text-to-video', 'kling-v2.6-pro-text-to-video', 'kling-v2.6-pro-t2v',
+    'kling-v2.6-standard-i2v', 'kling-v2.6-pro-i2v', 'kling-v2.6-pro-image-to-video',
+    'kling-v2.6-std-motion-control', 'kling-v2.6-pro-motion-control'
+  ],
+  'kling-2.5': [
+    'kling-v2.5-turbo-pro-t2v', 'kling-v2.5-turbo-pro-i2v', 'kling-v2.5-turbo-pro-image-to-video'
+  ],
+  'kling-2.1': [
+    'kling-v2.1-master-t2v', 'kling-v2.1-master-i2v', 'kling-v2.1-standard-i2v'
+  ],
+  'kling-o1': [
+    'kling-o1-text-to-video', 'kling-o1-image-to-video'
+  ],
+  'seedance-2.0': [
+    'seedance-v2.0-t2v', 'seedance-v2.0-i2v', 'seedance-v2.0-extend',
+    'seedance-2.0-text-to-video', 'seedance-2.0-image-to-video'
+  ],
+  'seedance-2.5': [
+    'seedance-2.5-text-to-video', 'seedance-2.5-image-to-video',
+    'seedance-2.5-fast-text-to-video', 'seedance-2.5-fast-image-to-video'
+  ],
+  'hailuo-2.3': [
+    'minimax-hailuo-2.3-standard-t2v', 'minimax-hailuo-2.3-standard-i2v',
+    'minimax-hailuo-2.3-pro-t2v', 'minimax-hailuo-2.3-pro-i2v',
+    'hailuo-2.3-standard-t2v', 'hailuo-2.3-standard-i2v'
+  ],
+  'hailuo-02': [
+    'minimax-hailuo-02-t2v', 'minimax-hailuo-02-i2v'
+  ],
+  'wan-2.1': [
+    'wan-2.1-text-to-video', 'wan-2.1-image-to-video', 'wan2.1-image-to-video',
+    'wan-2.1-t2v', 'wan-2.1-i2v'
+  ],
+  'veo-2': [
+    'veo-2-text-to-video', 'veo-2-image-to-video',
+    'veo3-text-to-video', 'veo3.1-text-to-video', 'veo3-image-to-video', 'veo3-fast-image-to-video'
+  ],
+  'wan-2.7': [
+    'wan2.7-text-to-video', 'wan2.7-image-to-video'
+  ],
+  'sora-2': [
+    'openai-sora-2-text-to-video', 'openai-sora-2-image-to-video'
+  ],
+};
+
 export function applyActiveModelDirectory(rows) {
   if (!Array.isArray(rows)) return { activeCount: activeModelIds?.size || 0, visibleCount: 0 };
   const list = rows;
@@ -31559,15 +31628,15 @@ export function applyActiveModelDirectory(rows) {
   const activeIds = new Set(
     list
       .filter(isServerModelGenerationEligible)
-      .flatMap((row) => [
-        String(row.id),
-        String(row.endpoint || ''),
-        ...(row.id === 'seedream-5.0-pro' ? ['bytedance-seedream-5.0-pro', 'bytedance-seedream-v5.0', 'seedream-5.0', 'seedream-5.0-edit'] : []),
-        ...(row.id === 'seedream-5.0-flash' ? ['bytedance-seedream-5.0-flash'] : []),
-        ...(row.id === 'seedream-5.0-lite' ? ['bytedance-seedream-5.0-lite'] : []),
-        ...(row.id === 'seedream-4.5' ? ['bytedance-seedream-v4.5', 'bytedance-seedream-v4.5-edit'] : []),
-        ...(row.id === 'imagen-4' ? ['google-imagen4'] : []),
-      ])
+      .flatMap((row) => {
+        const idStr = String(row.id);
+        const aliases = SERVER_TO_CATALOG_ALIASES[idStr] || [];
+        return [
+          idStr,
+          String(row.endpoint || ''),
+          ...aliases,
+        ];
+      })
       .filter(Boolean),
   );
 
@@ -31582,14 +31651,9 @@ export function applyActiveModelDirectory(rows) {
           credits: Number(row.creditsPrice),
           formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
         };
-        const entries = [[String(row.id), item]];
-        if (row.id === 'seedream-5.0-pro') {
-          entries.push(['bytedance-seedream-5.0-pro', item], ['seedream-5.0', item]);
-        } else if (row.id === 'seedream-4.5') {
-          entries.push(['bytedance-seedream-v4.5', item]);
-        } else if (row.id === 'imagen-4') {
-          entries.push(['google-imagen4', item]);
-        }
+        const idStr = String(row.id);
+        const aliases = SERVER_TO_CATALOG_ALIASES[idStr] || [];
+        const entries = [[idStr, item], ...aliases.map((alias) => [alias, item])];
         return entries;
       }),
   );

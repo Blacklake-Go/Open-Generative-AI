@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { getUserBySession } from '@/lib/services/auth';
-import { getCommonCopy, getLocaleConfig, normalizeLocale } from '@/lib/locales';
-import { ONBOARDING_STEP_IDENTITY } from '@/lib/onboarding/schema';
-import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import { getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import NewcomerOnboardingModal from '@/components/onboarding/NewcomerOnboardingModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,35 +16,43 @@ async function resolveViewer() {
 }
 
 export async function generateMetadata() {
-  const viewer = await resolveViewer();
-  const { identityTitle } = getCommonCopy(viewer?.locale || 'en').onboarding;
   return {
-    title: `${identityTitle} — SupDance AI Studio`,
+    title: '新人创作引导 — SupDance',
     robots: { index: false, follow: false },
   };
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const isPreview = resolvedParams?.preview === 'true' || resolvedParams?.preview === '1';
+  const initialStep = parseInt(resolvedParams?.step, 10) === 2 ? 2 : 1;
+
   const viewer = await resolveViewer();
-  if (!viewer) redirect('/');
-  const { user, locale } = viewer;
+  if (!viewer && !isPreview) redirect('/');
+
+  const user = viewer?.user || {
+    id: '888888',
+    userNumber: '888888',
+    displayName: '新锐创作者',
+    locale: 'zh',
+    onboardingCompleted: false,
+    onboardingStep: initialStep,
+  };
+  const locale = viewer?.locale || 'zh-CN';
 
   const config = getLocaleConfig(locale);
   const studioHref = config.rootPath ? `${config.rootPath}/studio` : '/studio';
 
-  // 画像只采集一次：完成后不再提供重填入口，否则「自述 vs 行为」的基线会被覆盖。
-  if (user.onboardingCompleted) redirect(studioHref);
+  // 画像只采集一次：生产模式下完成后直接重定向到工作台；预览模式可反复体验
+  if (user.onboardingCompleted && !isPreview) redirect(studioHref);
 
   return (
-    <OnboardingFlow
-      initialStep={user.onboardingStep >= ONBOARDING_STEP_IDENTITY ? 2 : 1}
-      initialUser={{
-        userNumber: user.userNumber || '',
-        displayName: user.displayName || '',
-        avatarUrl: user.avatar || '',
-        locale,
-      }}
+    <NewcomerOnboardingModal
+      user={user}
+      locale={locale}
       studioHref={studioHref}
+      isPageMode={true}
+      initialStep={initialStep}
     />
   );
 }

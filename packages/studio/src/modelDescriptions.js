@@ -34,7 +34,7 @@ export const MODEL_DESCRIPTIONS = {
   "seedream-4.5": {
     zh: "画质全面优化，指令响应能力再次提升",
     en: "Full image quality optimization, improved prompt response.",
-    tag: "4.7",
+    tag: "4.5",
     badge: null,
   },
   "seedream-5.0": {

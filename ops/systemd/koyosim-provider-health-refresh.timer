@@ -1,9 +1,9 @@
 [Unit]
-Description=Refresh KoyoSIM provider readiness every 10 minutes
+Description=Refresh KoyoSIM provider readiness every 3 minutes
 
 [Timer]
 OnBootSec=2min
-OnUnitInactiveSec=10min
+OnUnitInactiveSec=3min
 AccuracySec=30s
 Unit=koyosim-provider-health-refresh.service
 
