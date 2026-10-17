@@ -6,5 +6,5 @@ export const dynamic = "force-dynamic";
 export default async function LegacyRedirectPage({ searchParams }) {
   const sp = await searchParams;
   const queryString = sp ? serializeSearchParams(sp) : "";
-  redirect(buildRedirectTarget("/admin/models?tab=models", queryString));
+  redirect(buildRedirectTarget("/admin/models", queryString));
 }

@@ -61,9 +61,9 @@
 | `/admin/audit` | `app/admin/audit/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/community` | `app/admin/community/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/content/analytics` | `app/admin/content/analytics/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/content/banners` | `app/admin/content/banners/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/content/effects` | `app/admin/content/effects/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/content/banners` | `app/admin/content/banners/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=banner` |
+| `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=branding` |
+| `/admin/content/effects` | `app/admin/content/effects/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=motion` |
 | `/admin/content/icon` | `app/admin/content/icon/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/cost-center` | `app/admin/cost-center/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/coupons` | `app/admin/coupons/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -78,13 +78,13 @@
 | `/admin/invites` | `app/admin/invites/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/login` | `app/admin/login/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models` | `app/admin/models/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/models/brands` | `app/admin/models/brands/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/models/brands` | `app/admin/models/brands/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models?brand=${encodeURIComponent(brandId)}` `/admin/models?brand=all` |
 | `/admin/models/canvas` | `app/admin/models/canvas/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/catalog` | `app/admin/models/catalog/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/providers` |
 | `/admin/models/cost-center` | `app/admin/models/cost-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/frontend` | `app/admin/models/frontend/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/health` | `app/admin/models/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/providers` |
-| `/admin/models/pricing` | `app/admin/models/pricing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/models/pricing` | `app/admin/models/pricing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/routing?tab=pending` `/admin/models/routing?tab=pricing` |
 | `/admin/models/profit-center` | `app/admin/models/profit-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/providers` | `app/admin/models/providers/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/registry` | `app/admin/models/registry/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -104,7 +104,7 @@
 | `/admin/routing` | `app/admin/routing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/routing/{*}` | `app/admin/routing/[modelId]/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/security/sessions` | `app/admin/security/sessions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
-| `/admin/settings` | `app/admin/settings/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/settings` | `app/admin/settings/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/subscription-faq` | `app/admin/subscription-faq/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/subscriptions` | `app/admin/subscriptions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/system` | `app/admin/system/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -244,7 +244,7 @@
 | `api-mutation-without-guard` | 0 | 0 |
 | `api-mutation-without-rate-limit` | 11 | 11 |
 | `api-spoofed-client-user-id` | 0 | 0 |
-| `raw-unprefixed-href` | 90 | 86 |
+| `raw-unprefixed-href` | 90 | 90 |
 | `locale-zh-branch-outside-onboarding` | 12 | 12 |
 
 ## 服务器 A 边缘层

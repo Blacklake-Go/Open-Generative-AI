@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation';
  * 1. 严格去除任何外层卡片容器 (无 bg-surface-raised, 无 rounded-2xl, 无 p-2)
  * 2. 纯文字极简下划线标尺选项卡 (Underline Tabs)，活动项带 2px 品牌洋红指示标尺
  * 3. 严格锁定固定高度 (h-12 / 48px)，与底边分割线紧密嵌合，垂直居中
- * 4. 三大核心页面 (/admin/models, /admin/models/providers, /admin/models/pricing) 高度与基准线 100% 绝对一致，消除切换抖动与页面割裂
+ * 4. 三大核心页面 (/admin/models, /admin/models/providers, /admin/models/routing) 高度与基准线 100% 绝对一致，消除切换抖动与页面割裂
  */
 export default function ModelNavTabs({
   activeTab: propActiveTab,
@@ -21,11 +21,9 @@ export default function ModelNavTabs({
   const pathname = usePathname();
 
   const tabs = [
-    { id: 'models', label: '模型管理', href: '/admin/models', count: modelCount },
-    { id: 'providers', label: '供应商管理', href: '/admin/models/providers' },
-    { id: 'brands', label: '品牌模型映射', href: '/admin/models/brands' },
-    { id: 'routing', label: '智能路由与策略', href: '/admin/models/routing' },
-    { id: 'pricing', label: '模型定价与利润', href: '/admin/models/pricing' },
+    { id: 'models', label: '模型货架与全景', href: '/admin/models', count: modelCount },
+    { id: 'providers', label: '供应商与通道', href: '/admin/models/providers' },
+    { id: 'routing', label: '智能路由与价盘策略', href: '/admin/models/routing' },
   ];
 
   return (
@@ -38,15 +36,11 @@ export default function ModelNavTabs({
           const isActive = propActiveTab
             ? propActiveTab === tab.id
             : tab.id === 'models'
-            ? pathname === '/admin/models' || pathname === '/admin/models/frontend'
+            ? pathname === '/admin/models' || pathname === '/admin/models/frontend' || pathname?.startsWith('/admin/models/brands')
             : tab.id === 'providers'
-            ? pathname === '/admin/models/providers'
-            : tab.id === 'brands'
-            ? pathname === '/admin/models/brands' || pathname?.startsWith('/admin/models/brands')
+            ? pathname === '/admin/models/providers' || pathname?.startsWith('/admin/models/providers')
             : tab.id === 'routing'
-            ? pathname === '/admin/models/routing' || pathname?.startsWith('/admin/models/routing')
-            : tab.id === 'pricing'
-            ? pathname === '/admin/models/pricing' || pathname?.startsWith('/admin/models/pricing')
+            ? pathname === '/admin/models/routing' || pathname?.startsWith('/admin/models/routing') || pathname === '/admin/models/pricing' || pathname?.startsWith('/admin/models/pricing')
             : pathname === tab.href;
 
           return (

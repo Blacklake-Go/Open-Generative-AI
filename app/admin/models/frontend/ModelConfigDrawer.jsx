@@ -5,7 +5,7 @@ import {
   X, Save, Loader2, RefreshCw, CheckCircle2, XCircle,
   Eye, Pin, Star, Sparkles, Check, AlertTriangle, Layers,
   ChevronDown, Search, ArrowRight, ShieldCheck, DollarSign,
-  TrendingUp, Percent, Zap
+  TrendingUp, Percent, Zap, Server, Sliders, Shield
 } from 'lucide-react';
 import { Button, StatusBadge } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
@@ -61,11 +61,10 @@ export default function ModelConfigDrawer({
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState(null);
   const [inlineCandidates, setInlineCandidates] = useState([]);
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'preview'
+  const [channelRoutes, setChannelRoutes] = useState([]);
 
   // Model Picker for new model
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
-  const [modelPickerSearch, setModelPickerSearch] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,12 +90,21 @@ export default function ModelConfigDrawer({
         capabilities: {},
         min_cost_cny: null,
         min_cost_usd: null,
+        primary_provider: '',
+        backup_provider_id: '',
+        backup_model_id: '',
+        approved_routes: 0,
+        healthy_routes: 0,
       });
+      setChannelRoutes([]);
       setModelPickerOpen(true);
     } else if (model) {
       const initialCredits = Number(model.base_credits) > 0
         ? Number(model.base_credits)
         : (Number(model.credits_price) > 0 ? Number(model.credits_price) : 10);
+
+      const routesList = Array.isArray(model.routes) ? model.routes : [];
+      setChannelRoutes(routesList.map((r) => ({ ...r })));
 
       setFormData({
         model_id: model.id,
@@ -122,10 +130,13 @@ export default function ModelConfigDrawer({
           ? model.supported_durations
           : [5, 10],
         capabilities: typeof model.capabilities === 'object' && model.capabilities ? model.capabilities : {},
-        min_cost_cny: model.min_cost_cny ? Number(model.min_cost_cny) : null,
-        min_cost_usd: model.min_cost_usd ? Number(model.min_cost_usd) : null,
-        approved_routes: model.approved_routes ?? 0,
-        healthy_routes: model.healthy_routes ?? 0,
+        min_cost_cny: model.min_cost_cny !== undefined && model.min_cost_cny !== null ? Number(model.min_cost_cny) : null,
+        min_cost_usd: model.min_cost_usd !== undefined && model.min_cost_usd !== null ? Number(model.min_cost_usd) : null,
+        primary_provider: model.provider || (routesList[0]?.provider_id) || '',
+        backup_provider_id: model.backup_provider_id || '',
+        backup_model_id: model.backup_model_id || '',
+        approved_routes: model.approved_routes ?? routesList.filter((r) => r.review_status === 'approved').length,
+        healthy_routes: model.healthy_routes ?? routesList.filter((r) => r.enabled && r.review_status === 'approved').length,
         provider_ids: model.provider_ids || [],
       });
 
@@ -159,7 +170,7 @@ export default function ModelConfigDrawer({
     return resolveBrand(model || { id: formData.model_id, name: formData.display_name });
   }, [model, formData.model_id, formData.display_name]);
 
-  // Margin calculation
+  // Margin calculation with real-time recalculation & loss detection
   const marginMetrics = useMemo(() => {
     const costCny = formData.min_cost_cny;
     const credits = Number(formData.credits || 0);
@@ -171,7 +182,7 @@ export default function ModelConfigDrawer({
       let status = 'healthy';
       if (rate < 0) status = 'loss';
       else if (rate < 30) status = 'low';
-      else if (rate > 50) status = 'high';
+      else if (rate >= 30) status = 'healthy';
 
       return {
         hasData: true,
@@ -214,6 +225,35 @@ export default function ModelConfigDrawer({
     }
   };
 
+  const handleRoutePriorityChange = (routeId, newPriority) => {
+    setChannelRoutes((prev) =>
+      prev.map((r) => (r.id === routeId ? { ...r, priority: Number(newPriority) } : r))
+    );
+  };
+
+  const handleRouteEnabledToggle = (routeId) => {
+    setChannelRoutes((prev) =>
+      prev.map((r) => (r.id === routeId ? { ...r, enabled: !r.enabled } : r))
+    );
+  };
+
+  const handleSetPrimaryRoute = (route) => {
+    setFormData((f) => ({ ...f, primary_provider: route.provider_id }));
+    setChannelRoutes((prev) => {
+      const maxPriority = prev.reduce((m, r) => Math.max(m, Number(r.priority) || 0), 0);
+      return prev.map((r) => {
+        if (r.id === route.id) {
+          return {
+            ...r,
+            priority: Math.max(maxPriority + 10, 60),
+            enabled: true,
+          };
+        }
+        return r;
+      });
+    });
+  };
+
   const handleSave = async () => {
     if (!canWrite) return;
     const targetId = formData.model_id;
@@ -225,10 +265,36 @@ export default function ModelConfigDrawer({
       return;
     }
 
+    // 计算当前健康可用通道数
+    const healthyRoutesCount = channelRoutes.filter(
+      (r) => r.enabled && r.review_status === 'approved' && r.health_status === 'healthy'
+    ).length;
+    const isZeroRoutes = healthyRoutesCount === 0 || (!formData.healthy_routes || Number(formData.healthy_routes) <= 0);
+
+    // 负毛利安全红线拦截与二次确认
+    if (marginMetrics.hasData && marginMetrics.status === 'loss') {
+      const ok = typeof window === 'undefined' ? true : window.confirm(
+        `【⚠️ 赤红负毛利安全警示】当前单次积分定价 (${credits} 积分 ≈ ¥${marginMetrics.userPriceCny}) 低于采购底价 (¥${marginMetrics.costCny})，每笔生成将亏损 ¥${Math.abs(Number(marginMetrics.marginCny)).toFixed(2)}。确定仍要保存吗？`
+      );
+      if (!ok) return;
+    }
+
+    // 0 渠道阻断安全警示与二次确认
+    if (isZeroRoutes && formData.is_visible) {
+      const ok = typeof window === 'undefined' ? true : window.confirm(
+        '【🔴 0 渠道阻断警示】当前模型可用通道数为 0。若开启前台展示，用户下单时将无法成功路由。确定仍要开启展示并保存吗？'
+      );
+      if (!ok) return;
+    }
+
     setSaving(true);
     try {
       const payload = {
         ...formData,
+        primary_provider: formData.primary_provider,
+        backup_provider_id: formData.backup_provider_id,
+        backup_model_id: formData.backup_model_id,
+        channel_routes: channelRoutes,
         capabilities: {
           ...(formData.capabilities || {}),
           pricing_hint: (formData.pricing_hint || '').trim(),
@@ -246,9 +312,10 @@ export default function ModelConfigDrawer({
   if (!isOpen) return null;
 
   const previewName = formData.display_name || '模型展示名称';
-  const previewBadge = formData.badge || 'New';
+  const previewBadge = formData.badge || '';
   const previewDesc = formData.description || '超高质感写实，精准理解提示词，极速出图。';
   const previewCredits = formData.credits || 10;
+  const hasZeroRoutes = !formData.healthy_routes || Number(formData.healthy_routes) <= 0;
 
   return (
     <div className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
@@ -261,7 +328,7 @@ export default function ModelConfigDrawer({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-body-lg font-bold text-ink truncate">
-                  {isNew ? '添加前台展示模型' : `配置模型 · ${formData.display_name || formData.model_id}`}
+                  {isNew ? '引入前台新模型' : `一站式配置 · ${formData.display_name || formData.model_id}`}
                 </h2>
                 <span className="rounded-full bg-brand/15 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/30">
                   {brandInfo.shortName}
@@ -312,12 +379,12 @@ export default function ModelConfigDrawer({
 
         {/* Drawer Body (Scrollable) */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-          {/* Section 1: 实时前台卡片效果预览 (Studio Live Preview) */}
+          {/* Section 1: 实时前台卡片效果 1:1 预览 (Studio Live Preview) */}
           <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-1">
             <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
               <span className="text-caption font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
                 <Eye className="size-3.5 text-brand" />
-                前台卡片效果实时预览 (Studio Preview)
+                Section 1: 实时前台卡片 1:1 预览 (Studio Dropdown Preview)
               </span>
               <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[10px] text-ink-muted">
                 1:1 还原 C 端体验
@@ -373,25 +440,241 @@ export default function ModelConfigDrawer({
             </div>
           </div>
 
-          {/* Section 2: 渠道与可用性 (打通模型API) */}
+          {/* Section 2: 采购成本与定价毛利测算器 */}
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+              <h3 className="text-body font-bold text-ink flex items-center gap-2">
+                <DollarSign className="size-4 text-brand" />
+                Section 2: 采购成本与定价毛利测算器
+              </h3>
+              <span className="text-caption text-ink-subtle font-mono">
+                1 积分 = ¥0.10
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Cost Box */}
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                <span className="text-micro text-ink-subtle uppercase">官方采购底价 (成本)</span>
+                <div className="font-mono font-bold text-body-lg text-white">
+                  {formData.min_cost_cny !== null && formData.min_cost_cny !== undefined
+                    ? `¥${Number(formData.min_cost_cny).toFixed(3)}`
+                    : '—'}
+                </div>
+                <span className="text-[10px] text-ink-muted font-mono block">
+                  {formData.min_cost_usd !== null && formData.min_cost_usd !== undefined
+                    ? `($${Number(formData.min_cost_usd).toFixed(4)})`
+                    : '暂无通道底价'}
+                </span>
+              </div>
+
+              {/* Price / Credits Input */}
+              <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-micro text-brand uppercase font-bold">单次积分售价</span>
+                  <span className="text-[10px] text-ink-subtle font-mono">C 端售价</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <input
+                    type="number"
+                    min="1"
+                    max="10000"
+                    step="1"
+                    value={formData.credits ?? ''}
+                    onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
+                  />
+                  <span className="text-caption font-bold text-brand shrink-0">积分</span>
+                </div>
+                <span className="text-[10px] text-ink-muted font-mono block">
+                  折合: ¥{marginMetrics.userPriceCny} / 次
+                </span>
+              </div>
+
+              {/* Real-time Profit Margin */}
+              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                <span className="text-micro text-ink-subtle uppercase">实时预估毛利率</span>
+                <div className="font-mono font-bold text-body-lg flex items-center gap-1">
+                  {marginMetrics.hasData ? (
+                    <span className={
+                      marginMetrics.status === 'loss' ? 'text-rose-400 font-black'
+                        : marginMetrics.status === 'low' ? 'text-amber-400'
+                        : 'text-emerald-400'
+                    }>
+                      {marginMetrics.rate}%
+                    </span>
+                  ) : (
+                    <span className="text-ink-subtle">—</span>
+                  )}
+                </div>
+                <span className="text-[10px] text-ink-muted font-mono block">
+                  {marginMetrics.hasData
+                    ? `每单利润: ${Number(marginMetrics.marginCny) >= 0 ? '+' : ''}¥${marginMetrics.marginCny}`
+                    : '待关联通道成本后计算'}
+                </span>
+              </div>
+            </div>
+
+            {/* Negative Margin Alert / Warning */}
+            {marginMetrics.hasData && marginMetrics.status === 'loss' && (
+              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2 animate-pulse">
+                <AlertTriangle className="size-4 text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">⚠️ 赤红负毛利阻断警告：</span>
+                  <span>当前单次积分定价 ({formData.credits} 积分 ≈ ¥{marginMetrics.userPriceCny}) 低于采购底价 (¥{marginMetrics.costCny})，每笔生成将亏损 ¥{Math.abs(Number(marginMetrics.marginCny)).toFixed(2)}。请调高积分定价以防资产流失！</span>
+                </div>
+              </div>
+            )}
+
+            {/* Pricing Hint Input */}
+            <div>
+              <label className="text-caption text-ink-muted block mb-1">
+                前台扣费文案说明 (Pricing Hint)
+              </label>
+              <input
+                type="text"
+                value={formData.pricing_hint || ''}
+                onChange={(e) => setFormData((f) => ({ ...f, pricing_hint: e.target.value }))}
+                placeholder="例如: 🎬 基础 10 算力 (5秒视频) 或 ✨ 旗舰出图 20 积分"
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
+              />
+              <span className="text-[11px] text-ink-subtle mt-1 block">
+                展示在 Studio 模型选择器副标题。若留空，前台将默认显示为“{formData.credits || 10} 积分 / 次”。
+              </span>
+            </div>
+          </div>
+
+          {/* Section 3: 就地供应通道与主备快速调度 (Fast Route Switcher) */}
           <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
               <h3 className="text-body font-bold text-ink flex items-center gap-2">
                 <Zap className="size-4 text-brand" />
-                可用渠道与路由健康
+                Section 3: 就地供应通道与主备快速调度 (Fast Route Switcher)
               </h3>
-              {formData.healthy_routes > 0 ? (
-                <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1">
+              {channelRoutes.filter((r) => r.enabled && r.review_status === 'approved').length > 0 ? (
+                <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1 font-mono">
                   <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {formData.healthy_routes}/{formData.approved_routes} 已审可用
+                  {channelRoutes.filter((r) => r.enabled && r.review_status === 'approved').length}/{channelRoutes.length} 通道就绪
                 </span>
               ) : (
                 <span className="rounded-full bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1">
                   <AlertTriangle className="size-3" />
-                  无可用渠道
+                  0 渠道阻断
                 </span>
               )}
             </div>
+
+            {/* Channel List Table */}
+            {channelRoutes.length > 0 ? (
+              <div className="rounded-xl border border-white/10 bg-black/30 overflow-hidden text-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/[0.08] bg-white/[0.02] text-caption text-ink-muted">
+                      <th className="px-3 py-2">上游供应商</th>
+                      <th className="px-3 py-2">状态</th>
+                      <th className="px-3 py-2 text-right">单价</th>
+                      <th className="px-3 py-2 text-center">主通道</th>
+                      <th className="px-3 py-2 text-center">备用通道</th>
+                      <th className="px-3 py-2 w-20 text-center">权重</th>
+                      <th className="px-3 py-2 text-center">启用</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.06]">
+                    {channelRoutes.map((route) => {
+                      const isPrimary = formData.primary_provider === route.provider_id;
+                      const isBackup = formData.backup_provider_id === route.provider_id;
+                      const isHealthy = route.health_status === 'healthy';
+
+                      return (
+                        <tr key={route.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="px-3 py-2.5">
+                            <div className="font-semibold text-white truncate max-w-[150px]">
+                              {route.provider_name || route.provider_id}
+                            </div>
+                            <div className="font-mono text-[10px] text-ink-subtle truncate max-w-[150px]">
+                              {route.provider_model_id}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                              route.review_status === 'approved' && isHealthy
+                                ? 'bg-emerald-500/15 text-emerald-300'
+                                : 'bg-amber-500/15 text-amber-300'
+                            }`}>
+                              <span className={`size-1.5 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                              {route.review_status === 'approved' ? '已核准' : '待审核'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 text-right font-mono text-ink">
+                            {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : '—'}
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <input
+                              type="radio"
+                              name="primary_provider_radio"
+                              checked={isPrimary}
+                              onChange={() => handleSetPrimaryRoute(route)}
+                              className="size-3.5 accent-brand cursor-pointer"
+                              title="设为主通道（提权并确保启用）"
+                            />
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <input
+                              type="radio"
+                              name="backup_provider_radio"
+                              checked={isBackup}
+                              onClick={() => {
+                                if (isBackup) {
+                                  setFormData((f) => ({ ...f, backup_provider_id: '' }));
+                                }
+                              }}
+                              onChange={() => {
+                                setFormData((f) => ({ ...f, backup_provider_id: route.provider_id }));
+                              }}
+                              className="size-3.5 accent-amber-500 cursor-pointer"
+                              title={isBackup ? '点击取消备用通道' : '设为备用通道'}
+                            />
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={route.priority ?? 50}
+                              onChange={(e) => handleRoutePriorityChange(route.id, e.target.value)}
+                              className="w-14 rounded bg-black/60 border border-white/10 px-1 py-0.5 text-center font-mono text-xs text-ink outline-none focus:border-brand"
+                            />
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(route.enabled)}
+                              onChange={() => handleRouteEnabledToggle(route.id)}
+                              className="size-3.5 accent-brand cursor-pointer"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-center space-y-2">
+                <p className="text-caption text-ink-muted">当前模型暂无绑定的上游通道</p>
+                {onSmartMatch && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onSmartMatch(model || formData)}
+                    className="h-8 text-xs font-semibold text-brand hover:text-white"
+                  >
+                    <Sparkles className="size-3.5 mr-1 text-brand" />
+                    匹配候选上游渠道
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Smart Match recommendations if unrouted */}
             {inlineCandidates.length > 0 && (
@@ -406,7 +689,7 @@ export default function ModelConfigDrawer({
                       onClick={() => onSmartMatch(model || formData)}
                       className="text-micro text-brand hover:underline font-medium"
                     >
-                      匹配中心 →
+                      去智能匹配中心 →
                     </button>
                   )}
                 </div>
@@ -430,181 +713,11 @@ export default function ModelConfigDrawer({
             )}
           </div>
 
-          {/* Section 3: 采购成本与定价策略 (打通模型定价与毛利率) */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
-            <h3 className="text-body font-bold text-ink flex items-center gap-2">
-              <DollarSign className="size-4 text-brand" />
-              采购成本与定价测算
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Cost Box */}
-              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
-                <span className="text-micro text-ink-subtle uppercase">采购底价 (成本)</span>
-                <div className="font-mono font-bold text-body-lg text-white">
-                  {formData.min_cost_cny !== null ? `¥${Number(formData.min_cost_cny).toFixed(3)}` : '—'}
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  {formData.min_cost_usd !== null ? `($${Number(formData.min_cost_usd).toFixed(3)})` : '暂无通道底价'}
-                </span>
-              </div>
-
-              {/* Price / Credits Input */}
-              <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-micro text-brand uppercase font-bold">单次生成积分</span>
-                  <span className="text-[10px] text-ink-subtle font-mono">1积分=0.1元</span>
-                </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <input
-                    type="number"
-                    min="1"
-                    max="1000"
-                    step="1"
-                    value={formData.credits ?? ''}
-                    onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
-                    className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
-                  />
-                  <span className="text-caption font-bold text-brand shrink-0">积分</span>
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  折合 C 端售价: ¥{marginMetrics.userPriceCny}
-                </span>
-              </div>
-
-              {/* Real-time Profit Margin */}
-              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
-                <span className="text-micro text-ink-subtle uppercase">预估毛利率</span>
-                <div className="font-mono font-bold text-body-lg flex items-center gap-1">
-                  {marginMetrics.hasData ? (
-                    <span className={
-                      marginMetrics.status === 'high' ? 'text-emerald-400'
-                        : marginMetrics.status === 'healthy' ? 'text-brand'
-                        : marginMetrics.status === 'low' ? 'text-amber-400'
-                        : 'text-red-400 animate-pulse'
-                    }>
-                      {marginMetrics.rate}%
-                    </span>
-                  ) : (
-                    <span className="text-ink-subtle">—</span>
-                  )}
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  {marginMetrics.hasData
-                    ? `每单利润: +¥${marginMetrics.marginCny}`
-                    : '待关联通道成本后计算'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: 基础展示配置 */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
-            <h3 className="text-body font-bold text-ink">基础展示信息</h3>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">前台展示名称</label>
-                <input
-                  type="text"
-                  value={formData.display_name}
-                  onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
-                  placeholder="例如: 字节跳动 Seedream 4.0"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                />
-              </div>
-
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">前台扣费说明 (Pricing Hint)</label>
-                <input
-                  type="text"
-                  value={formData.pricing_hint || ''}
-                  onChange={(e) => setFormData((f) => ({ ...f, pricing_hint: e.target.value }))}
-                  placeholder="如: 🎬 基础 10 算力 (5秒视频)"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
-                />
-                <span className="text-[11px] text-ink-subtle mt-1 block">
-                  显示在 Studio 工作台下拉框副标题，未填则默认显示“X 积分/次”
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-caption text-ink-muted block mb-1">子类型归属 (场景)</label>
-                  <select
-                    value={formData.sub_type}
-                    onChange={(e) => setFormData((f) => ({ ...f, sub_type: e.target.value }))}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                  >
-                    <option value="">未指定 (通用)</option>
-                    {(SUBTYPE_OPTIONS[formData.category] || []).map((sub) => (
-                      <option key={sub.id} value={sub.id}>{sub.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-caption text-ink-muted block mb-1">排序权重 (越小越靠前)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="999"
-                    value={formData.sort ?? 1}
-                    onChange={(e) => setFormData((f) => ({ ...f, sort: Number(e.target.value) }))}
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Badge Selection */}
-              <div>
-                <label className="text-caption text-ink-muted block mb-1.5">运营角标</label>
-                <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                  {PRESET_BADGES.map((b) => {
-                    const isCur = formData.badge === b;
-                    return (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => setFormData((f) => ({ ...f, badge: isCur ? '' : b }))}
-                        className={`rounded-full px-2.5 py-1 text-caption transition-all ${
-                          isCur
-                            ? 'bg-brand text-white shadow-elevation-1 font-bold'
-                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        {b}
-                      </button>
-                    );
-                  })}
-                </div>
-                <input
-                  type="text"
-                  value={formData.badge}
-                  onChange={(e) => setFormData((f) => ({ ...f, badge: e.target.value }))}
-                  placeholder="或自定义微章文本..."
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-caption text-ink outline-none focus:border-brand"
-                />
-              </div>
-
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">前台能力描述</label>
-                <textarea
-                  rows={2}
-                  value={formData.description}
-                  onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
-                  placeholder="给 C 端用户展示的模型核心卖点或特性描述..."
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 5: 模型能力与参数矩阵 (Capabilities Matrix) */}
+          {/* Section 4: 工作台规格与能力矩阵 */}
           <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
             <h3 className="text-body font-bold text-ink flex items-center gap-2">
               <Layers className="size-4 text-brand" />
-              能力与参数矩阵 (Capabilities Matrix)
+              Section 4: 工作台规格与能力矩阵 (Capabilities Matrix)
             </h3>
 
             {/* Supported Ratios */}
@@ -736,9 +849,21 @@ export default function ModelConfigDrawer({
             </div>
           </div>
 
-          {/* Section 6: 上架与展示开关 */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-3">
-            <h3 className="text-body font-bold text-ink">展示控制与推荐</h3>
+          {/* Section 5: 上下架与运营推荐控制 */}
+          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
+            <h3 className="text-body font-bold text-ink">Section 5: 上下架与运营推荐控制</h3>
+
+            {/* Warning if 0 routes and user activates is_visible */}
+            {hasZeroRoutes && formData.is_visible && (
+              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-300 flex items-start gap-2">
+                <AlertTriangle className="size-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">无可用通道警示：</span>
+                  <span>当前模型可用通道数为 0。若开启前台展示，用户在 Studio 下单时可能会因缺乏通道而遇阻。建议先行在 Section 3 绑定或匹配可用上游通道。</span>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-5">
               <label className="flex items-center gap-2 text-body-sm text-ink cursor-pointer select-none">
                 <input
@@ -772,6 +897,89 @@ export default function ModelConfigDrawer({
                 <span>标记为推荐 ⭐</span>
               </label>
             </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
+              <div>
+                <label className="text-caption text-ink-muted block mb-1">模型分级 (Tier)</label>
+                <select
+                  value={formData.tier || 'core'}
+                  onChange={(e) => setFormData((f) => ({ ...f, tier: e.target.value }))}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
+                >
+                  <option value="core">Core (核心主力推荐)</option>
+                  <option value="backup">Backup (备用储备池)</option>
+                  <option value="experimental">Experimental (实验探索)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-caption text-ink-muted block mb-1">排序权重 (越小越靠前)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="999"
+                  value={formData.sort ?? 1}
+                  onChange={(e) => setFormData((f) => ({ ...f, sort: Number(e.target.value) }))}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Description & Badge Details */}
+            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
+              <div>
+                <label className="text-caption text-ink-muted block mb-1">前台展示名称</label>
+                <input
+                  type="text"
+                  value={formData.display_name}
+                  onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
+                  placeholder="例如: 字节跳动 Seedream 4.5"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
+                />
+              </div>
+
+              {/* Badge Selection */}
+              <div>
+                <label className="text-caption text-ink-muted block mb-1.5">运营角标</label>
+                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                  {PRESET_BADGES.map((b) => {
+                    const isCur = formData.badge === b;
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setFormData((f) => ({ ...f, badge: isCur ? '' : b }))}
+                        className={`rounded-full px-2.5 py-1 text-caption transition-all ${
+                          isCur
+                            ? 'bg-brand text-white shadow-elevation-1 font-bold'
+                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                        }`}
+                      >
+                        {b}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input
+                  type="text"
+                  value={formData.badge || ''}
+                  onChange={(e) => setFormData((f) => ({ ...f, badge: e.target.value }))}
+                  placeholder="或自定义角标文本..."
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-caption text-ink outline-none focus:border-brand"
+                />
+              </div>
+
+              <div>
+                <label className="text-caption text-ink-muted block mb-1">前台能力描述</label>
+                <textarea
+                  rows={2}
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="给 C 端用户展示的模型卖点或特性描述..."
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -790,10 +998,10 @@ export default function ModelConfigDrawer({
               size="sm"
               onClick={handleSave}
               disabled={saving || !canWrite}
-              className="bg-brand hover:bg-brand-hover text-white rounded-lg px-4"
+              className="bg-brand hover:bg-brand-hover text-white rounded-lg px-4 font-semibold"
             >
               {saving ? <Loader2 className="size-3.5 mr-1.5 animate-spin" /> : <Save className="size-3.5 mr-1.5" />}
-              保存展示配置
+              保存一站式配置
             </Button>
           </div>
         </div>

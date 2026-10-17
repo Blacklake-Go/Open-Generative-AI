@@ -24,6 +24,8 @@ import {
 } from '@/lib/services/modelPricingControl.js';
 import { applyPriceImport, parsePriceImport, previewPriceImport, rollbackPriceImport } from '@/lib/services/modelPriceImport.js';
 import { updateModel, createModel } from '@/lib/services/models.js';
+import { savePricingStrategy } from '@/lib/services/pricingStrategy';
+import { upsertModelPricing } from '@/lib/repositories/aiCatalog.js';
 import { invalidateActiveModelsCache } from '@/app/api/models/active/route.js';
 import {
   findMatchingChannelCandidates,
@@ -138,9 +140,62 @@ async function handlePOST(request) {
         targetType = 'ai_provider'; targetId = body.providerId; riskLevel = 'high';
         break;
       case 'routing_policy':
-        result = await setModelRoutingPolicy({ modelId: body.modelId, routingMode: body.routingMode });
+        result = await setModelRoutingPolicy({
+          modelId: body.modelId,
+          routingMode: body.routingMode,
+          failoverEnabled: body.failoverEnabled,
+        });
         targetType = 'routing_policy'; targetId = body.modelId; riskLevel = 'high';
         break;
+      case 'pricing_strategy':
+      case 'save_pricing_strategy': {
+        const { baseMultiplier, minMarginRate, categoryMultipliers, tierMultipliers, specMultipliers } = body;
+        if (!baseMultiplier || Number(baseMultiplier) < 1) {
+          throw Object.assign(new Error('基准倍率不能小于 1'), { code: 'VALIDATION_ERROR' });
+        }
+        if (!minMarginRate || Number(minMarginRate) < 0.1 || Number(minMarginRate) > 0.9) {
+          throw Object.assign(new Error('最低毛利率应在 10%-90% 之间'), { code: 'VALIDATION_ERROR' });
+        }
+        result = await savePricingStrategy(
+          {
+            baseMultiplier: Number(baseMultiplier),
+            minMarginRate: Number(minMarginRate),
+            categoryMultipliers: categoryMultipliers || {},
+            tierMultipliers: tierMultipliers || {},
+            specMultipliers: specMultipliers || {},
+          },
+          guard.user?.id
+        );
+        invalidateActiveModelsCache();
+        targetType = 'pricing_strategy'; targetId = result?.id || 'default'; riskLevel = 'high';
+        break;
+      }
+      case 'save_model_pricing':
+      case 'update_model_pricing': {
+        const modelId = body.modelId || body.model_id;
+        if (!modelId) {
+          throw Object.assign(new Error('modelId 为必填项'), { code: 'VALIDATION_ERROR' });
+        }
+        const baseCredits = Number(body.baseCredits ?? body.base_credits);
+        if (!Number.isInteger(baseCredits) || baseCredits <= 0) {
+          throw Object.assign(new Error('必须提供已核实的正整数积分价格'), { code: 'VALIDATION_ERROR' });
+        }
+        const pricingType = body.pricingType || body.pricing_type || 'fixed';
+        const updated = await upsertModelPricing({
+          model_id: modelId,
+          pricing_type: pricingType,
+          base_credits: baseCredits,
+          formula_config: body.formulaConfig || body.formula_config || {},
+          subscription_discounts: {},
+          min_credits: Number(body.minCredits ?? body.min_credits ?? 10),
+          min_gross_margin_rate: Math.max(Number(body.minGrossMarginRate ?? body.min_gross_margin_rate ?? 0.75), 0.75),
+          is_active: body.isActive !== false && body.is_active !== false,
+        });
+        invalidateActiveModelsCache();
+        result = updated;
+        targetType = 'model_pricing'; targetId = modelId; riskLevel = 'high';
+        break;
+      }
       case 'update_model_tiering': {
         const updateRes = await updateModel({
           actor: guard.user,
@@ -167,6 +222,8 @@ async function handlePOST(request) {
             supported_resolutions: body.supportedResolutions ?? body.supported_resolutions,
             supported_durations: body.supportedDurations ?? body.supported_durations,
             capabilities: body.capabilities,
+            channel_routes: body.channelRoutes || body.channel_routes,
+            pricing_hint: body.pricingHint || body.pricing_hint,
           },
           requestId: guard.requestId,
         });

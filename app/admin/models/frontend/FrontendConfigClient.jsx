@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Eye, EyeOff, Search, ChevronDown, ChevronUp,
   X, Save, Loader2, Layers, Pin, Sparkles, Filter,
   Check, ShieldCheck, Zap, DollarSign, Plus, Copy,
-  CheckCircle2, ArrowRight, ExternalLink, RefreshCw
+  CheckCircle2, ArrowRight, ExternalLink, RefreshCw, AlertTriangle,
+  Image as ImageIcon, Video, Music, MessageSquare
 } from 'lucide-react';
 import { Card, Button } from '@/components/admin/AdminUi';
 import ModelRepositoryDrawer from './ModelRepositoryDrawer';
@@ -17,7 +19,7 @@ import BrandLogo from '@/components/admin/BrandLogo';
 import ModelNavTabs from '@/components/admin/ModelNavTabs';
 import { BRANDS, resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
 
-// ─── 任务场景定义 (严格对照草稿图4第3行绿色模块) ──────────────────────
+// ─── 任务场景定义 ───────────────────────────────────────────────
 const TASK_SCENES = [
   { id: 'all', label: '全部场景', desc: '全库所有模型' },
   { id: 't2i', label: '文生图', desc: '文本描述生成高质量图像' },
@@ -56,6 +58,20 @@ function getModelSceneLabel(model) {
   return '通用场景';
 }
 
+function getModelSceneBadge(model) {
+  const label = getModelSceneLabel(model);
+  const cat = String(model?.category || '').toLowerCase();
+  const sub = String(model?.sub_type || model?.capabilities?.sub_type || '').toLowerCase();
+
+  let Icon = ImageIcon;
+  if (cat === 'audio' || sub === 'music' || sub === 'tts') Icon = Music;
+  else if (cat.includes('video') || sub.includes('v') || sub === 'i2v' || sub === 't2v') Icon = Video;
+  else if (cat === 'text') Icon = MessageSquare;
+  else if (sub === 'i2i' || cat === 'image_edit') Icon = Sparkles;
+
+  return { label, Icon };
+}
+
 function matchesScene(model, sceneId) {
   if (!sceneId || sceneId === 'all') return true;
   const cat = String(model.category || '').toLowerCase();
@@ -84,12 +100,19 @@ function matchesScene(model, sceneId) {
   return true;
 }
 
-export default function FrontendConfigClient({ initialModels = [], canWrite }) {
+export default function FrontendConfigClient({
+  initialModels = [],
+  initialBrand = 'all',
+  pendingPricesCount = 0,
+  canWrite = false,
+}) {
   const [models, setModels] = useState(initialModels);
   const [publicDirectory, setPublicDirectory] = useState(null);
-  const [selectedBrand, setSelectedBrand] = useState('all'); // 'all' | brand.id
-  const [activeScene, setActiveScene] = useState('all'); // 'all' | 't2i' | 'i2i' | 't2v' | 'i2v' | 'v2v' | 'audio'
+  const [selectedBrand, setSelectedBrand] = useState(initialBrand || 'all'); // 'all' | brand.id
+  const [activeScene, setActiveScene] = useState('all'); // 'all' | 't2i' | ...
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'visible' | 'hidden'
+  const [channelBlockFilter, setChannelBlockFilter] = useState(false); // 0 渠道阻断
+  const [negativeMarginFilter, setNegativeMarginFilter] = useState(false); // 负毛利预警
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(null);
   const [toast, setToast] = useState(null);
@@ -132,11 +155,42 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     refreshPublicDirectory();
   }, [refreshPublicDirectory]);
 
-  // 通用 API 调用
+  useEffect(() => {
+    if (initialBrand) {
+      setSelectedBrand(initialBrand);
+    }
+  }, [initialBrand]);
+
+  // URL ?brand=[id] sync on mount and popstate
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const b = url.searchParams.get('brand');
+      if (b && b !== selectedBrand) {
+        setSelectedBrand(b);
+      }
+    }
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        const b = url.searchParams.get('brand') || 'all';
+        setSelectedBrand(b);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedBrand]);
+
+  // 通用 API 调用 (带安全幂等键)
   const callAPI = useCallback(async (body) => {
+    const action = String(body?.action || 'action').replace(/[^a-zA-Z0-9_]/g, '_');
+    const idempotencyKey = `ctrl_${action}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const res = await fetch('/api/admin/models/control', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
+      },
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -176,9 +230,18 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     return counts;
   }, [models, selectedBrand]);
 
-  // 切换品牌时，若当前场景无该品牌模型，则智能重置为 'all'，杜绝 0 模型困惑
+  // 切换品牌时，双向同步 URL 参数 ?brand=[id]
   const handleBrandSelect = useCallback((brandId) => {
     setSelectedBrand(brandId);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (brandId === 'all') {
+        url.searchParams.delete('brand');
+      } else {
+        url.searchParams.set('brand', brandId);
+      }
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
     if (brandId !== 'all' && activeScene !== 'all') {
       const brandModels = models.filter((m) => resolveBrand(m)?.id === brandId);
       const hasInScene = brandModels.some((m) => matchesScene(m, activeScene));
@@ -200,7 +263,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       let status = 'healthy';
       if (rate < 0) status = 'loss';
       else if (rate < 30) status = 'low';
-      else if (rate >= 40) status = 'high';
+      else if (rate >= 30) status = 'healthy';
 
       return {
         hasData: true,
@@ -220,6 +283,35 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       status: 'unknown',
     };
   }, []);
+
+  // 顶栏状态指标计算 (At-a-Glance Status Bar Metrics)
+  const statusMetrics = useMemo(() => {
+    let activeCount = 0;
+    let standbyCount = 0;
+    let unroutedCount = 0;
+    let lossCount = 0;
+
+    models.forEach((m) => {
+      const isVis = Boolean(m.is_visible);
+      const healthy = Number(m.healthy_routes || 0);
+      if (isVis) activeCount++;
+      else standbyCount++;
+
+      if (!healthy || healthy <= 0) unroutedCount++;
+
+      const margin = computeModelMargin(m);
+      if (margin.hasData && margin.status === 'loss') {
+        lossCount++;
+      }
+    });
+
+    return {
+      activeCount,
+      standbyCount,
+      unroutedCount,
+      lossCount,
+    };
+  }, [models, computeModelMargin]);
 
   // 最终过滤后的模型列表
   const currentModels = useMemo(() => {
@@ -242,7 +334,17 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       list = list.filter((m) => !m.is_visible);
     }
 
-    // 4. 关键词搜索
+    // 4. 0 渠道阻断筛选
+    if (channelBlockFilter) {
+      list = list.filter((m) => (!m.healthy_routes || Number(m.healthy_routes) <= 0));
+    }
+
+    // 5. 负毛利预警筛选
+    if (negativeMarginFilter) {
+      list = list.filter((m) => computeModelMargin(m).status === 'loss');
+    }
+
+    // 6. 关键词搜索
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       list = list.filter(
@@ -266,7 +368,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
       if ((a.sort ?? 0) !== (b.sort ?? 0)) return (a.sort ?? 0) - (b.sort ?? 0);
       return String(a.created_at || '').localeCompare(String(b.created_at || ''));
     });
-  }, [models, selectedBrand, activeScene, statusFilter, search]);
+  }, [models, selectedBrand, activeScene, statusFilter, channelBlockFilter, negativeMarginFilter, search, computeModelMargin]);
 
   // 前台展示开关切换
   const toggleVisibility = useCallback(
@@ -394,7 +496,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
     setDrawerOpen(true);
   }, []);
 
-  // 抽屉保存
+  // 抽屉保存全要素配置
   const handleDrawerSave = useCallback(
     async (formData) => {
       if (!canWrite) return;
@@ -413,6 +515,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           description: formData.description,
           badge: formData.badge || '',
           subType: formData.sub_type || '',
+          pricingHint: formData.pricing_hint || '',
           sort: Number(formData.sort),
           tier: formData.tier || (isVisible ? 'core' : 'backup'),
           isFeatured: formData.is_featured,
@@ -421,6 +524,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           autoRouteEligible: isVisible ? true : undefined,
           isActive: isVisible ? true : undefined,
           creditsPrice,
+          provider: formData.primary_provider,
+          backupProviderId: formData.backup_provider_id,
+          backupModelId: formData.backup_model_id,
+          channelRoutes: formData.channel_routes,
           supportedRatios: formData.supported_ratios,
           supportedResolutions: formData.supported_resolutions,
           supportedDurations: formData.supported_durations,
@@ -444,6 +551,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               is_pinned: formData.is_pinned,
               is_visible: isVisible,
               base_credits: creditsPrice,
+              provider: formData.primary_provider,
+              backup_provider_id: formData.backup_provider_id,
+              backup_model_id: formData.backup_model_id,
+              routes: formData.channel_routes || updated[idx].routes,
               supported_ratios: formData.supported_ratios,
               supportedResolutions: formData.supported_resolutions,
               supported_durations: formData.supported_durations,
@@ -454,7 +565,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
           return prev;
         });
 
-        showToast(`模型【${formData.display_name || targetId}】配置已成功保存 ✓`);
+        showToast(`模型【${formData.display_name || targetId}】全生命周期配置已保存 ✓`);
         refreshPublicDirectory();
       } catch (err) {
         showToast(`保存失败: ${err.message}`, 'error');
@@ -547,37 +658,142 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── ROW 1: 顶层业务选项卡 ─── */}
+      {/* ─── ROW 1: 顶层业务选项卡 (WeChat Underline Tabs) ─── */}
       <ModelNavTabs
         activeTab="models"
         modelCount={models.length}
-        rightAction={
-          canWrite && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setHygieneDrawerOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold shrink-0"
-              >
-                <ShieldCheck className="size-3.5 text-brand" />
-                全库体检与去重
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setRepoDrawerOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold shadow-elevation-1 shrink-0 bg-brand hover:bg-brand-hover text-white transition-all active:scale-[0.98]"
-              >
-                <Plus className="size-3.5" />
-                从模型库引入
-              </Button>
-            </div>
-          )
-        }
       />
 
-      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (草稿图4第2行黄色模块: Logo 放大 250% + 统一高度 h-[42px]) ─── */}
+      {/* ─── ROW 1.5: 顶栏全景状态指标条 (At-a-Glance Status Bar) ─── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-surface-raised border border-line-subtle shadow-elevation-1 text-xs">
+        {/* 左侧指标状态胶囊 */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+          {/* 🟢 在架运行 */}
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter((f) => f === 'visible' ? 'all' : 'visible');
+              setChannelBlockFilter(false);
+              setNegativeMarginFilter(false);
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border ${
+              statusFilter === 'visible' && !channelBlockFilter && !negativeMarginFilter
+                ? 'bg-emerald-500/20 text-emerald-300 font-bold border-emerald-500/30'
+                : 'bg-black/30 border-white/5 text-ink-muted hover:text-ink hover:bg-white/[0.04]'
+            }`}
+            title="筛选正在前台展示运行的模型"
+          >
+            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>在架运行</span>
+            <span className="font-mono font-bold text-ink">{statusMetrics.activeCount}</span>
+          </button>
+
+          {/* ⚪ 备用储备 */}
+          <button
+            type="button"
+            onClick={() => {
+              setStatusFilter((f) => f === 'hidden' ? 'all' : 'hidden');
+              setChannelBlockFilter(false);
+              setNegativeMarginFilter(false);
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border ${
+              statusFilter === 'hidden'
+                ? 'bg-white/10 text-ink font-bold border-white/20'
+                : 'bg-black/30 border-white/5 text-ink-muted hover:text-ink hover:bg-white/[0.04]'
+            }`}
+            title="筛选尚未在前台展示的备用模型"
+          >
+            <span className="size-2 rounded-full bg-gray-400" />
+            <span>备用储备</span>
+            <span className="font-mono font-bold text-ink">{statusMetrics.standbyCount}</span>
+          </button>
+
+          {/* 🔴 0渠道阻断 */}
+          <button
+            type="button"
+            onClick={() => {
+              setChannelBlockFilter((b) => !b);
+              if (!channelBlockFilter) {
+                setStatusFilter('all');
+                setNegativeMarginFilter(false);
+              }
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border ${
+              channelBlockFilter
+                ? 'bg-rose-500/20 text-rose-300 font-bold border-rose-500/40'
+                : statusMetrics.unroutedCount > 0
+                ? 'bg-rose-500/10 text-rose-400 border-rose-500/25 hover:bg-rose-500/15'
+                : 'bg-black/30 border-white/5 text-ink-subtle'
+            }`}
+            title="筛选缺少正常可用通道的模型（需配置或匹配渠道）"
+          >
+            <span className="size-2 rounded-full bg-rose-500" />
+            <span>0渠道阻断</span>
+            <span className="font-mono font-bold">{statusMetrics.unroutedCount}</span>
+          </button>
+
+          {/* 🟡 待审价盘 */}
+          <Link
+            href="/admin/models/routing?tab=pending"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border bg-amber-500/10 text-amber-300 border-amber-500/25 hover:bg-amber-500/20 group"
+            title="查看上游待审核变价版本列表"
+          >
+            <span className="size-2 rounded-full bg-amber-400" />
+            <span>待审价盘</span>
+            <span className="font-mono font-bold">{pendingPricesCount}</span>
+            <ArrowRight className="size-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
+
+          {/* ⚠️ 负毛利预警 */}
+          <button
+            type="button"
+            onClick={() => {
+              setNegativeMarginFilter((n) => !n);
+              if (!negativeMarginFilter) {
+                setStatusFilter('all');
+                setChannelBlockFilter(false);
+              }
+            }}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all border ${
+              negativeMarginFilter
+                ? 'bg-rose-500/20 text-rose-300 font-bold border-rose-500/40'
+                : statusMetrics.lossCount > 0
+                ? 'bg-rose-500/10 text-rose-400 border-rose-500/25 hover:bg-rose-500/15'
+                : 'bg-black/30 border-white/5 text-ink-subtle'
+            }`}
+            title="筛选定价低于成本的负毛利模型"
+          >
+            <span>⚠️ 负毛利预警</span>
+            <span className="font-mono font-bold">{statusMetrics.lossCount}</span>
+          </button>
+        </div>
+
+        {/* 右侧核心动作 */}
+        {canWrite && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setHygieneDrawerOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-semibold shrink-0"
+            >
+              <ShieldCheck className="size-3 text-brand" />
+              全库体检与去重
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setRepoDrawerOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 h-7 px-3 rounded-lg text-xs font-semibold shadow-elevation-1 shrink-0 bg-brand hover:bg-brand-hover text-white transition-all active:scale-[0.98]"
+            >
+              <Plus className="size-3" />
+              从模型库引入
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 ─── */}
       <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         <button
           type="button"
@@ -634,7 +850,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         })}
       </div>
 
-      {/* ─── ROW 3: 业务任务场景单行过滤条 (草稿图4第3行绿色模块: 统一高度 h-[42px]) ─── */}
+      {/* ─── ROW 3: 业务任务场景单行过滤条 ─── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         {/* Left: Task Scene Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
@@ -667,7 +883,11 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         <div className="flex items-center gap-2 shrink-0">
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setChannelBlockFilter(false);
+              setNegativeMarginFilter(false);
+            }}
             className="rounded-xl border border-line bg-well px-3 h-[42px] text-xs text-ink outline-none cursor-pointer focus:border-brand"
           >
             <option value="all">全部展示状态</option>
@@ -701,39 +921,42 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       </div>
 
-      {/* ─── ROW 4: 核心所见即所得管理大表 (草稿图4核心表格主体) ─── */}
+      {/* ─── ROW 4: 核心所见即所得管理大表 (8 列一体化货架大盘) ─── */}
       <Card className="overflow-hidden p-0 border border-line shadow-elevation-1">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-line bg-surface-raised/80 text-caption font-semibold text-ink-muted">
-                <th className="px-3.5 py-3 w-[120px]">厂商品牌</th>
-                <th className="px-3.5 py-3 min-w-[200px]">模型名称 / 系统ID</th>
-                <th className="px-3 py-3 w-[100px]">任务场景</th>
-                <th className="px-3.5 py-3 min-w-[220px]">支持能力规格</th>
-                <th className="px-3 py-3 w-[120px] text-right">官方参考成本</th>
-                <th className="px-3.5 py-3 w-[150px] text-center">平台积分定价</th>
-                <th className="px-3 py-3 w-[120px] text-center">预估毛利率</th>
-                <th className="px-3 py-3 w-[120px] text-center">前台展示</th>
-                <th className="px-3 py-3 w-[120px] text-right">操作</th>
+                <th className="px-3.5 py-3 min-w-[240px]">模型主体</th>
+                <th className="px-3 py-3 w-[120px]">归属工作台</th>
+                <th className="px-3.5 py-3 w-[140px]">通道状态</th>
+                <th className="px-3 py-3 w-[120px] text-right">采购底价</th>
+                <th className="px-3.5 py-3 w-[140px] text-center">C 端售价</th>
+                <th className="px-3 py-3 w-[120px] text-center">实时毛利率</th>
+                <th className="px-3 py-3 w-[120px] text-center">前台可见性</th>
+                <th className="px-3.5 py-3 w-[150px] text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle text-body-sm">
               {currentModels.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-ink-muted space-y-2">
+                  <td colSpan={8} className="py-16 text-center text-ink-muted space-y-2">
                     <p>{search ? '未检索到匹配的模型' : '当前筛选条件下暂无模型'}</p>
-                    {selectedBrand !== 'all' && (
+                    {(selectedBrand !== 'all' || activeScene !== 'all' || statusFilter !== 'all' || channelBlockFilter || negativeMarginFilter) && (
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => {
-                          setSelectedBrand('all');
+                          handleBrandSelect('all');
                           setActiveScene('all');
+                          setStatusFilter('all');
+                          setChannelBlockFilter(false);
+                          setNegativeMarginFilter(false);
+                          setSearch('');
                         }}
                         className="text-xs"
                       >
-                        清除筛选，查看全部模型
+                        清除所有筛选条件
                       </Button>
                     )}
                   </td>
@@ -746,10 +969,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                   const sceneLabel = getModelSceneLabel(model);
                   const marginInfo = computeModelMargin(model);
                   const credits = Number(model.base_credits || 0);
-
-                  const ratios = Array.isArray(model.supported_ratios) ? model.supported_ratios : [];
-                  const resolutions = Array.isArray(model.supported_resolutions) ? model.supported_resolutions : [];
-                  const durations = Array.isArray(model.supported_durations) ? model.supported_durations : [];
+                  const healthyRoutes = Number(model.healthy_routes || 0);
 
                   return (
                     <tr
@@ -760,107 +980,113 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                           : 'bg-white/[0.005] opacity-75 hover:opacity-100 hover:bg-white/[0.02]'
                       }`}
                     >
-                      {/* Col 1: 厂商品牌 */}
+                      {/* Col 1: 模型主体 (BrandLogo + display_name + 徽章 + modelId + 品牌标签) */}
                       <td className="px-3.5 py-3 align-middle">
-                        <div className="flex items-center gap-2">
-                          <BrandLogo brand={brand} size="xs" className="rounded shrink-0" />
-                          <span className="font-medium text-ink text-xs whitespace-nowrap">
-                            {brand?.shortName || '通用'}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Col 2: 模型名称 / 系统 ID */}
-                      <td className="px-3.5 py-3 align-middle">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-ink text-body-sm">
-                              {model.display_name || model.name}
-                            </span>
-                            {model.badge && (
-                              <span className="rounded-md bg-brand/15 text-brand border border-brand/25 px-1.5 py-0.2 text-[10px] font-bold">
-                                {model.badge}
+                        <div className="flex items-start gap-2.5">
+                          <BrandLogo brand={brand} size="sm" className="rounded-lg shrink-0 mt-0.5" />
+                          <div className="min-w-0 space-y-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-ink text-body-sm">
+                                {model.display_name || model.name}
                               </span>
-                            )}
-                            {model.is_pinned && (
-                              <span className="text-[11px]" title="已置顶首位 📌">
-                                📌
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 text-ink-subtle">
-                            <span className="font-mono text-caption">{model.id}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopyId(model.id)}
-                              className="opacity-0 group-hover:opacity-100 hover:text-ink p-0.5 transition-opacity"
-                              title="复制模型 ID"
-                            >
-                              <Copy className="size-2.5" />
-                            </button>
-                            {copiedId === model.id && (
-                              <span className="text-[10px] text-emerald-400 font-sans">已复制</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Col 3: 任务场景 */}
-                      <td className="px-3 py-3 align-middle">
-                        <span className="inline-flex rounded-full bg-white/[0.06] border border-white/10 px-2.5 py-0.5 text-xs text-ink-muted whitespace-nowrap">
-                          {sceneLabel}
-                        </span>
-                      </td>
-
-                      {/* Col 4: 支持能力规格 */}
-                      <td className="px-3.5 py-3 align-middle">
-                        <div className="space-y-1 text-caption">
-                          {ratios.length > 0 && (
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="text-ink-subtle text-[11px]">画幅:</span>
-                              {ratios.slice(0, 4).map((r) => (
-                                <span
-                                  key={r}
-                                  className="rounded bg-well px-1 py-0.2 font-mono text-[10px] text-ink-muted border border-line-subtle"
-                                >
-                                  {r}
+                              {model.badge && (
+                                <span className="rounded-md bg-brand/15 text-brand border border-brand/25 px-1.5 py-0.2 text-[10px] font-bold">
+                                  {model.badge}
                                 </span>
-                              ))}
-                              {ratios.length > 4 && (
-                                <span className="text-ink-subtle text-[10px]">+{ratios.length - 4}</span>
+                              )}
+                              {model.is_pinned && (
+                                <span className="text-[11px]" title="已置顶首位 📌">
+                                  📌
+                                </span>
+                              )}
+                              {model.is_featured && (
+                                <span className="text-[11px]" title="推荐模型 ⭐">
+                                  ⭐
+                                </span>
                               )}
                             </div>
-                          )}
-
-                          <div className="flex items-center gap-2 text-ink-subtle text-[11px]">
-                            {resolutions.length > 0 && (
-                              <span>分辨率: <strong className="text-ink-muted font-mono">{resolutions[resolutions.length - 1]}</strong></span>
-                            )}
-                            {durations.length > 0 && (
-                              <span>时长: <strong className="text-ink-muted font-mono">{durations.join('/')}s</strong></span>
-                            )}
+                            <div className="flex items-center gap-1.5 text-ink-subtle">
+                              <span className="font-mono text-caption">{model.id}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyId(model.id)}
+                                className="opacity-0 group-hover:opacity-100 hover:text-ink p-0.5 transition-opacity"
+                                title="复制模型 ID"
+                              >
+                                <Copy className="size-2.5" />
+                              </button>
+                              {copiedId === model.id && (
+                                <span className="text-[10px] text-emerald-400 font-sans">已复制</span>
+                              )}
+                              <span className="rounded bg-white/5 border border-white/10 px-1.5 py-0.2 text-[9px] text-ink-muted">
+                                {brand?.shortName || '通用'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Col 5: 官方参考成本 */}
+                      {/* Col 2: 归属工作台 (Studio 场景图标与分类) */}
+                      <td className="px-3 py-3 align-middle">
+                        {(() => {
+                          const badge = getModelSceneBadge(model);
+                          const BadgeIcon = badge.Icon;
+                          return (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/10 px-2.5 py-0.5 text-xs text-ink-muted whitespace-nowrap">
+                              <BadgeIcon className="size-3 text-brand shrink-0" />
+                              <span>{badge.label}</span>
+                            </span>
+                          );
+                        })()}
+                      </td>
+
+                      {/* Col 3: 通道状态 (healthy_routes 状态圆点) */}
+                      <td className="px-3.5 py-3 align-middle">
+                        {healthyRoutes > 0 ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                            <span className="font-mono text-emerald-400 font-semibold text-xs whitespace-nowrap">
+                              {healthyRoutes}/{model.approved_routes || healthyRoutes} 正常
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="size-2 rounded-full bg-rose-500 shrink-0" />
+                            <span className="text-rose-400 font-semibold text-xs whitespace-nowrap">
+                              无可用通道
+                            </span>
+                            {canWrite && (
+                              <button
+                                type="button"
+                                onClick={() => setSmartMatchModel(model)}
+                                className="ml-1 text-[10px] text-brand hover:underline font-bold shrink-0"
+                                title="为该模型智能匹配候选通道"
+                              >
+                                匹配
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Col 4: 采购底价 (采购底价 Mono 小字) */}
                       <td className="px-3 py-3 align-middle text-right font-mono">
                         {Number(model.min_cost_cny) > 0 ? (
                           <div>
-                            <span className="text-ink font-semibold">¥{Number(model.min_cost_cny).toFixed(3)}</span>
+                            <span className="text-ink font-semibold text-caption">¥{Number(model.min_cost_cny).toFixed(3)}</span>
                             <span className="block text-[10px] text-ink-subtle">/次调用</span>
                           </div>
                         ) : Number(model.min_cost_usd) > 0 ? (
                           <div>
-                            <span className="text-ink font-semibold">${Number(model.min_cost_usd).toFixed(4)}</span>
+                            <span className="text-ink font-semibold text-caption">${Number(model.min_cost_usd).toFixed(4)}</span>
                             <span className="block text-[10px] text-ink-subtle">/次调用</span>
                           </div>
                         ) : (
-                          <span className="text-ink-subtle text-caption">暂无报价</span>
+                          <span className="text-ink-subtle text-caption">暂无底价</span>
                         )}
                       </td>
 
-                      {/* Col 6: 平台积分定价 (点击极速调价) */}
+                      {/* Col 5: C 端售价 (一键就地气泡快速改积分) */}
                       <td className="px-3.5 py-3 align-middle text-center">
                         {canWrite ? (
                           <button
@@ -870,9 +1096,9 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                               setQuickPriceInput(String(credits || 50));
                             }}
                             className="inline-flex flex-col items-center justify-center px-2.5 py-1 rounded-xl bg-brand/5 hover:bg-brand/15 border border-brand/20 transition-all group/price"
-                            title="点击极速调整用户扣减积分"
+                            title="点击一键就地气泡快速改积分"
                           >
-                            <span className="font-mono font-bold text-brand text-body-sm group-hover/price:underline">
+                            <span className="font-mono font-bold text-brand text-xs group-hover/price:underline">
                               {credits} 积分 ✏️
                             </span>
                             <span className="font-mono text-[10px] text-ink-subtle">
@@ -880,22 +1106,22 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                             </span>
                           </button>
                         ) : (
-                          <div className="font-mono font-semibold text-brand">
+                          <div className="font-mono font-semibold text-brand text-xs">
                             {credits} 积分
                           </div>
                         )}
                       </td>
 
-                      {/* Col 7: 预估毛利率 */}
+                      {/* Col 6: 实时毛利率 (彩色徽章: <0% 赤红 / <30% 琥珀 / >=30% 翠绿) */}
                       <td className="px-3 py-3 align-middle text-center">
                         {marginInfo.hasData ? (
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-mono font-bold border ${
                               marginInfo.status === 'loss'
                                 ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                                : marginInfo.status === 'high'
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                                : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                : marginInfo.status === 'low'
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                             }`}
                           >
                             {marginInfo.rate}%
@@ -905,7 +1131,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                         )}
                       </td>
 
-                      {/* Col 8: 前台展示开关 */}
+                      {/* Col 7: 前台可见性 (开关，0 通道拦截) */}
                       <td className="px-3 py-3 align-middle text-center">
                         {canWrite ? (
                           <button
@@ -940,8 +1166,8 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                         )}
                       </td>
 
-                      {/* Col 9: 快捷操作 */}
-                      <td className="px-3 py-3 align-middle text-right">
+                      {/* Col 8: 操作 (一站式配置唤起全能抽屉) */}
+                      <td className="px-3.5 py-3 align-middle text-right">
                         <div className="flex items-center justify-end gap-1">
                           {canWrite && (
                             <>
@@ -980,14 +1206,14 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
                                 <ChevronDown className="size-3.5" />
                               </button>
 
-                              {/* 高级配置 (右侧滑出抽屉) */}
+                              {/* 一站式配置 */}
                               <Button
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => startEdit(model)}
-                                className="h-7 text-xs px-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-ink ml-1 font-medium"
+                                className="h-7 text-xs px-2.5 bg-white/[0.04] hover:bg-white/[0.08] text-ink ml-1 font-semibold"
                               >
-                                配置
+                                一站式配置
                               </Button>
                             </>
                           )}
@@ -1068,7 +1294,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
               {(() => {
                 const margin = computeModelMargin(quickPriceModal.model, Number(quickPriceInput));
                 if (!margin.hasData) return null;
-                const isHealthy = margin.status === 'high';
+                const isHealthy = margin.status === 'healthy';
                 const isLoss = margin.status === 'loss';
                 return (
                   <div className={`p-2.5 rounded-xl border flex items-center justify-between text-caption ${
@@ -1114,7 +1340,7 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         </div>
       )}
 
-      {/* ─── 右侧抽屉式高级配置面板 (ModelConfigDrawer) ─── */}
+      {/* ─── 右侧抽屉式全生命周期一站式配置面板 (ModelConfigDrawer) ─── */}
       <ModelConfigDrawer
         isOpen={drawerOpen}
         onClose={() => {
@@ -1127,6 +1353,10 @@ export default function FrontendConfigClient({ initialModels = [], canWrite }) {
         activeCategory={drawerModel?.category || 'image'}
         canWrite={canWrite}
         onSave={handleDrawerSave}
+        onSmartMatch={(m) => {
+          setDrawerOpen(false);
+          setSmartMatchModel(m);
+        }}
       />
 
       {/* ─── 模型库引入抽屉 (ModelRepositoryDrawer) ─── */}

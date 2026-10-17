@@ -104,7 +104,7 @@ test('旧路由重定向：目标真实存在、无自环、无链式循环', as
     );
 
     const shimSrc = await fs.readFile(pageFileFor(from), 'utf8');
-    assert.match(shimSrc, /redirect\(/, `旧路由 ${from} 页面未实现 redirect`);
+    assert.match(shimSrc, /(?:permanentR|r)edirect\(/, `旧路由 ${from} 页面未实现 redirect`);
     assert.ok(!shimSrc.includes(to + to), `重定向拼接异常: ${from}`);
   }
 });

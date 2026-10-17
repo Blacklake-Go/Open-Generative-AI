@@ -260,10 +260,16 @@ export default function PricingManagerClient({
   const handleSaveStrategy = async () => {
     setIsSavingStrategy(true);
     try {
-      const res = await fetch('/api/admin/models/pricing/strategy', {
+      const res = await fetch('/api/admin/models/control', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(strategy),
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `strat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        },
+        body: JSON.stringify({
+          action: 'save_pricing_strategy',
+          ...strategy,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -314,10 +320,16 @@ export default function PricingManagerClient({
     };
 
     try {
-      const res = await fetch('/api/admin/models/pricing', {
+      const res = await fetch('/api/admin/models/control', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `prc_${payload.modelId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        },
+        body: JSON.stringify({
+          action: 'save_model_pricing',
+          ...payload,
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -377,10 +389,14 @@ export default function PricingManagerClient({
 
     setIsSaving(true);
     try {
-      const res = await fetch('/api/admin/models/pricing', {
+      const res = await fetch('/api/admin/models/control', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `qprc_${quickEditModel.modelId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        },
         body: JSON.stringify({
+          action: 'save_model_pricing',
           modelId: quickEditModel.modelId,
           baseCredits,
           pricingMode,

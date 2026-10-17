@@ -1,6 +1,6 @@
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
-import { queryMany } from '@/lib/db/index';
+import { queryMany, queryOne } from '@/lib/db/index';
 import FrontendConfigClient from './frontend/FrontendConfigClient';
 
 export const dynamic = 'force-dynamic';
@@ -26,12 +26,18 @@ async function getFrontendModels() {
         COALESCE(rc.healthy_count, 0)::int AS healthy_routes,
         COALESCE(rc.total_routes, 0)::int AS total_routes,
         COALESCE(rc.provider_ids, '[]'::jsonb) AS provider_ids,
+        COALESCE(rc.routes, '[]'::jsonb) AS routes,
         rc.min_cost_usd,
         rc.min_cost_cny,
-        COALESCE(mp.base_credits, 0)::int AS base_credits,
+        COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::int AS base_credits,
         COALESCE(mp.pricing_mode, 'auto') AS pricing_mode,
         COALESCE(mp.pricing_type, 'fixed') AS pricing_type,
         COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
+        CASE
+          WHEN COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20) > 0 AND rc.min_cost_cny IS NOT NULL AND rc.min_cost_cny > 0 THEN
+            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1 - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1)) * 100)::numeric, 1)
+          ELSE NULL
+        END AS gross_margin_rate,
         COALESCE(act.calls_24h, 0)::int AS calls_24h,
         CASE
           WHEN COALESCE(act.calls_24h, 0) > 0 THEN
@@ -42,22 +48,42 @@ async function getFrontendModels() {
       FROM ai_studio.ai_models m
       LEFT JOIN LATERAL (
         SELECT
-          COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved')::int AS approved_count,
-          COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved' AND p.enabled = TRUE)::int AS healthy_count,
+          COUNT(*) FILTER (WHERE pm.review_status = 'approved')::int AS approved_count,
+          COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved' AND p.enabled = TRUE AND COALESCE(p.health_status, 'healthy') = 'healthy')::int AS healthy_count,
           COUNT(*)::int AS total_routes,
           jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids,
+          jsonb_agg(
+            jsonb_build_object(
+              'id', pm.id,
+              'provider_id', pm.provider_id,
+              'provider_name', COALESCE(p.name, pm.provider_id),
+              'provider_model_id', pm.provider_model_id,
+              'enabled', pm.enabled,
+              'priority', pm.priority,
+              'review_status', pm.review_status,
+              'health_status', COALESCE(p.health_status, 'healthy'),
+              'cost_cny', CASE
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
+                ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+              END,
+              'cost_usd', CASE
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+                ELSE (pm.cost_config->>'base_cost')::numeric
+              END
+            ) ORDER BY pm.priority DESC, pm.id ASC
+          ) FILTER (WHERE pm.id IS NOT NULL) AS routes,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
-              ELSE (pm.cost_config->>'base_cost')::numeric
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / 7.2
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric
             END
-          ) AS min_cost_usd,
+          ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_usd,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
-              ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * 7.2
             END
-          ) AS min_cost_cny
+          ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_cny
         FROM ai_studio.provider_models pm
         LEFT JOIN ai_studio.ai_providers p ON p.id = pm.provider_id
         WHERE pm.model_id = m.id
@@ -72,6 +98,10 @@ async function getFrontendModels() {
         WHERE (c.model = m.id OR att.provider_model_id = m.id)
           AND att.created_at >= NOW() - INTERVAL '24 hours'
       ) act ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT mc.credits_price FROM ai_studio.models_config mc
+        WHERE LOWER(mc.id) = LOWER(m.id) AND mc.credits_price > 0 LIMIT 1
+      ) mc ON TRUE
       LEFT JOIN ai_studio.model_pricing mp ON mp.model_id = m.id
       WHERE m.status != 'disabled'
       ORDER BY
@@ -96,38 +126,69 @@ async function getFrontendModels() {
         COALESCE(m.supported_durations, '[]'::jsonb) AS supported_durations,
         m.created_at, m.updated_at,
         COALESCE(rc.approved_count, 0)::int AS approved_routes,
-        COALESCE(rc.approved_count, 0)::int AS healthy_routes,
+        COALESCE(rc.healthy_count, 0)::int AS healthy_routes,
         COALESCE(rc.total_routes, 0)::int AS total_routes,
         COALESCE(rc.provider_ids, '[]'::jsonb) AS provider_ids,
+        COALESCE(rc.routes, '[]'::jsonb) AS routes,
         rc.min_cost_usd,
         rc.min_cost_cny,
-        COALESCE(mp.base_credits, 0)::int AS base_credits,
+        COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::int AS base_credits,
         COALESCE(mp.pricing_mode, 'auto') AS pricing_mode,
         COALESCE(mp.pricing_type, 'fixed') AS pricing_type,
         COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
+        CASE
+          WHEN COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20) > 0 AND rc.min_cost_cny IS NOT NULL AND rc.min_cost_cny > 0 THEN
+            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1 - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1)) * 100)::numeric, 1)
+          ELSE NULL
+        END AS gross_margin_rate,
         0 AS calls_24h,
         100.0 AS success_rate_24h,
         0 AS avg_ms_24h
       FROM ai_studio.ai_models m
       LEFT JOIN LATERAL (
         SELECT
-          COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved')::int AS approved_count,
+          COUNT(*) FILTER (WHERE pm.review_status = 'approved')::int AS approved_count,
+          COUNT(*) FILTER (WHERE pm.enabled AND pm.review_status = 'approved')::int AS healthy_count,
           COUNT(*)::int AS total_routes,
           jsonb_agg(DISTINCT pm.provider_id) FILTER (WHERE pm.provider_id IS NOT NULL) AS provider_ids,
+          jsonb_agg(
+            jsonb_build_object(
+              'id', pm.id,
+              'provider_id', pm.provider_id,
+              'provider_name', pm.provider_id,
+              'provider_model_id', pm.provider_model_id,
+              'enabled', pm.enabled,
+              'priority', pm.priority,
+              'review_status', pm.review_status,
+              'health_status', 'healthy',
+              'cost_cny', CASE
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
+                ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+              END,
+              'cost_usd', CASE
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+                ELSE (pm.cost_config->>'base_cost')::numeric
+              END
+            ) ORDER BY pm.priority DESC, pm.id ASC
+          ) FILTER (WHERE pm.id IS NOT NULL) AS routes,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
-              ELSE (pm.cost_config->>'base_cost')::numeric
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / 7.2
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric
             END
-          ) AS min_cost_usd,
+          ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_usd,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
-              ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * 7.2
             END
-          ) AS min_cost_cny
+          ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_cny
         FROM ai_studio.provider_models pm WHERE pm.model_id = m.id
       ) rc ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT mc.credits_price FROM ai_studio.models_config mc
+        WHERE LOWER(mc.id) = LOWER(m.id) AND mc.credits_price > 0 LIMIT 1
+      ) mc ON TRUE
       LEFT JOIN ai_studio.model_pricing mp ON mp.model_id = m.id
       WHERE m.status != 'disabled'
       ORDER BY
@@ -139,12 +200,25 @@ async function getFrontendModels() {
   }
 }
 
-export default async function ModelsPage() {
+export default async function ModelsPage({ searchParams }) {
   const admin = await requireAdminPagePermission(PERMISSIONS.modelsRead);
+  const resolvedSearchParams = await Promise.resolve(searchParams);
+  const initialBrand = resolvedSearchParams?.brand || 'all';
 
   let models = [];
+  let pendingPricesCount = 0;
+
   try {
-    models = await getFrontendModels();
+    const [fetchedModels, pendingRow] = await Promise.all([
+      getFrontendModels(),
+      queryOne(`
+        SELECT COUNT(*)::int AS count
+        FROM ai_studio.provider_model_price_versions
+        WHERE status IN ('staged', 'pending_review')
+      `).catch(() => ({ count: 0 })),
+    ]);
+    models = fetchedModels || [];
+    pendingPricesCount = Number(pendingRow?.count || 0);
   } catch (error) {
     console.error('[admin/models] Failed to load models for frontend management:', error.message);
   }
@@ -152,8 +226,9 @@ export default async function ModelsPage() {
   return (
     <FrontendConfigClient
       initialModels={JSON.parse(JSON.stringify(models))}
+      initialBrand={initialBrand}
+      pendingPricesCount={pendingPricesCount}
       canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
     />
   );
 }
-
