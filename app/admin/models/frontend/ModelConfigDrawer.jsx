@@ -206,6 +206,24 @@ export default function ModelConfigDrawer({
     setCheckResult(null);
   }, [isOpen, isNew, model, activeCategory]);
 
+  // 键盘 Escape 监听与底层画布滚动锁定
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !saving) {
+        onClose?.();
+      }
+    };
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, saving, onClose]);
+
   const brandInfo = useMemo(() => {
     return resolveBrand(model || { id: formData.model_id, name: formData.display_name });
   }, [model, formData.model_id, formData.display_name]);
@@ -414,9 +432,15 @@ export default function ModelConfigDrawer({
   const hasZeroRoutes = activeHealthyCount <= 0;
 
   return (
-    <div className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
-      {/* Drawer Container (Responsive 940px Double-Column Linked Workbench) */}
-      <div className="relative w-full max-w-4xl xl:w-[940px] 2xl:w-[980px] bg-[#131519] border-l border-white/10 shadow-[-24px_0_64px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
+    <div
+      className="fixed inset-0 z-modal flex items-center justify-center p-3 sm:p-5 lg:p-6 xl:p-8 bg-black/80 backdrop-blur-md animate-fade-in"
+      onClick={onClose}
+    >
+      {/* Floating Modal Window (Responsive Mission-Control Dual-Column Workbench) */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl max-h-[92vh] bg-[#131519] border border-white/10 rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden text-ink animate-modal-enter"
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
@@ -466,8 +490,8 @@ export default function ModelConfigDrawer({
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              title="关闭抽屉"
+              className="p-1.5 rounded-xl text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              title="关闭浮窗"
             >
               <X className="size-5" />
             </button>
@@ -975,8 +999,8 @@ export default function ModelConfigDrawer({
                                   </div>
 
                                   {/* Right: Metrics & Actions */}
-                                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                                    <div className="text-right font-mono">
+                                  <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap self-end sm:self-center justify-end">
+                                    <div className="text-right font-mono shrink-0">
                                       <div className="text-caption text-ink-muted">单价底价</div>
                                       <div className="text-sm font-bold text-ink">
                                         {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : '—'}
@@ -984,7 +1008,7 @@ export default function ModelConfigDrawer({
                                     </div>
 
                                     {/* Priority Weight Input */}
-                                    <div className="flex items-center gap-1 text-caption text-ink-subtle">
+                                    <div className="flex items-center gap-1 text-caption text-ink-subtle shrink-0">
                                       <span>权重</span>
                                       <input
                                         type="number"
@@ -1000,7 +1024,7 @@ export default function ModelConfigDrawer({
                                     <button
                                       type="button"
                                       onClick={() => handleSetPrimaryRoute(route)}
-                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border ${
+                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border shrink-0 ${
                                         isPrimary
                                           ? 'bg-brand/20 text-brand border-brand font-bold'
                                           : 'bg-white/[0.04] text-ink-muted border-white/10 hover:text-ink hover:bg-white/[0.08]'
@@ -1014,7 +1038,7 @@ export default function ModelConfigDrawer({
                                       type="button"
                                       onClick={() => handleSetBackupRoute(route)}
                                       disabled={isPrimary}
-                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border ${
+                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border shrink-0 ${
                                         isBackup
                                           ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-bold'
                                           : 'bg-white/[0.04] text-ink-muted border-white/10 hover:text-ink hover:bg-white/[0.08] disabled:opacity-20'
@@ -1295,8 +1319,8 @@ export default function ModelConfigDrawer({
                 )}
               </div>
 
-              {/* ─── 右栏：常驻实时看板 (320px Sticky Inspector) ─── */}
-              <div className="w-full lg:w-[320px] shrink-0 lg:sticky lg:top-0 space-y-4">
+              {/* ─── 右栏：常驻实时看板 (340px-360px Sticky Inspector) ─── */}
+              <div className="w-full lg:w-[340px] xl:w-[360px] shrink-0 lg:sticky lg:top-0 space-y-4">
                 
                 {/* 1:1 C 端下拉卡片实时预览 */}
                 <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-2">
@@ -1305,7 +1329,7 @@ export default function ModelConfigDrawer({
                       <Eye className="size-3 text-brand" />
                       1:1 前台卡片实时预览
                     </span>
-                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[9px] text-ink-muted">
+                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[9px] text-ink-muted shrink-0">
                       实时联动
                     </span>
                   </div>
@@ -1317,33 +1341,35 @@ export default function ModelConfigDrawer({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-body-sm font-bold text-ink truncate">{previewName}</span>
+                          <span className="text-body-sm font-bold text-ink truncate max-w-[170px]" title={previewName}>
+                            {previewName}
+                          </span>
                           {previewBadge && (
-                            <span className="rounded-full bg-brand/20 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/30">
+                            <span className="rounded-full bg-brand/20 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/30 shrink-0">
                               {previewBadge}
                             </span>
                           )}
                           {formData.is_pinned && (
-                            <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5">
+                            <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5 shrink-0">
                               <Pin className="size-2 fill-amber-300" /> 置顶
                             </span>
                           )}
                           {formData.is_featured && (
-                            <span className="rounded-full bg-yellow-500/20 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/30 flex items-center gap-0.5">
+                            <span className="rounded-full bg-yellow-500/20 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/30 flex items-center gap-0.5 shrink-0">
                               <Star className="size-2 fill-yellow-300" /> 推荐
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-caption text-ink-subtle font-mono text-[10px]">
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="text-caption text-ink-subtle font-mono text-[10px] shrink-0">
                             {formData.sub_type ? formData.sub_type.toUpperCase() : 'AI MODEL'}
                           </span>
-                          <span className="text-ink-subtle">·</span>
-                          <span className="text-caption text-brand font-semibold font-mono text-xs">
+                          <span className="text-ink-subtle shrink-0">·</span>
+                          <span className="text-caption text-brand font-semibold font-mono text-xs truncate max-w-[170px]" title={formData.pricing_hint || `${previewCredits} 积分 / 次`}>
                             {formData.pricing_hint ? formData.pricing_hint : `${previewCredits} 积分 / 次`}
                           </span>
                           {marginMetrics.hasData && (
-                            <span className="text-[10px] text-ink-muted">
+                            <span className="text-[10px] text-ink-muted shrink-0 font-mono">
                               (≈ ¥{marginMetrics.userPriceCny})
                             </span>
                           )}
@@ -1365,7 +1391,7 @@ export default function ModelConfigDrawer({
                     <span className="text-micro font-semibold text-ink-subtle uppercase flex items-center gap-1">
                       <DollarSign className="size-3 text-brand" /> 商业毛利微雷达
                     </span>
-                    <span className={`rounded-full px-2 py-0.2 text-[10px] font-mono font-bold ${
+                    <span className={`rounded-full px-2 py-0.2 text-[10px] font-mono font-bold shrink-0 ${
                       marginMetrics.status === 'loss' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                         : marginMetrics.status === 'low' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                         : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
@@ -1375,17 +1401,19 @@ export default function ModelConfigDrawer({
                   </div>
 
                   <div className="space-y-1.5 text-xs font-mono">
-                    <div className="flex items-center justify-between text-ink-muted">
-                      <span>单次售价</span>
-                      <span className="text-ink font-semibold">{formData.credits || 0} 积分 (¥{marginMetrics.userPriceCny})</span>
+                    <div className="flex items-center justify-between gap-2 text-ink-muted">
+                      <span className="shrink-0">单次售价</span>
+                      <span className="text-ink font-semibold truncate text-right">
+                        {formData.credits || 0} 积分 {marginMetrics.hasData ? `(¥${marginMetrics.userPriceCny})` : ''}
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between text-ink-muted">
-                      <span>采购成本</span>
-                      <span className="text-ink font-semibold">¥{marginMetrics.costCny}</span>
+                    <div className="flex items-center justify-between gap-2 text-ink-muted">
+                      <span className="shrink-0">采购成本</span>
+                      <span className="text-ink font-semibold truncate text-right">¥{marginMetrics.costCny}</span>
                     </div>
-                    <div className="flex items-center justify-between text-ink-muted pt-1 border-t border-white/[0.04]">
-                      <span>预估每单利润</span>
-                      <span className={`font-bold ${
+                    <div className="flex items-center justify-between gap-2 text-ink-muted pt-1 border-t border-white/[0.04]">
+                      <span className="shrink-0">预估每单利润</span>
+                      <span className={`font-bold truncate text-right ${
                         Number(marginMetrics.marginCny) < 0 ? 'text-rose-400' : 'text-emerald-400'
                       }`}>
                         {marginMetrics.hasData ? `${Number(marginMetrics.marginCny) >= 0 ? '+' : ''}¥${marginMetrics.marginCny}` : '—'}
@@ -1400,21 +1428,21 @@ export default function ModelConfigDrawer({
                     <span className="text-micro font-semibold text-ink-subtle uppercase flex items-center gap-1">
                       <Server className="size-3 text-brand" /> 路由快速就绪度
                     </span>
-                    <span className="text-caption font-mono text-ink-subtle">
+                    <span className="text-caption font-mono text-ink-subtle shrink-0">
                       {channelRoutes.length} 条通道
                     </span>
                   </div>
 
-                  <div className="space-y-1 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-ink-muted">主通道状态</span>
-                      <span className="font-semibold text-white font-mono truncate max-w-[160px] text-right">
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-ink-muted shrink-0">主通道状态</span>
+                      <span className="font-semibold text-white font-mono truncate text-right max-w-[180px]" title={formData.primary_provider || (channelRoutes[0]?.provider_name) || '未设定'}>
                         {formData.primary_provider || (channelRoutes[0]?.provider_name) || '未设定'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-ink-muted">备用通道</span>
-                      <span className="text-ink-subtle font-mono truncate max-w-[160px] text-right">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-ink-muted shrink-0">备用通道</span>
+                      <span className="text-ink-subtle font-mono truncate text-right max-w-[180px]" title={formData.backup_provider_id || '未设备用'}>
                         {formData.backup_provider_id || '未设备用'}
                       </span>
                     </div>
