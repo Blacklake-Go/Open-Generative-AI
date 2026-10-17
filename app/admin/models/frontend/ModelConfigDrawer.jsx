@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   X, Save, Loader2, RefreshCw, CheckCircle2, XCircle,
   Eye, Pin, Star, Sparkles, Check, AlertTriangle, Layers,
-  ChevronDown, Search, ArrowRight, ShieldCheck, DollarSign,
-  TrendingUp, Percent, Zap, Server, Sliders, Shield
+  DollarSign, Zap, Sliders, Server, ShieldCheck, ArrowRight
 } from 'lucide-react';
-import { Button, StatusBadge } from '@/components/admin/AdminUi';
+import { Button } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
 import { resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
 
@@ -44,6 +43,46 @@ const SUBTYPE_OPTIONS = {
   ],
 };
 
+/**
+ * 工业级高精度状态开关 (Precision Switch)
+ * 严格遵循 UI_DESIGN_SYSTEM.md §4.15.3 规范：
+ * 24px 高度、44px 宽度、纯白正圆滚珠、--ease-bounce 缓动滑动与键盘无障碍支持
+ */
+function PrecisionSwitch({
+  checked = false,
+  onChange,
+  disabled = false,
+  size = 'md',
+  id,
+  'aria-label': ariaLabel,
+}) {
+  const isSm = size === 'sm';
+  const trackHeight = isSm ? 'h-5 w-9' : 'h-6 w-11';
+  const thumbSize = isSm ? 'size-3.5' : 'size-4';
+  const translate = checked
+    ? (isSm ? 'translate-x-4' : 'translate-x-5')
+    : 'translate-x-1';
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      id={id}
+      aria-label={ariaLabel}
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange?.(!checked)}
+      className={`relative inline-flex items-center shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-40 disabled:cursor-not-allowed ${trackHeight} ${
+        checked ? 'bg-brand shadow-elevation-1' : 'bg-white/10 hover:bg-white/15'
+      }`}
+    >
+      <span
+        className={`pointer-events-none block rounded-full bg-white shadow-md transform transition-transform duration-200 ease-out ${thumbSize} ${translate}`}
+      />
+    </button>
+  );
+}
+
 export default function ModelConfigDrawer({
   isOpen,
   onClose,
@@ -56,15 +95,13 @@ export default function ModelConfigDrawer({
   onSmartMatch,
   onRunCheck,
 }) {
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'pricing' | 'capabilities'
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState(null);
   const [inlineCandidates, setInlineCandidates] = useState([]);
   const [channelRoutes, setChannelRoutes] = useState([]);
-
-  // Model Picker for new model
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -97,7 +134,6 @@ export default function ModelConfigDrawer({
         healthy_routes: 0,
       });
       setChannelRoutes([]);
-      setModelPickerOpen(true);
     } else if (model) {
       const initialCredits = Number(model.base_credits) > 0
         ? Number(model.base_credits)
@@ -290,6 +326,21 @@ export default function ModelConfigDrawer({
     });
   };
 
+  const handleSetBackupRoute = (route) => {
+    const isCurBackup = formData.backup_route_id === route.id || formData.backup_provider_id === route.provider_id;
+    if (isCurBackup) {
+      setFormData((f) => ({ ...f, backup_provider_id: '', backup_route_id: '' }));
+    } else {
+      setFormData((f) => ({
+        ...f,
+        backup_provider_id: route.provider_id,
+        backup_route_id: route.id,
+        primary_provider: f.primary_route_id === route.id ? '' : f.primary_provider,
+        primary_route_id: f.primary_route_id === route.id ? '' : f.primary_route_id,
+      }));
+    }
+  };
+
   const handleSave = async () => {
     if (!canWrite) return;
     const targetId = formData.model_id;
@@ -364,20 +415,31 @@ export default function ModelConfigDrawer({
 
   return (
     <div className="fixed inset-0 z-modal flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
-      {/* Drawer Container */}
-      <div className="relative w-full max-w-3xl xl:w-[820px] bg-[#131519] border-l border-white/10 shadow-[-20px_0_60px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
+      {/* Drawer Container (Responsive 940px Double-Column Linked Workbench) */}
+      <div className="relative w-full max-w-4xl xl:w-[940px] 2xl:w-[980px] bg-[#131519] border-l border-white/10 shadow-[-24px_0_64px_rgba(0,0,0,0.85)] flex flex-col h-full animate-slide-left text-ink">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="px-6 py-4 border-b border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3.5 min-w-0">
             <BrandLogo model={formData} size="md" className="rounded-xl shrink-0" />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-body-lg font-bold text-ink truncate">
                   {isNew ? '引入前台新模型' : `一站式配置 · ${formData.display_name || formData.model_id}`}
                 </h2>
-                <span className="rounded-full bg-brand/15 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/30">
+                <span className="rounded-full bg-brand/15 text-brand px-2 py-0.5 text-[10px] font-bold border border-brand/30">
                   {brandInfo.shortName}
                 </span>
+                {activeHealthyCount > 0 ? (
+                  <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-medium flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    {activeHealthyCount}/{channelRoutes.length} 通道就绪
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-[10px] font-medium flex items-center gap-1">
+                    <AlertTriangle className="size-2.5" />
+                    0 渠道阻断
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-0.5 font-mono text-caption text-ink-subtle">
                 <span>ID: {formData.model_id || '未绑定'}</span>
@@ -387,16 +449,16 @@ export default function ModelConfigDrawer({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             {!isNew && (
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={handleRunCheck}
                 disabled={checking || saving}
-                className="h-8 text-xs font-mono"
+                className="h-8 text-xs font-mono bg-white/[0.04] hover:bg-white/[0.08] text-ink"
               >
-                {checking ? <Loader2 className="size-3 animate-spin mr-1" /> : <RefreshCw className="size-3 mr-1" />}
+                {checking ? <Loader2 className="size-3 animate-spin mr-1 text-brand" /> : <RefreshCw className="size-3 mr-1 text-brand" />}
                 模拟路由
               </Button>
             )}
@@ -405,6 +467,7 @@ export default function ModelConfigDrawer({
               onClick={onClose}
               disabled={saving}
               className="p-1.5 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/[0.08] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              title="关闭抽屉"
             >
               <X className="size-5" />
             </button>
@@ -413,704 +476,972 @@ export default function ModelConfigDrawer({
 
         {/* Check Result Alert */}
         {checkResult && (
-          <div className={`px-5 py-2.5 border-b text-caption flex items-center gap-2 ${
+          <div className={`px-6 py-2.5 border-b text-caption flex items-center gap-2 ${
             checkResult.ok
               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
               : 'bg-red-500/10 border-red-500/20 text-red-300'
           }`}>
-            {checkResult.ok ? <CheckCircle2 className="size-4 shrink-0" /> : <XCircle className="size-4 shrink-0" />}
-            <span className="font-medium">{checkResult.msg}</span>
+            {checkResult.ok ? <CheckCircle2 className="size-4 shrink-0 text-emerald-400" /> : <XCircle className="size-4 shrink-0 text-red-400" />}
+            <span className="font-medium font-mono">{checkResult.msg}</span>
           </div>
         )}
 
-        {/* Drawer Body (Scrollable) with disabled fieldset during save */}
-        <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
-          <fieldset disabled={saving} className={`space-y-6 border-0 p-0 m-0 transition-opacity duration-150 ${saving ? 'opacity-50 pointer-events-none select-none' : ''}`}>
-          {/* Section 1: 实时前台卡片效果 1:1 预览 (Studio Live Preview) */}
-          <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-1">
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
-              <span className="text-caption font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
-                <Eye className="size-3.5 text-brand" />
-                Section 1: 实时前台卡片 1:1 预览 (Studio Dropdown Preview)
-              </span>
-              <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[10px] text-ink-muted">
-                1:1 还原 C 端体验
-              </span>
-            </div>
-
-            <div className="rounded-xl border border-white/10 bg-[#16181d] p-3.5 shadow-elevation-1 transition-all hover:border-brand/40">
-              <div className="flex items-start gap-3">
-                <div className="size-9 rounded-xl border border-white/10 flex items-center justify-center bg-brand/10 text-brand font-black text-sm shrink-0">
-                  {previewName.charAt(0) || 'M'}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-body font-bold text-ink truncate">{previewName}</span>
-                    {previewBadge && (
-                      <span className="rounded-full bg-brand/20 text-brand px-2 py-0.2 text-[10px] font-bold border border-brand/30">
-                        {previewBadge}
-                      </span>
+        {/* Drawer Body (Two-Column Linked Canvas) */}
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <fieldset disabled={saving} className={`border-0 p-0 m-0 transition-opacity duration-150 ${saving ? 'opacity-50 pointer-events-none select-none' : ''}`}>
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              
+              {/* ─── 左栏：高聚合配置区 (580px) ─── */}
+              <div className="flex-1 min-w-0 w-full space-y-5">
+                {/* 微信标准下划线标尺选项卡 (WeChat Underline Tabs) */}
+                <div className="flex items-center gap-8 border-b border-white/[0.08] h-11 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('overview')}
+                    className={`relative h-full inline-flex items-center gap-2 text-sm transition-colors ${
+                      activeTab === 'overview'
+                        ? 'font-semibold text-brand'
+                        : 'font-medium text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <span>呈现与运营</span>
+                    {activeTab === 'overview' && (
+                      <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
                     )}
-                    {formData.is_pinned && (
-                      <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5">
-                        <Pin className="size-2 fill-amber-300" /> 置顶
-                      </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('pricing')}
+                    className={`relative h-full inline-flex items-center gap-2 text-sm transition-colors ${
+                      activeTab === 'pricing'
+                        ? 'font-semibold text-brand'
+                        : 'font-medium text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <span>商业与路由</span>
+                    {activeTab === 'pricing' && (
+                      <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
                     )}
-                    {formData.is_featured && (
-                      <span className="rounded-full bg-yellow-500/20 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/30 flex items-center gap-0.5">
-                        <Star className="size-2 fill-yellow-300" /> 推荐
-                      </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('capabilities')}
+                    className={`relative h-full inline-flex items-center gap-2 text-sm transition-colors ${
+                      activeTab === 'capabilities'
+                        ? 'font-semibold text-brand'
+                        : 'font-medium text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <span>工作台规格</span>
+                    {activeTab === 'capabilities' && (
+                      <span className="absolute bottom-0 inset-x-0 h-[2px] bg-brand rounded-full" />
                     )}
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-caption text-ink-subtle font-mono text-[11px]">
-                      {formData.sub_type ? formData.sub_type.toUpperCase() : 'AI MODEL'}
-                    </span>
-                    <span className="text-ink-subtle">·</span>
-                    <span className="text-caption text-brand font-semibold font-mono">
-                      {formData.pricing_hint ? formData.pricing_hint : `${previewCredits} 积分 / 次`}
-                    </span>
-                    {marginMetrics.hasData && (
-                      <span className="text-[10px] text-ink-muted">
-                        (≈ ¥{marginMetrics.userPriceCny})
-                      </span>
+                  </button>
+                </div>
+
+                {/* Tab 1: 前台呈现与运营 (C 端呈现) */}
+                {activeTab === 'overview' && (
+                  <div className="space-y-5 animate-fade-in">
+                    {/* Model ID (If New) */}
+                    {isNew && (
+                      <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-1.5">
+                        <label className="text-caption text-ink-muted block font-medium">
+                          模型唯一标识符 (Model ID / Slug) <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.model_id || ''}
+                          onChange={(e) => setFormData((f) => ({ ...f, model_id: e.target.value.toLowerCase().replace(/[^a-z0-9-_.]/g, '') }))}
+                          placeholder="例如: seedream-5.0 或 kling-v2.0"
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono font-bold"
+                        />
+                        <span className="text-[11px] text-ink-subtle">全站路由与数据库调用的唯一键名，保存后不可随意更改。</span>
+                      </div>
                     )}
-                  </div>
-                  <p className="mt-1 text-caption text-ink-muted leading-relaxed line-clamp-2">
-                    {previewDesc}
-                  </p>
-                </div>
-                <div className="size-5 rounded-full bg-brand flex items-center justify-center text-white shrink-0 shadow-elevation-1">
-                  <Check className="size-3 stroke-[3]" />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Section 2: 采购成本与定价毛利测算器 */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
-              <h3 className="text-body font-bold text-ink flex items-center gap-2">
-                <DollarSign className="size-4 text-brand" />
-                Section 2: 采购成本与定价毛利测算器
-              </h3>
-              <span className="text-caption text-ink-subtle font-mono">
-                1 积分 = ¥0.10
-              </span>
-            </div>
+                    {/* Section: 基础标识与分类归属 */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-4">
+                      <h4 className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                        <Layers className="size-4 text-brand" />
+                        基础标识与分类归属
+                      </h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Cost Box */}
-              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
-                <span className="text-micro text-ink-subtle uppercase">官方采购底价 (成本)</span>
-                <div className="font-mono font-bold text-body-lg text-white">
-                  {formData.min_cost_cny !== null && formData.min_cost_cny !== undefined
-                    ? `¥${Number(formData.min_cost_cny).toFixed(3)}`
-                    : '—'}
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  {formData.min_cost_usd !== null && formData.min_cost_usd !== undefined
-                    ? `($${Number(formData.min_cost_usd).toFixed(4)})`
-                    : '暂无通道底价'}
-                </span>
-              </div>
+                      {/* Display Name */}
+                      <div>
+                        <label className="text-caption text-ink-muted block mb-1">
+                          前台展示名称 (Display Name)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.display_name || ''}
+                          onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
+                          placeholder="例如: 字节跳动 Seedream 5.0 (商业摄影质感)"
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-semibold"
+                        />
+                      </div>
 
-              {/* Price / Credits Input */}
-              <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-micro text-brand uppercase font-bold">单次积分售价</span>
-                  <span className="text-[10px] text-ink-subtle font-mono">C 端售价</span>
-                </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <input
-                    type="number"
-                    min="1"
-                    max="10000"
-                    step="1"
-                    value={formData.credits ?? ''}
-                    onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
-                    className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
-                  />
-                  <span className="text-caption font-bold text-brand shrink-0">积分</span>
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  折合: ¥{marginMetrics.userPriceCny} / 次
-                </span>
-              </div>
+                      {/* Category Pills */}
+                      <div>
+                        <label className="text-caption text-ink-muted block mb-1.5">
+                          模型分类归属 (Category)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(CATEGORY_MAP).map(([catKey, catLabel]) => {
+                            const isSelected = formData.category === catKey;
+                            return (
+                              <button
+                                key={catKey}
+                                type="button"
+                                onClick={() => handleCategoryChange(catKey)}
+                                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all border ${
+                                  isSelected
+                                    ? 'bg-brand text-white border-brand shadow-elevation-1 font-bold'
+                                    : 'bg-black/40 border-white/10 text-ink-muted hover:text-ink hover:bg-white/[0.04]'
+                                }`}
+                              >
+                                {catLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-              {/* Real-time Profit Margin */}
-              <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
-                <span className="text-micro text-ink-subtle uppercase">实时预估毛利率</span>
-                <div className="font-mono font-bold text-body-lg flex items-center gap-1">
-                  {marginMetrics.hasData ? (
-                    <span className={
-                      marginMetrics.status === 'loss' ? 'text-rose-400 font-black'
-                        : marginMetrics.status === 'low' ? 'text-amber-400'
-                        : 'text-emerald-400'
-                    }>
-                      {marginMetrics.rate}%
-                    </span>
-                  ) : (
-                    <span className="text-ink-subtle">—</span>
-                  )}
-                </div>
-                <span className="text-[10px] text-ink-muted font-mono block">
-                  {marginMetrics.hasData
-                    ? `每单利润: ${Number(marginMetrics.marginCny) >= 0 ? '+' : ''}¥${marginMetrics.marginCny}`
-                    : '待关联通道成本后计算'}
-                </span>
-              </div>
-            </div>
+                      {/* Sub-Type Pills */}
+                      {SUBTYPE_OPTIONS[formData.category]?.length > 0 && (
+                        <div>
+                          <label className="text-caption text-ink-muted block mb-1.5">
+                            工作台子场景 (Sub-Type)
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {SUBTYPE_OPTIONS[formData.category].map((st) => {
+                              const isCur = formData.sub_type === st.id;
+                              return (
+                                <button
+                                  key={st.id}
+                                  type="button"
+                                  onClick={() => setFormData((f) => ({ ...f, sub_type: st.id }))}
+                                  className={`rounded-full px-3 py-1 text-xs font-mono transition-all border ${
+                                    isCur
+                                      ? 'bg-brand/15 text-brand border-brand/40 font-bold shadow-elevation-1'
+                                      : 'bg-black/40 border-white/10 text-ink-muted hover:text-ink'
+                                  }`}
+                                >
+                                  {st.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-            {/* Negative Margin Alert / Warning */}
-            {marginMetrics.hasData && marginMetrics.status === 'loss' && (
-              <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2 animate-pulse">
-                <AlertTriangle className="size-4 text-rose-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">⚠️ 赤红负毛利阻断警告：</span>
-                  <span>当前单次积分定价 ({formData.credits} 积分 ≈ ¥{marginMetrics.userPriceCny}) 低于采购底价 (¥{marginMetrics.costCny})，每笔生成将亏损 ¥{Math.abs(Number(marginMetrics.marginCny)).toFixed(2)}。请调高积分定价以防资产流失！</span>
-                </div>
-              </div>
-            )}
+                      {/* Tier & Sort Grid */}
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
+                        <div>
+                          <label className="text-caption text-ink-muted block mb-1">模型分级 (Tier)</label>
+                          <select
+                            value={formData.tier || 'core'}
+                            onChange={(e) => setFormData((f) => ({ ...f, tier: e.target.value }))}
+                            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
+                          >
+                            <option value="core">Core (核心主力推荐)</option>
+                            <option value="backup">Backup (备用储备池)</option>
+                            <option value="experimental">Experimental (实验探索)</option>
+                          </select>
+                        </div>
 
-            {/* Pricing Hint Input */}
-            <div>
-              <label className="text-caption text-ink-muted block mb-1">
-                前台扣费文案说明 (Pricing Hint)
-              </label>
-              <input
-                type="text"
-                value={formData.pricing_hint || ''}
-                onChange={(e) => setFormData((f) => ({ ...f, pricing_hint: e.target.value }))}
-                placeholder="例如: 🎬 基础 10 算力 (5秒视频) 或 ✨ 旗舰出图 20 积分"
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
-              />
-              <span className="text-[11px] text-ink-subtle mt-1 block">
-                展示在 Studio 模型选择器副标题。若留空，前台将默认显示为“{formData.credits || 10} 积分 / 次”。
-              </span>
-            </div>
-          </div>
+                        <div>
+                          <label className="text-caption text-ink-muted block mb-1">排序权重 (越小越靠前)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="999"
+                            value={formData.sort ?? 1}
+                            onChange={(e) => setFormData((f) => ({ ...f, sort: e.target.value === '' ? '' : Number(e.target.value) }))}
+                            className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono font-bold"
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-          {/* Section 3: 就地供应通道与主备快速调度 (Fast Route Switcher) */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
-              <h3 className="text-body font-bold text-ink flex items-center gap-2">
-                <Zap className="size-4 text-brand" />
-                Section 3: 就地供应通道与主备快速调度 (Fast Route Switcher)
-              </h3>
-              {channelRoutes.filter((r) => r.enabled && r.review_status === 'approved').length > 0 ? (
-                <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1 font-mono">
-                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {channelRoutes.filter((r) => r.enabled && r.review_status === 'approved').length}/{channelRoutes.length} 通道就绪
-                </span>
-              ) : (
-                <span className="rounded-full bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 text-micro font-bold flex items-center gap-1">
-                  <AlertTriangle className="size-3" />
-                  0 渠道阻断
-                </span>
-              )}
-            </div>
+                    {/* Section: 运营策略与上下架控制 (微信四列设置行模式) */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3">
+                      <h4 className="text-body-sm font-semibold text-ink flex items-center gap-2 border-b border-white/[0.06] pb-2.5">
+                        <Sliders className="size-4 text-brand" />
+                        运营策略与上下架控制
+                      </h4>
 
-            {/* Channel List Table */}
-            {channelRoutes.length > 0 ? (
-              <div className="rounded-xl border border-white/10 bg-black/30 overflow-x-auto text-xs">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/[0.08] bg-white/[0.02] text-caption text-ink-muted">
-                      <th className="px-3.5 py-2.5 min-w-[200px]">上游供应商</th>
-                      <th className="px-3 py-2.5 w-[90px] text-center whitespace-nowrap">状态</th>
-                      <th className="px-3 py-2.5 w-[85px] text-right whitespace-nowrap">单价</th>
-                      <th className="px-3 py-2.5 w-[75px] text-center whitespace-nowrap">主通道</th>
-                      <th className="px-3 py-2.5 w-[85px] text-center whitespace-nowrap">备用通道</th>
-                      <th className="px-3 py-2.5 w-[80px] text-center whitespace-nowrap">权重</th>
-                      <th className="px-3 py-2.5 w-[65px] text-center whitespace-nowrap">启用</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.06]">
-                    {channelRoutes.map((route) => {
-                      const isPrimary = formData.primary_route_id ? formData.primary_route_id === route.id : formData.primary_provider === route.provider_id;
-                      const isBackup = formData.backup_route_id ? formData.backup_route_id === route.id : (Boolean(formData.backup_provider_id) && formData.backup_provider_id === route.provider_id);
-                      const isHealthy = route.health_status === 'healthy';
-
-                      return (
-                        <tr key={route.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="px-3.5 py-2.5">
-                            <div className="font-semibold text-white break-words" title={route.provider_name || route.provider_id}>
-                              {route.provider_name || route.provider_id}
-                            </div>
-                            <div className="font-mono text-[10px] text-ink-subtle break-all" title={route.provider_model_id}>
-                              {route.provider_model_id}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
-                            <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                              route.review_status === 'approved' && isHealthy
-                                ? 'bg-emerald-500/15 text-emerald-300'
-                                : 'bg-amber-500/15 text-amber-300'
+                      {/* Row 1: is_visible */}
+                      <div className="flex items-center justify-between py-2.5 border-b border-white/[0.04]">
+                        <div className="min-w-0 pr-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-ink">前台模型库展示</span>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.2 text-[10px] font-mono font-medium ${
+                              formData.is_visible ? 'bg-emerald-500/15 text-emerald-300' : 'bg-white/5 text-ink-subtle'
                             }`}>
-                              <span className={`size-1.5 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                              {route.review_status === 'approved' ? '已核准' : '待审核'}
+                              {formData.is_visible ? '展示中' : '已隐藏'}
                             </span>
-                          </td>
-                          <td className="px-3 py-2.5 text-right font-mono text-ink whitespace-nowrap">
-                            {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : '—'}
-                          </td>
-                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
-                            <input
-                              type="radio"
-                              name="primary_provider_radio"
-                              checked={isPrimary}
-                              onChange={() => handleSetPrimaryRoute(route)}
-                              className="size-3.5 accent-brand cursor-pointer"
-                              title="设为主通道（提权并确保启用）"
-                            />
-                          </td>
-                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
-                            <input
-                              type="radio"
-                              name="backup_provider_radio"
-                              checked={isBackup}
-                              onClick={() => {
-                                if (isBackup) {
-                                  setFormData((f) => ({ ...f, backup_provider_id: '', backup_route_id: '' }));
-                                }
-                              }}
-                              onChange={() => {
-                                if (isPrimary) return;
-                                setFormData((f) => ({ ...f, backup_provider_id: route.provider_id, backup_route_id: route.id }));
-                              }}
-                              className="size-3.5 accent-amber-500 cursor-pointer"
-                              title={isBackup ? '点击取消备用通道' : '设为备用通道'}
-                            />
-                          </td>
-                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
+                          </div>
+                          <p className="text-caption text-ink-subtle mt-0.5">
+                            开启后将在 Studio 创作工作台及前台模型库中开放给 C 端用户调用。
+                          </p>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.is_visible)}
+                          onChange={(val) => setFormData((f) => ({ ...f, is_visible: val }))}
+                          aria-label="前台模型库展示"
+                        />
+                      </div>
+
+                      {/* Row 2: is_pinned */}
+                      <div className="flex items-center justify-between py-2.5 border-b border-white/[0.04]">
+                        <div className="min-w-0 pr-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-ink flex items-center gap-1.5">
+                              <Pin className="size-3.5 text-amber-400" /> 前台列表置顶
+                            </span>
+                            {formData.is_pinned && (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.2 text-[10px] font-medium bg-amber-500/15 text-amber-300">
+                                已置顶首位
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-caption text-ink-subtle mt-0.5">
+                            在前台所有分类列表中优先置顶于第一行显示。
+                          </p>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.is_pinned)}
+                          onChange={(val) => setFormData((f) => ({ ...f, is_pinned: val }))}
+                          aria-label="前台列表置顶"
+                        />
+                      </div>
+
+                      {/* Row 3: is_featured */}
+                      <div className="flex items-center justify-between py-2.5">
+                        <div className="min-w-0 pr-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-ink flex items-center gap-1.5">
+                              <Star className="size-3.5 text-yellow-400" /> 标记官方推荐
+                            </span>
+                            {formData.is_featured && (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.2 text-[10px] font-medium bg-yellow-500/15 text-yellow-300">
+                                推荐中
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-caption text-ink-subtle mt-0.5">
+                            在前台模型卡片上附加金色推荐标识，并加入精选推荐池。
+                          </p>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.is_featured)}
+                          onChange={(val) => setFormData((f) => ({ ...f, is_featured: val }))}
+                          aria-label="标记官方推荐"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Section: 运营角标与前台文案 */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3.5">
+                      <h4 className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                        <Sparkles className="size-4 text-brand" />
+                        运营角标与前台描述
+                      </h4>
+
+                      {/* Badge Selection */}
+                      <div>
+                        <label className="text-caption text-ink-muted block mb-1.5">预设运营角标 (点击切换或反选)</label>
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {PRESET_BADGES.map((b) => {
+                            const isCur = formData.badge === b;
+                            return (
+                              <button
+                                key={b}
+                                type="button"
+                                onClick={() => setFormData((f) => ({ ...f, badge: isCur ? '' : b }))}
+                                className={`rounded-full px-2.5 py-1 text-caption transition-all font-medium ${
+                                  isCur
+                                    ? 'bg-brand text-white shadow-elevation-1 font-bold'
+                                    : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                                }`}
+                              >
+                                {b}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <input
+                          type="text"
+                          value={formData.badge || ''}
+                          onChange={(e) => setFormData((f) => ({ ...f, badge: e.target.value }))}
+                          placeholder="或直接输入自定义角标文本..."
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-caption text-ink outline-none focus:border-brand"
+                        />
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="text-caption text-ink-muted block mb-1">前台能力描述 (Description)</label>
+                        <textarea
+                          rows={2}
+                          value={formData.description || ''}
+                          onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
+                          placeholder="给 C 端用户展示的模型核心卖点或特性描述..."
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: 商业定价与通道调度 (商业与路由) */}
+                {activeTab === 'pricing' && (
+                  <div className="space-y-5 animate-fade-in">
+                    {/* Section: 采购成本与定价毛利测算器 */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-4">
+                      <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                        <h4 className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                          <DollarSign className="size-4 text-brand" />
+                          采购成本与定价毛利测算器
+                        </h4>
+                        <span className="text-caption text-ink-subtle font-mono">
+                          基准汇率: 1 积分 = ¥0.10
+                        </span>
+                      </div>
+
+                      {/* KPI 3-Box Strip */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* Cost Box */}
+                        <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                          <span className="text-micro text-ink-subtle uppercase">官方采购底价 (成本)</span>
+                          <div className="font-mono font-bold text-body-lg text-white">
+                            {formData.min_cost_cny !== null && formData.min_cost_cny !== undefined
+                              ? `¥${Number(formData.min_cost_cny).toFixed(3)}`
+                              : '—'}
+                          </div>
+                          <span className="text-[10px] text-ink-muted font-mono block">
+                            {formData.min_cost_usd !== null && formData.min_cost_usd !== undefined
+                              ? `($${Number(formData.min_cost_usd).toFixed(4)})`
+                              : '暂无通道底价'}
+                          </span>
+                        </div>
+
+                        {/* Price Input */}
+                        <div className="rounded-xl border border-brand/30 bg-brand/[0.03] p-3 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-micro text-brand uppercase font-bold">单次积分售价</span>
+                            <span className="text-[10px] text-ink-subtle font-mono">C 端单价</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
                             <input
                               type="number"
-                              min="0"
-                              max="100"
-                              value={route.priority ?? 50}
-                              onChange={(e) => handleRoutePriorityChange(route.id, e.target.value)}
-                              className="w-14 rounded bg-black/60 border border-white/10 px-1 py-0.5 text-center font-mono text-xs text-ink outline-none focus:border-brand"
+                              min="1"
+                              max="10000"
+                              step="1"
+                              value={formData.credits ?? ''}
+                              onChange={(e) => setFormData((f) => ({ ...f, credits: e.target.value === '' ? '' : Number(e.target.value) }))}
+                              className="w-full rounded-lg border border-brand/40 bg-black/50 px-2.5 py-1 text-body font-bold font-mono text-brand outline-none focus:border-brand"
                             />
-                          </td>
-                          <td className="px-3 py-2.5 text-center whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(route.enabled)}
-                              onChange={() => handleRouteEnabledToggle(route.id)}
-                              className="size-3.5 accent-brand cursor-pointer"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-center space-y-2">
-                <p className="text-caption text-ink-muted">当前模型暂无绑定的上游通道</p>
-                {onSmartMatch && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => onSmartMatch(model || formData)}
-                    className="h-8 text-xs font-semibold text-brand hover:text-white"
-                  >
-                    <Sparkles className="size-3.5 mr-1 text-brand" />
-                    匹配候选上游渠道
-                  </Button>
+                            <span className="text-caption font-bold text-brand shrink-0">积分</span>
+                          </div>
+                          <span className="text-[10px] text-ink-muted font-mono block">
+                            折合: ¥{marginMetrics.userPriceCny} / 次
+                          </span>
+                        </div>
+
+                        {/* Real-time Margin */}
+                        <div className="rounded-xl border border-white/10 bg-black/40 p-3 space-y-1">
+                          <span className="text-micro text-ink-subtle uppercase">实时预估毛利率</span>
+                          <div className="font-mono font-bold text-body-lg flex items-center gap-1">
+                            {marginMetrics.hasData ? (
+                              <span className={
+                                marginMetrics.status === 'loss' ? 'text-rose-400 font-black'
+                                  : marginMetrics.status === 'low' ? 'text-amber-400'
+                                  : 'text-emerald-400'
+                              }>
+                                {marginMetrics.rate}%
+                              </span>
+                            ) : (
+                              <span className="text-ink-subtle">—</span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-ink-muted font-mono block">
+                            {marginMetrics.hasData
+                              ? `每单利润: ${Number(marginMetrics.marginCny) >= 0 ? '+' : ''}¥${marginMetrics.marginCny}`
+                              : '待关联通道成本后计算'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Negative Margin Alert */}
+                      {marginMetrics.hasData && marginMetrics.status === 'loss' && (
+                        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2 animate-pulse">
+                          <AlertTriangle className="size-4 text-rose-400 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">⚠️ 赤红负毛利阻断警告：</span>
+                            <span>当前单次积分定价 ({formData.credits} 积分 ≈ ¥${marginMetrics.userPriceCny}) 低于采购底价 (¥${marginMetrics.costCny})，每笔生成将亏损 ¥${Math.abs(Number(marginMetrics.marginCny)).toFixed(2)}。</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pricing Hint Input */}
+                      <div>
+                        <label className="text-caption text-ink-muted block mb-1">
+                          前台扣费文案说明 (Pricing Hint)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.pricing_hint || ''}
+                          onChange={(e) => setFormData((f) => ({ ...f, pricing_hint: e.target.value }))}
+                          placeholder="例如: 基础 10 算力 (5秒视频) 或 旗舰出图 20 积分"
+                          className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
+                        />
+                        <span className="text-[11px] text-ink-subtle mt-1 block">
+                          展示在 Studio 模型选择器副标题。若留空，前台将默认显示为“{formData.credits || 10} 积分 / 次”。
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Section: 卡片式通道调度矩阵 (Route Channel Cards) */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3.5">
+                      <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                        <h4 className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                          <Zap className="size-4 text-brand" />
+                          就地供应通道与主备快速调度 (Fast Route Switcher)
+                        </h4>
+                        {activeHealthyCount > 0 ? (
+                          <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-bold flex items-center gap-1">
+                            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            {activeHealthyCount}/{channelRoutes.length} 通道就绪
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold flex items-center gap-1">
+                            <AlertTriangle className="size-3" />
+                            0 渠道阻断
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Channel Cards List */}
+                      {channelRoutes.length > 0 ? (
+                        <div className="space-y-2.5">
+                          {channelRoutes.map((route) => {
+                            const isPrimary = formData.primary_route_id ? formData.primary_route_id === route.id : formData.primary_provider === route.provider_id;
+                            const isBackup = formData.backup_route_id ? formData.backup_route_id === route.id : (Boolean(formData.backup_provider_id) && formData.backup_provider_id === route.provider_id);
+                            const isHealthy = route.health_status === 'healthy';
+
+                            return (
+                              <div
+                                key={route.id}
+                                className={`rounded-xl border p-3.5 transition-all ${
+                                  isPrimary
+                                    ? 'border-brand/40 bg-brand/[0.03] shadow-elevation-1'
+                                    : isBackup
+                                    ? 'border-amber-500/30 bg-amber-500/[0.02]'
+                                    : 'border-white/10 bg-black/30 hover:border-white/20'
+                                }`}
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  {/* Left: Provider info */}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-semibold text-white text-sm truncate">
+                                        {route.provider_name || route.provider_id}
+                                      </span>
+                                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.2 text-[10px] font-mono ${
+                                        route.review_status === 'approved' && isHealthy
+                                          ? 'bg-emerald-500/15 text-emerald-300'
+                                          : 'bg-amber-500/15 text-amber-300'
+                                      }`}>
+                                        <span className={`size-1.5 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                                        {route.review_status === 'approved' ? '已核准' : '待审核'}
+                                      </span>
+                                      {isPrimary && (
+                                        <span className="rounded-full bg-brand text-white px-2 py-0.2 text-[10px] font-bold shadow-elevation-1">
+                                          主通道
+                                        </span>
+                                      )}
+                                      {isBackup && (
+                                        <span className="rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.2 text-[10px] font-bold">
+                                          备用通道
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="font-mono text-caption text-ink-subtle mt-0.5 truncate">
+                                      {route.provider_model_id}
+                                    </div>
+                                  </div>
+
+                                  {/* Right: Metrics & Actions */}
+                                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                                    <div className="text-right font-mono">
+                                      <div className="text-caption text-ink-muted">单价底价</div>
+                                      <div className="text-sm font-bold text-ink">
+                                        {Number(route.cost_cny) > 0 ? `¥${Number(route.cost_cny).toFixed(3)}` : '—'}
+                                      </div>
+                                    </div>
+
+                                    {/* Priority Weight Input */}
+                                    <div className="flex items-center gap-1 text-caption text-ink-subtle">
+                                      <span>权重</span>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="1000"
+                                        value={route.priority ?? 50}
+                                        onChange={(e) => handleRoutePriorityChange(route.id, e.target.value)}
+                                        className="w-14 rounded-lg bg-black/60 border border-white/10 px-1 py-1 text-center font-mono text-xs text-ink outline-none focus:border-brand font-bold"
+                                      />
+                                    </div>
+
+                                    {/* Primary Switch Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetPrimaryRoute(route)}
+                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border ${
+                                        isPrimary
+                                          ? 'bg-brand/20 text-brand border-brand font-bold'
+                                          : 'bg-white/[0.04] text-ink-muted border-white/10 hover:text-ink hover:bg-white/[0.08]'
+                                      }`}
+                                    >
+                                      {isPrimary ? '当前主' : '设为主'}
+                                    </button>
+
+                                    {/* Backup Switch Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetBackupRoute(route)}
+                                      disabled={isPrimary}
+                                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border ${
+                                        isBackup
+                                          ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-bold'
+                                          : 'bg-white/[0.04] text-ink-muted border-white/10 hover:text-ink hover:bg-white/[0.08] disabled:opacity-20'
+                                      }`}
+                                    >
+                                      {isBackup ? '当前备' : '设为备'}
+                                    </button>
+
+                                    {/* Enable Switch */}
+                                    <PrecisionSwitch
+                                      size="sm"
+                                      checked={Boolean(route.enabled)}
+                                      onChange={() => handleRouteEnabledToggle(route.id)}
+                                      aria-label={`启用通道 ${route.provider_name}`}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-white/10 bg-black/30 p-5 text-center space-y-2">
+                          <p className="text-caption text-ink-muted">当前模型暂无绑定的上游通道</p>
+                          {onSmartMatch && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => onSmartMatch(model || formData)}
+                              className="h-8 text-xs font-semibold text-brand hover:text-white"
+                            >
+                              <Sparkles className="size-3.5 mr-1 text-brand" />
+                              匹配候选上游渠道
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Smart Match recommendations */}
+                      {inlineCandidates.length > 0 && (
+                        <div className="rounded-xl border border-brand/30 bg-brand/[0.04] p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-brand flex items-center gap-1">
+                              <Sparkles className="size-3.5" /> 智能备选渠道推荐
+                            </span>
+                            {onSmartMatch && (
+                              <button
+                                type="button"
+                                onClick={() => onSmartMatch(model || formData)}
+                                className="text-micro text-brand hover:underline font-medium"
+                              >
+                                去智能匹配中心 →
+                              </button>
+                            )}
+                          </div>
+                          <div className="space-y-1.5">
+                            {inlineCandidates.slice(0, 2).map((cand, i) => (
+                              <div
+                                key={i}
+                                className="flex items-center justify-between rounded-lg bg-black/40 border border-white/5 p-2 text-xs"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="font-semibold text-white truncate">{cand.providerName || cand.providerId}</div>
+                                  <div className="font-mono text-[10px] text-gray-400 truncate">{cand.providerModelId}</div>
+                                </div>
+                                <span className="rounded bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 text-[10px] font-bold shrink-0 ml-2">
+                                  匹配度 {Math.round(cand.confidence * 100)}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 3: 工作台规格与能力矩阵 (规格与参数) */}
+                {activeTab === 'capabilities' && (
+                  <div className="space-y-5 animate-fade-in">
+                    {/* Supported Ratios */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                        <label className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                          <Layers className="size-4 text-brand" />
+                          支持画幅比例 (Ratios)
+                        </label>
+                        <div className="flex items-center gap-2 text-caption">
+                          <button
+                            type="button"
+                            onClick={() => setFormData((f) => ({ ...f, supported_ratios: ['1:1', '16:9', '9:16'] }))}
+                            className="text-brand hover:underline text-xs font-medium"
+                          >
+                            常用预设
+                          </button>
+                          <span className="text-white/20">|</span>
+                          <button
+                            type="button"
+                            onClick={() => setFormData((f) => ({ ...f, supported_ratios: [...PRESET_RATIOS] }))}
+                            className="text-ink-subtle hover:text-ink text-xs font-medium"
+                          >
+                            全选
+                          </button>
+                          <span className="text-white/20">|</span>
+                          <button
+                            type="button"
+                            onClick={() => setFormData((f) => ({ ...f, supported_ratios: [] }))}
+                            className="text-ink-subtle hover:text-ink text-xs font-medium"
+                          >
+                            清空
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {PRESET_RATIOS.map((ratio) => {
+                          const isSelected = (formData.supported_ratios || []).includes(ratio);
+                          return (
+                            <button
+                              key={ratio}
+                              type="button"
+                              onClick={() => {
+                                const cur = formData.supported_ratios || [];
+                                const next = isSelected ? cur.filter((r) => r !== ratio) : [...cur, ratio];
+                                setFormData((f) => ({ ...f, supported_ratios: next }));
+                              }}
+                              className={`rounded-full px-3 py-1 text-xs font-mono transition-all ${
+                                isSelected
+                                  ? 'bg-brand text-white font-bold shadow-elevation-1'
+                                  : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                              }`}
+                            >
+                              {ratio}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Supported Resolutions */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                        <label className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                          <Sliders className="size-4 text-brand" />
+                          支持分辨率规格 (Resolutions)
+                        </label>
+                        <div className="flex items-center gap-2 text-caption">
+                          <button
+                            type="button"
+                            onClick={() => setFormData((f) => ({ ...f, supported_resolutions: [...PRESET_RESOLUTIONS] }))}
+                            className="text-ink-subtle hover:text-ink text-xs font-medium"
+                          >
+                            全选
+                          </button>
+                          <span className="text-white/20">|</span>
+                          <button
+                            type="button"
+                            onClick={() => setFormData((f) => ({ ...f, supported_resolutions: [] }))}
+                            className="text-ink-subtle hover:text-ink text-xs font-medium"
+                          >
+                            清空
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {PRESET_RESOLUTIONS.map((res) => {
+                          const isSelected = (formData.supported_resolutions || []).includes(res);
+                          return (
+                            <button
+                              key={res}
+                              type="button"
+                              onClick={() => {
+                                const cur = formData.supported_resolutions || [];
+                                const next = isSelected ? cur.filter((r) => r !== res) : [...cur, res];
+                                setFormData((f) => ({ ...f, supported_resolutions: next }));
+                              }}
+                              className={`rounded-full px-2.5 py-1 text-[11px] font-mono transition-all ${
+                                isSelected
+                                  ? 'bg-brand/15 text-brand border border-brand/30 font-bold shadow-elevation-1'
+                                  : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                              }`}
+                            >
+                              {res}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Supported Durations (video or audio) */}
+                    {(formData.category === 'video' || formData.category === 'audio') && (
+                      <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3">
+                        <label className="text-body-sm font-semibold text-ink block border-b border-white/[0.06] pb-2">
+                          可选生成时长 (秒)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {PRESET_DURATIONS.map((dur) => {
+                            const isSelected = (formData.supported_durations || []).includes(dur);
+                            return (
+                              <button
+                                key={dur}
+                                type="button"
+                                onClick={() => {
+                                  const cur = formData.supported_durations || [];
+                                  const next = isSelected ? cur.filter((d) => d !== dur) : [...cur, dur];
+                                  setFormData((f) => ({ ...f, supported_durations: next }));
+                                }}
+                                className={`rounded-full px-3 py-1 text-xs font-mono transition-all ${
+                                  isSelected
+                                    ? 'bg-brand text-white font-bold shadow-elevation-1'
+                                    : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
+                                }`}
+                              >
+                                {dur}s
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Capabilities Switches */}
+                    <div className="rounded-xl border border-white/10 bg-surface-raised p-4 space-y-3">
+                      <h4 className="text-body-sm font-semibold text-ink border-b border-white/[0.06] pb-2">
+                        生成能力特性开关
+                      </h4>
+
+                      {/* Hires Fix */}
+                      <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+                        <div>
+                          <div className="text-sm font-semibold text-ink">高清修复 (Hires Fix)</div>
+                          <div className="text-caption text-ink-subtle">允许前台启用超清细节放大算法与重采样</div>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.capabilities?.hires_fix)}
+                          onChange={(val) => setFormData((f) => ({
+                            ...f,
+                            capabilities: { ...(f.capabilities || {}), hires_fix: val }
+                          }))}
+                          aria-label="高清修复"
+                        />
+                      </div>
+
+                      {/* Seed Control */}
+                      <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+                        <div>
+                          <div className="text-sm font-semibold text-ink">支持指定种子 (Seed Control)</div>
+                          <div className="text-caption text-ink-subtle">在前台高级参数栏中展示 Seed 输入框以便结果复现</div>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.capabilities?.seed_control !== false)}
+                          onChange={(val) => setFormData((f) => ({
+                            ...f,
+                            capabilities: { ...(f.capabilities || {}), seed_control: val }
+                          }))}
+                          aria-label="支持指定种子"
+                        />
+                      </div>
+
+                      {/* Camera Control */}
+                      <div className="flex items-center justify-between py-2">
+                        <div>
+                          <div className="text-sm font-semibold text-ink">运镜与控制 (Camera Control)</div>
+                          <div className="text-caption text-ink-subtle">展示平移、推拉、环绕等摄影机运动控制面板（视频模型）</div>
+                        </div>
+                        <PrecisionSwitch
+                          checked={Boolean(formData.capabilities?.camera_control)}
+                          onChange={(val) => setFormData((f) => ({
+                            ...f,
+                            capabilities: { ...(f.capabilities || {}), camera_control: val }
+                          }))}
+                          aria-label="运镜与控制"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
 
-            {/* Smart Match recommendations if unrouted */}
-            {inlineCandidates.length > 0 && (
-              <div className="rounded-xl border border-brand/30 bg-brand/[0.04] p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-brand flex items-center gap-1">
-                    <Sparkles className="size-3.5" /> 智能备选渠道推荐
-                  </span>
-                  {onSmartMatch && (
-                    <button
-                      type="button"
-                      onClick={() => onSmartMatch(model || formData)}
-                      className="text-micro text-brand hover:underline font-medium"
-                    >
-                      去智能匹配中心 →
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  {inlineCandidates.slice(0, 2).map((cand, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between rounded-lg bg-black/40 border border-white/5 p-2 text-xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-white truncate">{cand.providerName || cand.providerId}</div>
-                        <div className="font-mono text-[10px] text-gray-400 truncate">{cand.providerModelId}</div>
+              {/* ─── 右栏：常驻实时看板 (320px Sticky Inspector) ─── */}
+              <div className="w-full lg:w-[320px] shrink-0 lg:sticky lg:top-0 space-y-4">
+                
+                {/* 1:1 C 端下拉卡片实时预览 */}
+                <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-2">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                    <span className="text-micro font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
+                      <Eye className="size-3 text-brand" />
+                      1:1 前台卡片实时预览
+                    </span>
+                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[9px] text-ink-muted">
+                      实时联动
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-[#16181d] p-3.5 shadow-elevation-1 transition-all hover:border-brand/40">
+                    <div className="flex items-start gap-3">
+                      <div className="size-9 rounded-xl border border-white/10 flex items-center justify-center bg-brand/10 text-brand font-black text-sm shrink-0">
+                        {previewName.charAt(0) || 'M'}
                       </div>
-                      <span className="rounded bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 text-[10px] font-bold shrink-0 ml-2">
-                        匹配度 {Math.round(cand.confidence * 100)}%
-                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-body-sm font-bold text-ink truncate">{previewName}</span>
+                          {previewBadge && (
+                            <span className="rounded-full bg-brand/20 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/30">
+                              {previewBadge}
+                            </span>
+                          )}
+                          {formData.is_pinned && (
+                            <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5">
+                              <Pin className="size-2 fill-amber-300" /> 置顶
+                            </span>
+                          )}
+                          {formData.is_featured && (
+                            <span className="rounded-full bg-yellow-500/20 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/30 flex items-center gap-0.5">
+                              <Star className="size-2 fill-yellow-300" /> 推荐
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="text-caption text-ink-subtle font-mono text-[10px]">
+                            {formData.sub_type ? formData.sub_type.toUpperCase() : 'AI MODEL'}
+                          </span>
+                          <span className="text-ink-subtle">·</span>
+                          <span className="text-caption text-brand font-semibold font-mono text-xs">
+                            {formData.pricing_hint ? formData.pricing_hint : `${previewCredits} 积分 / 次`}
+                          </span>
+                          {marginMetrics.hasData && (
+                            <span className="text-[10px] text-ink-muted">
+                              (≈ ¥{marginMetrics.userPriceCny})
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1.5 text-caption text-ink-muted leading-relaxed line-clamp-2 text-xs">
+                          {previewDesc}
+                        </p>
+                      </div>
+                      <div className="size-5 rounded-full bg-brand flex items-center justify-center text-white shrink-0 shadow-elevation-1">
+                        <Check className="size-3 stroke-[3]" />
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Section 4: 工作台规格与能力矩阵 */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
-            <h3 className="text-body font-bold text-ink flex items-center gap-2">
-              <Layers className="size-4 text-brand" />
-              Section 4: 工作台规格与能力矩阵 (Capabilities Matrix)
-            </h3>
-
-            {/* Supported Ratios */}
-            <div className="space-y-1.5">
-              <span className="text-caption text-ink-muted block">支持画幅比例 (点击切换可选比例)</span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {PRESET_RATIOS.map((ratio) => {
-                  const isSelected = (formData.supported_ratios || []).includes(ratio);
-                  return (
-                    <button
-                      key={ratio}
-                      type="button"
-                      onClick={() => {
-                        const cur = formData.supported_ratios || [];
-                        const next = isSelected ? cur.filter((r) => r !== ratio) : [...cur, ratio];
-                        setFormData((f) => ({ ...f, supported_ratios: next }));
-                      }}
-                      className={`rounded-full px-2.5 py-0.5 text-caption font-mono transition-all ${
-                        isSelected
-                          ? 'bg-brand text-white font-bold shadow-elevation-1'
-                          : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                      }`}
-                    >
-                      {ratio}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Supported Resolutions */}
-            <div className="space-y-1.5">
-              <span className="text-caption text-ink-muted block">支持分辨率规格</span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {PRESET_RESOLUTIONS.map((res) => {
-                  const isSelected = (formData.supported_resolutions || []).includes(res);
-                  return (
-                    <button
-                      key={res}
-                      type="button"
-                      onClick={() => {
-                        const cur = formData.supported_resolutions || [];
-                        const next = isSelected ? cur.filter((r) => r !== res) : [...cur, res];
-                        setFormData((f) => ({ ...f, supported_resolutions: next }));
-                      }}
-                      className={`rounded-full px-2 py-0.5 text-[11px] font-mono transition-all ${
-                        isSelected
-                          ? 'bg-brand/10 text-brand border border-brand/20 font-bold'
-                          : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                      }`}
-                    >
-                      {res}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Supported Durations (video or audio) */}
-            {(formData.category === 'video' || formData.category === 'audio') && (
-              <div className="space-y-1.5">
-                <span className="text-caption text-ink-muted block">可选生成时长 (秒)</span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {PRESET_DURATIONS.map((dur) => {
-                    const isSelected = (formData.supported_durations || []).includes(dur);
-                    return (
-                      <button
-                        key={dur}
-                        type="button"
-                        onClick={() => {
-                          const cur = formData.supported_durations || [];
-                          const next = isSelected ? cur.filter((d) => d !== dur) : [...cur, dur];
-                          setFormData((f) => ({ ...f, supported_durations: next }));
-                        }}
-                        className={`rounded-full px-2.5 py-0.5 text-caption font-mono transition-all ${
-                          isSelected
-                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold'
-                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        {dur}s
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Feature Flags */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-white/[0.06]">
-              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.capabilities?.hires_fix)}
-                  onChange={(e) => setFormData((f) => ({
-                    ...f,
-                    capabilities: { ...(f.capabilities || {}), hires_fix: e.target.checked }
-                  }))}
-                  className="rounded size-3.5 accent-brand"
-                />
-                <span>高清修复 (Hires Fix)</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.capabilities?.seed_control !== false)}
-                  onChange={(e) => setFormData((f) => ({
-                    ...f,
-                    capabilities: { ...(f.capabilities || {}), seed_control: e.target.checked }
-                  }))}
-                  className="rounded size-3.5 accent-brand"
-                />
-                <span>支持指定种子 (Seed)</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-caption text-ink-muted cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.capabilities?.camera_control)}
-                  onChange={(e) => setFormData((f) => ({
-                    ...f,
-                    capabilities: { ...(f.capabilities || {}), camera_control: e.target.checked }
-                  }))}
-                  className="rounded size-3.5 accent-brand"
-                />
-                <span>运镜与控制 (Camera Control)</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Section 5: 上下架与运营推荐控制 */}
-          <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-4">
-            <h3 className="text-body font-bold text-ink">Section 5: 上下架与运营推荐控制</h3>
-
-            {/* Warning if 0 routes and user activates is_visible */}
-            {hasZeroRoutes && formData.is_visible && (
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-300 flex items-start gap-2">
-                <AlertTriangle className="size-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">无可用通道警示：</span>
-                  <span>当前模型可用通道数为 0。若开启前台展示，用户在 Studio 下单时可能会因缺乏通道而遇阻。建议先行在 Section 3 绑定或匹配可用上游通道。</span>
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center gap-5">
-              <label className="flex items-center gap-2 text-body-sm text-ink cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.is_visible)}
-                  onChange={(e) => setFormData((f) => ({ ...f, is_visible: e.target.checked }))}
-                  className="rounded accent-brand size-4"
-                />
-                <span className="font-semibold text-brand">在前台模型库展示 (is_visible)</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-body-sm text-amber-300 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.is_pinned)}
-                  onChange={(e) => setFormData((f) => ({ ...f, is_pinned: e.target.checked }))}
-                  className="rounded accent-amber-500 size-4"
-                />
-                <Pin className="size-3.5 fill-amber-300" />
-                <span>前台列表置顶 📌</span>
-              </label>
-
-              <label className="flex items-center gap-2 text-body-sm text-yellow-300 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={Boolean(formData.is_featured)}
-                  onChange={(e) => setFormData((f) => ({ ...f, is_featured: e.target.checked }))}
-                  className="rounded accent-yellow-500 size-4"
-                />
-                <Star className="size-3.5 fill-yellow-300" />
-                <span>标记为推荐 ⭐</span>
-              </label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/[0.06]">
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">模型分级 (Tier)</label>
-                <select
-                  value={formData.tier || 'core'}
-                  onChange={(e) => setFormData((f) => ({ ...f, tier: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                >
-                  <option value="core">Core (核心主力推荐)</option>
-                  <option value="backup">Backup (备用储备池)</option>
-                  <option value="experimental">Experimental (实验探索)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">排序权重 (越小越靠前)</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="999"
-                  value={formData.sort ?? 1}
-                  onChange={(e) => setFormData((f) => ({ ...f, sort: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Category & Subtype Selection */}
-            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-              <div>
-                <label className="text-caption text-ink-muted block mb-1.5">
-                  模型分类归属 (Category)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(CATEGORY_MAP).map(([catKey, catLabel]) => {
-                    const isSelected = formData.category === catKey;
-                    return (
-                      <button
-                        key={catKey}
-                        type="button"
-                        onClick={() => handleCategoryChange(catKey)}
-                        className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all border text-center ${
-                          isSelected
-                            ? 'bg-brand/20 border-brand text-brand shadow-elevation-1'
-                            : 'bg-black/40 border-white/10 text-ink-muted hover:text-ink hover:bg-white/[0.04]'
-                        }`}
-                      >
-                        {catLabel}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {SUBTYPE_OPTIONS[formData.category]?.length > 0 && (
-                <div>
-                  <label className="text-caption text-ink-muted block mb-1.5">
-                    工作台子场景 (Sub-Type)
-                  </label>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {SUBTYPE_OPTIONS[formData.category].map((st) => {
-                      const isCur = formData.sub_type === st.id;
-                      return (
-                        <button
-                          key={st.id}
-                          type="button"
-                          onClick={() => setFormData((f) => ({ ...f, sub_type: st.id }))}
-                          className={`rounded-full px-3 py-1 text-caption transition-all font-mono ${
-                            isCur
-                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold shadow-elevation-1'
-                              : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                          }`}
-                        >
-                          {st.label}
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* If New Model: Model ID input */}
-            {isNew && (
-              <div className="pt-2 border-t border-white/[0.06]">
-                <label className="text-caption text-ink-muted block mb-1">
-                  模型唯一标识符 (Model ID / Slug) <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.model_id || ''}
-                  onChange={(e) => setFormData((f) => ({ ...f, model_id: e.target.value.toLowerCase().replace(/[^a-z0-9-_.]/g, '') }))}
-                  placeholder="例如: seedream-5.0-ultra 或 kling-v2.0"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand font-mono"
-                />
-              </div>
-            )}
+                {/* 商业测算微雷达 (Margin KPI Mini-Radar) */}
+                <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-2.5 shadow-elevation-1">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-1.5">
+                    <span className="text-micro font-semibold text-ink-subtle uppercase flex items-center gap-1">
+                      <DollarSign className="size-3 text-brand" /> 商业毛利微雷达
+                    </span>
+                    <span className={`rounded-full px-2 py-0.2 text-[10px] font-mono font-bold ${
+                      marginMetrics.status === 'loss' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                        : marginMetrics.status === 'low' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    }`}>
+                      {marginMetrics.hasData ? `${marginMetrics.rate}% 毛利` : '待测算'}
+                    </span>
+                  </div>
 
-            {/* Description & Badge Details */}
-            <div className="space-y-3 pt-2 border-t border-white/[0.06]">
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">前台展示名称</label>
-                <input
-                  type="text"
-                  value={formData.display_name || ''}
-                  onChange={(e) => setFormData((f) => ({ ...f, display_name: e.target.value }))}
-                  placeholder="例如: 字节跳动 Seedream 4.5"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                />
-              </div>
-
-              {/* Badge Selection */}
-              <div>
-                <label className="text-caption text-ink-muted block mb-1.5">运营角标</label>
-                <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                  {PRESET_BADGES.map((b) => {
-                    const isCur = formData.badge === b;
-                    return (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => setFormData((f) => ({ ...f, badge: isCur ? '' : b }))}
-                        className={`rounded-full px-2.5 py-1 text-caption transition-all ${
-                          isCur
-                            ? 'bg-brand text-white shadow-elevation-1 font-bold'
-                            : 'bg-black/40 border border-white/10 text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        {b}
-                      </button>
-                    );
-                  })}
+                  <div className="space-y-1.5 text-xs font-mono">
+                    <div className="flex items-center justify-between text-ink-muted">
+                      <span>单次售价</span>
+                      <span className="text-ink font-semibold">{formData.credits || 0} 积分 (¥{marginMetrics.userPriceCny})</span>
+                    </div>
+                    <div className="flex items-center justify-between text-ink-muted">
+                      <span>采购成本</span>
+                      <span className="text-ink font-semibold">¥{marginMetrics.costCny}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-ink-muted pt-1 border-t border-white/[0.04]">
+                      <span>预估每单利润</span>
+                      <span className={`font-bold ${
+                        Number(marginMetrics.marginCny) < 0 ? 'text-rose-400' : 'text-emerald-400'
+                      }`}>
+                        {marginMetrics.hasData ? `${Number(marginMetrics.marginCny) >= 0 ? '+' : ''}¥${marginMetrics.marginCny}` : '—'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  value={formData.badge || ''}
-                  onChange={(e) => setFormData((f) => ({ ...f, badge: e.target.value }))}
-                  placeholder="或自定义角标文本..."
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-caption text-ink outline-none focus:border-brand"
-                />
-              </div>
 
-              <div>
-                <label className="text-caption text-ink-muted block mb-1">前台能力描述</label>
-                <textarea
-                  rows={2}
-                  value={formData.description || ''}
-                  onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
-                  placeholder="给 C 端用户展示的模型卖点或特性描述..."
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-body-sm text-ink outline-none focus:border-brand"
-                />
+                {/* 路由快速就绪看板 (Route Health Radar) */}
+                <div className="rounded-2xl border border-white/10 bg-surface-raised p-4 space-y-2.5 shadow-elevation-1">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-1.5">
+                    <span className="text-micro font-semibold text-ink-subtle uppercase flex items-center gap-1">
+                      <Server className="size-3 text-brand" /> 路由快速就绪度
+                    </span>
+                    <span className="text-caption font-mono text-ink-subtle">
+                      {channelRoutes.length} 条通道
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted">主通道状态</span>
+                      <span className="font-semibold text-white font-mono truncate max-w-[160px] text-right">
+                        {formData.primary_provider || (channelRoutes[0]?.provider_name) || '未设定'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted">备用通道</span>
+                      <span className="text-ink-subtle font-mono truncate max-w-[160px] text-right">
+                        {formData.backup_provider_id || '未设备用'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Warning if 0 channels and is_visible */}
+                  {hasZeroRoutes && formData.is_visible && (
+                    <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-[11px] text-rose-300 flex items-start gap-1.5">
+                      <AlertTriangle className="size-3 text-rose-400 shrink-0 mt-0.5" />
+                      <span>无可用健康通道。前台展示将面临调用阻断！</span>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
-          </div>
           </fieldset>
         </div>
 
         {/* Sticky Footer */}
-        <div className="p-4 border-t border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 border-t border-white/[0.08] bg-[#191c21] flex items-center justify-between shrink-0">
           <div className="text-caption text-ink-muted font-mono">
-            ID: <span className="text-white">{formData.model_id || '未设定'}</span>
+            ID: <span className="text-white font-bold">{formData.model_id || '未设定'}</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
+            <Button variant="ghost" size="sm" onClick={onClose} disabled={saving} className="text-ink-muted hover:text-ink">
               取消
             </Button>
             <Button
