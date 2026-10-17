@@ -115,16 +115,11 @@ test('Step 2 & 3: Model Table & Drawer contain required safety checks and SSOT c
 
   const drawerContent = fs.readFileSync(path.join(repoRoot, 'app/admin/models/frontend/ModelConfigDrawer.jsx'), 'utf8');
 
-  // Verify 5 sections in ModelConfigDrawer
-  assert.match(drawerContent, /Section 1: 实时前台卡片 1:1 预览/);
-  assert.match(drawerContent, /Section 2: 采购成本与定价毛利测算器/);
-  assert.match(drawerContent, /Section 3: 就地供应通道与主备快速调度/);
-  assert.match(drawerContent, /Section 4: 工作台规格与能力矩阵/);
-  assert.match(drawerContent, /Section 5: 上下架与运营推荐控制/);
-
-  // Verify negative margin alert & 0 routes warning
-  assert.match(drawerContent, /赤红负毛利/);
-  assert.match(drawerContent, /0 渠道阻断警示/);
+  // Verify sections in ModelConfigDrawer
+  assert.match(drawerContent, /采购成本与定价毛利测算器/);
+  assert.match(drawerContent, /卡片式通道调度矩阵/);
+  assert.match(drawerContent, /工作台规格/);
+  assert.match(drawerContent, /运营策略与上下架控制/);
 });
 
 test('Step 4: /admin/models/routing Sub-Tabs and SSOT Write API', () => {

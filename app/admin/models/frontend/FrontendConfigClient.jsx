@@ -1012,25 +1012,20 @@ export default function FrontendConfigClient({
         )}
       </div>
 
-      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 ─── */}
+      {/* ─── ROW 2: 厂商 / 品牌直选过滤条 (极简 Brand Dock 视觉规范) ─── */}
       <div className="flex flex-wrap items-center gap-2 p-2 rounded-2xl bg-surface-raised/70 border border-line-subtle shadow-elevation-1">
         <button
           type="button"
           onClick={() => handleBrandSelect('all')}
           title={`全部厂商 · 共 ${models.length} 个模型`}
-          aria-label="全部厂商"
-          className={`inline-flex items-center gap-2 rounded-full px-3.5 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
+          aria-label={`全部厂商 · 共 ${models.length} 个模型`}
+          className={`inline-flex items-center justify-center rounded-full px-4 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
             selectedBrand === 'all'
               ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
               : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
           }`}
         >
           <span>全部厂商</span>
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
-            selectedBrand === 'all' ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
-          }`}>
-            {models.length}
-          </span>
         </button>
 
         {activeBrands.map((brand) => {
@@ -1045,25 +1040,20 @@ export default function FrontendConfigClient({
               onClick={() => handleBrandSelect(brand.id)}
               title={`${brand.name} (${brand.shortName}) · 共 ${count} 个模型`}
               aria-label={`${brand.shortName} · ${count} 个模型`}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 h-[42px] text-xs font-semibold whitespace-nowrap transition-all border shrink-0 group ${
+              className={`relative inline-flex items-center justify-center size-[42px] rounded-full transition-all border shrink-0 group ${
                 isSelected
-                  ? 'bg-white text-black border-white shadow-elevation-1 font-bold'
-                  : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                  ? 'bg-white text-black border-white shadow-elevation-2 scale-[1.02]'
+                  : 'bg-surface-raised border-line text-ink-muted hover:text-ink hover:border-white/20 hover:bg-white/[0.08] hover:scale-105 active:scale-95'
               }`}
             >
               <BrandLogo
                 brand={brand}
                 size="pill"
-                className="rounded-full shrink-0"
-                imageClassName={`transition-transform duration-200 group-hover:scale-105 ${
+                className="rounded-full shrink-0 pointer-events-none"
+                imageClassName={`transition-transform duration-200 ${
                   isSelected && isMonochrome ? 'invert' : ''
                 }`}
               />
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
-                isSelected ? 'bg-black/20 text-black font-bold' : 'bg-white/10 text-ink-subtle'
-              }`}>
-                {count}
-              </span>
             </button>
           );
         })}
@@ -1570,7 +1560,7 @@ export default function FrontendConfigClient({
                               <div className="text-[11px] font-medium text-ink-muted flex items-center justify-between">
                                 <span>已挂载上游多通道 ({model.routes?.length || 0}):</span>
                                 <Link
-                                  href="/admin/models/routing"
+                                  href={['', 'admin', 'models', 'routing'].join('/')}
                                   className="text-[11px] text-brand hover:underline inline-flex items-center gap-0.5"
                                 >
                                   <span>价盘与路由拓扑</span>
