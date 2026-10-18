@@ -65,6 +65,7 @@
 | `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=branding` |
 | `/admin/content/effects` | `app/admin/content/effects/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=motion` |
 | `/admin/content/icon` | `app/admin/content/icon/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/content/x-prompts` | `app/admin/content/x-prompts/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/cost-center` | `app/admin/cost-center/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/coupons` | `app/admin/coupons/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/credits` | `app/admin/credits/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -224,7 +225,7 @@
 
 ## API 路由
 
-- 处理器总数：213（其中 `/api/**` 209，`/api/admin/**` 97 个全部经 `requirePermission`）
+- 处理器总数：217（其中 `/api/**` 213，`/api/admin/**` 101 个全部经 `requirePermission`）
 - 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
