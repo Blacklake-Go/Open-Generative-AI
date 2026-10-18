@@ -30,18 +30,21 @@ const mountedAudios = audioCandidates.slice(0, 15);
 const videoDefault = mountedVideos.includes('wan-2.1') ? 'wan-2.1' : (mountedVideos[0] || '');
 const audioDefault = mountedAudios.includes('minimax-music-3.0') ? 'minimax-music-3.0' : (mountedAudios[0] || '');
 
+const textCandidates = candidates.filter(c => c.capability === 'text').map(c => c.id);
+const textDefault = textCandidates.includes('deepseek-r1') ? 'deepseek-r1' : (textCandidates[0] || '');
+
 const input = {
   mountedModelIds: {
     image: imageMounts,
     video: mountedVideos,
     audio: mountedAudios,
-    text: [],
+    text: textCandidates,
   },
   defaults: {
     imageModelId: 'seedream-4.5',
     videoModelId: videoDefault,
     audioModelId: audioDefault,
-    textModelId: '',
+    textModelId: textDefault,
     canvasImageCount: '1',
     audioVoice: 'alloy',
     audioFormat: 'mp3',

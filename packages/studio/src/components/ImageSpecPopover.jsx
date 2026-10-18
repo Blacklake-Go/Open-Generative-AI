@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
-import AspectWireframeIcon from "./AspectWireframeIcon.jsx";
+import React, { useMemo, useState } from "react";
+import { Lock, Unlock } from "lucide-react";
+import AspectWireframeIcon from "./AspectWireframeIcon";
 
 /**
  * Computes standard pixel dimensions from aspect ratio string and quality string.
@@ -103,12 +104,56 @@ export function ImageSpecPopover({
   showQuality = true,
   batchSize = 1,
   onChangeBatchSize,
+  customWidth = null,
+  customHeight = null,
+  onChangeDimensions,
   copy = {},
 }) {
-  const dimensions = useMemo(
+  const [isLocked, setIsLocked] = useState(true);
+
+  const baseDimensions = useMemo(
     () => computeImageDimensions(selectedAr, selectedQuality || resolutions[0]),
     [selectedAr, selectedQuality, resolutions],
   );
+
+  const currentW = customWidth || baseDimensions.width;
+  const currentH = customHeight || baseDimensions.height;
+
+  const handleRatioClick = (ratio) => {
+    const nextDims = computeImageDimensions(ratio, selectedQuality || resolutions[0]);
+    onSelectAr?.(ratio);
+    onChangeDimensions?.({
+      width: nextDims.width,
+      height: nextDims.height,
+      aspectRatio: ratio,
+    });
+  };
+
+  const handleWidthChange = (val) => {
+    const num = parseInt(val, 10);
+    if (isNaN(num)) return;
+    const clampedW = Math.max(256, Math.min(4096, num));
+    if (isLocked) {
+      const ratio = currentW && currentH ? currentW / currentH : 1;
+      const newH = Math.max(256, Math.min(4096, Math.round(clampedW / ratio)));
+      onChangeDimensions?.({ width: clampedW, height: newH, aspectRatio: selectedAr });
+    } else {
+      onChangeDimensions?.({ width: clampedW, height: currentH, aspectRatio: 'custom' });
+    }
+  };
+
+  const handleHeightChange = (val) => {
+    const num = parseInt(val, 10);
+    if (isNaN(num)) return;
+    const clampedH = Math.max(256, Math.min(4096, num));
+    if (isLocked) {
+      const ratio = currentW && currentH ? currentW / currentH : 1;
+      const newW = Math.max(256, Math.min(4096, Math.round(clampedH * ratio)));
+      onChangeDimensions?.({ width: newW, height: clampedH, aspectRatio: selectedAr });
+    } else {
+      onChangeDimensions?.({ width: currentW, height: clampedH, aspectRatio: 'custom' });
+    }
+  };
 
   const t = copy.paramsPanel || {};
 
@@ -129,7 +174,7 @@ export function ImageSpecPopover({
               <button
                 key={ratio}
                 type="button"
-                onClick={() => onSelectAr?.(ratio)}
+                onClick={() => handleRatioClick(ratio)}
                 className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer group ${
                   isSelected
                     ? "bg-brand-soft border-brand-line text-brand shadow-elevation-1"
@@ -222,22 +267,62 @@ export function ImageSpecPopover({
         </div>
       </div>
 
-      {/* ── 4. Dimensions Section ── */}
-      <div className="pt-2.5 border-t border-line-subtle flex items-center justify-between text-xs">
-        <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-          {t.titleDimensions || "尺寸规格"}
-        </span>
-        <div className="flex items-center gap-1.5 text-xs text-ink-muted font-mono">
-          <span className="text-[10px] font-semibold text-ink-subtle">W</span>
-          <span className="px-2 py-0.5 rounded-md bg-wash border border-line text-ink font-semibold min-w-[46px] text-center tracking-tight">
-            {dimensions.width}
+      {/* ── 4. Dimensions & Custom Resolution Section ── */}
+      <div className="pt-2.5 border-t border-line-subtle flex flex-col gap-2">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
+            {t.titleDimensions || "尺寸规格 (自定义)"}
           </span>
-          <span className="text-ink-subtle mx-0.5">⇄</span>
-          <span className="text-[10px] font-semibold text-ink-subtle">H</span>
-          <span className="px-2 py-0.5 rounded-md bg-wash border border-line text-ink font-semibold min-w-[46px] text-center tracking-tight">
-            {dimensions.height}
-          </span>
-          <span className="text-[10px] text-ink-subtle ml-0.5 font-semibold">PX</span>
+          <button
+            type="button"
+            onClick={() => setIsLocked((v) => !v)}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] transition-colors cursor-pointer ${
+              isLocked
+                ? "bg-brand-soft border-brand-line text-brand font-medium"
+                : "bg-wash border-line text-ink-muted hover:text-ink"
+            }`}
+            title={isLocked ? "比例已锁定 (Lock Aspect Ratio)" : "自由比例 (Free Aspect Ratio)"}
+          >
+            {isLocked ? <Lock className="size-3" /> : <Unlock className="size-3" />}
+            <span>{isLocked ? "比例锁定" : "自由尺寸"}</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-well border border-line focus-within:border-brand-line">
+            <span className="text-[10px] font-semibold text-ink-subtle">W</span>
+            <input
+              type="number"
+              min="256"
+              max="4096"
+              step="8"
+              value={currentW}
+              onChange={(e) => handleWidthChange(e.target.value)}
+              className="w-full bg-transparent text-ink font-semibold focus:outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+
+          <span className="text-ink-subtle shrink-0">×</span>
+
+          <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-well border border-line focus-within:border-brand-line">
+            <span className="text-[10px] font-semibold text-ink-subtle">H</span>
+            <input
+              type="number"
+              min="256"
+              max="4096"
+              step="8"
+              value={currentH}
+              onChange={(e) => handleHeightChange(e.target.value)}
+              className="w-full bg-transparent text-ink font-semibold focus:outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+
+          <span className="text-[10px] text-ink-subtle shrink-0 font-semibold">PX</span>
+        </div>
+
+        <div className="flex items-center justify-between text-[10px] text-ink-subtle">
+          <span>最小 256px · 最大 4096px</span>
+          <span>{currentW} × {currentH}</span>
         </div>
       </div>
     </div>

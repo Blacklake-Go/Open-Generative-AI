@@ -14,8 +14,12 @@ import {
   isModelPinned,
   getServerModelMeta,
 } from "../modelDescriptions.js";
-import { getProviderLogo, invertLogos } from "../providerLogos.js";
-import { applyActiveModelDirectory, isServerModelGenerationEligible } from "../models.js";
+import {
+  applyActiveModelDirectory,
+  isServerModelGenerationEligible,
+  audioModels,
+  lipsyncModels,
+} from "../models.js";
 
 /**
  * Clean Dropdown Model Picker (Figure 2 Style)
@@ -64,11 +68,15 @@ export default function FrontendModelPicker({
         if (!Array.isArray(data?.models)) throw new Error('模型目录格式无效');
         if (!isMounted) return;
         applyActiveModelDirectory(data.models);
+        setDirectoryLoaded(true);
+        setDirectoryRevision((revision) => revision + 1);
         setDirectoryError(false);
       })
       .catch(() => {
         if (!isMounted) return;
         applyActiveModelDirectory([]);
+        setDirectoryLoaded(true);
+        setDirectoryRevision((revision) => revision + 1);
         setDirectoryError(true);
       });
 
@@ -80,11 +88,51 @@ export default function FrontendModelPicker({
 
   // Filter models strictly by studio type with active status
   const modelList = useMemo(() => {
-    if (!directoryLoaded) return [];
-    const catalogEntries =
-      studioType === "video"
-        ? filterActiveModelEntries(videoModelPickerEntries)
-        : filterActiveModelEntries(imageModelPickerEntries);
+    let catalogEntries = [];
+    if (studioType === "video") {
+      catalogEntries = filterActiveModelEntries(videoModelPickerEntries);
+      if (!catalogEntries.length && !directoryLoaded) {
+        catalogEntries = videoModelPickerEntries;
+      }
+    } else if (studioType === "audio") {
+      catalogEntries = (audioModels || []).map((m) => ({
+        id: m.id,
+        name: m.name,
+        family: { id: m.id, name: m.name, provider: m.provider || m.family || "official" },
+        variantIds: new Set([m.id]),
+        variantsByMode: { audio: { model: m, mode: "audio" } },
+        defaultVariant: { model: m, mode: "audio" },
+      }));
+    } else if (studioType === "digital-human" || studioType === "lipsync") {
+      catalogEntries = (lipsyncModels || []).map((m) => ({
+        id: m.id,
+        name: m.name,
+        family: { id: m.id, name: m.name, provider: m.provider || m.family || "official" },
+        variantIds: new Set([m.id]),
+        variantsByMode: { lipsync: { model: m, mode: "lipsync" } },
+        defaultVariant: { model: m, mode: "lipsync" },
+      }));
+    } else if (studioType === "agent") {
+      const agentCatalog = [
+        { id: 'deepseek-chat', name: 'DeepSeek-V3 通用创作大模型', provider: 'deepseek' },
+        { id: 'deepseek-reasoner', name: 'DeepSeek-R1 深度推理创作大模型', provider: 'deepseek' },
+        { id: 'gpt-4o', name: 'GPT-4o 创意全能助手', provider: 'openai' },
+        { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet 思考模型', provider: 'anthropic' },
+      ];
+      catalogEntries = agentCatalog.map((m) => ({
+        id: m.id,
+        name: m.name,
+        family: { id: m.id, name: m.name, provider: m.provider },
+        variantIds: new Set([m.id]),
+        variantsByMode: { agent: { model: m, mode: 'agent' } },
+        defaultVariant: { model: m, mode: 'agent' },
+      }));
+    } else {
+      catalogEntries = filterActiveModelEntries(imageModelPickerEntries);
+      if (!catalogEntries.length && !directoryLoaded) {
+        catalogEntries = imageModelPickerEntries;
+      }
+    }
 
     // Dynamic fallback: include any active server models of this category not already covered in static catalog
     const coveredIds = new Set(catalogEntries.flatMap((e) => [...(e.variantIds || [e.id])]));
@@ -105,14 +153,33 @@ export default function FrontendModelPicker({
     if (typeof globalThis !== "undefined" && globalThis.__SUPDANCE_SERVER_MODEL_META__) {
       for (const [id, meta] of globalThis.__SUPDANCE_SERVER_MODEL_META__.entries()) {
         const cat = meta.category || meta.type || "image";
+        const matchesCategory =
+          cat === studioType ||
+          (studioType === "image" && (cat === "image" || cat === "t2i" || cat === "i2i")) ||
+          (studioType === "video" && (cat === "video" || cat === "t2v" || cat === "i2v" || cat === "v2v")) ||
+          (studioType === "audio" && (cat === "audio" || cat === "music" || cat === "tts")) ||
+          (studioType === "agent" && (cat === "text" || cat === "agent" || cat === "chat")) ||
+          ((studioType === "digital-human" || studioType === "lipsync") &&
+            (cat === "lipsync" || cat === "avatar" || cat === "digital-human" || cat === "video"));
+
         if (
-          cat === studioType &&
+          matchesCategory &&
           isServerModelGenerationEligible(meta) &&
           !coveredIds.has(id) &&
           !coveredIds.has(meta.id)
         ) {
           coveredIds.add(id);
           coveredIds.add(meta.id);
+          const targetMode =
+            studioType === "video"
+              ? "t2v"
+              : studioType === "audio"
+              ? "audio"
+              : studioType === "agent"
+              ? "agent"
+              : studioType === "digital-human"
+              ? "lipsync"
+              : "t2i";
           dynamicServerEntries.push({
             id: meta.id,
             name: meta.displayName || meta.name || meta.id,
@@ -123,10 +190,14 @@ export default function FrontendModelPicker({
             },
             variantIds: new Set([meta.id]),
             variantsByMode: {
-              [studioType === "video" ? "t2v" : "t2i"]: {
+              [targetMode]: {
                 model: { id: meta.id, name: meta.name || meta.id, provider: meta.provider || "official" },
-                mode: studioType === "video" ? "t2v" : "t2i",
+                mode: targetMode,
               },
+            },
+            defaultVariant: {
+              model: { id: meta.id, name: meta.name || meta.id, provider: meta.provider || "official" },
+              mode: targetMode,
             },
           });
         }

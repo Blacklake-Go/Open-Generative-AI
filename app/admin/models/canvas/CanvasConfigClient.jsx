@@ -19,8 +19,8 @@ const selectClass = `${fieldBase} rounded-lg`;
 const PREFERRED_DEFAULTS = {
   image: 'seedream-4.5',
   video: 'wan-2.1',
-  audio: 'gemini-3-1-flash-tts',
-  text: '',
+  audio: 'minimax-music-3.0',
+  text: 'deepseek-r1',
 };
 
 function pickBestDefault(groupId, availableIds) {

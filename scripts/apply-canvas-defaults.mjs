@@ -50,23 +50,28 @@ async function main() {
     ? 'minimax-music-3.0'
     : (byCap.audio.includes('minimax-speech-2.6-hd') ? 'minimax-speech-2.6-hd' : (byCap.audio[0] || ''));
 
+  const textDefault = byCap.text.includes('deepseek-r1')
+    ? 'deepseek-r1'
+    : (byCap.text.includes('deepseek-v3') ? 'deepseek-v3' : (byCap.text[0] || ''));
+
   console.log(`设置默认模型:`);
   console.log(`  图片: ${imageDefault} (已挂载 ${byCap.image.length} 个)`);
   console.log(`  视频: ${videoDefault} (已挂载 ${mountedVideos.length} 个)`);
   console.log(`  音频: ${audioDefault} (已挂载 ${byCap.audio.length} 个)`);
+  console.log(`  文本: ${textDefault} (已挂载 ${byCap.text.length} 个)`);
 
   const input = {
     mountedModelIds: {
       image: byCap.image,
       video: mountedVideos,
       audio: byCap.audio,
-      text: [],
+      text: byCap.text,
     },
     defaults: {
       imageModelId: imageDefault,
       videoModelId: videoDefault,
       audioModelId: audioDefault,
-      textModelId: '',
+      textModelId: textDefault,
       canvasImageCount: '1',
       audioVoice: 'alloy',
       audioFormat: 'mp3',

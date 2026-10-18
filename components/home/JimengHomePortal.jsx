@@ -4,7 +4,22 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Layers, Sparkles, ExternalLink, ArrowRight } from 'lucide-react';
+import {
+  Layers,
+  Sparkles,
+  ExternalLink,
+  ArrowRight,
+  Image as ImageIcon,
+  Film,
+  Volume2,
+  Smile,
+  Wand2,
+  Copy,
+  Play,
+  Check,
+  X,
+  Maximize2,
+} from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
 import { SpatialBackground } from '@/components/spatial';
 import { useUserSession } from '@/lib/hooks/useUserSession';
@@ -12,10 +27,222 @@ import { localizeStudioPath, normalizeLocale, getCommonCopy, getLocaleConfig } f
 import HomeStudioPromptComposer from './HomeStudioPromptComposer';
 import AuthModal from '@/components/AuthModal';
 
-// 快捷技能预设标签列表（针对图像生成器优化的影视摄影与大师创作体系）
-const getSkillPresets = (locale, tHome) => {
+// 动态模式快捷技能预设标签列表（涵盖图像、视频、音频、Agent、数字人 5 模态）
+const getSkillPresets = (locale, tHome, mode = 'image') => {
   const norm = normalizeLocale(locale);
   const isZh = norm.startsWith('zh');
+
+  if (mode === 'video') {
+    return [
+      {
+        id: 'cinematic-drone',
+        label: isZh ? '/ 电影级大范围运镜' : '/ Cinematic Camera Tracking',
+        badge: 'New',
+        badgeType: 'blue',
+        prompt: isZh
+          ? '电影级航拍大范围运镜，希区柯克变焦推拉，史诗大片光影，4K超高清'
+          : 'Epic cinematic drone shot, Hitchcock vertigo zoom in, dramatic film lighting, 4K UHD',
+      },
+      {
+        id: 'slow-mo-fluid',
+        label: isZh ? '/ 120fps 慢动作微距' : '/ 120fps Slow-mo Macro',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '高帧率120fps慢动作升格摄影，微距水滴与流体折射光斑，极致超清特写'
+          : 'Ultra 120fps slow motion cinematography, macro liquid droplets refraction, pristine optics',
+      },
+      {
+        id: 'cyber-chase',
+        label: isZh ? '/ 赛博疾速第一人称' : '/ Cyberpunk Chase POV',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '第一人称疾速动态追踪，霓虹光线拖尾，激烈追逐视角，强力视觉冲击'
+          : 'First-person perspective high-speed chase, neon light trails, adrenaline rush motion blur',
+      },
+      {
+        id: 'retro-film-35mm',
+        label: isZh ? '/ 35mm 复古胶片长镜' : '/ 35mm Vintage Film',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '35mm复古胶片颗粒，午后阳光斜射丁达尔光，自然微风吹拂与生动景深'
+          : '35mm vintage film aesthetic, afternoon Tyndall sunlight, gentle breeze and soft bokeh',
+      },
+      {
+        id: 'epic-fantasy-panorama',
+        label: isZh ? '/ 史诗奇幻全景空镜' : '/ Epic Fantasy Panorama',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '宏大史诗奇幻全景镜头，云海翻涌巨龙盘旋，虚幻引擎5物理光照渲染'
+          : 'Majestic fantasy landscape panorama, rolling sea of clouds, Unreal Engine 5 volumetric lighting',
+      },
+      {
+        id: 'more-video-tools',
+        label: isZh ? '进入视频工作室 ›' : 'Video Studio ›',
+        badge: null,
+        badgeType: 'link',
+        href: `${localizeStudioPath(norm)}?tab=video`,
+      },
+    ];
+  }
+
+  if (mode === 'audio') {
+    return [
+      {
+        id: 'cinematic-orchestra',
+        label: isZh ? '/ 电影院线管弦交响' : '/ Cinematic Orchestral',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '气势恢宏的史诗交响乐，低沉铜管与壮阔弦乐交织，院线大片配乐质感'
+          : 'Grand epic orchestral score, heavy brass and soaring strings, cinematic blockbuster soundtrack',
+      },
+      {
+        id: 'warm-acoustic-guitar',
+        label: isZh ? '/ 温暖抒情木吉他' : '/ Warm Acoustic Guitar',
+        badge: 'New',
+        badgeType: 'blue',
+        prompt: isZh
+          ? '清亮木吉他扫弦伴奏，温暖亲切民谣人声，宁静午后治愈氛围'
+          : 'Crisp acoustic guitar chords, warm soothing indie folk vocals, peaceful afternoon ambiance',
+      },
+      {
+        id: 'synthwave-heavy',
+        label: isZh ? '/ 赛博朋克合成器浪潮' : '/ Cyberpunk Synthwave',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '强劲电子Synthwave合成器低音，赛博朋克节奏，霓虹夜色工业质感'
+          : 'Pulsing synthwave bassline, cyberpunk 80s drums, neon midnight retro-future vibes',
+      },
+      {
+        id: 'lofi-chill-hop',
+        label: isZh ? '/ Lofi 治愈舒缓节拍' : '/ Lofi Chill Beats',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '经典黑胶Lofi Hip Hop微弱爆豆声，柔和电钢琴与平缓鼓点，专注放松'
+          : 'Vintage vinyl crackle, gentle Rhodes electric piano, mellow hip hop beats for study & focus',
+      },
+      {
+        id: 'commercial-tech-beat',
+        label: isZh ? '/ 商业发布会高燃律动' : '/ Tech Keynote Rhythm',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '现代化激昂电子律动，科技感音效点缀，企业宣传片动感节奏'
+          : 'Modern upbeat tech corporate beat, energetic digital pulse, product launch presentation trailer',
+      },
+      {
+        id: 'more-audio-tools',
+        label: isZh ? '进入音频工作室 ›' : 'Audio Studio ›',
+        badge: null,
+        badgeType: 'link',
+        href: `${localizeStudioPath(norm)}?tab=audio`,
+      },
+    ];
+  }
+
+  if (mode === 'agent') {
+    return [
+      {
+        id: 'director-storyboard',
+        label: isZh ? '/ 爆款分镜导演工作流' : '/ Storyboard Director Agent',
+        badge: 'New',
+        badgeType: 'blue',
+        prompt: isZh
+          ? '根据主题自动扩写5幕电影级镜头脚本，包含景别、运镜、光影与音效设计'
+          : 'Automatically expand 5-scene cinematic storyboard script, with shots, camera angles, lighting and sound',
+      },
+      {
+        id: 'brand-visual-designer',
+        label: isZh ? '/ 全渠道视觉设计大师' : '/ Omnichannel Brand Stylist',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '自动化解析品牌调性，产出适配多比例的社交媒体视觉方案与多语言文案'
+          : 'Analyze brand aesthetics and produce multi-aspect social media graphics and multilingual copy',
+      },
+      {
+        id: 'novel-character-extract',
+        label: isZh ? '/ 沉浸式小说角色提取' : '/ Novel Character Forge',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '深度提取长篇文本中的人物设定、服装细节与关键场景，生成连贯分镜提示词'
+          : 'Extract character persona, detailed wardrobe and recurring scenes from literary text into prompt sequences',
+      },
+      {
+        id: 'viral-video-hook',
+        label: isZh ? '/ 爆款短视频脚本与口播' : '/ Viral Short Script & Hook',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '3秒黄金抓人钩子，情绪递进故事线，搭配痛点引爆与高转化行动召唤'
+          : '3-second high-retention video hook, emotionally engaging arc and high-converting CTA',
+      },
+      {
+        id: 'more-agent-tools',
+        label: isZh ? '浏览更多智能体 ›' : 'Browse All Agents ›',
+        badge: null,
+        badgeType: 'link',
+        href: `${localizeStudioPath(norm)}?tab=agents`,
+      },
+    ];
+  }
+
+  if (mode === 'digital-human') {
+    return [
+      {
+        id: 'business-host',
+        label: isZh ? '/ 极简商务发布会主播' : '/ Executive Keynote Anchor',
+        badge: 'New',
+        badgeType: 'blue',
+        prompt: isZh
+          ? '专业干练商务西装，沉稳自信微笑与手势互动，演播室柔光箱人像质感'
+          : 'Polished corporate executive in tailored suit, confident natural gestures, studio lighting',
+      },
+      {
+        id: 'ecommerce-streamer',
+        label: isZh ? '/ 电商带货激情口播员' : '/ E-Commerce Live Presenter',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '高表现力热情互动，生动面部微表情，快节奏产品展示与专业吸睛手势'
+          : 'Vibrant expressive e-commerce streamer, animated micro-expressions and engaging gestures',
+      },
+      {
+        id: 'cyber-hologram-assistant',
+        label: isZh ? '/ 科技风未来全息助理' : '/ Futuristic Holographic AI',
+        badge: 'Hot',
+        badgeType: 'orange',
+        prompt: isZh
+          ? '半透明未来科技服饰，清澈明亮眼神，AI全息悬浮演播背景，超清数字人'
+          : 'Translucent high-tech holographic avatar, glowing HUD elements, clean studio background',
+      },
+      {
+        id: 'bilingual-news-anchor',
+        label: isZh ? '/ 多语言双语新闻播报' : '/ Multilingual News Anchor',
+        badge: null,
+        badgeType: 'neutral',
+        prompt: isZh
+          ? '沉稳权威双语新闻主播台风，标准发音口型自然同步，新闻演播大厅背景'
+          : 'Authoritative broadcast news anchor, natural lip-sync synchronization, broadcast studio desk',
+      },
+      {
+        id: 'more-avatar-tools',
+        label: isZh ? '进入数字人唇形工作室 ›' : 'Lipsync & Avatar Studio ›',
+        badge: null,
+        badgeType: 'link',
+        href: `${localizeStudioPath(norm)}?tab=lipsync`,
+      },
+    ];
+  }
+
+  // Default: image mode
   return [
     {
       id: 'cinematic-light',
@@ -26,7 +253,7 @@ const getSkillPresets = (locale, tHome) => {
     },
     {
       id: 'master-portrait',
-      label: isZh ? '/ 8K 极清大师肖像' : (norm === 'ja-JP' ? '/ 8K極清ポートレート' : (norm === 'ko-KR' ? '/ 8K 거장 인물' : (norm === 'es' ? '/ Retrato Maestro 8K' : '/ 8K Master Portrait'))),
+      label: isZh ? '/ 8K 极清大师肖像' : (norm === 'ja-JP' ? '/ 8K極清ポートレート' : (norm === 'ko-KR' ? '/ 8K 거장 인物' : (norm === 'es' ? '/ Retrato Maestro 8K' : '/ 8K Master Portrait'))),
       badge: 'New',
       badgeType: 'blue',
       prompt: isZh ? '哈苏顶级人像特写，真实细腻皮肤纹理，柔焦散景，自然生动的面部微表情' : 'Hasselblad master portrait close-up, hyper-realistic skin texture, soft bokeh, natural micro-expressions',
@@ -83,7 +310,7 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
       gradient: 'from-amber-600/30 to-purple-900/40',
       bgImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
       tab: 'image',
-      model: 'gpt-image-2.5-flash',
+      model: 'seedream-5.0-pro',
       ar: '3:4',
       quality: '2K',
       prompt: 'MANGO GLASS PRO 时尚概念人像摄影，复古太阳镜，冷峻高级面部光影，杂志封面构图，超高分辨率电影级质感',
@@ -108,7 +335,8 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
       gradient: 'from-emerald-600/30 to-slate-900/40',
       bgImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
       tab: 'video',
-      model: 'seedance-2.5-text-to-video',
+      model: 'kling-v2.6-pro-t2v',
+      ar: '16:9',
       prompt: '巨石阵日出史诗全景，电影级空镜，广角远景与迷雾缭绕，4K超高清画质',
     },
     {
@@ -129,12 +357,19 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   const router = useRouter();
   const { user } = useUserSession(initialUser);
   const [activeMode, setActiveMode] = useState('generate'); // 'generate' | 'canvas'
+  const [composerMode, setComposerMode] = useState('image'); // 'image' | 'video' | 'audio' | 'agent' | 'digital-human'
   const composerRef = useRef(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingTask, setPendingTask] = useState(null);
   const [activeSkillId, setActiveSkillId] = useState(null);
   const [mounted, setMounted] = useState(false);
   const pendingAuthResolverRef = useRef(null);
+
+  // 用户历史创作列表（从 /api/generations?limit=8 读取）
+  const [userCreations, setUserCreations] = useState([]);
+  const [loadingCreations, setLoadingCreations] = useState(false);
+  const [galleryTab, setGalleryTab] = useState('featured'); // 'user' | 'featured'
+  const [previewModalItem, setPreviewModalItem] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -148,8 +383,37 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   const studioBase = localizeStudioPath(normLocale);
   const assetHref = rootPath ? `${rootPath}/assets` : '/assets';
 
-  const skillPresets = getSkillPresets(normLocale, tHome);
+  const skillPresets = getSkillPresets(normLocale, tHome, composerMode);
   const recentFeatures = getRecentFeatures(normLocale, tHome, rootPath);
+
+  // 请求真实后端 /api/generations 接口装配历史创作
+  const fetchRecentGenerations = useCallback(async () => {
+    if (!user) {
+      setUserCreations([]);
+      setGalleryTab('featured');
+      return;
+    }
+    setLoadingCreations(true);
+    try {
+      const res = await fetch('/api/generations?limit=8', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data?.creations) ? data.creations : [];
+        setUserCreations(list);
+        if (list.length > 0) {
+          setGalleryTab('user');
+        }
+      }
+    } catch (err) {
+      console.warn('[JimengHomePortal] Failed to load user creations:', err);
+    } finally {
+      setLoadingCreations(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchRecentGenerations();
+  }, [fetchRecentGenerations]);
 
   // 全局账户额度守卫：在首页遇到未登录时弹出统一 AuthModal
   const requireAccountGate = useCallback(() => {
@@ -191,19 +455,39 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
     return tHome.greetingEvening || tHome.greetingDefault;
   };
 
-  // 点击卡片：一键装配创作参数或跳转
+  const [queuedComposerAction, setQueuedComposerAction] = useState(null);
+
+  useEffect(() => {
+    if (activeMode === 'generate' && queuedComposerAction && composerRef.current) {
+      if (queuedComposerAction.type === 'applyPreset') {
+        composerRef.current.applyCreationPreset(queuedComposerAction.payload);
+      } else if (queuedComposerAction.type === 'setPrompt') {
+        composerRef.current.setPromptText(queuedComposerAction.prompt);
+      }
+      setQueuedComposerAction(null);
+    }
+  }, [activeMode, queuedComposerAction]);
+
+  // 点击展台卡片：一键装配创作参数或跳转
   const handleFeatureCardClick = (item) => {
     if (item.href) {
       router.push(item.href);
       return;
     }
-    if (item.tab === 'image') {
-      composerRef.current?.applyCreationPreset({
+    if (item.tab === 'image' || item.tab === 'video') {
+      const payload = {
         prompt: item.prompt,
         ar: item.ar,
         quality: item.quality,
         modelId: item.model,
-      });
+        mode: item.tab,
+      };
+      if (activeMode !== 'generate') {
+        setActiveMode('generate');
+        setQueuedComposerAction({ type: 'applyPreset', payload });
+      } else {
+        composerRef.current?.applyCreationPreset(payload);
+      }
       window.scrollTo({ top: 120, behavior: 'smooth' });
       toast.success(isZh ? '已装配精选作品同款创作参数' : 'Loaded creation preset');
       return;
@@ -214,6 +498,25 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
     if (item.prompt) params.set('prompt', item.prompt);
     params.set('auto', '1');
     router.push(`${studioBase}?${params.toString()}`);
+  };
+
+  // 点击用户历史作品“同款创作”
+  const handleApplyUserCreation = (item) => {
+    const targetMode = item.studio_id || item.mediaType || 'image';
+    const payload = {
+      prompt: item.prompt,
+      modelId: item.model_id || item.modelId,
+      ar: item.aspect_ratio || item.ar,
+      mode: targetMode,
+    };
+    if (activeMode !== 'generate') {
+      setActiveMode('generate');
+      setQueuedComposerAction({ type: 'applyPreset', payload });
+    } else {
+      composerRef.current?.applyCreationPreset(payload);
+    }
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+    toast.success(isZh ? '已装配历史创作同款参数' : 'Loaded preset from past creation');
   };
 
   // 点击技能标签：交互式切换高亮与提示词协同
@@ -237,14 +540,15 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
 
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
+    fetchRecentGenerations();
     if (pendingAuthResolverRef.current) {
       pendingAuthResolverRef.current.resolve?.(user || true);
       pendingAuthResolverRef.current = null;
     }
     if (pendingTask) {
-      const { prompt, model, ar, quality, batch } = pendingTask;
+      const { prompt, model, ar, quality, batch, mode } = pendingTask;
       const params = new URLSearchParams();
-      params.set('tab', 'image');
+      params.set('tab', mode || 'image');
       if (prompt) params.set('prompt', prompt);
       if (model) params.set('model', model);
       if (ar) params.set('ar', ar);
@@ -274,12 +578,25 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
 
       {/* 3. 首页主舞台黄金视口区 */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-24 md:pt-32 pb-16 px-4 max-w-6xl mx-auto w-full">
-        {/* 顶部中央问候语 */}
-        <h1 className="text-3xl sm:text-4xl md:text-[42px] font-semibold tracking-tight text-center bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent mb-7 select-none">
-          {getGreeting()}
-        </h1>
+        {/* 顶部中央 Dreamina 标志性品牌标题与环境光晕 */}
+        <div className="relative mb-8 text-center flex flex-col items-center">
+          {/* Ambient backdrop glow */}
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[340px] sm:w-[540px] h-[160px] bg-brand/15 blur-[90px] pointer-events-none rounded-full" />
+          
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-center select-none relative z-10 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+            <span className="bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+              {isZh ? '创造任何你' : 'Create anything you'}
+            </span>
+            <span className="italic font-serif bg-gradient-to-r from-brand-hover via-pink-400 to-rose-300 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(225,29,116,0.35)]">
+              {isZh ? '想象的事物' : 'imagine'}
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-ink-muted text-center max-w-xl mx-auto mt-3 font-normal leading-relaxed relative z-10">
+            {getGreeting()} · {isZh ? '全模态前沿模型，多模态视听无限画布' : 'Next-Gen Multi-modal AI Creative Engine & Infinite Canvas'}
+          </p>
+        </div>
 
-        {/* 核心模式分段器 (生成 vs 画布) — 遵循 UI_REPAIR_INSTRUCTION.md 规范 */}
+        {/* 核心模式分段器 (创作 vs 画布) — 严格遵循 UI_REPAIR_INSTRUCTION.md 规范 */}
         <div
           data-pill-segmented
           className="inline-flex items-center p-1 rounded-full bg-[#181a20]/90 border border-white/10 shadow-elevation-1 mb-8 backdrop-blur-md"
@@ -294,7 +611,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            {tHome.modeGenerate || (isZh ? '生成' : 'Generate')}
+            {tHome.modeGenerate || (isZh ? '创作' : 'Create')}
           </button>
           <button
             type="button"
@@ -393,6 +710,14 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
           <HomeStudioPromptComposer
             ref={composerRef}
             locale={locale}
+            onModeChange={(mode) => {
+              setComposerMode(mode);
+              setActiveSkillId(null);
+            }}
+            onTaskComplete={(task) => {
+              setUserCreations((prev) => [task, ...prev]);
+              setGalleryTab('user');
+            }}
             onRequireAuth={(task) => {
               setPendingTask(task);
               setShowAuthModal(true);
@@ -400,7 +725,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
           />
         )}
 
-        {/* 快捷技能预设胶囊推荐列表 */}
+        {/* 快捷技能预设胶囊推荐列表（动态联动当前选中的创作模式） */}
         <div className="w-full max-w-[880px] flex items-center gap-2 overflow-x-auto py-3.5 no-scrollbar scrollbar-rail">
           {skillPresets.map((skill) => {
             const isActive = activeSkillId === skill.id;
@@ -434,54 +759,211 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
           })}
         </div>
 
-        {/* 4. 底部“最近上新”卡片展台 */}
+        {/* 4. 底部“最近作品与精选展台”画廊卡片群 */}
         <section className="w-full max-w-[960px] mt-12 sm:mt-16">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-sm font-semibold text-white/90 tracking-wide flex items-center gap-2">
-              <Sparkles className="size-4 text-brand" />
-              <span>{tHome.latestReleases || (isZh ? '最近上新' : 'Latest Releases')}</span>
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold text-white/90 tracking-wide flex items-center gap-2">
+                <Sparkles className="size-4 text-brand" />
+                <span>{isZh ? '创作画廊与精选展台' : 'Creations & Showcase'}</span>
+              </h2>
+
+              {/* 仅在用户存在历史作品时展示切换分段器 */}
+              {userCreations.length > 0 && (
+                <div
+                  data-pill-segmented
+                  className="inline-flex items-center p-0.5 rounded-full bg-well border border-white/10"
+                >
+                  <button
+                    type="button"
+                    data-pill-segment-item
+                    onClick={() => setGalleryTab('user')}
+                    className={`h-6 px-3 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
+                      galleryTab === 'user'
+                        ? 'bg-white text-black font-semibold shadow-elevation-1'
+                        : 'text-ink-muted hover:text-white'
+                    }`}
+                  >
+                    {isZh ? `我的创作 (${userCreations.length})` : `My Creations (${userCreations.length})`}
+                  </button>
+                  <button
+                    type="button"
+                    data-pill-segment-item
+                    onClick={() => setGalleryTab('featured')}
+                    className={`h-6 px-3 rounded-full text-[11px] font-medium transition-all cursor-pointer ${
+                      galleryTab === 'featured'
+                        ? 'bg-white text-black font-semibold shadow-elevation-1'
+                        : 'text-ink-muted hover:text-white'
+                    }`}
+                  >
+                    {isZh ? '精选作品' : 'Showcases'}
+                  </button>
+                </div>
+              )}
+            </div>
+
             <Link
               href={assetHref}
-              className="text-xs text-ink-subtle hover:text-white transition-colors flex items-center gap-1"
+              className="text-xs text-ink-subtle hover:text-white transition-colors flex items-center gap-1 shrink-0"
             >
               <span>{tHome.goToAssets || (isZh ? '前往资产库 ›' : 'Go to Assets ›')}</span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {recentFeatures.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => handleFeatureCardClick(item)}
-                className="group relative h-48 rounded-xl overflow-hidden border border-white/10 hover:border-brand-line bg-[#16181e] cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-elevation-2 flex flex-col justify-end p-4"
-              >
-                {/* 封面背景与半透明遮罩 */}
+          {/* 选项 A：用户真实历史作品展示 */}
+          {galleryTab === 'user' && userCreations.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {userCreations.map((creation) => {
+                const assetUrl = creation.result_url || creation.url || creation.storageUrl;
+                const isVideo =
+                  creation.studio_id === 'video' ||
+                  creation.mediaType === 'video' ||
+                  (assetUrl && (assetUrl.includes('.mp4') || assetUrl.includes('.webm')));
+                const isAudio =
+                  creation.studio_id === 'audio' ||
+                  creation.mediaType === 'audio' ||
+                  (assetUrl && (assetUrl.includes('.mp3') || assetUrl.includes('.wav')));
+
+                return (
+                  <div
+                    key={creation.id}
+                    className="group relative h-52 rounded-xl overflow-hidden border border-white/10 hover:border-brand-line bg-[#16181e] transition-all duration-300 hover:-translate-y-1 shadow-elevation-2 flex flex-col justify-between p-3.5"
+                  >
+                    {/* 背景媒体展示 */}
+                    {assetUrl ? (
+                      isVideo ? (
+                        <video
+                          src={assetUrl}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          muted
+                          loop
+                          playsInline
+                          onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
+                        />
+                      ) : isAudio ? (
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/60 via-purple-950/40 to-black/80 flex items-center justify-center">
+                          <Volume2 className="size-10 text-brand/40 animate-pulse" />
+                        </div>
+                      ) : (
+                        <div
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                          style={{ backgroundImage: `url(${assetUrl})` }}
+                        />
+                      )
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 to-black flex items-center justify-center">
+                        <ImageIcon className="size-8 text-white/20" />
+                      </div>
+                    )}
+
+                    {/* 暗黑渐变覆盖层 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:from-black/95 transition-all" />
+
+                    {/* 顶部状态与类型角标 */}
+                    <div className="relative z-10 flex items-center justify-between">
+                      <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90">
+                        {creation.studio_id || creation.mediaType || 'AI 创作'}
+                      </span>
+                      {creation.status === 'succeeded' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-semibold text-emerald-300">
+                          {isZh ? '成功' : 'Done'}
+                        </span>
+                      ) : creation.status === 'processing' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-[10px] font-semibold text-amber-300 animate-pulse">
+                          {isZh ? '处理中' : 'Processing'}
+                        </span>
+                      ) : creation.status === 'failed' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-[10px] font-semibold text-rose-300">
+                          {isZh ? '失败' : 'Failed'}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* 底部悬浮控制栏与提示词摘要 */}
+                    <div className="relative z-10 flex flex-col gap-2">
+                      <p className="text-xs text-white/90 font-medium line-clamp-2 leading-relaxed">
+                        {creation.prompt || (isZh ? '无提示词文本' : 'No prompt text')}
+                      </p>
+
+                      {/* 鼠标悬浮时展示便捷操作 */}
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleApplyUserCreation(creation)}
+                          className="flex-1 h-7 rounded-lg bg-brand hover:bg-brand-hover text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Wand2 className="size-3" />
+                          <span>{isZh ? '同款创作' : 'Remix'}</span>
+                        </button>
+
+                        {assetUrl && (
+                          <a
+                            href={`/canvas?importAsset=${encodeURIComponent(assetUrl)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-7 px-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            title={isZh ? '在无限画布中打开' : 'Open in Canvas'}
+                          >
+                            <Layers className="size-3" />
+                          </a>
+                        )}
+
+                        {assetUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewModalItem(creation)}
+                            className="size-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                            title={isZh ? '全屏大图预览' : 'Preview'}
+                          >
+                            <Maximize2 className="size-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* 选项 B：平台精选创作展台卡片群 */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {recentFeatures.map((item) => (
                 <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${item.bgImage})` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/95 transition-all" />
+                  key={item.id}
+                  onClick={() => handleFeatureCardClick(item)}
+                  className="group relative h-48 rounded-xl overflow-hidden border border-white/10 hover:border-brand-line bg-[#16181e] cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-elevation-2 flex flex-col justify-end p-4"
+                >
+                  {/* 封面背景与半透明遮罩 */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                    style={{ backgroundImage: `url(${item.bgImage})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-black/95 transition-all" />
 
-                {/* 角标 */}
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white">
-                    {item.badge}
-                  </span>
-                </div>
+                  {/* 角标 */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white">
+                      {item.badge}
+                    </span>
+                  </div>
 
-                {/* 卡片文字信息 */}
-                <div className="relative z-10 flex flex-col gap-1">
-                  <h3 className="text-sm font-bold text-white leading-snug whitespace-pre-line group-hover:text-brand-hover transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-[11px] text-white/60 line-clamp-1 font-normal">
-                    {item.author || item.desc}
-                  </p>
+                  {/* 卡片文字信息 */}
+                  <div className="relative z-10 flex flex-col gap-1">
+                    <h3 className="text-sm font-bold text-white leading-snug whitespace-pre-line group-hover:text-brand-hover transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-[11px] text-white/60 line-clamp-1 font-normal">
+                      {item.author || item.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
 
@@ -489,6 +971,82 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
       <footer className="relative z-10 py-6 text-center text-xs text-ink-subtle/50 border-t border-white/[0.04]">
         <span>SupDance · Premium AI Creative Workspace</span>
       </footer>
+
+      {/* 全屏媒体预览弹窗 */}
+      {previewModalItem && (
+        <div
+          onClick={() => setPreviewModalItem(null)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl max-h-[90vh] rounded-2xl bg-surface border border-white/15 p-2 shadow-elevation-4 overflow-hidden flex flex-col cursor-default"
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewModalItem(null)}
+              className="absolute top-4 right-4 z-10 size-8 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <X className="size-4" />
+            </button>
+
+            {previewModalItem.studio_id === 'video' ||
+            previewModalItem.mediaType === 'video' ||
+            (previewModalItem.result_url && previewModalItem.result_url.includes('.mp4')) ? (
+              <video
+                src={previewModalItem.result_url || previewModalItem.url}
+                controls
+                autoPlay
+                className="max-h-[75vh] w-auto rounded-xl object-contain mx-auto"
+              />
+            ) : previewModalItem.studio_id === 'audio' ||
+              previewModalItem.mediaType === 'audio' ||
+              (previewModalItem.result_url && previewModalItem.result_url.includes('.mp3')) ? (
+              <div className="p-8 flex flex-col items-center gap-4">
+                <Volume2 className="size-16 text-brand" />
+                <audio
+                  src={previewModalItem.result_url || previewModalItem.url}
+                  controls
+                  autoPlay
+                  className="w-full max-w-md"
+                />
+              </div>
+            ) : (
+              <img
+                src={previewModalItem.result_url || previewModalItem.url}
+                alt=""
+                className="max-h-[75vh] w-auto rounded-xl object-contain mx-auto select-none"
+              />
+            )}
+
+            <div className="p-4 flex items-center justify-between border-t border-white/10 mt-2 gap-4">
+              <p className="text-xs text-white/80 line-clamp-2">{previewModalItem.prompt}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleApplyUserCreation(previewModalItem);
+                    setPreviewModalItem(null);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Wand2 className="size-3.5" />
+                  <span>{isZh ? '同款创作' : 'Remix'}</span>
+                </button>
+                <a
+                  href={`/canvas?importAsset=${encodeURIComponent(previewModalItem.result_url || previewModalItem.url || '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Layers className="size-3.5" />
+                  <span>{isZh ? '画布打开' : 'Open in Canvas'}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 登录弹窗 */}
       {showAuthModal && (
