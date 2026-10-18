@@ -2,6 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+/* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
+import ChinaIpBlockSettingRow from '@/plugins/china-ip-block/ChinaIpBlockSettingRow';
+/* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
+
 import {
   AdminSettingRow,
   StatusBadge,
@@ -104,6 +108,14 @@ export default function RuntimeTab({
             action="配置维护模式"
             onClickAction={() => setIsMaintModalOpen(true)}
           />
+
+          {/* --- [TEMPORARY PLUGIN: china-ip-block START] --- */}
+          <ChinaIpBlockSettingRow
+            settings={settings}
+            saveSetting={saveSetting}
+            savingKey={savingKey}
+          />
+          {/* --- [TEMPORARY PLUGIN: china-ip-block END] --- */}
 
           {/* Row 2: 新用户自主注册 */}
           <AdminSettingRow

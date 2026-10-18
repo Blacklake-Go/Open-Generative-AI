@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getLocaleConfig, getLocaleFromPathname, isSupportedLocale, normalizeLocale, SUPPORTED_LOCALES } from './lib/locales';
+/* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
+import { handleChinaIpBlockMiddleware } from './plugins/china-ip-block/index.js';
+/* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
+
 
 
 function addSecurityHeaders(response) {
@@ -116,6 +120,13 @@ export async function middleware(request) {
         pathname === '/favicon.ico' ||
         pathname === '/robots.txt' ||
         pathname === '/sitemap.xml';
+
+    /* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
+    const chinaIpBlockResponse = handleChinaIpBlockMiddleware(request);
+    if (chinaIpBlockResponse) {
+        return addSecurityHeaders(chinaIpBlockResponse);
+    }
+    /* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
 
     // 2. 别名语言前缀收敛：/ja/studio → /ja-JP/studio，/zh-CN/… → /zh/…，/en/… → /…（保留其余段与 query）
     if (!isExcluded && !pathname.startsWith('/api/')) {

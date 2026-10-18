@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "exemptAdmin": true,
+  "whitelistIps": "",
+  "pageTitle": "403 Forbidden",
+  "updatedAt": "2026-10-18T14:46:30.058Z",
+  "updatedBy": "system"
+}

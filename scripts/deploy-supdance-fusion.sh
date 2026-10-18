@@ -27,6 +27,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCH
   app \
   components \
   lib \
+  plugins \
   messages \
   scripts \
   public \
@@ -99,6 +100,10 @@ rsync -a \"\$STAGE/packages/studio/dist/\" \"\$WEB_DIR/node_modules/studio/dist/
 rsync -a --delete \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
 rsync -a --delete \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
+if [ -d \"\$STAGE/plugins\" ]; then
+  rsync -a \"\$STAGE/plugins/\" \"\$WEB_DIR/plugins/\"
+  chown -R www:www \"\$WEB_DIR/plugins\"
+fi
 rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
 rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
 if [ -d \"\$STAGE/public\" ]; then

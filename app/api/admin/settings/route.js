@@ -35,6 +35,14 @@ async function handlePOST(request) {
     return errorResponse('VALIDATION_ERROR', '无限画布配置请在专用控制面板中修改', 422, guard.requestId);
   }
 
+  /* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
+  if (body.action === 'test_china_ip') {
+    await releaseIdempotency(idemp.keyHash);
+    const { testIpAddress } = await import('@/plugins/china-ip-block/index.js');
+    return okResponse(testIpAddress(body.ip), guard.requestId);
+  }
+  /* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
+
   const result = await saveSystemSetting({
     actor: guard.user,
     key: body.key,
