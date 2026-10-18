@@ -357,7 +357,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   const router = useRouter();
   const { user } = useUserSession(initialUser);
   const [activeMode, setActiveMode] = useState('generate'); // 'generate' | 'canvas'
-  const [composerMode, setComposerMode] = useState('image'); // 'image' | 'video' | 'audio' | 'agent' | 'digital-human'
+  const [composerMode, setComposerMode] = useState('agent'); // 'image' | 'video' | 'audio' | 'agent' | 'digital-human'
   const composerRef = useRef(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingTask, setPendingTask] = useState(null);
@@ -577,7 +577,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
       <StudioHeader locale={normLocale} activeTab={null} className="relative z-40" initialUser={user} />
 
       {/* 3. 首页主舞台黄金视口区 */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-24 md:pt-32 pb-16 px-4 max-w-6xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-start pt-24 md:pt-32 pb-16 px-4 max-w-[1320px] mx-auto w-full">
         {/* 顶部中央 Dreamina 标志性品牌标题与环境光晕 */}
         <div className="relative mb-8 text-center flex flex-col items-center">
           {/* Ambient backdrop glow */}
@@ -710,6 +710,8 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
           <HomeStudioPromptComposer
             ref={composerRef}
             locale={locale}
+            skillOptions={skillPresets}
+            onSkillSelect={handleSkillClick}
             onModeChange={(mode) => {
               setComposerMode(mode);
               setActiveSkillId(null);
@@ -726,7 +728,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
         )}
 
         {/* 快捷技能预设胶囊推荐列表（动态联动当前选中的创作模式） */}
-        <div className="w-full max-w-[880px] flex items-center gap-2 overflow-x-auto py-3.5 no-scrollbar scrollbar-rail">
+        <div className="w-full max-w-[1080px] flex items-center gap-2 overflow-x-auto py-3.5 no-scrollbar scrollbar-rail">
           {skillPresets.map((skill) => {
             const isActive = activeSkillId === skill.id;
             return (

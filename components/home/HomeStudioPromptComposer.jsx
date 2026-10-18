@@ -24,6 +24,9 @@ import {
   RotateCcw,
   X,
   Plus,
+  Box,
+  ArrowUp,
+  LoaderCircle,
   Check,
   Lock,
   Unlock,
@@ -110,11 +113,11 @@ const PERSIST_PREFIX = 'hg_home_composer_v2';
 
 // 5 Core Modes definition for Dreamina Style Workbench
 const CREATION_MODES = [
+  { id: 'agent', label: 'AI Agent', icon: Sparkles },
   { id: 'image', label: 'AI 图像', icon: ImageIcon, badge: null },
-  { id: 'video', label: 'AI 视频', icon: Film, badge: 'HOT' },
-  { id: 'audio', label: 'AI 音频', icon: Volume2, badge: null },
-  { id: 'agent', label: 'AI Agent', icon: Sparkles, badge: 'NEW' },
-  { id: 'digital-human', label: 'AI 数字人', icon: Smile, badge: 'PRO' },
+  { id: 'video', label: 'AI 视频', icon: Film },
+  { id: 'audio', label: 'AI 音频', icon: Volume2 },
+  { id: 'digital-human', label: 'AI 数字人', icon: Smile },
 ];
 
 // Presets for Audio TTS Voices
@@ -167,6 +170,8 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     onStartCreation,
     onModeChange,
     onTaskComplete,
+    skillOptions = [],
+    onSkillSelect,
     className = '',
   },
   ref,
@@ -193,14 +198,14 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     );
   }, [locale]);
 
-  // Mode Selection: default 'image', synchronized with URL ?type=...
-  const [activeTab, setActiveTab] = useState('image');
+  // Mode Selection: default to the first screenshot mode; query strings still override it.
+  const [activeTab, setActiveTab] = useState('agent');
 
   // Multi-mode draft storage to isolate and preserve parameters per mode
   const [drafts, setDrafts] = useState({
     image: {
       prompt: '',
-      modelId: 'seedream-5.0-pro',
+      modelId: 'seedream-5.0',
       ar: '1:1',
       quality: '1K',
       width: 1024,
@@ -211,7 +216,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     },
     video: {
       prompt: '',
-      modelId: 'kling-v2.6-pro-t2v',
+      modelId: 'seedance-2.0',
       videoMode: 't2v', // 't2v' | 'i2v' | 'first_last' | 'multi_image' | 'video_ref'
       ar: '16:9',
       resolution: '720p',
@@ -224,7 +229,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     },
     audio: {
       prompt: '',
-      modelId: 'suno-create-music',
+      modelId: 'minimax-speech-2.6',
       subMode: 'tts', // 'tts' | 'clone' | 'music'
       voiceId: 'female_warm',
       speed: 1.0,
@@ -240,7 +245,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     },
     'digital-human': {
       prompt: '',
-      modelId: 'infinitetalk-image-to-video',
+      modelId: 'infinitetalk',
       driveType: 'text', // 'text' | 'audio'
       avatarUrl: null,
       driveAudioUrl: null,
@@ -248,6 +253,36 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
       resolution: '720p',
     },
   });
+
+  // Sync with active models on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/models/active?nocache=1')
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (!isMounted || !Array.isArray(data?.models) || !data.models.length) return;
+        const activeIds = new Set(data.models.map((m) => m.id));
+        setDrafts((prev) => {
+          let changed = false;
+          const next = { ...prev };
+          // Image
+          if (!activeIds.has(prev.image.modelId)) {
+            const firstImg = data.models.find((m) => m.type === 'image')?.id || 'seedream-5.0';
+            next.image = { ...next.image, modelId: firstImg };
+            changed = true;
+          }
+          // Video
+          if (!activeIds.has(prev.video.modelId)) {
+            const firstVid = data.models.find((m) => m.type === 'video')?.id || 'seedance-2.0';
+            next.video = { ...next.video, modelId: firstVid };
+            changed = true;
+          }
+          return changed ? next : prev;
+        });
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   // Load URL query param on mount
   useEffect(() => {
@@ -374,7 +409,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
   );
 
   // Dropdown & Popover control state
-  const [dropdownOpen, setDropdownOpen] = useState(null); // 'model' | 'spec' | 'advanced' | 'audio_voice' | 'history' | null
+  const [dropdownOpen, setDropdownOpen] = useState(null); // 'model' | 'spec' | 'advanced' | 'audio_voice' | 'skills' | 'drive' | null
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -391,6 +426,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
 
   const textareaRef = useRef(null);
   const dropdownRef = useRef(null);
+  const avatarInputRef = useRef(null);
 
   // Close popovers on outside click
   useEffect(() => {
@@ -491,6 +527,8 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     if (!user) {
       if (activeTab === 'image') {
         updateCurrentDraft((prev) => ({ imageUrls: [...prev.imageUrls, localUrl] }));
+      } else if (activeTab === 'agent') {
+        updateCurrentDraft((prev) => ({ referenceUrls: [...prev.referenceUrls, localUrl] }));
       } else if (activeTab === 'video') {
         if (targetSlot === 'first_frame') updateCurrentDraft({ firstFrameUrl: localUrl });
         else if (targetSlot === 'end_frame') updateCurrentDraft({ endFrameUrl: localUrl });
@@ -533,6 +571,8 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
       // Save into respective slot
       if (activeTab === 'image') {
         updateCurrentDraft((prev) => ({ imageUrls: [...prev.imageUrls, finalUrl] }));
+      } else if (activeTab === 'agent') {
+        updateCurrentDraft((prev) => ({ referenceUrls: [...prev.referenceUrls, finalUrl] }));
       } else if (activeTab === 'video') {
         if (targetSlot === 'first_frame') updateCurrentDraft({ firstFrameUrl: finalUrl });
         else if (targetSlot === 'end_frame') updateCurrentDraft({ endFrameUrl: finalUrl });
@@ -594,7 +634,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
   // Mention system integration
   const mention = usePromptMention({
     enabled: true,
-    sources: currentDraft.imageUrls || [],
+    sources: activeTab === 'agent' ? currentDraft.referenceUrls || [] : currentDraft.imageUrls || [],
     onSelectMention: (item) => {
       updateCurrentDraft((prev) => ({
         prompt: prev.prompt ? `${prev.prompt} @${item.name || '素材'} ` : `@${item.name || '素材'} `,
@@ -829,25 +869,32 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     }
   }, [activeTab, isZh]);
 
+  const referenceUrls = activeTab === 'agent'
+    ? currentDraft.referenceUrls || []
+    : currentDraft.imageUrls || [];
+
   // Audio HTML element for auditioning
   return (
     <>
       <audio ref={audioPlayerRef} onEnded={() => setAuditionPlaying(null)} className="hidden" />
 
-      {/* Main Creative Composer Island (Outer shell: rounded-2xl, border-white/10, shadow-elevation-3) */}
+      {/* Main Creative Composer Island */}
       <PromptComposer
-        positionClassName="relative w-full max-w-[960px] z-20"
-        panelClassName={`w-full rounded-2xl bg-[#131519]/95 border border-white/10 hover:border-white/20 focus-within:border-brand-line focus-within:ring-2 focus-within:ring-brand-ring/40 transition-all duration-300 shadow-elevation-3 backdrop-blur-2xl flex flex-col group ${className} ${
+        positionClassName="relative z-20 w-full max-w-[1280px]"
+        flush
+        minHeightClassName="min-h-[280px] sm:min-h-[324px]"
+        panelClassName={`w-full bg-surface-glass border border-white/10 hover:border-white/20 focus-within:border-brand-line focus-within:ring-1 focus-within:ring-brand-ring/40 transition-colors duration-200 shadow-elevation-3 backdrop-blur-2xl flex flex-col justify-between group ${className} ${
           isDragOver ? 'ring-2 ring-brand border-brand-line bg-brand/5' : ''
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* ── 1. Top Mode Tabs Strip (Dreamina Style Integrated Capsule Switcher) ── */}
+        {/* ── 1. Top Mode Tabs Strip ── */}
         <div
           role="tablist"
-          className="flex items-center gap-1.5 sm:gap-2 px-3 pt-3 pb-2 border-b border-white/[0.08] overflow-x-auto scrollbar-rail select-none bg-[#0e1013]/60 rounded-t-2xl"
+          aria-label={isZh ? '创作类型' : 'Creation type'}
+          className="flex min-h-[64px] items-center gap-1.5 overflow-x-auto px-4 py-2 scrollbar-rail select-none"
         >
           {CREATION_MODES.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -859,32 +906,21 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 aria-selected={isActive}
                 type="button"
                 onClick={() => handleSwitchTab(tab.id)}
-                className={`relative px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap active:scale-[0.98] ${
+                className={`relative flex h-12 shrink-0 items-center gap-2 rounded-xl border px-4 sm:px-5 text-sm font-medium transition-colors duration-200 cursor-pointer whitespace-nowrap active:scale-[0.98] ${
                   isActive
-                    ? 'bg-white text-black font-semibold shadow-elevation-1 scale-100'
-                    : 'text-ink-muted hover:text-ink hover:bg-white/[0.06]'
+                    ? 'border-white/[0.06] bg-wash-strong text-ink font-semibold shadow-elevation-1'
+                    : 'border-transparent text-ink-muted hover:text-ink hover:bg-wash'
                 }`}
               >
-                <TabIcon className={`size-3.5 sm:size-4 ${isActive ? 'text-black' : 'text-ink-subtle'}`} />
+                <TabIcon className="size-4 text-current" aria-hidden="true" />
                 <span>{tab.label}</span>
-                {tab.badge && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase tracking-wider ${
-                      isActive
-                        ? 'bg-black/15 text-black'
-                        : 'bg-brand/20 text-brand border border-brand/30'
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
               </button>
             );
           })}
         </div>
 
         {/* ── 2. Mode-Specific Sub-Mode Selector & Slots Ribbon ── */}
-        <div className="px-3.5 pt-3 flex flex-col gap-2.5">
+        <div className="px-5 pt-2 flex flex-col gap-2.5">
           {/* A. Video Mode Specific Sub-Mode Pills: [文生视频] [图生视频] [首尾帧] [多图参考] [视频参考] */}
           {activeTab === 'video' && (
             <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
@@ -941,46 +977,20 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
             </div>
           )}
 
-          {/* C. Digital Human Mode Specific Sub-Mode: [文本驱动] [音频驱动] */}
-          {activeTab === 'digital-human' && (
-            <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
-              <span className="text-[11px] text-ink-subtle font-semibold shrink-0 uppercase tracking-wider mr-1">
-                {isZh ? '驱动方式:' : 'Drive:'}
-              </span>
-              {[
-                { id: 'text', label: '文本台词驱动' },
-                { id: 'audio', label: '音频录音驱动' },
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => updateCurrentDraft({ driveType: m.id })}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${
-                    currentDraft.driveType === m.id
-                      ? 'bg-brand-soft border border-brand-line text-brand font-semibold'
-                      : 'bg-white/[0.04] border border-white/10 text-ink-muted hover:text-white'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* ── 3. Reference Media Attachment Cards Strip ── */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Image Mode References */}
-            {activeTab === 'image' && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {currentDraft.imageUrls?.map((url, idx) => (
+            {/* Image and Agent reference thumbnails */}
+            {(activeTab === 'image' || activeTab === 'agent') && (
+              <div className="flex items-start gap-2 flex-wrap">
+                {referenceUrls.map((url, idx) => (
                   <div
                     key={url + idx}
-                    className="relative group size-12 rounded-xl overflow-hidden border border-white/15 bg-black/40 shadow-sm"
+                    className="relative group size-[72px] overflow-hidden rounded-xl border border-white/15 bg-black/40 shadow-sm"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
-                      alt="Ref"
+                      alt={isZh ? `参考素材 ${idx + 1}` : `Reference ${idx + 1}`}
                       className="size-full object-cover cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => setFullscreenUrl(url)}
                     />
@@ -988,9 +998,12 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                       type="button"
                       onClick={() =>
                         updateCurrentDraft((prev) => ({
-                          imageUrls: prev.imageUrls.filter((_, i) => i !== idx),
+                          ...(activeTab === 'agent'
+                            ? { referenceUrls: prev.referenceUrls.filter((_, i) => i !== idx) }
+                            : { imageUrls: prev.imageUrls.filter((_, i) => i !== idx) }),
                         }))
                       }
+                      aria-label={isZh ? '移除参考素材' : 'Remove reference'}
                       className="absolute top-1 right-1 size-4 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="size-3" />
@@ -998,31 +1011,35 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   </div>
                 ))}
 
-                {/* Upload Image Button */}
-                <label className="h-10 px-3 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08] flex items-center gap-1.5 cursor-pointer text-xs text-white/80 transition-colors">
-                  <Upload className="size-3.5 text-brand" />
-                  <span>{isZh ? '上传参考图' : 'Upload Image'}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      files.forEach((f) => handleFileUpload(f));
-                    }}
-                  />
-                </label>
-
-                {/* Freehand Draw Modal Trigger */}
-                <button
-                  type="button"
-                  onClick={() => setIsDrawModalOpen(true)}
-                  className="h-10 px-3 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08] flex items-center gap-1.5 cursor-pointer text-xs text-white/80 transition-colors"
-                >
-                  <Wand2 className="size-3.5 text-white/60" />
-                  <span>{isZh ? '涂鸦草图' : 'Sketch Canvas'}</span>
-                </button>
+                <div className="group/reference relative">
+                  <label className="flex h-[84px] w-[72px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-white/20 bg-white/[0.02] text-ink-muted transition-colors hover:border-white/40 hover:bg-white/[0.05] hover:text-ink focus-within:border-brand-line">
+                    <Plus className="size-4" aria-hidden="true" />
+                    <span className="text-xs">{isZh ? '参考' : 'Reference'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="sr-only"
+                      aria-label={isZh ? '上传参考图片' : 'Upload reference images'}
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        files.forEach((f) => handleFileUpload(f));
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  {activeTab === 'image' && (
+                    <button
+                      type="button"
+                      aria-label={isZh ? '打开涂鸦草图' : 'Open sketch canvas'}
+                      title={isZh ? '涂鸦草图' : 'Sketch canvas'}
+                      onClick={() => setIsDrawModalOpen(true)}
+                      className="absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-full border border-white/10 bg-raised text-ink-muted opacity-0 shadow-elevation-1 transition-opacity group-hover/reference:opacity-100 focus-visible:opacity-100"
+                    >
+                      <Wand2 className="size-3.5" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1152,30 +1169,36 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
             {/* Digital Human Avatar Slot */}
             {activeTab === 'digital-human' && (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-ink-muted">{isZh ? '肖像素材:' : 'Avatar:'}</span>
+                <div className="relative">
+                  <input
+                    ref={avatarInputRef}
+                    id="home-composer-avatar-reference"
+                    type="file"
+                    accept="image/*,video/*"
+                    className="sr-only"
+                    aria-label={isZh ? '上传数字人形象素材' : 'Upload avatar reference'}
+                    onChange={(e) => {
+                      handleFileUpload(e.target.files?.[0], 'avatar');
+                      e.target.value = '';
+                    }}
+                  />
                   {currentDraft.avatarUrl ? (
-                    <div className="relative group size-12 rounded-xl overflow-hidden border border-brand-line bg-black/40">
+                    <div className="relative group size-[72px] overflow-hidden rounded-xl border border-brand-line bg-black/40">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={currentDraft.avatarUrl} alt="Avatar" className="size-full object-cover" />
+                      <img src={currentDraft.avatarUrl} alt={isZh ? '数字人参考素材' : 'Avatar reference'} className="size-full object-cover" />
                       <button
                         type="button"
                         onClick={() => updateCurrentDraft({ avatarUrl: null })}
+                        aria-label={isZh ? '移除数字人素材' : 'Remove avatar reference'}
                         className="absolute top-1 right-1 size-4 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100"
                       >
                         <X className="size-3" />
                       </button>
                     </div>
                   ) : (
-                    <label className="h-9 px-2.5 rounded-xl border border-dashed border-white/20 hover:border-brand-line bg-white/[0.02] flex items-center gap-1.5 cursor-pointer text-xs text-white/60 hover:text-white">
-                      <Plus className="size-3" />
-                      <span>{isZh ? '上传正脸照片' : 'Upload Portrait'}</span>
-                      <input
-                        type="file"
-                        accept="image/*,video/*"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e.target.files?.[0], 'avatar')}
-                      />
+                    <label htmlFor="home-composer-avatar-reference" className="flex h-[84px] w-[72px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-white/20 bg-white/[0.02] text-ink-muted transition-colors hover:border-white/40 hover:bg-white/[0.05] hover:text-ink focus-within:border-brand-line">
+                      <Plus className="size-4" aria-hidden="true" />
+                      <span className="text-xs">{isZh ? '参考' : 'Reference'}</span>
                     </label>
                   )}
                 </div>
@@ -1215,7 +1238,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
         </div>
 
         {/* ── 4. Multiline Textarea Input Area ── */}
-        <div className="px-3.5 pt-2 pb-1 relative" onPaste={handlePaste}>
+        <div className="relative px-5 pt-3 pb-1" onPaste={handlePaste}>
           <PromptInputField
             ref={textareaRef}
             value={currentDraft.prompt || ''}
@@ -1228,9 +1251,9 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
         </div>
 
         {/* ── 5. Bottom Parameter Toolbar (Controls + Quote + Primary Generate Button) ── */}
-        <PromptFooter>
+        <PromptFooter bordered={false} className="px-4 pb-4">
           {/* Left Side: Parameters Controls */}
-          <PromptControls ref={dropdownRef} className="flex-nowrap shrink-0 overflow-x-visible">
+          <PromptControls ref={dropdownRef} className="min-w-0 flex-wrap overflow-visible">
             {/* 1. Model Selector Capsule Button */}
             <div className="relative shrink-0">
               <button
@@ -1240,18 +1263,20 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   e.stopPropagation();
                   setDropdownOpen((o) => (o === 'model' ? null : 'model'));
                 }}
+                aria-label={isZh ? `选择模型，当前为${getModelDisplayName(currentDraft.modelId, currentDraft.modelId)}` : `Choose model, current ${getModelDisplayName(currentDraft.modelId, currentDraft.modelId)}`}
+                title={getModelDisplayName(currentDraft.modelId, currentDraft.modelId)}
                 className={promptControlClassName({
                   active: dropdownOpen === 'model',
-                  className: 'shrink-0',
+                  className: 'shrink-0 min-w-fit px-3',
                 })}
               >
-                <div className="size-4 rounded overflow-hidden shrink-0 flex items-center justify-center bg-white/5">
-                  <span className="text-[9px] font-bold text-white/80 uppercase">
-                    {activeTab === 'video' ? 'V' : activeTab === 'audio' ? 'A' : activeTab === 'agent' ? 'AG' : 'M'}
-                  </span>
-                </div>
-                <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                  {getModelDisplayName(currentDraft.modelId, currentDraft.modelId)}
+                {activeTab === 'agent' ? (
+                  <Sparkles className="size-4 shrink-0 text-brand" aria-hidden="true" />
+                ) : (
+                  <Box className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                )}
+                <span className="whitespace-nowrap text-sm font-semibold text-current">
+                  {activeTab === 'agent' ? (isZh ? '自动' : 'Auto') : getModelDisplayName(currentDraft.modelId, currentDraft.modelId)}
                 </span>
                 <PromptChevronIcon />
               </button>
@@ -1260,7 +1285,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 <PromptPopover
                   positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
+                  className="w-[calc(100vw-2rem)] sm:w-[400px] max-h-[min(540px,calc(100vh-200px))] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
                 >
                   <FrontendModelPicker
                     studioType={activeTab}
@@ -1274,6 +1299,51 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
               )}
             </div>
 
+            {activeTab === 'agent' && (
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-expanded={dropdownOpen === 'skills'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDropdownOpen((open) => open === 'skills' ? null : 'skills');
+                  }}
+                  className={promptControlClassName({ active: dropdownOpen === 'skills', className: 'shrink-0 min-w-fit px-2.5' })}
+                >
+                  <span className={`${PROMPT_CONTROL_LABEL_CLASS} whitespace-nowrap`}>{isZh ? '技能' : 'Skills'}</span>
+                  <PromptChevronIcon />
+                </button>
+                {dropdownOpen === 'skills' && (
+                  <PromptPopover
+                    role="menu"
+                    aria-label={isZh ? '创作技能' : 'Creation skills'}
+                    positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-[min(360px,calc(100vw-2rem))] max-h-[min(420px,calc(100vh-180px))] overflow-y-auto p-2"
+                  >
+                    <div className="px-2 py-1.5 text-xs font-semibold text-ink-subtle">
+                      {isZh ? '选择创作技能' : 'Choose a skill'}
+                    </div>
+                    {skillOptions.map((skill) => (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          onSkillSelect?.(skill);
+                          setDropdownOpen(null);
+                        }}
+                        className="flex min-h-10 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm text-ink-muted transition-colors hover:bg-wash-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
+                      >
+                        <span className="min-w-0 truncate">{skill.label}</span>
+                        {skill.badge && <span className="shrink-0 text-[10px] text-brand">{skill.badge}</span>}
+                      </button>
+                    ))}
+                  </PromptPopover>
+                )}
+              </div>
+            )}
+
             {/* 2. Mode-Specific Spec Popover (Image Spec or Video Spec or Audio Settings) */}
             {activeTab === 'image' && (
               <div className="relative shrink-0">
@@ -1284,12 +1354,13 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                     e.stopPropagation();
                     setDropdownOpen((o) => (o === 'spec' ? null : 'spec'));
                   }}
+                  aria-label={isZh ? `图像参数 ${currentDraft.ar}、${currentDraft.quality}、${currentDraft.batch} 张` : `Image settings ${currentDraft.ar}, ${currentDraft.quality}, ${currentDraft.batch} images`}
                   className={promptControlClassName({
                     active: dropdownOpen === 'spec',
-                    className: 'shrink-0',
+                    className: 'shrink-0 min-w-fit px-2.5',
                   })}
                 >
-                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                  <span className={`${PROMPT_CONTROL_LABEL_CLASS} whitespace-nowrap`}>
                     {currentDraft.ar} · {currentDraft.quality} · {currentDraft.batch}
                   </span>
                   <PromptChevronIcon />
@@ -1299,7 +1370,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   <PromptPopover
                     positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[380px] p-4 flex flex-col"
+                    className="w-[calc(100vw-2rem)] sm:w-[420px] max-h-[min(540px,calc(100vh-200px))] overflow-y-auto custom-scrollbar p-4 flex flex-col"
                   >
                     <ImageSpecPopover
                       aspectRatios={allowedImageAspectRatios}
@@ -1322,6 +1393,42 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                       }}
                       copy={copy}
                     />
+                    <details className="mt-3 border-t border-line-subtle pt-3">
+                      <summary className="cursor-pointer text-xs font-medium text-ink-muted hover:text-ink">
+                        {isZh ? '高级参数' : 'Advanced settings'}
+                      </summary>
+                      <div className="mt-3 flex flex-col gap-3">
+                        <div>
+                          <label htmlFor="home-image-seed" className="mb-1 block text-xs text-ink-subtle">
+                            Seed（随机种子，-1 为随机）
+                          </label>
+                          <input
+                            id="home-image-seed"
+                            type="number"
+                            value={currentDraft.advanced?.seed ?? -1}
+                            onChange={(e) => updateCurrentDraft((prev) => ({
+                              advanced: { ...prev.advanced, seed: parseInt(e.target.value, 10) || -1 },
+                            }))}
+                            className="h-9 w-full rounded-lg border border-line bg-well px-3 text-sm text-ink focus:border-brand-line focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="home-image-negative-prompt" className="mb-1 block text-xs text-ink-subtle">
+                            {isZh ? '反向提示词' : 'Negative prompt'}
+                          </label>
+                          <textarea
+                            id="home-image-negative-prompt"
+                            rows={2}
+                            value={currentDraft.advanced?.negativePrompt || ''}
+                            onChange={(e) => updateCurrentDraft((prev) => ({
+                              advanced: { ...prev.advanced, negativePrompt: e.target.value },
+                            }))}
+                            placeholder={isZh ? '模糊、变形、多余肢体、水印…' : 'Blur, distortion, extra limbs, watermark…'}
+                            className="w-full resize-none rounded-xl border border-line bg-well p-3 text-sm text-ink focus:border-brand-line focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </details>
                   </PromptPopover>
                 )}
               </div>
@@ -1337,10 +1444,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   }}
                   className={promptControlClassName({
                     active: dropdownOpen === 'spec',
-                    className: 'shrink-0',
+                    className: 'shrink-0 min-w-fit px-2.5',
                   })}
                 >
-                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                  <span className={`${PROMPT_CONTROL_LABEL_CLASS} whitespace-nowrap`}>
                     {currentDraft.ar} · {currentDraft.resolution} · {currentDraft.duration}s
                   </span>
                   <PromptChevronIcon />
@@ -1350,7 +1457,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   <PromptPopover
                     positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[380px] p-4 flex flex-col"
+                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[min(540px,calc(100vh-200px))] overflow-y-auto custom-scrollbar p-4 flex flex-col"
                   >
                     <VideoSpecPopover
                       aspectRatios={allowedVideoAspectRatios}
@@ -1390,8 +1497,19 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
               </div>
             )}
 
+            {activeTab === 'digital-human' && (
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                className={promptControlClassName({ className: 'shrink-0' })}
+                aria-label={isZh ? '选择数字人形象素材' : 'Choose avatar reference'}
+              >
+                <span className={PROMPT_CONTROL_LABEL_CLASS}>{isZh ? '形象' : 'Avatar'}</span>
+              </button>
+            )}
+
             {/* Audio Voice Timbre Selector */}
-            {activeTab === 'audio' && currentDraft.subMode === 'tts' && (
+            {((activeTab === 'audio' && currentDraft.subMode === 'tts') || activeTab === 'digital-human') && (
               <div className="relative shrink-0">
                 <button
                   type="button"
@@ -1406,7 +1524,8 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 >
                   <Volume2 className="size-3.5 text-brand" />
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                    {AUDIO_VOICE_PRESETS.find((v) => v.id === currentDraft.voiceId)?.name?.split('·')[0] || '音色选择'}
+                    {activeTab === 'digital-human' && isZh ? '音色：' : ''}
+                    {AUDIO_VOICE_PRESETS.find((v) => v.id === currentDraft.voiceId)?.name?.split('·')[0] || (isZh ? '音色选择' : 'Choose voice')}
                   </span>
                   <PromptChevronIcon />
                 </button>
@@ -1415,7 +1534,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   <PromptPopover
                     positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[320px] p-3 flex flex-col gap-2"
+                    className="w-[calc(100vw-2rem)] sm:w-[320px] max-h-[min(420px,calc(100vh-200px))] overflow-y-auto custom-scrollbar p-3 flex flex-col gap-2"
                   >
                     <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1">
                       {isZh ? '选择解说音色' : 'Select Voice'}
@@ -1458,8 +1577,56 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
               </div>
             )}
 
+            {activeTab === 'digital-human' && (
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-expanded={dropdownOpen === 'drive'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDropdownOpen((open) => open === 'drive' ? null : 'drive');
+                  }}
+                  className={promptControlClassName({ active: dropdownOpen === 'drive', className: 'shrink-0' })}
+                >
+                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                    {isZh ? `动作：${currentDraft.driveType === 'audio' ? '音频驱动' : '文本驱动'}` : `Motion: ${currentDraft.driveType === 'audio' ? 'Audio' : 'Text'}`}
+                  </span>
+                  <PromptChevronIcon />
+                </button>
+                {dropdownOpen === 'drive' && (
+                  <PromptPopover
+                    role="menu"
+                    aria-label={isZh ? '选择数字人驱动方式' : 'Choose avatar drive mode'}
+                    positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-[240px] p-2"
+                  >
+                    {[
+                      { id: 'text', label: isZh ? '台词驱动' : 'Text script' },
+                      { id: 'audio', label: isZh ? '音频驱动' : 'Audio driven' },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={currentDraft.driveType === option.id}
+                        onClick={() => {
+                          updateCurrentDraft({ driveType: option.id });
+                          setDropdownOpen(null);
+                        }}
+                        className={`flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${currentDraft.driveType === option.id ? 'bg-brand-soft text-brand' : 'text-ink-muted hover:bg-wash-strong hover:text-ink'}`}
+                      >
+                        {option.label}
+                        {currentDraft.driveType === option.id && <Check className="size-4" aria-hidden="true" />}
+                      </button>
+                    ))}
+                  </PromptPopover>
+                )}
+              </div>
+            )}
+
             {/* 3. Advanced Parameters Popover (Seed, Negative Prompt, Camera Motion) */}
-            <div className="relative shrink-0">
+            {(activeTab === 'video' || activeTab === 'audio') && <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={(e) => {
@@ -1468,12 +1635,12 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 }}
                 className={promptControlClassName({
                   active: dropdownOpen === 'advanced',
-                  className: 'shrink-0',
+                  className: 'shrink-0 min-w-fit px-2.5',
                 })}
                 title={isZh ? '高级参数设置' : 'Advanced Parameters'}
               >
                 <SlidersHorizontal className="size-3.5 text-white/60" />
-                <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                <span className={`${PROMPT_CONTROL_LABEL_CLASS} whitespace-nowrap`}>
                   {isZh ? '参数' : 'Params'}
                 </span>
                 <PromptChevronIcon />
@@ -1483,7 +1650,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 <PromptPopover
                   positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-[calc(100vw-2rem)] sm:w-[340px] p-4 flex flex-col gap-3.5"
+                  className="w-[calc(100vw-2rem)] sm:w-[340px] max-h-[min(540px,calc(100vh-200px))] overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3.5"
                 >
                   <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
                     {isZh ? '高级控制参数' : 'Advanced Settings'}
@@ -1527,59 +1694,48 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                     </div>
                   )}
 
-                  {/* Negative Prompt */}
-                  {activeTab === 'image' && (
-                    <div>
-                      <label className="text-[11px] text-ink-subtle mb-1 block">反向提示词 (Negative Prompt)</label>
-                      <textarea
-                        rows={2}
-                        value={currentDraft.advanced?.negativePrompt || ''}
-                        onChange={(e) =>
-                          updateCurrentDraft((prev) => ({
-                            advanced: { ...prev.advanced, negativePrompt: e.target.value },
-                          }))
-                        }
-                        placeholder="模糊，变形，多余肢体，水印..."
-                        className="w-full p-2 rounded-lg bg-well border border-white/10 text-xs text-white focus:outline-none focus:border-brand-line resize-none"
-                      />
-                    </div>
-                  )}
                 </PromptPopover>
               )}
-            </div>
+            </div>}
           </PromptControls>
 
           {/* Right Side: Estimated Credits Tag + Primary Generate Action */}
-          <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+          <div className="flex shrink-0 items-center gap-4 self-end sm:self-center">
             {/* Live Model Cost in Credits */}
-            <div className="flex items-center gap-1.5 px-2 py-1 select-none whitespace-nowrap">
-              <span className="text-[11px] text-white/50">{isZh ? '预计消耗' : 'Cost'}</span>
+            <div className="flex items-center gap-1.5 select-none whitespace-nowrap text-ink">
+              <Sparkles className="size-3.5 text-brand" aria-hidden="true" />
               <ModelPriceTag
                 ids={currentDraft.modelId}
                 multiplier={currentDraft.batch || 1}
                 locale={locale}
-                className="text-xs font-semibold text-white/90"
+                compact
+                className="text-sm font-semibold tabular-nums text-ink"
               />
             </div>
 
-            {/* Primary Action Button (Dreamina 38px Brand Pill) */}
+            {/* Screenshot-matched circular submit action */}
             <PromptAction
               data-testid="composer-generate-button"
               onClick={handleTriggerSubmit}
-              disabled={isSubmitting}
-              shape="pill"
+              circular
+              aria-label={
+                isSubmitting
+                  ? (isZh ? '生成中' : 'Generating')
+                  : (isZh ? '开始生成' : 'Start generation')
+              }
+              title={isZh ? '开始生成' : 'Start generation'}
+              disabled={
+                isSubmitting
+                || (activeTab === 'digital-human'
+                  ? !currentDraft.avatarUrl
+                  : !String(currentDraft.prompt || '').trim())
+              }
+              className="disabled:bg-raised disabled:border-line disabled:text-ink-subtle disabled:shadow-none"
             >
               {isSubmitting ? (
-                <>
-                  <span className="animate-spin inline-block text-white">◌</span>
-                  <span>{isZh ? '生成中...' : 'Generating...'}</span>
-                </>
+                <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
               ) : (
-                <span>
-                  {activeTab === 'agent'
-                    ? (isZh ? '智能生成' : 'Agent Run')
-                    : (isZh ? '立即生成' : 'Generate')}
-                </span>
+                <ArrowUp className="size-4" aria-hidden="true" />
               )}
             </PromptAction>
           </div>

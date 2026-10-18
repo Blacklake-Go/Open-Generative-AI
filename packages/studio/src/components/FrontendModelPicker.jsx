@@ -20,6 +20,7 @@ import {
   audioModels,
   lipsyncModels,
 } from "../models.js";
+import { getProviderLogo, invertLogos } from "../providerLogos.js";
 
 /**
  * Clean Dropdown Model Picker (Figure 2 Style)

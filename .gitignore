@@ -41,6 +41,7 @@ data/backups/
 /.playwright-artifacts/
 /.ui-repair-preview/
 /.agents/
+/.impeccable/
 *.db
 *.tar
 *.tar.gz

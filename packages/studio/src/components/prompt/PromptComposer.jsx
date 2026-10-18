@@ -356,13 +356,18 @@ export function PromptComposer({
   positionClassName = DEFAULT_POSITION_CLASS,
   style = { animationDelay: "0.15s" },
   expanded = false,
+  flush = false,
+  minHeightClassName = "min-h-[70px] focus-within:min-h-[184px]",
 }) {
   return (
     <div className={joinClasses(positionClassName, className)} style={style}>
       <div
         className={joinClasses(
-          DEFAULT_PANEL_CLASS,
-          "min-h-[70px] focus-within:min-h-[184px] transition-[min-height] duration-expand ease-fluid",
+          flush
+            ? "w-full prompt-composer-spatial backdrop-blur-xl rounded-composer flex flex-col gap-0 p-0"
+            : DEFAULT_PANEL_CLASS,
+          minHeightClassName,
+          "transition-[min-height] duration-expand ease-fluid",
           expanded ? "min-h-[184px]" : "",
           withoutRadiusUtilities(panelClassName),
         )}
@@ -429,11 +434,13 @@ export const PromptTextarea = forwardRef(function PromptTextarea(
   );
 });
 
-export function PromptFooter({ children, className = "" }) {
+export function PromptFooter({ children, className = "", bordered = true }) {
   return (
     <div
       className={joinClasses(
-        "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-line-subtle relative",
+        bordered
+          ? "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-line-subtle relative"
+          : "flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative",
         className,
       )}
     >
@@ -476,11 +483,11 @@ export const PromptAction = forwardRef(function PromptAction(
       ref={ref}
       type={type}
       variant="primary"
-      size={circular ? "md" : size}
+      size={size}
       shape={circular ? "pill" : shape}
       className={joinClasses(
         circular
-          ? "w-[38px] h-[38px] size-control-md !p-0 rounded-full shrink-0 flex items-center justify-center hover:scale-105 active:scale-95"
+          ? "size-control-lg !p-0 rounded-full shrink-0 flex items-center justify-center hover:scale-105 active:scale-95"
           : "w-full sm:w-auto",
         withoutRadiusUtilities(className),
       )}

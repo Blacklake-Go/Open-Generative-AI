@@ -21,6 +21,7 @@ export default function ModelPriceTag({
   locale = "en",
   className = "",
   showUnavailable = true,
+  compact = false,
 }) {
   const copy = resolveCopy(en, { "zh-CN": zh, "ja-JP": ja, "ko-KR": ko, "zh-TW": zhTw, "es-ES": es }, locale).price;
   const [, setVersion] = useState(0);
@@ -83,13 +84,20 @@ export default function ModelPriceTag({
     return null;
   }
 
+  const accessiblePrice = formatModelPrice(price, copy);
+  const displayPrice = compact
+    ? `${price.credits ?? accessiblePrice}${price.kind === "from" ? "+" : ""}`
+    : accessiblePrice;
+
   return (
     <span
       className={`text-micro font-normal text-ink-subtle ${className}`}
       data-model-price={price.kind === "missing" ? "" : String(price.credits)}
       data-model-price-kind={price.kind}
+      aria-label={compact ? accessiblePrice : undefined}
+      title={compact ? accessiblePrice : undefined}
     >
-      {prefix}{formatModelPrice(price, copy)}
+      {prefix}{displayPrice}
     </span>
   );
 }
