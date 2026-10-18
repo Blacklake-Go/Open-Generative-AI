@@ -16,10 +16,12 @@ async function handlePOST(request) {
 
   const category = body.category || 'all';
   const limit = parseInt(body.limit || '15', 10);
+  const targetAuthor = body.targetAuthor ? body.targetAuthor.trim() : '';
 
   const result = await executeTwitterCrawl({
     category,
     limit,
+    targetAuthor,
     userEmail: guard.user.email,
   });
 

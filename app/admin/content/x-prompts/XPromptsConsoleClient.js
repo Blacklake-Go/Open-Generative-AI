@@ -27,6 +27,8 @@ import { PageHeader, StatusBadge, AdminSettingRow } from '@/components/admin/Adm
 export default function XPromptsConsoleClient({ initialData, initialConfig }) {
   const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'console'
   const [categoryFilter, setCategoryFilter] = useState('all'); // 'all' | 'image' | 'video' | 'music' | 'adopted'
+  const [authorFilter, setAuthorFilter] = useState('all');
+  const [authorsList, setAuthorsList] = useState(initialData?.authors || []);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [prompts, setPrompts] = useState(initialData?.items || []);
@@ -42,6 +44,7 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
   const [crawling, setCrawling] = useState(false);
   const [crawlCategory, setCrawlCategory] = useState('all');
   const [crawlLimit, setCrawlLimit] = useState(15);
+  const [crawlTargetAuthor, setCrawlTargetAuthor] = useState('');
   const [crawlFeedback, setCrawlFeedback] = useState(null);
 
   const [cookieModalOpen, setCookieModalOpen] = useState(false);
@@ -123,20 +126,25 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
         body: JSON.stringify({
           category: crawlCategory,
           limit: crawlLimit,
+          targetAuthor: crawlTargetAuthor.trim(),
         }),
       });
       const data = await res.json();
       if (data.ok && data.data) {
+        const authorMsg = crawlTargetAuthor.trim() ? `（定向作者 @${crawlTargetAuthor.trim().replace(/^@/, '')}）` : '';
         setCrawlFeedback({
           type: 'success',
-          message: `抓取成功！新增 ${data.data.newAdded || 0} 条高赞提示词案例（拉取 ${data.data.totalFetched || 0} 条）。`,
+          message: `抓取成功！新增 ${data.data.newAdded || 0} 条高赞案例${authorMsg}（共拉取 ${data.data.totalFetched || 0} 条）。`,
         });
         // 重新拉取素材列表
         const listRes = await fetch('/api/admin/content/x-prompts');
         const listData = await listRes.json();
-        if (listData.ok) {
-          setPrompts(listData.data.items);
-          setCounts(listData.data.counts);
+        if (listData.ok && listData.data) {
+          setPrompts(listData.data.items || []);
+          setCounts(listData.data.counts || { all: 0, image: 0, video: 0, music: 0, adopted: 0 });
+          if (listData.data.authors) {
+            setAuthorsList(listData.data.authors);
+          }
         }
       } else {
         setCrawlFeedback({
@@ -214,6 +222,10 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
   const filteredPrompts = prompts.filter((p) => {
     if (categoryFilter === 'adopted' && p.status !== 'adopted') return false;
     if (categoryFilter !== 'all' && categoryFilter !== 'adopted' && p.category !== categoryFilter) return false;
+    if (authorFilter !== 'all') {
+      const cleanFilter = authorFilter.toLowerCase().replace(/^@/, '');
+      if (p.author?.toLowerCase() !== cleanFilter) return false;
+    }
     if (searchQuery.trim()) {
       const term = searchQuery.toLowerCase();
       const match =
@@ -312,7 +324,7 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
       {activeTab === 'feed' && (
         <div className="space-y-5">
           {/* 筛选与搜索工具栏 */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             {/* 分类胶囊按钮 */}
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
               {[
@@ -343,27 +355,70 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
               })}
             </div>
 
-            {/* 搜索框 */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 size-3.5 text-ink-subtle pointer-events-none" />
-              <input
-                type="text"
-                placeholder="搜索提示词、模型、作者..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-line-subtle bg-surface/80 text-ink placeholder:text-ink-subtle focus:outline-none focus:border-brand/50 transition-colors"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2 text-ink-subtle hover:text-ink"
+            {/* 右侧：作者定向筛选 + 关键字搜索框 */}
+            <div className="flex items-center gap-2">
+              {/* 指定作者筛选下拉 */}
+              <div className="relative min-w-[130px] max-w-[190px]">
+                <select
+                  value={authorFilter}
+                  onChange={(e) => setAuthorFilter(e.target.value)}
+                  className="w-full h-8 pl-2.5 pr-6 text-xs rounded-lg border border-line-subtle bg-surface/80 text-ink focus:outline-none focus:border-brand/50 transition-colors cursor-pointer appearance-none truncate"
+                  title="按创作者筛选"
                 >
-                  <X className="size-3.5" />
-                </button>
-              )}
+                  <option value="all">全部创作者</option>
+                  {authorsList.map((a) => {
+                    const handle = a.author || a.username;
+                    return (
+                      <option key={handle} value={handle}>
+                        @{handle} ({a.count})
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute right-2 top-2.5 pointer-events-none text-ink-subtle text-[9px]">
+                  ▼
+                </div>
+              </div>
+
+              {/* 搜索框 */}
+              <div className="relative w-full sm:w-56">
+                <Search className="absolute left-2.5 top-2.5 size-3.5 text-ink-subtle pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="搜索提示词、模型、作者..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-line-subtle bg-surface/80 text-ink placeholder:text-ink-subtle focus:outline-none focus:border-brand/50 transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-2 text-ink-subtle hover:text-ink"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* 当指定了作者筛选时，展示高亮横幅与快速还原 */}
+          {authorFilter !== 'all' && (
+            <div className="flex items-center justify-between rounded-lg border border-brand/25 bg-brand/10 px-3 py-1.5 text-xs text-brand">
+              <span className="flex items-center gap-1.5 font-medium">
+                <Sparkles className="size-3.5" />
+                正在查看指定创作者 <strong>@{authorFilter}</strong> 的生图作品与提示词 ({filteredPrompts.length} 条)
+              </span>
+              <button
+                type="button"
+                onClick={() => setAuthorFilter('all')}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold underline hover:text-brand-hover cursor-pointer"
+              >
+                清除作者筛选
+              </button>
+            </div>
+          )}
 
           {/* 素材卡片瀑布网格 (3 列) */}
           {filteredPrompts.length === 0 ? (
@@ -398,12 +453,23 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
                             className="size-7 rounded-full border border-line-subtle object-cover shrink-0"
                           />
                           <div className="min-w-0">
-                            <p className="text-xs font-semibold text-ink truncate leading-tight">
+                            <button
+                              type="button"
+                              onClick={() => setAuthorFilter(item.author)}
+                              className="text-xs font-semibold text-ink truncate leading-tight hover:text-brand cursor-pointer text-left block"
+                              title="点击筛选该创作者的所有生图作品"
+                            >
                               {item.authorName || item.author}
-                            </p>
-                            <p className="text-[11px] text-ink-subtle font-mono truncate">
+                            </button>
+                            <a
+                              href={item.tweetUrl ? `https://x.com/${item.author}` : '#'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] text-ink-subtle font-mono truncate hover:text-brand block"
+                              title="在 X 上查看作者主页"
+                            >
                               @{item.author}
-                            </p>
+                            </a>
                           </div>
                         </div>
 
@@ -626,10 +692,22 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
             />
 
             <AdminSettingRow
-              label="重点监控博主"
-              value={`${config.rules?.targetAuthors?.length || 0} 位顶级 AI 创作者`}
+              label="指定监控博主与检索模式"
+              value={
+                config.rules?.targetAuthorMode === 'specified' ? (
+                  <span className="text-amber-400 font-semibold text-xs flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-amber-400" />
+                    定向模式：仅抓取监控博主 ({config.rules?.targetAuthors?.length || 0} 位)
+                  </span>
+                ) : (
+                  <span className="text-emerald-400 text-xs flex items-center gap-1">
+                    <span className="size-1.5 rounded-full bg-emerald-400" />
+                    全网模式：全网高赞 + 兼顾 {config.rules?.targetAuthors?.length || 0} 位重点博主
+                  </span>
+                )
+              }
               context={config.rules?.targetAuthors?.map((a) => `@${a}`).join(', ')}
-              action="管理名单"
+              action="配置名单与规则"
               onClickAction={() => {
                 setRulesForm(config.rules || {});
                 setRulesModalOpen(true);
@@ -706,6 +784,57 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* 定向指定博主选项 */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-ink-muted">
+                    指定博主定向抓取 (可选)
+                  </label>
+                  {crawlTargetAuthor && (
+                    <button
+                      type="button"
+                      onClick={() => setCrawlTargetAuthor('')}
+                      className="text-[11px] text-brand hover:underline cursor-pointer"
+                    >
+                      清空指定
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="输入 X 账号例如 properprompter (留空则全网检索)"
+                  value={crawlTargetAuthor}
+                  onChange={(e) => setCrawlTargetAuthor(e.target.value.replace(/^@/, ''))}
+                  className="w-full h-8 px-3 text-xs font-mono rounded-lg border border-line-subtle bg-well text-ink focus:outline-none focus:border-brand/50 placeholder:text-ink-subtle"
+                />
+                {config.rules?.targetAuthors && config.rules.targetAuthors.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-ink-subtle">监控博主：</span>
+                    {config.rules.targetAuthors.map((author) => {
+                      const clean = author.replace(/^@/, '');
+                      const isSelected = crawlTargetAuthor.toLowerCase() === clean.toLowerCase();
+                      return (
+                        <button
+                          key={clean}
+                          type="button"
+                          onClick={() => setCrawlTargetAuthor(isSelected ? '' : clean)}
+                          className={`rounded px-1.5 py-0.5 text-[10px] font-mono transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-brand/20 text-brand border border-brand/40 font-semibold'
+                              : 'bg-white/[0.04] text-ink-muted hover:text-ink border border-line-subtle'
+                          }`}
+                        >
+                          @{clean}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="mt-1 text-[11px] text-ink-subtle">
+                  指定博主后，系统将定向识别该用户推文中的生图及其提示词、模型与参数。
+                </p>
               </div>
 
               <div>
@@ -861,7 +990,151 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
             </h3>
             <p className="mt-1 text-xs text-ink-muted">支持利用 X 高级搜索语法（OR、has:images、min_faves 等）。</p>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-3.5">
+              {/* 指定用户模式与定向检索范围 */}
+              <div>
+                <label className="block text-xs font-medium text-ink-muted mb-1.5">
+                  定向检索范围模式 (指定用户选项)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRulesForm({ ...rulesForm, targetAuthorMode: 'all' })}
+                    className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
+                      rulesForm.targetAuthorMode !== 'specified'
+                        ? 'border-brand bg-brand/10 text-brand'
+                        : 'border-line-subtle bg-well text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <div className="text-xs font-semibold flex items-center justify-between">
+                      <span>全网关键词检索</span>
+                      {rulesForm.targetAuthorMode !== 'specified' && <Check className="size-3.5" />}
+                    </div>
+                    <p className="mt-1 text-[11px] opacity-80 leading-normal">
+                      全网检索最新高赞生图推文，兼顾重点博主
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRulesForm({ ...rulesForm, targetAuthorMode: 'specified' })}
+                    className={`p-2.5 rounded-lg border text-left transition-colors cursor-pointer ${
+                      rulesForm.targetAuthorMode === 'specified'
+                        ? 'border-brand bg-brand/10 text-brand'
+                        : 'border-line-subtle bg-well text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    <div className="text-xs font-semibold flex items-center justify-between">
+                      <span>仅限指定博主定向检索</span>
+                      {rulesForm.targetAuthorMode === 'specified' && <Check className="size-3.5" />}
+                    </div>
+                    <p className="mt-1 text-[11px] opacity-80 leading-normal">
+                      锁定监控博主，识别其生图作品与对应提示词
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* 重点监控与检索博主名单 */}
+              <div>
+                <label className="block text-xs font-medium text-ink-muted mb-1.5">
+                  指定监控博主名单 ({rulesForm.targetAuthors?.length || 0} 位)
+                </label>
+
+                {/* 现有博主标签 */}
+                {rulesForm.targetAuthors && rulesForm.targetAuthors.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                    {rulesForm.targetAuthors.map((author) => {
+                      const clean = author.replace(/^@/, '');
+                      return (
+                        <span
+                          key={clean}
+                          className="inline-flex items-center gap-1 rounded-md bg-brand/10 border border-brand/25 px-2 py-0.5 text-xs font-mono text-brand font-medium"
+                        >
+                          @{clean}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setRulesForm({
+                                ...rulesForm,
+                                targetAuthors: (rulesForm.targetAuthors || []).filter(
+                                  (a) => a.replace(/^@/, '') !== clean
+                                ),
+                              })
+                            }
+                            className="text-brand/70 hover:text-red-400 cursor-pointer ml-0.5"
+                            title={`移除 @${clean}`}
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <input
+                  type="text"
+                  placeholder="输入博主 X 账号例如 properprompter，以逗号分隔"
+                  value={Array.isArray(rulesForm.targetAuthors) ? rulesForm.targetAuthors.join(', ') : rulesForm.targetAuthors || ''}
+                  onChange={(e) =>
+                    setRulesForm({
+                      ...rulesForm,
+                      targetAuthors: e.target.value
+                        .split(',')
+                        .map((s) => s.trim().replace(/^@/, ''))
+                        .filter(Boolean),
+                    })
+                  }
+                  className="w-full h-8 px-3 text-xs font-mono rounded-lg border border-line-subtle bg-well text-ink focus:outline-none focus:border-brand/50"
+                />
+
+                {/* 推荐优质博主 */}
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] text-ink-subtle">推荐优质 AI 创作者：</span>
+                  {[
+                    { handle: 'properprompter', desc: 'Midjourney/Flux大师' },
+                    { handle: 'fofrAI', desc: 'Flux专家' },
+                    { handle: 'icreatelife', desc: '视觉艺术家' },
+                    { handle: 'LinusEkenstam', desc: 'AI创作者' },
+                  ].map((rec) => {
+                    const hasAuthor = (rulesForm.targetAuthors || []).some(
+                      (a) => a.replace(/^@/, '').toLowerCase() === rec.handle.toLowerCase()
+                    );
+                    if (hasAuthor) return null;
+                    return (
+                      <button
+                        key={rec.handle}
+                        type="button"
+                        onClick={() => {
+                          const current = rulesForm.targetAuthors || [];
+                          setRulesForm({
+                            ...rulesForm,
+                            targetAuthors: [...current, rec.handle],
+                          });
+                        }}
+                        className="inline-flex items-center gap-1 rounded bg-white/[0.04] hover:bg-brand/10 hover:text-brand hover:border-brand/30 border border-line-subtle px-1.5 py-0.5 text-[11px] text-ink-muted transition-colors cursor-pointer"
+                        title={`添加 @${rec.handle} (${rec.desc})`}
+                      >
+                        <span>+ @{rec.handle}</span>
+                        <span className="text-[9px] opacity-70">({rec.desc})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 生图与提示词精准识别机制说明 */}
+              <div className="rounded-lg bg-well p-3 border border-line-subtle text-[11px] text-ink-muted leading-relaxed">
+                <div className="font-semibold text-ink flex items-center gap-1 mb-1">
+                  <Sparkles className="size-3 text-brand" />
+                  生图与对应提示词识别说明
+                </div>
+                <p>
+                  系统抓取目标推文时，将优先提取推文所带的高清配图（生图），并深度解析推文正文或图片自带的 ALT 描述，智能提取 Midjourney / Flux / SD 模型标签与 <code className="bg-white/10 px-1 rounded text-ink font-mono">--ar</code> 等关键参数，一键规整为纯净结构化卡片。
+                </p>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium text-ink-muted mb-1">生图关键词检索 Query</label>
                 <textarea
@@ -889,26 +1162,6 @@ export default function XPromptsConsoleClient({ initialData, initialConfig }) {
                   value={rulesForm.musicQuery || ''}
                   onChange={(e) => setRulesForm({ ...rulesForm, musicQuery: e.target.value })}
                   className="w-full p-2.5 text-xs font-mono rounded-lg border border-line-subtle bg-well text-ink focus:outline-none focus:border-brand/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-ink-muted mb-1">
-                  重点监控博主名单 (以英文逗号分隔)
-                </label>
-                <input
-                  type="text"
-                  value={Array.isArray(rulesForm.targetAuthors) ? rulesForm.targetAuthors.join(', ') : rulesForm.targetAuthors || ''}
-                  onChange={(e) =>
-                    setRulesForm({
-                      ...rulesForm,
-                      targetAuthors: e.target.value
-                        .split(',')
-                        .map((s) => s.trim().replace(/^@/, ''))
-                        .filter(Boolean),
-                    })
-                  }
-                  className="w-full h-8 px-3 text-xs font-mono rounded-lg border border-line-subtle bg-well text-ink focus:outline-none focus:border-brand/50"
                 />
               </div>
             </div>

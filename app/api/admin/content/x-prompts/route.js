@@ -13,10 +13,11 @@ async function handleGET(request) {
   const category = searchParams.get('category') || 'all';
   const q = searchParams.get('q') || '';
   const status = searchParams.get('status') || 'all';
+  const author = searchParams.get('author') || 'all';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '24', 10);
 
-  const result = await getCrawledPrompts({ category, q, status, page, pageSize });
+  const result = await getCrawledPrompts({ category, q, status, author, page, pageSize });
   return okResponse(result, guard.requestId);
 }
 
