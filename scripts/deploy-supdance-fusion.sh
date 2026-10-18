@@ -32,6 +32,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCH
   public \
   middleware.js \
   tailwind.config.js \
+  next.config.mjs \
   package.json \
   docs/UI_DESIGN_SYSTEM.md \
   docs/ADMIN_UI_DESIGN_SYSTEM.md \
@@ -106,6 +107,7 @@ fi
 cp \"\$STAGE/middleware.js\" \"\$WEB_DIR/middleware.js\"
 cp \"\$STAGE/app/globals.css\" \"\$WEB_DIR/app/globals.css\"
 cp \"\$STAGE/tailwind.config.js\" \"\$WEB_DIR/tailwind.config.js\"
+cp \"\$STAGE/next.config.mjs\" \"\$WEB_DIR/next.config.mjs\"
 cp \"\$STAGE/package.json\" \"\$WEB_DIR/package.json\"
 
 # 修复文件所有权为 www:www
@@ -119,7 +121,7 @@ chown -R www:www \"\$WEB_DIR/lib\"
 chown -R www:www \"\$WEB_DIR/messages\"
 chown -R www:www \"\$WEB_DIR/scripts\"
 chown -R www:www \"\$WEB_DIR/public\"
-chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/package.json\"
+chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/next.config.mjs\" \"\$WEB_DIR/package.json\"
 
 # 执行数据库版本迁移
 echo \"执行数据库版本迁移 (058 等)...\"
