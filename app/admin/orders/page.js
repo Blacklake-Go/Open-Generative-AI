@@ -101,7 +101,7 @@ export default async function OrdersPage({ searchParams }) {
         eyebrow="财务中心"
         title="订单与支付记录"
         description="所有线上交易、充值与退款历史订单。"
-        actions={<ExportButton href="/api/admin/orders/export" />}
+        actions={<ExportButton type="orders" label="导出订单 CSV" />}
       />
 
       <Card className="mb-6">

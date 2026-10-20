@@ -8,14 +8,14 @@ export async function generateMetadata({ params }) {
 
   if (!model) {
     return {
-      title: 'AI 大模型实时遥测与性能专页 — SupDance',
-      description: 'SupDance 聚合全球前沿多模态大模型实时时调用量、生图数、平均响应时延与费率分析。',
+      title: '模型详情 — SupDance',
+      description: '查看模型说明、上架状态与过去 24 小时的真实调用数据。',
     };
   }
 
   return {
-    title: `${model.name} (${model.symbol}) — 实时调用量走势 · 生图数与算力指标概览 | SupDance`,
-    description: `查看 ${model.provider} 旗下 ${model.name} 在 SupDance 的实时时调用量、日调用量走势折线图、生图生成数、首字时延及成本费率拆解。`,
+    title: `${model.name} — 模型详情 | SupDance`,
+    description: `查看 ${model.provider} 旗下 ${model.name} 在 SupDance 的上架状态、价格与过去 24 小时真实调用数据。`,
   };
 }
 

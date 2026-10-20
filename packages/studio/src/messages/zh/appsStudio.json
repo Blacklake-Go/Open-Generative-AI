@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "现成可变现模板",
-    "titleLine1": "上线一款 AI 应用，",
-    "titleLine2": "今天就开始赚钱。",
-    "subtitle": "每个模板都是一套功能完整、已集成 Stripe 支付的 AI SaaS 应用，几分钟内即可部署。向用户收费、利润归你所有——AI 基础设施由 muapi 负责。"
+    "badge": "应用模板预览",
+    "titleLine1": "探索 AI 应用模板，",
+    "titleLine2": "上线时第一时间体验。",
+    "subtitle": "浏览应用概念与模板。部分应用尚未在 SupDance 开放，登记意向即可在上线时收到通知。"
   },
   "steps": {
     "stepLabel": "步骤",
@@ -23,20 +23,23 @@
   "card": {
     "templateFallback": "模板",
     "github": "GitHub 仓库",
-    "demo": "演示"
+    "demo": "即将上线",
+    "reserve": "预约通知",
+    "getTemplate": "登记意向",
+    "requested": "已登记"
   },
   "footer": {
-    "moreComingSoon": "Muapi 生态系统 — 更多模板即将上线"
+    "moreComingSoon": "SupDance 应用生态 — 更多应用正在筹备中"
   },
   "modal": {
-    "deployTitle": "部署 {appName}",
-    "body": "请留下您的信息，我们会将 {appName} 模板及部署说明发送给您，以便您立即部署并开始盈利。",
-    "sending": "正在发送详情...",
-    "getTemplate": "获取模板",
+    "deployTitle": "登记 {appName} 意向",
+    "body": "该应用尚未在 SupDance 完整开放。留下意向后，我们会在上线时通知你。",
+    "sending": "正在登记...",
+    "getTemplate": "登记意向",
     "maybeLater": "稍后再说"
   },
   "toast": {
-    "requestSuccess": "已收到！我们会尽快为您发送模板详情。",
+    "requestSuccess": "已登记，应用上线时我们会通知你。",
     "requestError": "登记意向失败，请稍后重试。"
   }
 }

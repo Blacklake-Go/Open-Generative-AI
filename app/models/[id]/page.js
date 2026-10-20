@@ -8,14 +8,14 @@ export async function generateMetadata({ params }) {
 
   if (!model) {
     return {
-      title: 'Model Overview & Real-Time Performance — SupDance',
-      description: 'Real-time telemetry and operational performance metrics for generative AI models on SupDance.',
+      title: 'Model Overview — SupDance',
+      description: 'Model details, availability, and actual 24-hour usage for generative AI models on SupDance.',
     };
   }
 
   return {
-    title: `${model.name} (${model.symbol}) — Real-time Financials & Performance Telemetry | SupDance`,
-    description: `Inspect live invocation volume, generation counts, response latency, and pricing specs for ${model.name} by ${model.provider} on SupDance.`,
+    title: `${model.name} — Model Overview | SupDance`,
+    description: `View availability, pricing, and actual 24-hour usage for ${model.name} by ${model.provider} on SupDance.`,
   };
 }
 

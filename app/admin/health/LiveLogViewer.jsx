@@ -12,14 +12,20 @@ export default function LiveLogViewer() {
   const fetchLogs = async (type = logType) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/system/logs?type=${type}`);
-      const data = await res.json();
-      if (data.data) {
-        setLogs(data.data.lines);
-        setLogSource(data.data.path);
+      const res = await fetch(`/api/admin/system/logs?type=${type}`, { cache: 'no-store' });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.error?.message || '获取日志失败');
       }
-    } catch {
-      setLogs('获取日志失败');
+      const data = payload.data || {};
+      setLogs(
+        data.lines
+        || (data.missing ? '日志文件尚未生成。服务启动并产生输出后会显示在这里。' : '暂无日志')
+      );
+      setLogSource(data.path || '');
+    } catch (error) {
+      setLogs(`获取日志失败：${error.message || '未知错误'}`);
+      setLogSource('');
     } finally {
       setLoading(false);
     }
@@ -33,7 +39,7 @@ export default function LiveLogViewer() {
     <Card className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-4 mb-4">
         <div>
-          <h2 className="text-sm font-bold text-white">服务端实时运行与异常日志 (Tail 100)</h2>
+          <h2 className="text-sm font-bold text-white">服务端运行与异常日志（最近 100 行）</h2>
           <p className="mt-1 text-xs text-white/40 font-mono">{logSource || 'PM2 Daemon Logs'}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -61,9 +67,9 @@ export default function LiveLogViewer() {
             type="button"
             disabled={loading}
             onClick={() => fetchLogs()}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 transition"
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 transition disabled:cursor-wait disabled:opacity-50"
           >
-            {loading ? '刷新中…' : '🔄 刷新'}
+            {loading ? '刷新中…' : '刷新'}
           </button>
         </div>
       </div>

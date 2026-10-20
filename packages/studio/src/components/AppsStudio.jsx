@@ -5,7 +5,7 @@ import {
   FaUserTie, FaImage, FaMagic, FaVideo, FaFileAlt, 
   FaBriefcase, FaHome, FaMicrophone, FaHandSparkles, FaBuilding,
   FaUserInjured, FaStethoscope, FaCar, FaPaw, FaBalanceScale, FaTruck, FaMapMarkerAlt,
-  FaGithub, FaExternalLinkAlt, FaDollarSign, FaRocket, FaCreditCard 
+  FaRocket
 } from "react-icons/fa";
 import { registerAppInterest, getAppInterests } from '../muapi.js';
 import toast from 'react-hot-toast';
@@ -21,7 +21,7 @@ import { resolveCopy } from '../i18nUtils';
 const templateApps = [
   {
     name: "AI Headshot Studio",
-    description: "Launch a headshot SaaS in minutes. Charge $5–$20 per set, keep all profits. Stripe payments & user accounts included.",
+    description: "A headshot studio template concept with user accounts and a credit-based workflow.",
     icon: FaUserTie,
     color: "blue",
     thumbnail: "https://cdn.muapi.ai/apps/d9c39378f60e48098f6b6ce657dc18b5.png",
@@ -29,7 +29,7 @@ const templateApps = [
   },
   {
     name: "Nano Banana Studio",
-    description: "Your own AI image generation platform, ready to monetize. Add credit packs or subscriptions and start earning from day one.",
+    description: "An AI image studio template concept with credit packs and subscription options.",
     icon: FaHandSparkles,
     color: "amber",
     thumbnail: "https://cdn.muapi.ai/data/2/874086171651/Screenshot_2026-04-15_103743.png",
@@ -37,7 +37,7 @@ const templateApps = [
   },
   {
     name: "Seedance V2 Studio",
-    description: "Deploy a premium AI art studio and sell access to users. Full Stripe integration lets you collect revenue immediately after launch.",
+    description: "A premium AI art studio template concept with a credit-based access flow.",
     icon: FaMagic,
     color: "purple",
     thumbnail: "https://cdn.muapi.ai/apps/4cd1f49d48934d448e7f493f9d5e476e.png",
@@ -45,7 +45,7 @@ const templateApps = [
   },
   {
     name: "AI Clipping Studio",
-    description: "Launch your own AI-powered video clipping SaaS. Download YouTube videos and extract viral highlights with ease.",
+    description: "An AI video clipping template concept for extracting highlights from long videos.",
     icon: FaVideo,
     color: "emerald",
     thumbnail: "https://cdn.muapi.ai/data/2/883345778103/cca8b5bb-25f1-40fe-928e-53dce2c8c928.png",
@@ -53,7 +53,7 @@ const templateApps = [
   },
   {
     name: "EasyVeo Studio",
-    description: "The complete Veo 3.1 video generation suite. Monetize text-to-video, image-to-video, and reference-to-video workflows with ease.",
+    description: "A video generation suite template concept covering text-to-video and image-to-video flows.",
     icon: FaVideo,
     color: "indigo",
     thumbnail: "https://cdn.muapi.ai/data/2/901343404247/94ac6d86-be4e-4b70-b1e6-96d7e3692604.png",
@@ -151,7 +151,11 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
   }, [selectedApp]);
 
   const handleRequestAccess = async () => {
-    if (!selectedApp || !apiKey) return;
+    if (!selectedApp) return;
+    if (!apiKey) {
+      toast.error(copy.toast.requestError);
+      return;
+    }
     
     setIsRequesting(true);
     try {
@@ -168,6 +172,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
   };
 
   const renderAppCard = (app, isDummy = false, index = 0) => {
+    const requested = requestedApps.includes(app.name);
     // Premium Vibrant Gradients for placeholders
     const gradients = [
       "from-blue-600/20 to-indigo-600/20",
@@ -198,6 +203,11 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+          {isDummy && (
+            <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80 backdrop-blur-sm">
+              {copy.card.demo || 'Coming soon'}
+            </span>
+          )}
         </div>
 
         {/* Content Section */}
@@ -217,18 +227,12 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pt-2">
             <button
-              onClick={() => setSelectedApp(app)}
-              className="flex-1 py-2 bg-white/5 text-white rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard border border-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
+              onClick={() => setSelectedApp({ ...app, isDummy })}
+              disabled={requested}
+              className="flex-1 py-2 bg-white/5 text-white rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/10 active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard border border-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
             >
               <FaRocket className="text-xs text-[#e11d74]" />
-              {copy.card.getTemplate || '获取应用'}
-            </button>
-            <button
-              onClick={() => setSelectedApp(app)}
-              className="flex-1 py-2 bg-brand-soft text-brand rounded-md text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-brand-pressed active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard border border-brand-line focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
-            >
-              <FaExternalLinkAlt className="text-[9px]" />
-              {copy.card.demo || '查看演示'}
+              {requested ? (copy.card.requested || '已登记') : isDummy ? (copy.card.reserve || '预约通知') : (copy.card.getTemplate || '登记意向')}
             </button>
           </div>
         </div>
@@ -245,7 +249,7 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
         {/* Header Section */}
         <div className="text-center space-y-6 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#e11d74]/10 border border-[#e11d74]/20 rounded-full">
-            <FaDollarSign className="text-[#e11d74] text-xs" />
+            <FaMagic className="text-[#e11d74] text-xs" />
             <span className="text-[10px] font-black text-[#e11d74] uppercase tracking-widest">{copy.hero.badge}</span>
           </div>
           <h1 className="text-5xl font-black text-white tracking-tighter leading-[0.9]">
@@ -254,26 +258,6 @@ export default function AppsStudio({ apiKey, locale = 'en' }) {
           <p className="text-white/40 text-sm font-medium leading-relaxed max-w-xl mx-auto">
             {copy.hero.subtitle}
           </p>
-        </div>
-
-        {/* Monetization Steps */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { icon: FaRocket, step: "01", title: copy.steps.deploy.title, body: copy.steps.deploy.body },
-            { icon: FaCreditCard, step: "02", title: copy.steps.collect.title, body: copy.steps.collect.body },
-            { icon: FaDollarSign, step: "03", title: copy.steps.keep.title, body: copy.steps.keep.body },
-          ].map(({ icon: Icon, step, title, body }) => (
-            <div key={step} className="flex items-start gap-4 bg-surface-glass/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-[border-color,background-color] duration-fast ease-standard">
-              <div className="w-12 h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center text-[#e11d74] border border-white/5">
-                <Icon className="text-lg" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{copy.steps.stepLabel} {step}</p>
-                <h3 className="text-sm font-bold text-white mb-1.5">{title}</h3>
-                <p className="text-xs text-white/40 leading-relaxed font-medium">{body}</p>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Apps Grid */}

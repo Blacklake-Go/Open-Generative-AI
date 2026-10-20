@@ -1,9 +1,9 @@
 import ModelsScreenerPageClient from '@/components/models/ModelsScreenerPageClient';
 
 export const metadata = {
-  title: 'Model Screener — Real-Time AI Foundation Models Telemetry | SupDance',
+  title: 'Model Directory — Actual 24h Usage & Pricing | SupDance',
   description:
-    'Real-time invocation volume, generation throughput, latency benchmarks, and pricing matrix across the world’s leading generative foundation models.',
+    'Browse listed generative AI models with actual 24-hour call volume, success rate, latency, and pricing on SupDance.',
 };
 
 export default function ModelsPage() {

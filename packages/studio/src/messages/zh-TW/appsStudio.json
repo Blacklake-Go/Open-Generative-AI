@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "收入就緒模板",
-    "titleLine1": "啟動人工智慧應用程式。",
-    "titleLine2": "今天開始賺錢。",
-    "subtitle": "每個模板都是功能齊全、與 Stripe 整合的 AI SaaS，您可以在幾分鐘內完成部署。向用戶收費，保留收入——muapi 負責處理人工智慧基礎設施。"
+    "badge": "應用模板預覽",
+    "titleLine1": "探索 AI 應用模板，",
+    "titleLine2": "上線時第一時間體驗。",
+    "subtitle": "瀏覽應用概念與模板。部分應用尚未在 SupDance 開放，登記意向上線時即可收到通知。"
   },
   "steps": {
     "stepLabel": "步",
@@ -22,21 +22,24 @@
   },
   "card": {
     "templateFallback": "範本",
-    "github": "吉圖布",
-    "demo": "示範"
+    "github": "GitHub 儲存庫",
+    "demo": "即將上線",
+    "reserve": "預約通知",
+    "getTemplate": "登記意向",
+    "requested": "已登記"
   },
   "footer": {
-    "moreComingSoon": "Muapi 生態系統 — 更多範本即將推出"
+    "moreComingSoon": "SupDance 應用生態 — 更多應用正在籌備中"
   },
   "modal": {
-    "deployTitle": "部署{appName}",
-    "body": "輸入您的詳細信息，我們將向您發送 {appName} 模板以及設定說明，以便您可以立即部署並開始賺錢。",
-    "sending": "正在發送詳細資訊...",
-    "getTemplate": "取得模板",
-    "maybeLater": "也許稍後"
+    "deployTitle": "登記 {appName} 意向",
+    "body": "此應用尚未在 SupDance 完整開放。留下意向後，我們會在上線時通知您。",
+    "sending": "正在登記...",
+    "getTemplate": "登記意向",
+    "maybeLater": "稍後再說"
   },
   "toast": {
-    "requestSuccess": "知道了！我們很快就會向您發送模板詳細資訊。",
-    "requestError": "未能登記興趣。請稍後重試。"
+    "requestSuccess": "已登記，應用上線時我們會通知您。",
+    "requestError": "登記意向失敗，請稍後重試。"
   }
 }

@@ -1,173 +1,236 @@
 'use client';
 
-import React from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import {
-  BarChart3,
   Activity,
-  Layers,
-  Zap,
-  Globe,
-  Shield,
   ArrowRight,
-  TrendingUp,
+  BarChart3,
   Cpu,
+  Layers,
+  RefreshCw,
+  Zap,
 } from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
 import ModelScreenerTable from './ModelScreenerTable';
-import SparklineChart from './SparklineChart';
 import ModelBrandLogo from './ModelBrandLogo';
-import {
-  SCREENER_MODELS,
-  getGlobalTelemetryStats,
-} from '@/lib/modelCenter/modelScreenerData';
+import { useModelDirectory } from '@/lib/hooks/useModelDirectory';
 
-function getHeroModelTelemetry(m, isChinese) {
-  if (!m) {
-    return { outputLabel: isChinese ? '24h 调用' : '24h Calls', outputValue: '--', latencyDisplay: '--' };
-  }
-  if (m.category === 'image') {
-    return {
-      outputLabel: isChinese ? '24h 出图' : '24h Images',
-      outputValue: isChinese ? `${(m.totalGenerations / 10000).toFixed(1)}万 张` : `${(m.totalGenerations / 1000000).toFixed(2)}M imgs`,
-      latencyDisplay: isChinese ? `渲染: ${(m.latencyMs / 1000).toFixed(1)}s` : `Render: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-  if (m.category === 'video') {
-    return {
-      outputLabel: isChinese ? '24h 成片' : '24h Videos',
-      outputValue: isChinese ? `${(m.totalGenerations / 10000).toFixed(1)}万 段` : `${(m.totalGenerations / 1000000).toFixed(2)}M vids`,
-      latencyDisplay: isChinese ? `成片: ${(m.latencyMs / 1000).toFixed(1)}s` : `Render: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-  if (m.category === 'audio') {
-    return {
-      outputLabel: isChinese ? '24h 编曲' : '24h Tracks',
-      outputValue: isChinese ? `${(m.totalGenerations / 10000).toFixed(1)}万 首` : `${(m.totalGenerations / 1000).toFixed(0)}k tracks`,
-      latencyDisplay: isChinese ? `全曲: ${(m.latencyMs / 1000).toFixed(1)}s` : `Track: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-  return {
-    outputLabel: isChinese ? '24h 推理' : '24h Invocations',
-    outputValue: isChinese ? `${(m.calls24h / 10000).toFixed(1)}万 次` : `${(m.calls24h / 1000000).toFixed(2)}M req`,
-    latencyDisplay: isChinese ? `首字: ${m.ttftMs || 110}ms` : `TTFT: ${m.ttftMs || 110}ms`,
-  };
+function formatCalls(value) {
+  const count = Number(value);
+  if (!Number.isFinite(count) || count < 0) return '—';
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(2)}M`;
+  return count.toLocaleString('en-US');
+}
+
+function formatLatency(value) {
+  const ms = Number(value);
+  if (!Number.isFinite(ms) || ms <= 0) return '—';
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
+  return `${Math.round(ms)}ms`;
+}
+
+function formatPrice(model, isChinese) {
+  if (model?.pricingType === 'free') return isChinese ? '免费' : 'Free';
+  const price = Number(model?.creditsPrice);
+  if (Number.isFinite(price) && price > 0) return isChinese ? `${price} 算力点起` : `${price} credits from`;
+  return isChinese ? '按量计费' : 'Usage-based';
 }
 
 export default function ModelsScreenerPageClient({ locale = 'zh-CN' }) {
   const isChinese = Boolean(locale?.includes('zh'));
-  const globalStats = getGlobalTelemetryStats();
+  const { models, telemetry, telemetryById, loading, error, reload } = useModelDirectory({ range: '24h' });
 
-  const heroModels = [
-    SCREENER_MODELS.find((m) => m.id === 'flux-dev'),
-    SCREENER_MODELS.find((m) => m.id === 'kling-v2.6-pro-t2v'),
-    SCREENER_MODELS.find((m) => m.id === 'suno-create-music'),
-    SCREENER_MODELS.find((m) => m.id === 'deepseek-v3'),
-  ].filter(Boolean);
+  const activeById = useMemo(() => {
+    const map = new Map();
+    for (const model of models) {
+      if (model.id) map.set(String(model.id), model);
+      if (model.slug) map.set(String(model.slug), model);
+    }
+    return map;
+  }, [models]);
+
+  const topModels = useMemo(() => {
+    const ranked = telemetry.models
+      .map((item) => ({ stats: item, model: activeById.get(String(item.id)) }))
+      .filter((item) => item.model)
+      .slice(0, 4);
+    if (ranked.length > 0) return ranked;
+    return models.slice(0, 4).map((model) => ({ stats: null, model }));
+  }, [telemetry.models, activeById, models]);
+
+  const kpi = telemetry.kpi || {};
+  const summaryCards = [
+    {
+      label: isChinese ? '24h 总调用' : '24h calls',
+      value: loading ? '…' : error ? '—' : formatCalls(kpi.totalCalls),
+      icon: BarChart3,
+    },
+    {
+      label: isChinese ? '成功率' : 'Success rate',
+      value: loading ? '…' : error ? '—' : Number(kpi.totalCalls) > 0 ? `${Number(kpi.successRate || 0).toFixed(1)}%` : '—',
+      icon: Activity,
+    },
+    {
+      label: isChinese ? '活跃模型' : 'Active models',
+      value: loading ? '…' : error ? '—' : String(kpi.activeModelsCount || 0),
+      icon: Layers,
+    },
+    {
+      label: isChinese ? 'P90 耗时' : 'P90 latency',
+      value: loading ? '…' : error ? '—' : formatLatency(kpi.p90DurationMs),
+      icon: Zap,
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#07080c] text-white selection:bg-[#3772FF]/40 selection:text-white relative overflow-x-hidden font-sans">
+    <div className="relative min-h-screen overflow-x-hidden bg-canvas font-sans text-ink selection:bg-brand/30">
       <StudioHeader locale={locale} activeTab="models" className="relative z-40" />
 
-      {/* 空间暗夜背景氛围光源 */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1100px] h-[500px] bg-gradient-to-b from-[#3772FF]/12 via-[#00f5d4]/5 to-transparent blur-[140px] rounded-full" />
-        <div className="absolute top-[800px] -left-32 w-[600px] h-[600px] bg-[#e11d74]/5 blur-[140px] rounded-full" />
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 h-[500px] w-[1100px] -translate-x-1/2 rounded-full bg-gradient-to-b from-brand/10 via-brand/5 to-transparent blur-[140px]" />
       </div>
 
-      <main className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 pt-8 pb-24">
-        {/* 头部标题与全网遥测总揽 */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 pb-6 border-b border-white/[0.08]">
+      <main className="relative z-10 mx-auto max-w-[1440px] px-4 pb-24 pt-8 sm:px-6 lg:px-12">
+        <div className="mb-10 flex flex-col justify-between gap-6 border-b border-line pb-6 lg:flex-row lg:items-end">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#00f5d4] mb-3">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>{isChinese ? '全球大模型实时遥测看板' : 'Global Model Real-time Telemetry'}</span>
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-mono text-brand">
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span>{isChinese ? '真实调用统计 · 24h' : 'Actual usage · 24h'}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-              {isChinese ? '模型总揽看板' : 'Model Screener'}
+            <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl lg:text-5xl">
+              {isChinese ? '模型总览' : 'Model Directory'}
             </h1>
-            <p className="text-xs sm:text-sm text-white/60 mt-2 max-w-2xl leading-relaxed">
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-muted sm:text-sm">
               {isChinese
-                ? '全站聚合全球主流多模态 AI 基座，提供时调用量、日调用量、周、月维度全景对比，实时追踪生图数、长尾时延与费率标准。'
-                : 'Real-time telemetry, invocation volumes, generation throughput, and pricing matrix across all foundation models.'}
+                ? '已上架模型与过去 24 小时的调用量、成功率、耗时和价格。所有统计均来自实际生成任务记录。'
+                : 'Listed models with actual 24-hour calls, success rate, latency, and pricing from real generation records.'}
             </p>
           </div>
 
-          {/* 全网宏观指标卡 */}
-          <div className="flex items-center gap-6 font-mono text-xs">
-            <div className="bg-[#0f1118] border border-white/[0.08] rounded-xl px-4 py-3">
-              <span className="text-white/40 block text-[10px] uppercase">{isChinese ? '24h 全网总调用' : '24h Total Calls'}</span>
-              <span className="text-lg font-black text-white font-mono">{globalStats.totalCalls24h}</span>
-              <span className="text-[10px] text-emerald-400 block font-semibold">{globalStats.totalCallsDelta}</span>
-            </div>
-            <div className="bg-[#0f1118] border border-white/[0.08] rounded-xl px-4 py-3">
-              <span className="text-white/40 block text-[10px] uppercase">{isChinese ? '累计生成产出' : 'Total Outputs'}</span>
-              <span className="text-lg font-black text-white font-mono">{globalStats.totalGenerations}</span>
-              <span className="text-[10px] text-emerald-400 block font-semibold">{globalStats.totalGenerationsDelta}</span>
-            </div>
+          <div className="grid grid-cols-2 gap-3 font-mono text-xs sm:grid-cols-4">
+            {summaryCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div key={card.label} className="min-w-[126px] rounded-xl border border-line bg-surface px-4 py-3">
+                  <span className="flex items-center gap-1.5 text-[10px] uppercase text-ink-muted">
+                    <Icon className="h-3 w-3 text-brand" />
+                    {card.label}
+                  </span>
+                  <span className="mt-1 block text-lg font-black text-ink">{card.value}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* 4 组旗舰模型实时走势卡 */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left mb-12">
-          {heroModels.map((m) => {
-            const modelUrl = isChinese ? `/zh/models/${m.id}` : `/models/${m.id}`;
-            const telem = getHeroModelTelemetry(m, isChinese);
-            return (
-              <Link
-                key={m.id}
-                href={modelUrl}
-                className="bg-[#12141a] border border-white/10 hover:border-white/25 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 shadow-elevation-2 flex flex-col justify-between group cursor-pointer"
+        <div className="mb-12">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-ink">{isChinese ? '24h 调用领先模型' : 'Most used in 24h'}</h2>
+              <p className="mt-1 text-xs text-ink-muted">
+                {isChinese ? '按实际调用量排序，仅展示已上架模型。' : 'Ranked by actual calls among listed models.'}
+              </p>
+            </div>
+            <Link href="#model-table" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
+              {isChinese ? '查看全部' : 'View all'}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {error ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-xs text-ink-muted">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={reload}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 font-bold text-ink-on-accent"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2.5">
-                      <ModelBrandLogo
-                        providerId={m.providerId}
-                        provider={m.provider}
-                        modelId={m.id}
-                        size="md"
-                      />
-                      <div>
-                        <div className="text-sm font-bold text-white group-hover:text-[#00f5d4] transition-colors leading-tight">
-                          {m.name}
+                <RefreshCw className="h-3.5 w-3.5" />
+                {isChinese ? '重试' : 'Retry'}
+              </button>
+            </div>
+          ) : loading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((item) => (
+                <div key={item} className="h-40 animate-pulse rounded-2xl border border-line bg-surface" />
+              ))}
+            </div>
+          ) : topModels.length === 0 ? (
+            <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
+              <Cpu className="mx-auto h-6 w-6 text-ink-muted" />
+              <p className="mt-3 text-sm font-semibold text-ink">
+                {isChinese ? '暂时没有可展示的模型' : 'No models available yet'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
+              {topModels.map(({ stats, model }) => {
+                const modelUrl = isChinese
+                  ? `/zh/models/${encodeURIComponent(model.id)}`
+                  : `/models/${encodeURIComponent(model.id)}`;
+                return (
+                  <Link
+                    key={model.id}
+                    href={modelUrl}
+                    className="group flex flex-col justify-between rounded-2xl border border-line bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand/40"
+                  >
+                    <div>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <ModelBrandLogo
+                            providerId={model.provider}
+                            provider={model.provider}
+                            modelId={model.id}
+                            size="md"
+                          />
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-bold leading-tight text-ink transition-colors group-hover:text-brand">
+                              {model.displayName || model.name}
+                            </div>
+                            <div className="truncate text-[11px] font-mono text-ink-muted">
+                              {model.provider || 'SupDance'}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-[11px] font-mono text-white/40">
-                          {m.symbol}
-                        </div>
+                        <span className="shrink-0 rounded-full border border-line bg-canvas px-2 py-0.5 text-[10px] font-semibold text-ink-muted">
+                          {model.category || 'model'}
+                        </span>
+                      </div>
+
+                      <div className="text-2xl font-black tracking-tight text-ink">{formatPrice(model, isChinese)}</div>
+                      <div className="mt-2 flex items-center justify-between text-[11px] text-ink-muted">
+                        <span>
+                          {isChinese ? '24h 调用' : '24h calls'}:{' '}
+                          <strong className="font-semibold text-ink">{stats ? formatCalls(stats.totalCalls) : '—'}</strong>
+                        </span>
+                        <span className={stats && Number(stats.totalCalls) > 0 && stats.successRate >= 95 ? 'text-emerald-500' : 'text-ink-muted'}>
+                          {stats && Number(stats.totalCalls) > 0 ? `${Number(stats.successRate).toFixed(1)}%` : (isChinese ? '暂无记录' : 'No calls')}
+                        </span>
                       </div>
                     </div>
 
-                    <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
-                      {m.callsChange24h}
-                    </span>
-                  </div>
-
-                  <div className="text-2xl font-black text-white font-mono tracking-tight mt-1 whitespace-nowrap">
-                    {isChinese ? m.priceRate : m.priceRateEn}
-                  </div>
-                  <div className="text-xs text-white/50 mt-1.5 font-mono flex items-center justify-between">
-                    <span>{telem.outputLabel}: <strong className="text-white/80 font-semibold">{telem.outputValue}</strong></span>
-                    <span className="text-emerald-400 font-medium">{telem.latencyDisplay}</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 flex items-center justify-end">
-                  <SparklineChart
-                    data={m.sparkline}
-                    width={120}
-                    height={32}
-                    isPositive={m.isPositive}
-                  />
-                </div>
-              </Link>
-            );
-          })}
+                    <div className="mt-4 flex items-center justify-between border-t border-line pt-3 text-[11px] text-ink-muted">
+                      <span>{isChinese ? '平均耗时' : 'Avg latency'}: {stats ? formatLatency(stats.avgDurationMs) : '—'}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-brand transition group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* 核心 TradingView 风格模型遥测总揽表格 */}
-        <div className="mb-16">
-          <ModelScreenerTable locale={locale} />
+        <div id="model-table" className="mb-16 scroll-mt-24">
+          <ModelScreenerTable
+            locale={locale}
+            models={models}
+            telemetry={telemetry}
+            telemetryById={telemetryById}
+            loading={loading}
+            error={error}
+            onRetry={reload}
+          />
         </div>
       </main>
     </div>

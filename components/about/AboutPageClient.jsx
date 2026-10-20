@@ -1,31 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
   Shield,
   Zap,
-  Globe,
   Cpu,
-  Layers,
   Search,
-  CheckCircle2,
-  TrendingUp,
-  TrendingDown,
   ArrowRight,
   ChevronRight,
-  BookOpen,
-  Film,
-  Image as ImageIcon,
-  Music,
   Boxes,
-  ExternalLink,
-  Activity,
   BarChart3,
-  Server,
-  Clock,
-  Compass,
   SlidersHorizontal,
 } from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
@@ -33,80 +18,15 @@ import { SpatialBackground } from '@/components/spatial';
 import FigmaBrandSlider from './FigmaBrandSlider';
 import ModelScreenerTable from '@/components/models/ModelScreenerTable';
 import ModelBrandLogo from '@/components/models/ModelBrandLogo';
-import SparklineChart from '@/components/models/SparklineChart';
 import AboutFooter from './AboutFooter';
-import { cn } from '@/lib/utils';
-import {
-  SCREENER_MODELS,
-  getGlobalTelemetryStats,
-} from '@/lib/modelCenter/modelScreenerData';
-
-// 针对不同模态定制专业、自然、高可读性的遥测指标展示
-function getHeroModelTelemetry(m, isChinese) {
-  if (!m) {
-    return {
-      outputLabel: isChinese ? '24h 调用' : '24h Calls',
-      outputValue: '--',
-      latencyDisplay: '--',
-    };
-  }
-
-  if (m.category === 'image') {
-    return {
-      outputLabel: isChinese ? '24h 出图' : '24h Images',
-      outputValue: isChinese
-        ? `${(m.totalGenerations / 10000).toFixed(1)}万 张`
-        : `${(m.totalGenerations / 1000000).toFixed(2)}M imgs`,
-      latencyDisplay: isChinese
-        ? `渲染: ${(m.latencyMs / 1000).toFixed(1)}s`
-        : `Render: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-
-  if (m.category === 'video') {
-    return {
-      outputLabel: isChinese ? '24h 成片' : '24h Videos',
-      outputValue: isChinese
-        ? `${(m.totalGenerations / 10000).toFixed(1)}万 段`
-        : `${(m.totalGenerations / 1000000).toFixed(2)}M vids`,
-      latencyDisplay: isChinese
-        ? `成片: ${(m.latencyMs / 1000).toFixed(1)}s`
-        : `Render: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-
-  if (m.category === 'audio') {
-    return {
-      outputLabel: isChinese ? '24h 编曲' : '24h Tracks',
-      outputValue: isChinese
-        ? `${(m.totalGenerations / 10000).toFixed(1)}万 首`
-        : `${(m.totalGenerations / 1000).toFixed(0)}k tracks`,
-      latencyDisplay: isChinese
-        ? `全曲: ${(m.latencyMs / 1000).toFixed(1)}s`
-        : `Track: ${(m.latencyMs / 1000).toFixed(1)}s`,
-    };
-  }
-
-  // LLM / 多模态推理
-  return {
-    outputLabel: isChinese ? '24h 推理' : '24h Invocations',
-    outputValue: isChinese
-      ? `${(m.calls24h / 10000).toFixed(1)}万 次`
-      : `${(m.calls24h / 1000000).toFixed(2)}M req`,
-    latencyDisplay: isChinese
-      ? `首字: ${m.ttftMs || 110}ms`
-      : `TTFT: ${m.ttftMs || 110}ms`,
-  };
-}
-
 // 使用流程 4 步 (极简有力)
 const HOW_IT_WORKS_STEPS = [
   {
     step: 'Step 1',
     title: 'Model Discovery',
     titleZh: '全景选型',
-    desc: 'Compare throughput, latency, and costs across leading foundation models.',
-    descZh: '综合比对时延、生图数与费率，秒级锁定最佳基座。',
+    desc: 'Compare listed models by actual usage, latency, and pricing.',
+    descZh: '按真实调用量、时延与价格对比已上架模型。',
     icon: Search,
   },
   {
@@ -121,73 +41,22 @@ const HOW_IT_WORKS_STEPS = [
     step: 'Step 3',
     title: 'Instant Inference',
     titleZh: '极速推理',
-    desc: 'Global edge routing with sub-second queueing and cinematic output.',
-    descZh: '全球专线并发撮合，秒级完成电影级高画质渲染。',
+    desc: 'Run the selected model in the Studio with the parameters you choose.',
+    descZh: '在 Studio 中按所选参数发起生成任务。',
     icon: Zap,
   },
   {
     step: 'Step 4',
     title: 'Pipeline Export',
     titleZh: '资产交付',
-    desc: 'Export high-res media directly to workflow nodes or Open APIs.',
-    descZh: '高保真媒体一键沉淀，无缝串接生产管道与 API。',
+    desc: 'Download the generated media or continue iterating in the Studio.',
+    descZh: '下载生成结果，或继续在 Studio 中迭代。',
     icon: Boxes,
-  },
-];
-
-// 前沿模型深度研报指南
-const LEARN_CARDS = [
-  {
-    id: 'learn-1',
-    badge: 'MODEL ARCHITECTURE',
-    title: 'FLUX.1 [dev] rectified flow transformer & 4K commercial typography',
-    titleZh: '深入解析 FLUX.1 [dev] 架构与 4K 超清商业排印实操',
-    author: 'SupDance Research Lab',
-    date: '2026-10-08',
-    imageBg: 'from-[#3772FF]/30 to-[#00f5d4]/20',
-  },
-  {
-    id: 'learn-2',
-    badge: 'CINEMATIC VIDEO',
-    title: 'Kling 2.6 Pro cinematic camera trajectories & physical consistency',
-    titleZh: '快手可灵 Kling 2.6 Pro 电影级镜头运动与真实物理控制',
-    author: 'AI Film Collective',
-    date: '2026-10-06',
-    imageBg: 'from-[#e11d74]/30 to-[#3772FF]/20',
-  },
-  {
-    id: 'learn-3',
-    badge: 'EDGE TELEMETRY',
-    title: 'Achieving sub-second failover across 28 global edge nodes',
-    titleZh: '揭秘全球 28 个边缘节点毫秒级故障自动漂移架构',
-    author: 'Infrastructure Team',
-    date: '2026-10-04',
-    imageBg: 'from-[#00f5d4]/30 to-[#10b981]/20',
   },
 ];
 
 export default function AboutPageClient({ locale = 'en' }) {
   const isChinese = Boolean(locale?.includes('zh'));
-  const [emailInput, setEmailInput] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  // 取 4 个旗舰模型做 Hero 实时卡片
-  const heroModels = [
-    SCREENER_MODELS.find((m) => m.id === 'flux-dev'),
-    SCREENER_MODELS.find((m) => m.id === 'kling-v2.6-pro-t2v'),
-    SCREENER_MODELS.find((m) => m.id === 'suno-create-music'),
-    SCREENER_MODELS.find((m) => m.id === 'deepseek-v3'),
-  ].filter(Boolean);
-
-  const globalStats = getGlobalTelemetryStats();
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (emailInput.trim()) {
-      setSubscribed(true);
-    }
-  };
-
   const studioHref = isChinese ? '/zh/studio' : '/studio';
 
   return (
@@ -240,8 +109,8 @@ export default function AboutPageClient({ locale = 'en' }) {
               {/* 极简副标 (无废话，直奔主题) */}
               <p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed mb-8">
                 {isChinese
-                  ? '聚合 FLUX、可灵、Suno、DeepSeek 官方通道。毫秒级自愈漂移、确定性渲染保障与高精度实时全景看板。'
-                  : 'Aggregating FLUX, Kling, Suno, and DeepSeek official channels with sub-second failover and high-precision telemetry.'}
+                  ? '聚合 FLUX、可灵、Suno、DeepSeek 等基础模型，提供已上架模型清单与过去 24 小时的真实调用统计。'
+                  : 'Aggregating foundation models such as FLUX, Kling, Suno, and DeepSeek, with listed models and actual 24-hour usage data.'}
               </p>
 
               {/* 胶囊按钮群 */}
@@ -282,7 +151,7 @@ export default function AboutPageClient({ locale = 'en' }) {
                   <div className="text-xl font-black text-white tracking-tight">SUPDANCE MODEL HUB</div>
                   <div className="text-[11px] font-mono text-emerald-400 mt-1 flex items-center gap-1.5 justify-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{isChinese ? '45+ 旗舰模型 · 实时全域遥测' : '45+ Foundation Models · Live Sync'}</span>
+                    <span>{isChinese ? '已上架模型 · 真实调用数据' : 'Listed Models · Actual Usage'}</span>
                   </div>
                 </div>
 
@@ -294,7 +163,7 @@ export default function AboutPageClient({ locale = 'en' }) {
                   <ModelBrandLogo providerId="bfl" size="sm" showRing={false} />
                   <span className="text-xs font-bold text-white">FLUX.1 [dev]</span>
                   <span className="text-xs font-mono text-emerald-400 font-semibold">
-                    {heroModels.find((m) => m.id === 'flux-dev')?.callsChange24h || '+18.4%'}
+                    {isChinese ? '查看模型' : 'View model'}
                   </span>
                 </Link>
 
@@ -306,7 +175,7 @@ export default function AboutPageClient({ locale = 'en' }) {
                   <ModelBrandLogo providerId="kuaishou" size="sm" showRing={false} />
                   <span className="text-xs font-bold text-white">Kling 2.6 Pro</span>
                   <span className="text-xs font-mono text-emerald-400 font-semibold">
-                    {heroModels.find((m) => m.id === 'kling-v2.6-pro-t2v')?.callsChange24h || '+24.1%'}
+                    {isChinese ? '查看模型' : 'View model'}
                   </span>
                 </Link>
 
@@ -318,74 +187,13 @@ export default function AboutPageClient({ locale = 'en' }) {
                   <ModelBrandLogo providerId="suno" size="sm" showRing={false} />
                   <span className="text-xs font-bold text-white">Suno V3.5</span>
                   <span className="text-[11px] font-mono text-emerald-400 font-semibold">
-                    {heroModels.find((m) => m.id === 'suno-create-music')?.callsChange24h || '+14.6%'}
+                    {isChinese ? '查看模型' : 'View model'}
                   </span>
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* ========================================================= */}
-          {/* MODULE 03: 4 组旗舰模型实时行情卡片 (集成官方品牌标识与高质感动效) */}
-          {/* ========================================================= */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left mt-12">
-            {heroModels.map((m) => {
-              const modelUrl = isChinese ? `/zh/models/${m.id}` : `/models/${m.id}`;
-              const telem = getHeroModelTelemetry(m, isChinese);
-              return (
-                <Link
-                  key={m.id}
-                  href={modelUrl}
-                  className="bg-[#12141a] border border-white/10 hover:border-white/30 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_35px_rgba(55,114,255,0.18)] shadow-elevation-2 flex flex-col justify-between group cursor-pointer"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        {/* 官方高清矢量品牌微标 */}
-                        <ModelBrandLogo
-                          providerId={m.providerId}
-                          provider={m.provider}
-                          modelId={m.id}
-                          size="md"
-                        />
-                        <div>
-                          <div className="text-sm font-bold text-white group-hover:text-[#00f5d4] transition-colors leading-tight">
-                            {m.name}
-                          </div>
-                          <div className="text-[11px] font-mono text-white/40">
-                            {m.symbol}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 涨跌幅胶囊 */}
-                      <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
-                        {m.callsChange24h}
-                      </span>
-                    </div>
-
-                    <div className="text-2xl font-black text-white font-mono tracking-tight mt-1">
-                      {isChinese ? m.priceRate : m.priceRateEn}
-                    </div>
-                    <div className="text-xs text-white/50 mt-1.5 font-mono flex items-center justify-between">
-                      <span>{telem.outputLabel}: <strong className="text-white/80 font-semibold">{telem.outputValue}</strong></span>
-                      <span className="text-emerald-400 font-medium">{telem.latencyDisplay}</span>
-                    </div>
-                  </div>
-
-                  {/* 丝滑贝塞尔走势折线图 */}
-                  <div className="pt-4 flex items-center justify-end">
-                    <SparklineChart
-                      data={m.sparkline}
-                      width={120}
-                      height={32}
-                      isPositive={m.isPositive}
-                    />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
         </section>
 
         {/* ========================================================= */}
@@ -398,15 +206,15 @@ export default function AboutPageClient({ locale = 'en' }) {
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#00f5d4] mb-2.5">
                 <BarChart3 className="w-3.5 h-3.5" />
-                <span>{isChinese ? '全链路多模态实时驱动' : 'Real-time Telemetry Engine'}</span>
+                <span>{isChinese ? '真实调用数据' : 'Actual Usage Data'}</span>
               </div>
               <h2 className="text-3xl font-extrabold text-white tracking-tight">
                 {isChinese ? '模型总揽看板 (Model Screener)' : 'Foundation Model Screener'}
               </h2>
               <p className="text-xs sm:text-sm text-white/60 mt-1">
                 {isChinese
-                  ? '多时间维度指标横向对比，实时追踪调用量、生图数与平均响应时延。'
-                  : 'Inspect live volume, generation outputs, and response latency across all foundation models.'}
+                  ? '按实际调用量、成功率与平均耗时对比已上架模型。'
+                  : 'Compare listed models by actual call volume, success rate, and average latency.'}
               </p>
             </div>
 
@@ -448,17 +256,17 @@ export default function AboutPageClient({ locale = 'en' }) {
 
                 {/* 外环浮雕数据标签 */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#161820] border border-[#00f5d4]/40 text-[11px] font-bold text-[#00f5d4] shadow-lg whitespace-nowrap font-mono">
-                  28+ {isChinese ? '全球边缘专线节点' : 'Global Edge Nodes'}
+                  {isChinese ? '多区域基础设施' : 'Multi-region infrastructure'}
                 </div>
 
                 {/* 中环浮雕数据标签 */}
                 <div className="absolute bottom-4 -left-4 px-3 py-1 rounded-full bg-[#161820] border border-[#3772FF]/40 text-[11px] font-bold text-[#3772FF] shadow-lg whitespace-nowrap font-mono">
-                  {isChinese ? '3,820万+ 24h实时调用' : '38.2M+ 24h Invocations'}
+                  {isChinese ? '24h 真实调用统计' : 'Actual 24h usage'}
                 </div>
 
                 {/* 内环浮雕数据标签 */}
                 <div className="absolute bottom-4 -right-4 px-3 py-1 rounded-full bg-[#161820] border border-[#e11d74]/40 text-[11px] font-bold text-[#e11d74] shadow-lg whitespace-nowrap font-mono">
-                  45+ {isChinese ? '前沿旗舰模型' : 'Foundation Models'}
+                  {isChinese ? '已上架模型目录' : 'Listed model directory'}
                 </div>
               </div>
             </div>
@@ -512,12 +320,12 @@ export default function AboutPageClient({ locale = 'en' }) {
                   </div>
                   <div>
                     <h4 className="text-base font-bold text-white">
-                      {isChinese ? '极速可用 (Speed & SLA)' : 'Speed & SLA'}
+                      {isChinese ? '稳定可用 (Reliability)' : 'Reliability'}
                     </h4>
                     <p className="text-xs sm:text-sm text-white/60 leading-relaxed mt-0.5">
                       {isChinese
-                        ? '全球 28+ 边缘专线节点与 99.99% 系统高可用保障。'
-                        : '28+ global edge nodes with 99.99% availability.'}
+                        ? '以可用性监控与故障隔离保障生产连续性。'
+                        : 'Availability monitoring and fault isolation for production continuity.'}
                     </p>
                   </div>
                 </div>
@@ -533,8 +341,8 @@ export default function AboutPageClient({ locale = 'en' }) {
                     </h4>
                     <p className="text-xs sm:text-sm text-white/60 leading-relaxed mt-0.5">
                       {isChinese
-                        ? '联通 Studio 创意工坊、节点画布与高频 Open API。'
-                        : 'Unifying Studio canvases, visual workflows, and open APIs.'}
+                        ? '联通 Studio 创意工坊、节点画布与多模型接入。'
+                        : 'Unifying Studio canvases, visual workflows, and model access.'}
                     </p>
                   </div>
                 </div>
@@ -595,56 +403,25 @@ export default function AboutPageClient({ locale = 'en' }) {
         </section>
 
         {/* ========================================================= */}
-        {/* MODULE 08: LEARN & RESEARCH (前沿模型研报与指南)            */}
+        {/* MODULE 08: COMMUNITY & RESEARCH CTA                       */}
         {/* ========================================================= */}
         <section id="learn-and-earn" className="py-20 border-t border-white/[0.06]">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <h2 className="text-3xl font-extrabold text-white tracking-tight">
-                {isChinese ? '模型研报与实战指南' : 'Research & Model Guides'}
-              </h2>
-              <p className="text-xs sm:text-sm text-white/70 mt-1">
-                {isChinese
-                  ? '掌握全球主流大模型提示词技巧与工业级工程实践。'
-                  : 'Master prompt engineering and production workflows for foundation models.'}
-              </p>
-            </div>
+          <div className="rounded-3xl border border-white/10 bg-[#12141a] p-8 text-center sm:p-12">
+            <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+              {isChinese ? '模型研报与实战指南' : 'Research & Model Guides'}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-xs leading-relaxed text-white/60 sm:text-sm">
+              {isChinese
+                ? '系统化的模型指南与实战文章仍在整理中。欢迎先加入社区，获取模型更新与产品公告。'
+                : 'Structured model guides and practical articles are still being prepared. Join the community for model updates and product announcements.'}
+            </p>
             <Link
               href={isChinese ? '/zh/community' : '/community'}
-              className="text-xs sm:text-sm text-[#3772FF] hover:text-white transition-colors flex items-center gap-1 group font-semibold cursor-pointer"
+              className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-[#3772FF] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#2e62de]"
             >
-              <span>{isChinese ? '查看全部技术文章' : 'See all articles'}</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              {isChinese ? '前往社区' : 'Visit community'}
+              <ChevronRight className="h-4 w-4" />
             </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {LEARN_CARDS.map((art) => (
-              <div
-                key={art.id}
-                className="group bg-[#12141a] border border-white/10 hover:border-white/30 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-elevation-2 flex flex-col cursor-pointer"
-              >
-                <div className={cn('relative h-44 overflow-hidden bg-gradient-to-br', art.imageBg)}>
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.08),transparent_70%)] group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#3772FF] text-white font-mono shadow-sm">
-                      {art.badge}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-[#00f5d4] transition-colors leading-snug mb-4">
-                    {isChinese ? art.titleZh : art.title}
-                  </h3>
-
-                  <div className="flex items-center justify-between text-xs text-white/40 pt-4 border-t border-white/[0.04] font-mono">
-                    <span>{art.author}</span>
-                    <span>{art.date}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 

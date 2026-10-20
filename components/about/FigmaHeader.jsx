@@ -14,12 +14,9 @@ import {
   Coins,
   Shield,
   Layers,
-  ExternalLink,
   Menu,
   X,
   Check,
-  TrendingUp,
-  User,
   LogIn,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -144,12 +141,14 @@ export default function FigmaHeader({ locale = 'zh' }) {
                 {isChinese ? '灵感广场' : 'Spot'}
               </Link>
 
-              {/* BTC/USDT -> 系统运行指标药丸 */}
-              <div className="px-3 py-1 rounded-full bg-[#101216] border border-white/10 text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="font-bold">BTC/USDT</span>
-                <span className="text-[11px] text-white/50">99.99%</span>
-              </div>
+              {/* 模型目录入口 */}
+              <Link
+                href={isChinese ? '/zh/models' : '/models'}
+                className="px-3 py-1 rounded-full bg-[#101216] border border-white/10 text-xs font-mono text-white/70 hover:text-white hover:border-white/25 transition-colors flex items-center gap-1.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00f5d4]" />
+                <span className="font-bold">{isChinese ? '模型目录' : 'Models'}</span>
+              </Link>
 
               {/* Pages 下拉菜单 */}
               <div className="relative">

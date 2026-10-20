@@ -1,113 +1,120 @@
-import React from 'react';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, Boxes, Code2, Compass, Cpu, Shield } from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
-import SupplierMarquee from '@/components/call-api/SupplierMarquee';
-import PremiumFooter from '@/components/call-api/PremiumFooter';
-import InteractiveCanvasPreview from '@/components/call-api/InteractiveCanvasPreview';
-import StudioFeatureGrid from '@/components/call-api/StudioFeatureGrid';
-import CreativeGallery from '@/components/call-api/CreativeGallery';
 import { SpatialBackground } from '@/components/spatial';
 
 export const metadata = {
-  title: 'SupDance AI Studio | 新一代旗舰级生成式 AI 视觉创作平台',
-  description: '聚合全球顶尖生图与视频模型。无需管理多个平台，在统一专业画布中自由创作超写实人像、电影级分镜、商业海报与动态视觉。',
-  // 零入链的落地页：没有内部链接给它导权重，被爬到的只会是搜索引擎自己猜的。
+  title: 'Developer API — Coming Soon | SupDance',
+  description:
+    'SupDance developer API access is still in preparation. Public API keys, SDKs, and MCP integration are not available yet.',
   robots: { index: false, follow: false },
 };
 
-export default function CallApiPage() {
+export default function CallApiPage({ locale = 'en' }) {
+  const isChinese = Boolean(locale?.includes('zh'));
+  const studioHref = isChinese ? '/zh/studio' : '/studio';
+  const modelsHref = isChinese ? '/zh/models' : '/models';
+  const communityHref = isChinese ? '/zh/community' : '/community';
+
   return (
-    <div className="min-h-screen bg-obsidian text-ink selection:bg-brand-line selection:text-brand-hover relative overflow-x-hidden font-sans">
-      
-      {/* SupDance AI 空间光影视觉系统 (7层独立引擎) */}
-      <SpatialBackground variant="hero" />
+    <div className="relative min-h-screen overflow-x-hidden bg-[#07080c] font-sans text-white">
+      <StudioHeader locale={locale} activeTab="call-api" className="relative z-40" />
+      <SpatialBackground />
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        
-        {/* 1. 顶部全站统一固定导航栏 */}
-        <StudioHeader />
+      <main className="relative z-10 mx-auto flex max-w-[1100px] flex-col px-4 pb-24 pt-16 sm:px-6 lg:px-12">
+        <div className="mb-8 flex items-center gap-2 font-mono text-xs text-white/40">
+          <Link href={isChinese ? '/zh' : '/'} className="flex items-center gap-1.5 transition hover:text-white">
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {isChinese ? '返回首页' : 'Back home'}
+          </Link>
+          <span>/</span>
+          <span>{isChinese ? '开放平台' : 'Developer API'}</span>
+        </div>
 
-        {/* 2. Hero 极具视觉冲击力核心区 */}
-        <section id="hero" className="relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden">
-          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
-            
-            {/* 顶部动态亮点标签 */}
-            <div className="flex justify-center mb-6">
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-wash border border-brand-line text-xs text-ink backdrop-blur-md shadow-inner shadow-brand-soft">
-                <span className="flex h-2 w-2 rounded-full bg-brand animate-ping" />
-                <span className="text-brand-hover font-semibold">全新上线</span>
-                <span className="text-ink-subtle">|</span>
-                <span>FLUX.1 [pro] 1.1 Ultra 与 Midjourney v6.1 已入驻 Studio 工作台</span>
-                <svg className="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-
-            {/* 核心超级主标与副标 */}
-            <div className="text-center max-w-4xl mx-auto mb-10">
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
-                一个工作台 · 释放<br />
-                <span className="bg-gradient-to-r from-surface-inverse via-brand to-brand-active bg-clip-text text-transparent">
-                  全模态 AI 创意生产力
-                </span>
-              </h1>
-              <p className="text-lg sm:text-xl text-ink-muted font-normal leading-relaxed max-w-2xl mx-auto">
-                聚合全球顶尖生图与视频模型。无需在多个平台间频繁切换，在统一专业画布中自由创作超写实人像、电影级分镜、商业海报与动态视觉。
-              </p>
-            </div>
-
-            {/* CTA 操作组：直接引导至首页核心功能 */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-              <a
-                href="/studio"
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-brand-active to-blue-600 hover:from-brand hover:to-blue-500 text-ink font-bold text-sm tracking-wide shadow-elevation-3 shadow-brand-line hover:shadow-brand-line hover:-translate-y-0.5 transition-all flex items-center gap-2 btn-spatial-glow"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <span>立即进入 Studio 免费创作</span>
-              </a>
-
-              <a
-                href="/community"
-                className="px-7 py-4 rounded-xl bg-wash hover:bg-wash-strong text-ink font-semibold text-sm border border-line hover:border-line-strong backdrop-blur-md hover:-translate-y-0.5 transition-all flex items-center gap-2"
-              >
-                <svg className="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>探索社区精选大作 (10万+)</span>
-              </a>
-
-              <a
-                href="/pricing"
-                className="px-6 py-4 rounded-xl text-ink hover:text-ink font-medium text-sm transition-colors flex items-center gap-1.5"
-              >
-                <span>查看会员与算力方案</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-            </div>
-
-            {/* 核心交互体验区：生图预览与同款一键 Remix */}
-            <InteractiveCanvasPreview />
-
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-mono text-[#00f5d4]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00f5d4]" />
+            {isChinese ? '开发者 API · 筹备中' : 'Developer API · In preparation'}
           </div>
-        </section>
 
-        {/* 3. 【重点吸收】：全球顶尖生图与视觉模型无缝无限滑动跑马灯 */}
-        <SupplierMarquee />
+          <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
+            {isChinese ? '公开 API 尚未开放' : 'Public API access is not available yet'}
+          </h1>
+          <p className="mt-4 text-sm leading-relaxed text-white/60 sm:text-base">
+            {isChinese
+              ? '我们正在准备正式的开发者 API、API Key 管理与 SDK 接入能力。当前页面不提供申请入口，也没有可用的接口密钥或调用额度。'
+              : 'We are preparing the developer API, API key management, and SDK access. There is no application form, API key, or quota available on this page yet.'}
+          </p>
+        </div>
 
-        {/* 4. 深度结合首页 4 大工坊功能网格 */}
-        <StudioFeatureGrid />
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href={modelsHref}
+            className="group rounded-2xl border border-white/10 bg-[#101216] p-5 transition hover:border-white/25"
+          >
+            <Boxes className="h-5 w-5 text-[#00f5d4]" />
+            <h2 className="mt-4 text-sm font-bold">{isChinese ? '模型目录' : 'Model directory'}</h2>
+            <p className="mt-1 text-xs leading-relaxed text-white/50">
+              {isChinese ? '查看已上架模型与真实 24h 调用统计。' : 'Browse listed models with actual 24-hour usage.'}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#3772FF]">
+              {isChinese ? '前往模型目录' : 'View models'}
+              <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
 
-        {/* 5. 创作者社区精选作品流与一键同款 Remix */}
-        <CreativeGallery />
+          <Link
+            href={studioHref}
+            className="group rounded-2xl border border-white/10 bg-[#101216] p-5 transition hover:border-white/25"
+          >
+            <Cpu className="h-5 w-5 text-[#3772FF]" />
+            <h2 className="mt-4 text-sm font-bold">{isChinese ? 'Studio 工作台' : 'Studio workspace'}</h2>
+            <p className="mt-1 text-xs leading-relaxed text-white/50">
+              {isChinese ? '通过网页工作台直接使用已上架模型。' : 'Use listed models directly in the web workspace.'}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#3772FF]">
+              {isChinese ? '进入 Studio' : 'Open Studio'}
+              <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
 
-        {/* 6. 【高端奢华生图平台专属页脚】 */}
-        <PremiumFooter />
+          <Link
+            href={communityHref}
+            className="group rounded-2xl border border-white/10 bg-[#101216] p-5 transition hover:border-white/25"
+          >
+            <Compass className="h-5 w-5 text-[#e11d74]" />
+            <h2 className="mt-4 text-sm font-bold">{isChinese ? '社区与公告' : 'Community & updates'}</h2>
+            <p className="mt-1 text-xs leading-relaxed text-white/50">
+              {isChinese ? 'API 开放时会在社区与站内公告同步。' : 'API availability will be announced in the community.'}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#3772FF]">
+              {isChinese ? '前往社区' : 'Visit community'}
+              <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        </div>
 
-      </div>
+        <div className="mt-10 flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <Shield className="h-5 w-5 text-[#00f5d4]" />
+          <p className="flex-1 text-xs leading-relaxed text-white/50">
+            {isChinese
+              ? '在正式开放前，请勿通过非官方渠道购买或提交 API Key。'
+              : 'Until the official launch, please do not buy or submit API keys through unofficial channels.'}
+          </p>
+          <a
+            href={studioHref}
+            className="btn-spatial-glow inline-flex items-center gap-2 rounded-full bg-[#3772FF] px-5 py-2.5 text-xs font-bold text-white"
+          >
+            {isChinese ? '先去 Studio 创作' : 'Create in Studio'}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
+
+        <div className="mt-8 flex items-center gap-2 text-[11px] text-white/30">
+          <Code2 className="h-3.5 w-3.5" />
+          {isChinese ? '此页面不提供 API 文档或代码示例。' : 'This page does not provide API documentation or code samples.'}
+        </div>
+      </main>
     </div>
   );
 }

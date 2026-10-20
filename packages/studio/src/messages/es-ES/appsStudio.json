@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "Plantillas listas para generar ingresos",
-    "titleLine1": "INICIE UNA APLICACIÓN DE IA.",
-    "titleLine2": "COMIENCE A GANAR HOY.",
-    "subtitle": "Cada plantilla es un SaaS de IA integrado en Stripe y completamente funcional que puede implementar en minutos. Cobre a sus usuarios y conserve los ingresos: muapi se encarga de la infraestructura de IA."
+    "badge": "Vista previa de plantillas de apps",
+    "titleLine1": "EXPLORA PLANTILLAS DE APPS CON IA.",
+    "titleLine2": "ÚNETE A LA LISTA DE ESPERA.",
+    "subtitle": "Explora conceptos y plantillas de apps. Todavía no todas las apps están disponibles en SupDance; registra tu interés y te avisaremos cuando se publiquen."
   },
   "steps": {
     "stepLabel": "Paso",
@@ -23,20 +23,23 @@
   "card": {
     "templateFallback": "Plantilla",
     "github": "GitHub",
-    "demo": "Manifestación"
+    "demo": "Próximamente",
+    "reserve": "Avisadme",
+    "getTemplate": "Registrar interés",
+    "requested": "Registrado"
   },
   "footer": {
-    "moreComingSoon": "Ecosistema Muapi: próximamente habrá más plantillas"
+    "moreComingSoon": "Ecosistema de apps de SupDance: más apps en preparación"
   },
   "modal": {
-    "deployTitle": "Implementar {appName}",
-    "body": "Ingresa tus datos y te enviaremos la plantilla {appName} junto con instrucciones de configuración para que puedas implementar y comenzar a ganar de inmediato.",
-    "sending": "Enviando detalles...",
-    "getTemplate": "Obtener plantilla",
+    "deployTitle": "Registrar interés en {appName}",
+    "body": "Esta app aún no está disponible por completo en SupDance. Registra tu interés y te avisaremos cuando se publique.",
+    "sending": "Registrando...",
+    "getTemplate": "Registrar interés",
     "maybeLater": "Quizás más tarde"
   },
   "toast": {
-    "requestSuccess": "¡Entiendo! Le enviaremos los detalles de la plantilla en breve.",
-    "requestError": "No se pudo registrar el interés. Inténtelo de nuevo más tarde."
+    "requestSuccess": "Registrado. Te avisaremos cuando la app esté disponible.",
+    "requestError": "No se pudo registrar el interés. Inténtalo de nuevo más tarde."
   }
 }

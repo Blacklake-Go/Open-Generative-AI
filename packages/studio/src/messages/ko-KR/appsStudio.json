@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "수익 창출이 가능한 템플릿",
-    "titleLine1": "AI 앱을 실행하세요.",
-    "titleLine2": "오늘부터 수익을 창출하세요.",
-    "subtitle": "각 템플릿은 몇 분 안에 배포할 수 있는 완전한 기능을 갖춘 Stripe 통합 AI SaaS입니다. 사용자에게 비용을 청구하고 수익을 유지하세요. muapi가 AI 인프라를 처리합니다."
+    "badge": "앱 템플릿 미리보기",
+    "titleLine1": "AI 앱 템플릿을 둘러보고,",
+    "titleLine2": "출시 시 가장 먼저 경험하세요.",
+    "subtitle": "앱 콘셉트와 템플릿을 살펴보세요. 일부 앱은 아직 SupDance에서 제공되지 않습니다. 관심을 등록하면 출시 시 알려드립니다."
   },
   "steps": {
     "stepLabel": "단계",
@@ -21,22 +21,25 @@
     }
   },
   "card": {
-    "templateFallback": "주형",
-    "github": "Github",
-    "demo": "데모"
+    "templateFallback": "템플릿",
+    "github": "GitHub",
+    "demo": "출시 예정",
+    "reserve": "알림 받기",
+    "getTemplate": "관심 등록",
+    "requested": "등록됨"
   },
   "footer": {
-    "moreComingSoon": "Muapi 생태계 — 더 많은 템플릿이 곧 제공될 예정입니다."
+    "moreComingSoon": "SupDance 앱 생태계 — 더 많은 앱을 준비 중입니다"
   },
   "modal": {
-    "deployTitle": "{appName} 배포",
-    "body": "세부 정보를 입력하시면 설치 지침과 함께 {appName} 템플릿을 보내드립니다. 즉시 배포하고 수익을 창출하실 수 있습니다.",
-    "sending": "세부정보를 보내는 중...",
-    "getTemplate": "템플릿 가져오기",
-    "maybeLater": "어쩌면 나중에"
+    "deployTitle": "{appName} 관심 등록",
+    "body": "이 앱은 아직 SupDance에서 완전히 제공되지 않습니다. 관심을 등록하면 출시 시 알려드립니다.",
+    "sending": "등록 중...",
+    "getTemplate": "관심 등록",
+    "maybeLater": "나중에"
   },
   "toast": {
-    "requestSuccess": "알았어요! 곧 템플릿 세부정보를 보내드리겠습니다.",
-    "requestError": "관심상품 등록에 실패했습니다. 나중에 다시 시도해 주세요."
+    "requestSuccess": "등록되었습니다. 앱 출시 시 알려드립니다.",
+    "requestError": "관심 등록에 실패했습니다. 나중에 다시 시도해 주세요."
   }
 }

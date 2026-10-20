@@ -5,14 +5,8 @@ import Link from 'next/link';
 import {
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   ArrowRight,
   X,
-  Activity,
-  Layers,
-  Cpu,
-  Zap,
-  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { localizeStudioPath } from '@/lib/locales';
@@ -29,16 +23,9 @@ export const TOP_MODELS = [
     badge: 'State-of-Art',
     iconSrc: '/assets/about/models/flux_exact.png',
     accentColor: '#00f5d4',
-    change: '+4.82%',
     highlight: {
       zh: 'Black Forest Labs · 全球顶尖开源美学质量与精确语义对齐',
       en: 'Black Forest Labs · State-of-the-art visual quality & prompt alignment',
-    },
-    specs: {
-      resolution: '4K Native',
-      fps: 'Photoreal',
-      latency: '< 320ms',
-      modality: 'Text-to-Image / ControlNet',
     },
     href: '/studio?tab=image&model=flux-1-pro',
   },
@@ -52,16 +39,9 @@ export const TOP_MODELS = [
     badge: 'Wan 2.7',
     iconSrc: '/assets/about/models/wan_exact.png',
     accentColor: '#e11d74',
-    change: '+7.15%',
     highlight: {
       zh: '阿里万象 · 物理流体模拟与高动态长运镜连续性',
       en: 'Alibaba Wanx · Physical fluid simulation & temporal coherence',
-    },
-    specs: {
-      resolution: '4K Cinema',
-      fps: '60 FPS',
-      latency: '< 420ms',
-      modality: 'T2V / Image-to-Video',
     },
     href: '/studio?tab=video&model=wan2.7-text-to-video',
   },
@@ -75,16 +55,9 @@ export const TOP_MODELS = [
     badge: '2.3 Pro',
     iconSrc: '/assets/about/models/hailuo_exact.png',
     accentColor: '#38bdf8',
-    change: '+9.30%',
     highlight: {
       zh: 'MiniMax 海螺 · 电影级微表情神态与自然肢体动作叙事',
       en: 'MiniMax Hailuo · Micro-expressions & cinematic body dynamics',
-    },
-    specs: {
-      resolution: '1080p Ultra',
-      fps: '30 FPS',
-      latency: '< 380ms',
-      modality: 'T2V / I2V',
     },
     href: '/studio?tab=video&model=minimax-hailuo-2.3-standard-t2v',
   },
@@ -98,16 +71,9 @@ export const TOP_MODELS = [
     badge: 'World Sim',
     iconSrc: '/assets/about/models/openai_exact.png',
     accentColor: '#10b981',
-    change: '+14.20%',
     highlight: {
       zh: 'OpenAI · 物理世界常识仿真与超长时空镜头生成',
       en: 'OpenAI · Physical world simulation & continuous cinematic shots',
-    },
-    specs: {
-      resolution: '1080p Cinema',
-      fps: '60 FPS',
-      latency: '< 520ms',
-      modality: 'T2V / World Sim',
     },
     href: '/studio?tab=video',
   },
@@ -121,16 +87,9 @@ export const TOP_MODELS = [
     badge: '1.5 Motion',
     iconSrc: '/assets/about/models/kling_exact.png',
     accentColor: '#f59e0b',
-    change: '+6.90%',
     highlight: {
       zh: '快手可灵 · 大幅度动作运镜与复杂动态物理交互',
       en: 'Kuaishou Kling · Dynamic motion control & physical interaction',
-    },
-    specs: {
-      resolution: '1080p HD',
-      fps: '30 FPS',
-      latency: '< 350ms',
-      modality: 'Motion Engine / I2V',
     },
     href: '/studio?tab=motion-control',
   },
@@ -144,16 +103,9 @@ export const TOP_MODELS = [
     badge: '3D Spatial',
     iconSrc: '/assets/about/models/hunyuan_exact.png',
     accentColor: '#c084fc',
-    change: '+5.40%',
     highlight: {
       zh: '腾讯混元 · 工业级神经隐式三维几何重建与拓扑网格',
       en: 'Tencent Hunyuan · Implicit neural 3D mesh reconstruction',
-    },
-    specs: {
-      resolution: 'Mesh / NeRF',
-      fps: 'Realtime',
-      latency: '< 850ms',
-      modality: 'I2-3D / T2-3D',
     },
     href: '/studio?tab=video',
   },
@@ -167,16 +119,9 @@ export const TOP_MODELS = [
     badge: 'Q2 Vivid',
     iconSrc: '/assets/about/models/vidu_exact.png',
     accentColor: '#e879f9',
-    change: '+8.10%',
     highlight: {
       zh: '生数科技 · 多视角光影动态一致性与大幅度位移镜头',
       en: 'ShengShu Vidu · Multi-view optical continuity & dynamic displacement',
-    },
-    specs: {
-      resolution: '2K Cinema',
-      fps: '60 FPS',
-      latency: '< 360ms',
-      modality: 'T2V / T2I',
     },
     href: '/studio?tab=image&model=vidu-q2-text-to-image',
   },
@@ -190,16 +135,9 @@ export const TOP_MODELS = [
     badge: 'Cinema 3.1',
     iconSrc: '/assets/about/models/veo_exact.png',
     accentColor: '#34d399',
-    change: '+11.80%',
     highlight: {
       zh: 'Google DeepMind · 电影级精密 6-DOF 运镜轨迹与高动态光影',
       en: 'Google DeepMind · Cinematic 6-DOF camera controls & HDR',
-    },
-    specs: {
-      resolution: '4K Ultra',
-      fps: '60 FPS',
-      latency: '< 410ms',
-      modality: 'Cinematic T2V',
     },
     href: '/studio?tab=video&model=veo3.1-text-to-video',
   },
@@ -213,16 +151,9 @@ export const TOP_MODELS = [
     badge: '4K Micro',
     iconSrc: '/assets/about/models/banana_exact.png',
     accentColor: '#facc15',
-    change: '+3.20%',
     highlight: {
       zh: 'Google DeepMind · 微距纳米写实光影与超高保真质感',
       en: 'Google DeepMind · Micro-detail optical physics & photorealism',
-    },
-    specs: {
-      resolution: '4K Ultra',
-      fps: 'Static',
-      latency: '< 290ms',
-      modality: 'T2I / Inpaint',
     },
     href: '/studio?tab=image&model=nano-banana-pro',
   },
@@ -236,16 +167,9 @@ export const TOP_MODELS = [
     badge: 'v6.1 Aesthetic',
     iconSrc: '/assets/about/models/midjourney_exact.png',
     accentColor: '#3772FF',
-    change: '+2.10%',
     highlight: {
       zh: 'Midjourney · 电影级构图、绝美艺术质感与丰富色彩表现力',
       en: 'Midjourney · Cinematic composition, painterly aesthetics & color depth',
-    },
-    specs: {
-      resolution: '2K QHD',
-      fps: 'Master',
-      latency: '< 450ms',
-      modality: 'Text-to-Image / Style',
     },
     href: '/studio?tab=image',
   },
@@ -259,16 +183,9 @@ export const TOP_MODELS = [
     badge: 'v4 Master',
     iconSrc: '/assets/about/models/suno_exact.png',
     accentColor: '#e11d48',
-    change: '+12.40%',
     highlight: {
       zh: 'Suno · 全曲高保真编曲与极富感染力的人声演唱生成',
       en: 'Suno · Full-length audio composition & emotive vocal performance',
-    },
-    specs: {
-      resolution: '48kHz / 24-bit',
-      fps: 'Lossless Audio',
-      latency: '< 380ms',
-      modality: 'T2Audio / Vocal',
     },
     href: '/studio?tab=audio',
   },
@@ -282,16 +199,9 @@ export const TOP_MODELS = [
     badge: 'World Vision',
     iconSrc: '/assets/about/models/grok_exact.png',
     accentColor: '#f97316',
-    change: '+8.90%',
     highlight: {
       zh: 'xAI Grok · 真实物理定律常识仿真与因果时序推理',
       en: 'xAI Grok · Real physical causality & temporal dynamics',
-    },
-    specs: {
-      resolution: '1080p HD',
-      fps: '30 FPS',
-      latency: '< 450ms',
-      modality: 'T2V / Vision',
     },
     href: '/studio?tab=video',
   },
@@ -330,7 +240,7 @@ export default function FigmaBrandSlider({ locale = 'zh' }) {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#00f5d4] animate-pulse" />
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-white/80">
-            {isChinese ? '全球顶尖基础大模型矩阵 · 实时算力雷达' : 'FOUNDATION MODEL RADAR & LIVE TELEMETRY'}
+            {isChinese ? '基础模型矩阵' : 'FOUNDATION MODEL MATRIX'}
           </span>
         </div>
         <div className="text-[11px] font-mono text-white/40 hidden sm:block">
@@ -397,18 +307,6 @@ export default function FigmaBrandSlider({ locale = 'zh' }) {
                     <div className="flex items-center gap-2">
                       <span className="text-xs sm:text-sm font-bold tracking-tight text-white group-hover/item:text-[#00f5d4] transition-colors whitespace-nowrap">
                         {model.shortName}
-                      </span>
-                      <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 whitespace-nowrap">
-                        {model.change}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-white/50 font-mono whitespace-nowrap">
-                        {model.specs.latency}
-                      </span>
-                      <span className="text-[10px] text-white/30">·</span>
-                      <span className="text-[10px] text-white/40 font-mono whitespace-nowrap">
-                        {model.specs.resolution}
                       </span>
                     </div>
                   </div>
@@ -481,10 +379,6 @@ export default function FigmaBrandSlider({ locale = 'zh' }) {
                   >
                     {selectedModel.badge}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    {isChinese ? '运行正常 99.99%' : 'SLA Active'}
-                  </span>
                 </div>
                 <p className="mt-1 text-xs sm:text-sm text-white/70 max-w-2xl leading-relaxed">
                   {selectedModel.highlight[isChinese ? 'zh' : 'en']}
@@ -494,14 +388,6 @@ export default function FigmaBrandSlider({ locale = 'zh' }) {
 
             {/* 参数指标与一键启动 CTA */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#101216] px-3.5 py-2 text-xs font-mono text-white/60">
-                <span>{selectedModel.specs.resolution}</span>
-                <span className="text-white/20">·</span>
-                <span>{selectedModel.specs.fps}</span>
-                <span className="text-white/20">·</span>
-                <span className="text-emerald-400">{selectedModel.specs.latency}</span>
-              </div>
-
               <Link
                 href={localizeStudioPath(selectedModel.href, locale)}
                 className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#3772FF] hover:bg-[#2e62de] px-5 text-xs sm:text-sm font-semibold text-white transition-all shadow-elevation-2 cursor-pointer hover:scale-[1.02]"

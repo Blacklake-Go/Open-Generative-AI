@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "Revenue-Ready Templates",
-    "titleLine1": "LAUNCH AN AI APP.",
-    "titleLine2": "START EARNING TODAY.",
-    "subtitle": "Each template is a fully-functional, Stripe-integrated AI SaaS you can deploy in minutes. Charge your users, keep the revenue — muapi handles the AI infrastructure."
+    "badge": "App Template Preview",
+    "titleLine1": "EXPLORE AI APP TEMPLATES.",
+    "titleLine2": "JOIN THE WAITLIST.",
+    "subtitle": "Browse app concepts and templates. Not all apps are available on SupDance yet; register interest and we'll notify you when they launch."
   },
   "steps": {
     "stepLabel": "Step",
@@ -23,20 +23,23 @@
   "card": {
     "templateFallback": "Template",
     "github": "Github",
-    "demo": "Demo"
+    "demo": "Coming soon",
+    "reserve": "Notify me",
+    "getTemplate": "Register interest",
+    "requested": "Registered"
   },
   "footer": {
-    "moreComingSoon": "Muapi Ecosystem — More templates coming soon"
+    "moreComingSoon": "SupDance App Ecosystem — More apps in preparation"
   },
   "modal": {
-    "deployTitle": "Deploy {appName}",
-    "body": "Enter your details and we'll send you the {appName} template along with setup instructions so you can deploy and start earning immediately.",
-    "sending": "Sending Details...",
-    "getTemplate": "Get Template",
-    "maybeLater": "Maybe Later"
+    "deployTitle": "Register interest in {appName}",
+    "body": "This app is not fully available on SupDance yet. Leave your interest and we'll notify you when it launches.",
+    "sending": "Registering...",
+    "getTemplate": "Register interest",
+    "maybeLater": "Maybe later"
   },
   "toast": {
-    "requestSuccess": "Got it! We'll send you the template details shortly.",
+    "requestSuccess": "Registered. We'll notify you when this app becomes available.",
     "requestError": "Failed to register interest. Please try again later."
   }
 }

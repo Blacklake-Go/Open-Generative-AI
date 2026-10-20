@@ -1,9 +1,9 @@
 {
   "hero": {
-    "badge": "収益に対応したテンプレート",
-    "titleLine1": "AI アプリを起動します。",
-    "titleLine2": "今すぐ稼ぎ始めましょう。",
-    "subtitle": "各テンプレートは完全に機能する Stripe 統合 AI SaaS で、数分で導入できます。ユーザーに料金を請求し、収益を維持します。muapi が AI インフラストラクチャを処理します。"
+    "badge": "アプリテンプレートのプレビュー",
+    "titleLine1": "AI アプリテンプレートを探す、",
+    "titleLine2": "公開時にいち早く体験。",
+    "subtitle": "アプリのコンセプトとテンプレートを閲覧できます。SupDance ではまだ一部のアプリのみ公開中です。興味を登録すると、公開時にお知らせします。"
   },
   "steps": {
     "stepLabel": "ステップ",
@@ -22,21 +22,24 @@
   },
   "card": {
     "templateFallback": "テンプレート",
-    "github": "ギットハブ",
-    "demo": "デモ"
+    "github": "GitHub",
+    "demo": "近日公開",
+    "reserve": "通知を受け取る",
+    "getTemplate": "興味を登録",
+    "requested": "登録済み"
   },
   "footer": {
-    "moreComingSoon": "Muapi エコシステム — さらに多くのテンプレートが近日公開予定"
+    "moreComingSoon": "SupDance アプリエコシステム — さらに多くのアプリを準備中"
   },
   "modal": {
-    "deployTitle": "{appName} をデプロイする",
-    "body": "詳細を入力すると、{appName} テンプレートとセットアップ手順が送信されるので、すぐに導入して収益を開始できます。",
-    "sending": "詳細を送信中...",
-    "getTemplate": "テンプレートの取得",
-    "maybeLater": "たぶん後で"
+    "deployTitle": "「{appName}」の興味を登録",
+    "body": "このアプリは SupDance ではまだ完全には公開されていません。興味を登録すると、公開時にお知らせします。",
+    "sending": "登録中...",
+    "getTemplate": "興味を登録",
+    "maybeLater": "後で"
   },
   "toast": {
-    "requestSuccess": "わかった！すぐにテンプレートの詳細をお送りします。",
-    "requestError": "興味の登録に失敗しました。後でもう一度試してください。"
+    "requestSuccess": "登録しました。アプリ公開時にお知らせします。",
+    "requestError": "興味の登録に失敗しました。後でもう一度お試しください。"
   }
 }

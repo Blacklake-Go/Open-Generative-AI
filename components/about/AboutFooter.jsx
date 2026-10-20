@@ -1,23 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   Zap,
   ArrowRight,
-  Shield,
   Activity,
-  Globe,
   Cpu,
   Layers,
-  ExternalLink,
   ChevronRight,
   BarChart3,
-  CheckCircle2,
-  Lock,
   Mail,
   Sparkles,
-  Terminal,
 } from 'lucide-react';
 import ModelBrandLogo from '@/components/models/ModelBrandLogo';
 
@@ -144,7 +138,7 @@ const FOOTER_MODEL_GROUPS = [
         name: 'ElevenLabs Turbo v2',
         providerId: 'elevenlabs',
         provider: 'ElevenLabs',
-        tag: '超低延迟配音',
+        tag: 'AI 配音',
       },
     ],
   },
@@ -189,8 +183,6 @@ const FOOTER_MODEL_GROUPS = [
 
 export default function AboutFooter({ locale = 'zh-CN' }) {
   const isChinese = Boolean(locale?.includes('zh'));
-  const [emailInput, setEmailInput] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
 
   const getModelUrl = (modelId) => {
     return isChinese ? `/zh/models/${modelId}` : `/models/${modelId}`;
@@ -199,13 +191,6 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
   const getStudioUrl = (tab = 'image') => {
     const root = isChinese ? '/zh/studio' : '/studio';
     return `${root}?tab=${tab}`;
-  };
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (emailInput.trim()) {
-      setSubscribed(true);
-    }
   };
 
   return (
@@ -227,18 +212,18 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
               <div className="flex flex-wrap items-center gap-2.5 mb-3">
                 <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#00f5d4] flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00f5d4] animate-pulse" />
-                  <span>{isChinese ? '全球边缘专线已就绪' : 'Global Edge Operational'}</span>
+                  <span>{isChinese ? '模型目录已开放' : 'Model directory available'}</span>
                 </span>
                 <span className="text-xs text-white/40 font-mono">
-                  SLA 99.99% · 28+ Nodes
+                  {isChinese ? '真实调用统计 · 24h' : 'Actual usage · 24h'}
                 </span>
               </div>
 
               <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
                 {isChinese ? (
-                  <>赋能全球创作者与影视团队的顶尖 AI 算力基座</>
+                  <>面向全球创作者与影视团队的 AI 模型与创作工作台</>
                 ) : (
-                  <>High-Throughput Foundation Model Infrastructure</>
+                  <>Foundation Models & Creative Workspace</>
                 )}
               </h3>
               <p className="text-xs sm:text-sm text-white/60 mt-2 leading-relaxed max-w-xl">
@@ -261,7 +246,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
                 className="px-5 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-xs border border-white/10 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 cursor-pointer shrink-0"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-[#00f5d4]" />
-                <span>{isChinese ? '查看实时模型看板' : 'View Model Screener'}</span>
+                <span>{isChinese ? '查看模型目录' : 'View Model Directory'}</span>
               </Link>
             </div>
           </div>
@@ -351,13 +336,8 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
 
                   {/* 底部微注 */}
                   <div className="pt-3 mt-3 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-white/30">
-                    <span>
-                      {group.id === 'image' && 'ENGINE: 4K HIGH-RES READY'}
-                      {group.id === 'video' && 'MOTION: 60 FPS COHERENCE'}
-                      {group.id === 'audio' && 'AUDIO: 48kHz LOSSLESS STEREO'}
-                      {group.id === 'llm' && 'LATENCY: SUB-SECOND TTFT'}
-                    </span>
-                    <span className="text-emerald-400">ACTIVE</span>
+                    <span>MODEL GROUP · {group.id.toUpperCase()}</span>
+                    <span className="text-emerald-400">CATALOG</span>
                   </div>
                 </div>
               );
@@ -389,13 +369,12 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
 
             <p className="text-xs text-white/60 leading-relaxed max-w-sm">
               {isChinese
-                ? '新一代专业级生成式 AI 生产力工作台与算力网关。致力于为全球创作者、独立工作室与科技企业提供低时延、高并发与确定性的多模态 AI 基建。'
-                : 'Next-generation AI creative workspace and high-throughput compute gateway empowering studios worldwide.'}
+                ? '面向创作者、独立工作室与团队的专业生成式 AI 创作工作台与模型接入层，支持模型发现、生成与工作流协作。'
+                : 'A generative AI workspace and model access layer for creators, independent studios, and teams.'}
             </p>
 
             <div className="pt-2 text-xs font-mono text-white/50 space-y-1">
               <div>support@Supdance.com</div>
-              <div>api.supdance.com · High-Throughput Compute</div>
             </div>
           </div>
 
@@ -441,12 +420,12 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
             <ul className="space-y-2 text-xs text-white/60">
               <li>
                 <Link href={isChinese ? '/zh/call-api' : '/call-api'} className="hover:text-white transition-colors">
-                  {isChinese ? '开放 API 接入文档' : 'Open API Docs'}
+                  {isChinese ? '开放平台（筹备中）' : 'API Platform (Coming Soon)'}
                 </Link>
               </li>
               <li>
                 <Link href={isChinese ? '/zh/about#models' : '/about#models'} className="hover:text-white transition-colors">
-                  {isChinese ? '实时模型总览看板' : 'Live Screener'}
+                  {isChinese ? '模型目录与真实调用' : 'Model Directory'}
                 </Link>
               </li>
               <li>
@@ -469,26 +448,30 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
             </div>
             <p className="text-xs text-white/50 leading-relaxed">
               {isChinese
-                ? '订阅 SupDance 技术周报，第一时间获取前沿大模型权重迭代、全球节点扩容与 API 升级公告。'
-                : 'Subscribe to receive foundation model updates, SLA announcements, and technical releases.'}
+                ? '订阅 SupDance 技术周报，第一时间获取模型与产品更新公告。'
+                : 'Subscribe to receive foundation model updates and technical release notes.'}
             </p>
 
-            <form onSubmit={handleSubscribe} className="flex items-center gap-2 pt-1">
-              <input
-                type="email"
-                required
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                placeholder={isChinese ? '输入您的开发者邮箱...' : 'Enter your email...'}
-                className="w-full bg-[#12141c] border border-white/15 focus:border-[#e11d74] rounded-full px-4 py-2.5 text-xs text-white placeholder-white/40 outline-none transition-all shadow-inner"
-              />
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-full bg-[#e11d74] hover:bg-[#c0175f] text-white text-xs font-bold shrink-0 transition-all shadow-[0_2px_12px_rgba(225,29,116,0.35)] cursor-pointer"
-              >
-                {subscribed ? (isChinese ? '已订阅' : 'Joined') : isChinese ? '订阅' : 'Join'}
-              </button>
-            </form>
+            <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-[#12141c] p-3 text-xs text-white/60">
+              <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#00f5d4]" />
+              <div>
+                <p className="font-semibold text-white">
+                  {isChinese ? '邮件订阅即将开放' : 'Email newsletter coming soon'}
+                </p>
+                <p className="mt-1 leading-relaxed">
+                  {isChinese
+                    ? '目前还没有可用的邮件订阅服务。欢迎先加入社区获取模型与产品更新。'
+                    : 'Email subscriptions are not available yet. Join the community for model and product updates.'}
+                </p>
+                <Link
+                  href={isChinese ? '/zh/community' : '/community'}
+                  className="mt-2 inline-flex items-center gap-1 font-semibold text-[#00f5d4] hover:text-white transition-colors"
+                >
+                  {isChinese ? '前往社区' : 'Visit community'}
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-3 text-[11px] text-white/40">
               <Link href={isChinese ? '/zh/privacy' : '/privacy'} className="hover:text-white transition-colors">
@@ -526,7 +509,7 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
               <span>High-Precision Canvas Core</span>
             </span>
             <span>·</span>
-            <span>High-Throughput Gateway</span>
+            <span>Model Gateway</span>
           </div>
         </div>
       </div>

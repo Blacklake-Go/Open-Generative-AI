@@ -317,10 +317,10 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
     },
     {
       id: 'supdance-mcp-cli',
-      title: isZh ? 'SupDance MCP / CLI\n开发生态' : 'SupDance MCP & CLI\nDev Ecosystem',
-      desc: isZh ? '支持 Cursor / Claude 等任意 Agent 自动化调用' : 'Automated calls from Cursor, Claude & custom agents',
+      title: isZh ? 'SupDance API / SDK\n接入筹备中' : 'SupDance API & SDK\nComing Soon',
+      desc: isZh ? '公开 API 尚未开放，可先使用 Studio 工作台' : 'Public API is not open yet; use the Studio workspace today',
       category: isZh ? '开发生态' : 'Ecosystem',
-      badge: 'NEW',
+      badge: '筹备中',
       gradient: 'from-blue-600/30 to-indigo-950/40',
       bgImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
       tab: 'api',
