@@ -113,6 +113,24 @@ export async function middleware(request) {
         return addSecurityHeaders(NextResponse.redirect(redirectUrl, 308));
     }
 
+    // 0.6. 工作台快捷路由 (/image, /video, /audio, /music 及多语言前缀) 规范重定向至 /studio?tab=...
+    const directTabMatch = pathname.match(/^(?:\/([a-zA-Z]{2}(?:-[a-zA-Z]{2})?))?\/(image|video|audio|music)\/?$/i);
+    if (directTabMatch) {
+        const pathLocale = directTabMatch[1];
+        const rawTab = directTabMatch[2].toLowerCase();
+        const tab = rawTab === 'music' ? 'audio' : rawTab;
+        const origin = getPublicOrigin(request);
+        const effectiveLocale = pathLocale ? normalizeLocale(pathLocale) : getLocaleFromPathname(pathname);
+        const config = effectiveLocale && effectiveLocale !== 'en' ? getLocaleConfig(effectiveLocale) : null;
+        const rootPath = config?.rootPath || '';
+        const redirectUrl = new URL(`${rootPath}/studio`, origin);
+        redirectUrl.searchParams.set('tab', tab);
+        url.searchParams.forEach((val, key) => {
+            if (key !== 'tab') redirectUrl.searchParams.set(key, val);
+        });
+        return addSecurityHeaders(NextResponse.redirect(redirectUrl, 307));
+    }
+
     // 1. 静态资源、系统探针及 ACME 证书挑战路径免检放行
     const isExcluded =
         pathname.startsWith('/_next') ||
