@@ -370,6 +370,56 @@ export function PhoneIcon({ className = '', size = 18, style, ...props }) {
   );
 }
 
+export function StripeIcon({ className = '', size = 20, style, ...props }) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={`shrink-0 ${className}`}
+      style={{ width: size, height: size, ...style }}
+      {...props}
+    >
+      <rect width="22" height="22" x="1" y="1" rx="5" fill="#635BFF" />
+      <path
+        fill="#FFFFFF"
+        d="M14.6 10.3c0-.8-.6-1.2-1.7-1.2-1.5 0-3.3.6-4.6 1.4V7.6c1.4-.7 3.2-1.1 4.7-1.1 3.5 0 5.6 1.7 5.6 4.5 0 4.4-6.1 3.7-6.1 5.6 0 .9.8 1.3 2 1.3 1.8 0 3.8-.8 5.2-1.7v2.9c-1.5.8-3.5 1.2-5.3 1.2-3.7 0-5.9-1.8-5.9-4.6 0-4.6 6.1-3.9 6.1-5.4z"
+      />
+    </svg>
+  );
+}
+
+export function PayPalIcon({ className = '', size = 20, style, ...props }) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={`shrink-0 ${className}`}
+      style={{ width: size, height: size, ...style }}
+      {...props}
+    >
+      <path
+        fill="#003087"
+        d="M7.4 20.6l2.1-13.3h5.4c3.3 0 5.4 1.6 4.9 4.8-.4 2.7-2.3 4.8-5.4 4.8H11l-1 6.3H7.4z"
+      />
+      <path
+        fill="#0079C1"
+        d="M10.1 16.9h3.4c2.8 0 4.7-1.8 5.1-4.2.4-2.7-1.4-4.1-4.3-4.1h-4.2l-2.1 13h2.1l1.1-4.7z"
+      />
+      <path
+        fill="#001C64"
+        opacity="0.3"
+        d="M11 16.9l.7-4.4h2.6c1.9 0 3.3.6 3.7 2.2-.4 2.4-2.3 4.2-5.1 4.2H11v-2z"
+      />
+    </svg>
+  );
+}
+
 export const SOCIAL_ICON_COMPONENTS = {
   google: GoogleIcon,
   wechat: WeChatIcon,
@@ -386,6 +436,8 @@ export const SOCIAL_ICON_COMPONENTS = {
   github: GithubIcon,
   apple: AppleIcon,
   alipay: AlipayIcon,
+  stripe: StripeIcon,
+  paypal: PayPalIcon,
   phone: PhoneIcon,
   email: MailIcon,
   mail: MailIcon,

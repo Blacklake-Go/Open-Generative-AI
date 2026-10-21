@@ -8,7 +8,7 @@ export function normalizeLang(raw) {
     return lower === 'zh-cn' ? 'zh-CN' : 'en';
 }
 
-/** Detect browser locale on first visit; migrates stored `zh` → `zh-CN`. */
+/** Initialize locale; strictly defaults to 'en' unless user has changed it. */
 export function initLocale() {
     if (typeof localStorage === 'undefined') return 'en';
     const stored = localStorage.getItem(LANG_KEY);
@@ -17,10 +17,9 @@ export function initLocale() {
         if (normalized !== stored) localStorage.setItem(LANG_KEY, normalized);
         return normalized;
     }
-    const detected = typeof navigator !== 'undefined' ? navigator.language : 'en';
-    const lang = normalizeLang(detected);
-    localStorage.setItem(LANG_KEY, lang);
-    return lang;
+    const defaultLang = 'en';
+    localStorage.setItem(LANG_KEY, defaultLang);
+    return defaultLang;
 }
 
 export function getLang() {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getAuthCopy, getAuthRoutes } from '@/lib/authCopy';
 
-export default function ForgotPasswordForm({ locale = 'zh-CN' }) {
+export default function ForgotPasswordForm({ locale = 'en' }) {
   const router = useRouter();
   const copy = getAuthCopy(locale).forgot;
   const routes = getAuthRoutes(locale);

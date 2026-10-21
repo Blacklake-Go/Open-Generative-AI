@@ -181,7 +181,7 @@ const FOOTER_MODEL_GROUPS = [
   },
 ];
 
-export default function AboutFooter({ locale = 'zh-CN' }) {
+export default function AboutFooter({ locale = 'en' }) {
   const isChinese = Boolean(locale?.includes('zh'));
 
   const getModelUrl = (modelId) => {
@@ -499,6 +499,15 @@ export default function AboutFooter({ locale = 'zh-CN' }) {
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-white/40">
           <div className="flex flex-wrap items-center gap-2">
             <span>© 2026 SupDance (supdance.com). All Rights Reserved.</span>
+            <span className="hidden sm:inline">·</span>
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              备案编号：沪ICP备2026050086号
+            </a>
             <span className="hidden sm:inline">·</span>
             <span className="text-white/30 hidden sm:inline">Next-Gen Creative AI Operating System</span>
           </div>

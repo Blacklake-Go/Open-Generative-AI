@@ -44,6 +44,37 @@
     "heading": "START CREATING WITH",
     "subtitle": "Describe a scene, character, mood, or style — and watch it come to life"
   },
+  "qualityLabels": {
+    "standard": "Standard",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "negativePrompt": {
+    "trigger": "Negative",
+    "chip": "Negative: {text}",
+    "title": "Negative prompt",
+    "placeholder": "Describe what should be avoided",
+    "clear": "Clear",
+    "done": "Done",
+    "separator": ", ",
+    "promptSuffix": "Avoid: {value}",
+    "presetBlurry": "blurry",
+    "presetLowQuality": "low quality",
+    "presetDeformed": "deformed",
+    "presetExtraFingers": "extra fingers",
+    "presetWatermark": "watermark",
+    "presetText": "text",
+    "presetDark": "too dark",
+    "presetEdges": "broken edges"
+  },
+  "regenerateConfirm": {
+    "title": "Regenerate this batch?",
+    "description": "The same prompt and parameters will be used to generate {count} image(s).",
+    "cost": "Estimated cost",
+    "cancel": "Cancel",
+    "confirm": "Regenerate now"
+  },
   "promptBar": {
     "placeholderMultiImage": "{count} images selected — describe the transformation (optional)",
     "placeholderI2I": "Describe how to transform this image (optional)",

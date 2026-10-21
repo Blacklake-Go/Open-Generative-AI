@@ -19,10 +19,17 @@ async function handlePOST(request, context) {
   }
 
   const { id } = await context.params;
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {}
+  const env = body?.env || request.nextUrl?.searchParams?.get('env') || null;
+
   try {
     const result = await testProviderHealth({
       actor: guard.user,
       provider: id,
+      env,
       requestId: guard.requestId,
     });
     await completeIdempotency(idemp.keyHash, result);

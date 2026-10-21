@@ -29,6 +29,7 @@ import {
   MailIcon,
 } from '@/components/SocialIcons';
 import { completePhoneCaptchaChallenge } from '@/lib/auth/phone-captcha-client';
+import { DEFAULT_LOCALE } from '@/lib/locales';
 import UserAvatar from '@/components/ui/UserAvatar';
 
 const SOCIAL_ACCOUNT_PROVIDERS = {
@@ -328,7 +329,7 @@ export default function ProfileTab({
       if (phoneCaptchaChallenge) {
         outcome = await completePhoneCaptchaChallenge(phoneCaptchaChallenge, {
           postSendCode,
-          locale: user?.locale || 'zh-CN',
+          locale: user?.locale || DEFAULT_LOCALE,
           container: phoneCaptchaHostRef.current,
         });
       } else {
@@ -338,7 +339,7 @@ export default function ProfileTab({
           setPhoneCaptchaChallenge(outcome.data);
           outcome = await completePhoneCaptchaChallenge(outcome.data, {
             postSendCode,
-            locale: user?.locale || 'zh-CN',
+            locale: user?.locale || DEFAULT_LOCALE,
             container: phoneCaptchaHostRef.current,
           });
         }

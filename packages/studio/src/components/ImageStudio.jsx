@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
+import { Ban, X } from "lucide-react";
 import { ToastHost as Toaster } from "../ui";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
@@ -129,6 +130,57 @@ function getArStyle(aspectRatio) {
   return { aspectRatio: "1 / 1" };
 }
 
+const NEGATIVE_PRESET_KEYS = [
+  "presetBlurry",
+  "presetLowQuality",
+  "presetDeformed",
+  "presetExtraFingers",
+  "presetWatermark",
+  "presetText",
+  "presetDark",
+  "presetEdges",
+];
+
+function formatQualityLabel(value, copy) {
+  if (!value) return "";
+  const key = String(value).toLowerCase();
+  return copy?.qualityLabels?.[key] || value;
+}
+
+function galleryVariantUrl(url, variant) {
+  if (!url || typeof url !== "string") return url;
+  const match = url.match(
+    /^(.*\/uploads\/generated\/.+)\/([^/?#]+)\.(png|jpe?g|webp|avif)(\?[^#]*)?$/i,
+  );
+  if (!match) return url;
+  return `${match[1]}/${variant}/${match[2]}.webp${match[4] || ""}`;
+}
+
+function getBatchModelLabel(modelId) {
+  const variant = imageModelCatalog.variantById.get(modelId);
+  const family = imageModelCatalog.familyByVariantId.get(modelId);
+  return getModelDisplayName(
+    modelId,
+    variant?.name || family?.name || modelId?.replace(/-/g, " ") || "",
+  );
+}
+
+function capabilitySupportsParameter(capability, key) {
+  return (Array.isArray(capability?.parameters) ? capability.parameters : [])
+    .some((parameter) => String(parameter).toLowerCase() === key);
+}
+
+function composePromptWithNegative(prompt, negativePrompt, copy) {
+  const base = String(prompt || "").trim();
+  const negative = String(negativePrompt || "").trim();
+  if (!negative) return base;
+  const suffix = String(copy?.negativePrompt?.promptSuffix || "Avoid: {value}").replace(
+    "{value}",
+    negative,
+  );
+  return base ? `${base}\n${suffix}` : suffix;
+}
+
 function groupHistoryIntoBatches(historyItems) {
   if (!Array.isArray(historyItems) || historyItems.length === 0) return [];
   const batches = [];
@@ -154,6 +206,8 @@ function groupHistoryIntoBatches(historyItems) {
         model: item.model || "",
         aspect_ratio: item.aspect_ratio || "1:1",
         quality: item.quality || null,
+        negativePrompt: item.negativePrompt || "",
+        requestedCount: Number(item.requestedCount) || null,
         referenceImages: item.referenceImages || [],
         timestamp: item.timestamp || new Date().toISOString(),
         items: [item],
@@ -1136,6 +1190,7 @@ export default function ImageStudio({
 
   // ── Prompt / upload state ───────────────────────────────────────────────
   const [prompt, setPrompt] = useState(initialPrompt || "");
+  const [negativePrompt, setNegativePrompt] = useState("");
   const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
   const [swapImageUrl, setSwapImageUrl] = useState(null);
   const [uploadHistory, setUploadHistory] = useState([]); // persisted reference images history
@@ -1146,11 +1201,35 @@ export default function ImageStudio({
   const [generateError, setGenerateError] = useState(null);
   const [fullscreenUrl, setFullscreenUrl] = useState(null);
   const [failedImageUrls, setFailedImageUrls] = useState({});
+  const [thumbnailFallbackUrls, setThumbnailFallbackUrls] = useState({});
   const [fullscreenImageError, setFullscreenImageError] = useState(false);
   const [isDrawModalOpen, setIsDrawModalOpen] = useState(false);
   const [activeDetailItem, setActiveDetailItem] = useState(null); // { item, batch }
   const [drawModalInitialImage, setDrawModalInitialImage] = useState(null);
   const [openBatchMenuId, setOpenBatchMenuId] = useState(null);
+  const [regenerateConfirmBatch, setRegenerateConfirmBatch] = useState(null);
+  const composerRef = useRef(null);
+  const [composerHeight, setComposerHeight] = useState(0);
+
+  useEffect(() => {
+    const composer = composerRef.current;
+    if (!composer) return;
+    const update = () => setComposerHeight(Math.ceil(composer.getBoundingClientRect().height));
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(update);
+    observer.observe(composer);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!regenerateConfirmBatch) return;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setRegenerateConfirmBatch(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [regenerateConfirmBatch]);
 
   useEffect(() => {
     setFullscreenImageError(false);
@@ -1394,6 +1473,13 @@ export default function ImageStudio({
     ? getResolutionsForI2IModel(selectedModelId)
     : getResolutionsForModel(selectedModelId);
   const showQualityBtn = currentResolutions.length > 0;
+  const specChipLabel = [
+    selectedAr,
+    showQualityBtn ? formatQualityLabel(selectedQuality || currentResolutions[0], copy) : "",
+    String(batchSize),
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const declaredParameters = new Set(
     (Array.isArray(currentImageCapability?.parameters) ? currentImageCapability.parameters : [])
       .filter((key) => typeof key === "string")
@@ -1423,6 +1509,52 @@ export default function ImageStudio({
   const referenceImageLimit = referenceVariant
     ? getModelMediaCapabilities(referenceVariant.model).image.maxItems
     : 1;
+  const activeI2IModelInfo = imageMode ? getI2IModelById(selectedModelId) : null;
+  const missingSwapFace = Boolean(
+    imageMode && activeI2IModelInfo?.swapField && !swapImageUrl,
+  );
+  const missingCapability = hasServerDirectory && !currentImageCapability;
+  const hasRequiredInput = imageMode
+    ? uploadedImageUrls.length > 0
+    : Boolean(prompt.trim());
+  const canGenerate =
+    !generating && hasRequiredInput && !missingSwapFace && !missingCapability;
+  const generateDisabledReason = generating
+    ? undefined
+    : !hasRequiredInput
+      ? imageMode
+        ? copy.errors.uploadReferenceFirst
+        : copy.errors.enterPromptFirst
+      : missingSwapFace
+        ? copy.errors.uploadSwapFaceFirst
+        : missingCapability
+          ? copy.errors.generationCapabilityUnavailable
+          : undefined;
+
+  const negativePromptItems = useMemo(
+    () =>
+      negativePrompt
+        .split(/[、,，\n]+/)
+        .map((item) => item.trim())
+        .filter(Boolean),
+    [negativePrompt],
+  );
+
+  const toggleNegativePreset = useCallback(
+    (preset) => {
+      const next = negativePromptItems.includes(preset)
+        ? negativePromptItems.filter((item) => item !== preset)
+        : [...negativePromptItems, preset];
+      setNegativePrompt(next.join(copy.negativePrompt.separator || ", "));
+    },
+    [negativePromptItems, copy.negativePrompt.separator],
+  );
+
+  const regenerateConfirmCount = regenerateConfirmBatch
+    ? Number(regenerateConfirmBatch.requestedCount) ||
+      regenerateConfirmBatch.items?.length ||
+      1
+    : 0;
 
   // Persistence and URL state can restore options that the live route no
   // longer accepts. Clamp them as soon as the authoritative directory loads.
@@ -1698,6 +1830,7 @@ export default function ImageStudio({
   const resetToPrompt = () => {
     setCurrentImageUrl(null);
     setPrompt("");
+    setNegativePrompt("");
     setUploadedImageUrls([]);
     setImageMode(false);
     const firstT2I = t2iModels[0];
@@ -1738,11 +1871,20 @@ export default function ImageStudio({
       }
     }
 
+    const trimmedPrompt = prompt.trim();
+    const trimmedNegativePrompt = negativePrompt.trim();
+    const negativeAsParameter =
+      hasServerDirectory && capabilitySupportsParameter(currentImageCapability, "negative_prompt");
+    const effectivePrompt =
+      hasServerDirectory && trimmedNegativePrompt && !negativeAsParameter
+        ? composePromptWithNegative(trimmedPrompt, trimmedNegativePrompt, copy)
+        : trimmedPrompt;
+
     const publicImageParameters = hasServerDirectory
       ? buildPublicImageParameters({
           capability: currentImageCapability,
           taskType: currentMode,
-          prompt,
+          prompt: effectivePrompt,
           aspectRatio: selectedAr,
           qualityField: currentQualityField,
           qualityValue: selectedQuality,
@@ -1782,6 +1924,9 @@ export default function ImageStudio({
       ...(imageMode && selectedEffect && currentEffects.includes(selectedEffect) && declaredParameters.has("name")
         ? { name: selectedEffect }
         : {}),
+      ...(negativeAsParameter && trimmedNegativePrompt
+        ? { negative_prompt: trimmedNegativePrompt }
+        : {}),
     } : null;
 
     onGenerationStart?.();
@@ -1804,7 +1949,10 @@ export default function ImageStudio({
               aspect_ratio: selectedAr,
             };
             if (swapImageUrl) genParams.swap_url = swapImageUrl;
-            if (prompt.trim()) genParams.prompt = prompt.trim();
+            if (effectivePrompt) genParams.prompt = effectivePrompt;
+            if (!hasServerDirectory && trimmedNegativePrompt) {
+              genParams.negative_prompt = trimmedNegativePrompt;
+            }
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
@@ -1819,9 +1967,12 @@ export default function ImageStudio({
                 modelParameterValues,
               ),
               ...rawReferenceParams,
-              prompt: prompt.trim(),
+              prompt: effectivePrompt,
               aspect_ratio: selectedAr,
             };
+            if (!hasServerDirectory && trimmedNegativePrompt) {
+              genParams.negative_prompt = trimmedNegativePrompt;
+            }
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
@@ -1846,10 +1997,12 @@ export default function ImageStudio({
           id: res.id || Math.random().toString(36).substring(7),
           batchId: currentBatchId,
           url: res.url,
-          prompt: prompt.trim(),
+          prompt: trimmedPrompt,
           model: selectedModelId,
           aspect_ratio: selectedAr,
           quality: selectedQuality,
+          negativePrompt: trimmedNegativePrompt,
+          requestedCount: batchSize,
           referenceImages: uploadedImageUrls || [],
           timestamp: new Date().toISOString(),
         };
@@ -1857,7 +2010,7 @@ export default function ImageStudio({
         onGenerationComplete?.({
           url: res.url,
           model: selectedModelId,
-          prompt: prompt.trim(),
+          prompt: trimmedPrompt,
           type: "image",
         });
       });
@@ -1911,6 +2064,7 @@ export default function ImageStudio({
     if (!target) return;
     const p = target.prompt || "";
     setPrompt(p);
+    setNegativePrompt(target.negativePrompt || "");
     if (target.model) {
       const restoredFamily = imageModelCatalog.familyByVariantId.get(target.model);
       if (restoredFamily) {
@@ -2018,6 +2172,7 @@ export default function ImageStudio({
     }
 
     const targetPrompt = (batch.prompt || "").trim();
+    const targetNegativePrompt = String(batch.negativePrompt || "").trim();
     const targetModelId = batch.model || selectedModelId;
     const targetAr = batch.aspect_ratio || selectedAr;
     const targetRefImages = batch.referenceImages || [];
@@ -2029,11 +2184,17 @@ export default function ImageStudio({
     const targetQualityField = isTargetI2I
       ? getQualityFieldForI2IModel(targetModelId)
       : getQualityFieldForModel(targetModelId);
+    const targetNegativeAsParameter =
+      hasTargetServerDirectory && capabilitySupportsParameter(targetCapability, "negative_prompt");
+    const targetEffectivePrompt =
+      hasTargetServerDirectory && targetNegativePrompt && !targetNegativeAsParameter
+        ? composePromptWithNegative(targetPrompt, targetNegativePrompt, copy)
+        : targetPrompt;
     const targetImageParameters = hasTargetServerDirectory
       ? buildPublicImageParameters({
           capability: targetCapability,
           taskType: targetMode,
-          prompt: targetPrompt,
+          prompt: targetEffectivePrompt,
           aspectRatio: targetAr,
           qualityField: targetQualityField,
           qualityValue: batch.quality,
@@ -2058,15 +2219,19 @@ export default function ImageStudio({
       return;
     }
     const publicParameters = hasTargetServerDirectory
-      ? { ...targetImageParameters, ...filteredTargetReferences }
+      ? {
+          ...targetImageParameters,
+          ...filteredTargetReferences,
+          ...(targetNegativeAsParameter && targetNegativePrompt
+            ? { negative_prompt: targetNegativePrompt }
+            : {}),
+        }
       : null;
 
     if (!targetPrompt && !isTargetI2I) {
       toast.error(copy.errors?.enterPromptFirst || "请输入提示词");
       return;
     }
-
-    handleReEdit(batch);
 
     setGenerating(true);
     setGenerateError(null);
@@ -2075,7 +2240,7 @@ export default function ImageStudio({
     try {
       const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const curQualityField = targetQualityField;
-      const count = batch.items?.length || 1;
+      const count = Number(batch.requestedCount) || batch.items?.length || 1;
 
       const settledResults = await Promise.allSettled(
         Array.from({ length: count }).map(async () => {
@@ -2087,7 +2252,10 @@ export default function ImageStudio({
               image_url: targetRefImages[0],
               aspect_ratio: targetAr,
             };
-            if (targetPrompt) genParams.prompt = targetPrompt;
+            if (targetEffectivePrompt) genParams.prompt = targetEffectivePrompt;
+            if (!hasTargetServerDirectory && targetNegativePrompt) {
+              genParams.negative_prompt = targetNegativePrompt;
+            }
             if (curQualityField && batch.quality) {
               genParams[curQualityField] = batch.quality;
             }
@@ -2100,9 +2268,12 @@ export default function ImageStudio({
             const genParams = {
               model: targetModelId,
               ...referenceParams,
-              prompt: targetPrompt,
+              prompt: targetEffectivePrompt,
               aspect_ratio: targetAr,
             };
+            if (!hasTargetServerDirectory && targetNegativePrompt) {
+              genParams.negative_prompt = targetNegativePrompt;
+            }
             if (curQualityField && batch.quality) {
               genParams[curQualityField] = batch.quality;
             }
@@ -2122,6 +2293,8 @@ export default function ImageStudio({
           model: targetModelId,
           aspect_ratio: targetAr,
           quality: batch.quality || selectedQuality,
+          negativePrompt: targetNegativePrompt,
+          requestedCount: count,
           referenceImages: targetRefImages,
           timestamp: new Date().toISOString(),
         };
@@ -2143,7 +2316,7 @@ export default function ImageStudio({
       setGenerating(false);
       onGenerationEnd?.();
     }
-  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, modelDirectoryRevision, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, handleReEdit, locale]);
+  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, modelDirectoryRevision, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, locale]);
 
   const placeholderText =
     uploadedImageUrls.length > 1
@@ -2157,11 +2330,14 @@ export default function ImageStudio({
     <div className="w-full h-full flex flex-col items-center justify-center bg-transparent relative p-4 md:p-6 overflow-hidden">
       
       {/* ── CENTRAL GALLERY AREA ── */}
-      <div className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2">
+      <div
+        className="flex-1 w-full max-w-7xl mx-auto overflow-y-auto custom-scrollbar pb-40 lg:pb-32 px-2"
+        style={composerHeight ? { paddingBottom: composerHeight + 16 } : undefined}
+      >
         {history.length > 0 ? (
           <div className="flex flex-col gap-8 w-full pt-4 animate-fade-in">
             {groupedDateBatches.map(({ dateLabel, batches }) => (
-              <div key={dateLabel} className="flex flex-col gap-6 w-full">
+              <div key={dateLabel} className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
                 {/* Date Header (对标图4: 1月13日 / 2月3日) */}
                 <div className="flex items-center gap-3 select-none px-1">
                   <span className="text-xs sm:text-sm font-semibold text-white/90 font-mono tracking-tight">
@@ -2174,10 +2350,20 @@ export default function ImageStudio({
                 {batches.map((batch) => (
                   <div
                     key={batch.id}
-                    className="rounded-2xl border border-white/10 bg-[#121418]/85 backdrop-blur-md p-4 sm:p-5 shadow-elevation-2 flex flex-col gap-4 transition-[border-color,box-shadow] duration-fast ease-standard hover:border-white/20"
+                    className={`w-full max-w-4xl mx-auto rounded-2xl border border-white/10 bg-[#121418]/85 backdrop-blur-md p-4 sm:p-5 shadow-elevation-2 flex flex-col gap-4 transition-[border-color,box-shadow] duration-fast ease-standard hover:border-white/20 ${
+                      batch.items.length === 1
+                        ? "lg:grid lg:grid-cols-2 lg:items-start lg:gap-6"
+                        : ""
+                    }`}
                   >
                     {/* Header Row: Prompt + Parameters + Actions (对标图1 & 图4) */}
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div
+                      className={`flex flex-col sm:flex-row sm:items-start justify-between gap-3 ${
+                        batch.items.length === 1
+                          ? "order-1 lg:order-2 lg:flex-col lg:items-stretch"
+                          : ""
+                      }`}
+                    >
                       {/* Left: Prompt & Meta Chips */}
                       <div className="flex-1 min-w-0 pr-2">
                         <p
@@ -2188,7 +2374,7 @@ export default function ImageStudio({
                         </p>
                         <div className="flex items-center flex-wrap gap-1.5 text-[11px]">
                           <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/80 font-mono text-[10px]">
-                            {imageModelCatalog.variantById.get(batch.model)?.name || batch.model?.replace("-", " ") || copy.gallery.modelFallback}
+                            {getBatchModelLabel(batch.model) || copy.gallery.modelFallback}
                           </span>
                           {batch.aspect_ratio && (
                             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70 font-mono text-[10px]">
@@ -2197,7 +2383,15 @@ export default function ImageStudio({
                           )}
                           {batch.quality && (
                             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70 font-mono text-[10px]">
-                              {batch.quality}
+                              {formatQualityLabel(batch.quality, copy)}
+                            </span>
+                          )}
+                          {batch.negativePrompt && (
+                            <span
+                              className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/60 font-mono text-[10px] max-w-[220px] truncate"
+                              title={copy.negativePrompt.chip.replace("{text}", batch.negativePrompt)}
+                            >
+                              {copy.negativePrompt.chip.replace("{text}", batch.negativePrompt)}
                             </span>
                           )}
                           {batch.items.length > 1 && (
@@ -2209,7 +2403,7 @@ export default function ImageStudio({
                       </div>
 
                       {/* Right: High-frequency Action Pills (重新编辑 / 再次生成 / 更多) */}
-                      <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                      <div className="flex items-center gap-2 shrink-0 self-start sm:self-center lg:self-start">
                         {/* 重新编辑 */}
                         <button
                           type="button"
@@ -2227,7 +2421,7 @@ export default function ImageStudio({
                         {/* 再次生成 */}
                         <button
                           type="button"
-                          onClick={() => handleReGenerate(batch)}
+                          onClick={() => setRegenerateConfirmBatch(batch)}
                           disabled={generating}
                           className="h-8 px-3.5 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-xs font-medium flex items-center gap-1.5 transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1 disabled:opacity-50"
                           title={String(locale || "").startsWith("zh") ? "使用相同参数再生成一次" : "Generate again with same params"}
@@ -2293,7 +2487,7 @@ export default function ImageStudio({
                     <div
                       className={`w-full ${
                         batch.items.length === 1
-                          ? "max-w-md mx-auto"
+                          ? "order-2 lg:order-1 max-w-md mx-auto lg:max-w-none lg:mx-0"
                           : batch.items.length === 2
                           ? "grid grid-cols-1 sm:grid-cols-2 gap-3"
                           : batch.items.length === 3
@@ -2316,16 +2510,37 @@ export default function ImageStudio({
                             </div>
                           ) : (
                             <img
-                              src={entry.url}
+                              src={
+                                thumbnailFallbackUrls[entry.url]
+                                  ? entry.url
+                                  : galleryVariantUrl(
+                                      entry.url,
+                                      batch.items.length === 1 ? "preview" : "thumbnail",
+                                    )
+                              }
                               alt={batch.prompt?.slice(0, 30) || "Generated image"}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                               loading="lazy"
-                              onError={() => setFailedImageUrls((prev) => ({ ...prev, [entry.url]: true }))}
+                              decoding="async"
+                              onError={() => {
+                                const variantUrl = galleryVariantUrl(
+                                  entry.url,
+                                  batch.items.length === 1 ? "preview" : "thumbnail",
+                                );
+                                if (variantUrl !== entry.url && !thumbnailFallbackUrls[entry.url]) {
+                                  setThumbnailFallbackUrls((prev) => ({
+                                    ...prev,
+                                    [entry.url]: true,
+                                  }));
+                                  return;
+                                }
+                                setFailedImageUrls((prev) => ({ ...prev, [entry.url]: true }));
+                              }}
                             />
                           )}
 
-                          {/* Hover micro-actions in top-right corner */}
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1.5 z-10">
+                          {/* Image micro-actions (always visible on touch, hover on desktop) */}
+                          <div className="absolute top-2 right-2 opacity-100 lg:opacity-0 lg:pointer-events-none lg:group-hover:opacity-100 lg:group-hover:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-focus-within:pointer-events-auto transition-opacity duration-200 flex items-center gap-1.5 z-10">
                             <button
                               type="button"
                               title={String(locale || "").startsWith("zh") ? "用作参考图" : "Use as reference"}
@@ -2356,10 +2571,12 @@ export default function ImageStudio({
                             </button>
                           </div>
 
-                          {/* Bottom-right HD badge */}
-                          <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm border border-white/10 text-[9px] font-mono text-white/70">
-                            HD
-                          </div>
+                          {/* Bottom-right spec badge */}
+                          {formatQualityLabel(batch.quality, copy) && (
+                            <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm border border-white/10 text-[9px] font-mono text-white/70 max-w-[80px] truncate">
+                              {formatQualityLabel(batch.quality, copy)}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -2420,7 +2637,7 @@ export default function ImageStudio({
       </div>
 
       {/* ── BOTTOM PROMPT BAR ── */}
-      <PromptComposer>
+      <PromptComposer ref={composerRef}>
           {/* Top row: upload picker + textarea */}
           <div className="flex flex-col gap-3">
             {/* Reference images: stacked photo cards with add / remove */}
@@ -2570,11 +2787,7 @@ export default function ImageStudio({
                     <rect x="6" y="6" width="12" height="12" rx="2" />
                   </svg>
                   <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                    {selectedAr}
-                    {showQualityBtn && currentResolutions.length > 0
-                      ? ` · ${selectedQuality || currentResolutions[0]}`
-                      : ""}
-                    {` · ${batchSize}`}
+                    {specChipLabel}
                   </span>
                   <PromptChevronIcon />
                 </button>
@@ -2595,8 +2808,115 @@ export default function ImageStudio({
                       showQuality={showQualityBtn}
                       batchSize={batchSize}
                       onChangeBatchSize={(n) => setBatchSize(n)}
+                      formatQuality={(value) => formatQualityLabel(value, copy)}
                       copy={copy}
                     />
+                  </PromptPopover>
+                )}
+              </div>
+
+              {/* Negative prompt */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDropdownOpen((open) => (open === "negative" ? null : "negative"));
+                  }}
+                  aria-haspopup="dialog"
+                  aria-expanded={dropdownOpen === "negative"}
+                  title={negativePrompt || copy.negativePrompt.trigger}
+                  className={promptControlClassName({
+                    active: dropdownOpen === "negative",
+                  })}
+                >
+                  <Ban className="size-4 opacity-60 flex-shrink-0" />
+                  {negativePrompt ? (
+                    <>
+                      <span className={`${PROMPT_CONTROL_LABEL_CLASS} hidden min-w-0 max-w-[130px] truncate sm:inline`}>
+                        {copy.negativePrompt.chip.replace("{text}", negativePrompt)}
+                      </span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={copy.negativePrompt.clear}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setNegativePrompt("");
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter" && event.key !== " ") return;
+                          event.preventDefault();
+                          event.stopPropagation();
+                          setNegativePrompt("");
+                        }}
+                        className="grid size-4 shrink-0 place-items-center rounded-full opacity-70 transition-opacity hover:opacity-100"
+                      >
+                        <X className="size-3" />
+                      </span>
+                    </>
+                  ) : (
+                    <span className={`${PROMPT_CONTROL_LABEL_CLASS} hidden whitespace-nowrap sm:inline`}>
+                      {copy.negativePrompt.trigger}
+                    </span>
+                  )}
+                  <PromptChevronIcon />
+                </button>
+
+                {dropdownOpen === "negative" && (
+                  <PromptPopover
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-[calc(100vw-2rem)] sm:w-[360px] p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3 border-b border-line-subtle pb-2">
+                      <span className="text-caption font-semibold uppercase tracking-wide text-ink-subtle">
+                        {copy.negativePrompt.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setNegativePrompt("")}
+                        className="text-[11px] text-ink-muted transition-colors hover:text-ink"
+                      >
+                        {copy.negativePrompt.clear}
+                      </button>
+                    </div>
+                    <textarea
+                      value={negativePrompt}
+                      onChange={(event) => setNegativePrompt(event.target.value)}
+                      placeholder={copy.negativePrompt.placeholder}
+                      rows={3}
+                      className="w-full resize-none rounded-xl border border-line bg-well p-2.5 text-xs leading-relaxed text-ink placeholder:text-ink-subtle focus:border-brand-line focus:outline-none focus:ring-1 focus:ring-brand-ring"
+                    />
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {NEGATIVE_PRESET_KEYS.map((key) => {
+                        const preset = copy.negativePrompt[key];
+                        const selected = negativePromptItems.includes(preset);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => toggleNegativePreset(preset)}
+                            className={`h-7 rounded-full border px-2.5 text-[11px] transition-colors ${
+                              selected
+                                ? "border-brand-line bg-brand-soft text-brand"
+                                : "border-line text-ink-muted hover:bg-wash hover:text-ink"
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setDropdownOpen(null)}
+                        className="h-8 rounded-full border border-line bg-surface-raised px-3 text-xs font-medium text-ink transition-colors hover:bg-surface"
+                      >
+                        {copy.negativePrompt.done}
+                      </button>
+                    </div>
                   </PromptPopover>
                 )}
               </div>
@@ -2674,7 +2994,8 @@ export default function ImageStudio({
 
               <PromptAction
                 onClick={handleGenerate}
-                disabled={generating}
+                disabled={!canGenerate}
+                title={generateDisabledReason}
               >
                 {generating ? (
                   <>
@@ -2744,7 +3065,7 @@ export default function ImageStudio({
         currentIndex={activeDetailIndex}
         onNavigate={handleNavigateDetail}
         onReEdit={handleReEdit}
-        onReGenerate={handleReGenerate}
+        onReGenerate={setRegenerateConfirmBatch}
         onUseAsReference={handleUseAsReference}
         onInpaint={handleInpaint}
         onUpscale={handleUpscale}
@@ -2766,6 +3087,67 @@ export default function ImageStudio({
         onAddHistoryItem={addToHistory}
         initialBgImageUrl={drawModalInitialImage}
       />
+
+      {/* ── REGENERATE CONFIRMATION ── */}
+      {regenerateConfirmBatch && (
+        <div
+          className="fixed inset-0 z-modal flex items-center justify-center bg-scrim p-4 backdrop-blur-xl animate-fade-in"
+          onClick={() => setRegenerateConfirmBatch(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="regenerate-confirm-title"
+            className="w-full max-w-sm rounded-2xl border border-line-strong bg-overlay p-5 shadow-elevation-4"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="regenerate-confirm-title" className="text-base font-semibold text-ink">
+              {copy.regenerateConfirm.title}
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+              {copy.regenerateConfirm.description.replace(
+                "{count}",
+                String(regenerateConfirmCount),
+              )}
+            </p>
+            {regenerateConfirmBatch.prompt && (
+              <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-ink-subtle">
+                “{regenerateConfirmBatch.prompt}”
+              </p>
+            )}
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-line bg-well p-3">
+              <span className="text-xs text-ink-muted">{copy.regenerateConfirm.cost}</span>
+              <ModelPriceTag
+                ids={regenerateConfirmBatch.model || selectedModelId}
+                multiplier={regenerateConfirmCount}
+                locale={locale}
+                className="text-sm font-semibold text-ink"
+              />
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setRegenerateConfirmBatch(null)}
+                className="h-9 rounded-full border border-line bg-surface px-4 text-xs font-medium text-ink transition-colors hover:bg-surface-raised"
+              >
+                {copy.regenerateConfirm.cancel}
+              </button>
+              <button
+                type="button"
+                disabled={generating}
+                onClick={() => {
+                  const target = regenerateConfirmBatch;
+                  setRegenerateConfirmBatch(null);
+                  handleReGenerate(target);
+                }}
+                className="h-9 rounded-full bg-brand px-4 text-xs font-semibold text-ink-on-accent transition-[background-color,transform] duration-fast ease-standard hover:bg-brand-hover active:scale-[0.98] disabled:opacity-50"
+              >
+                {copy.regenerateConfirm.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Toaster position="top-right" duration={5000} />
     </div>
   );

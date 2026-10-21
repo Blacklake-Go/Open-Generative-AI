@@ -6,7 +6,7 @@ import { setPaymentProviderEnabled } from '@/lib/services/paymentProviders';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-const ALLOWED = new Set(['alipay', 'wechat', 'stripe']);
+const ALLOWED = new Set(['alipay', 'wechat', 'stripe', 'paypal']);
 
 async function handlePUT(request, context) {
   const guard = await requirePermission(request, PERMISSIONS.providersWrite);

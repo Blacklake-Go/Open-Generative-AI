@@ -18,7 +18,7 @@ import {
   BilibiliIcon,
 } from './SocialIcons';
 import { openGlobalAuthModal, closeGlobalAuthModal } from '@/lib/authEvents';
-import { normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/locales';
 
 export const SOCIAL_PROVIDER_META = {
   google: { label: 'Google', icon: GoogleIcon },
@@ -47,7 +47,7 @@ export default function AuthModal({
     const m = document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : null;
   };
-  const activeLocale = normalizeLocale(locale || getCookieLocale() || 'zh-CN');
+  const activeLocale = normalizeLocale(locale || getCookieLocale() || DEFAULT_LOCALE);
 
   // Main Mode: 'login' | 'register' | 'forgot'
   const effectiveInitialMode = initialMode || (

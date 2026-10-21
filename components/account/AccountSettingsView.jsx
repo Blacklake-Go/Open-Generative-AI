@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import ProfileTab from './tabs/ProfileTab';
 import SystemPreferencesSection from './settings/SystemPreferencesSection';
 import { UserRound, SlidersHorizontal } from 'lucide-react';
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/locales';
 
 export default function AccountSettingsView({
   user,
@@ -17,6 +18,15 @@ export default function AccountSettingsView({
   className = '',
 }) {
   const [subTab, setSubTab] = useState(initialSubTab); // 'profile' | 'preferences'
+
+  const cookieLocale = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/)?.[1] : null;
+  const activeLocale = normalizeLocale(user?.locale || cookieLocale || DEFAULT_LOCALE);
+  const isZh = activeLocale.startsWith('zh');
+
+  const copy = {
+    profile: isZh ? '账户资料与安全' : (activeLocale === 'ja-JP' ? 'プロフィールとセキュリティ' : (activeLocale === 'ko-KR' ? '프로필 및 보안' : (activeLocale === 'es' ? 'Perfil y seguridad' : 'Profile & Security'))),
+    preferences: isZh ? '系统与偏好设置' : (activeLocale === 'ja-JP' ? 'システムと環境設定' : (activeLocale === 'ko-KR' ? '시스템 및 환경설정' : (activeLocale === 'es' ? 'Sistema y preferencias' : 'System & Preferences'))),
+  };
 
   return (
     <div className={`w-full ${className}`}>
@@ -32,7 +42,7 @@ export default function AccountSettingsView({
           }`}
         >
           <UserRound className="size-3.5" />
-          <span>账户资料与安全</span>
+          <span>{copy.profile}</span>
         </button>
 
         <button
@@ -45,7 +55,7 @@ export default function AccountSettingsView({
           }`}
         >
           <SlidersHorizontal className="size-3.5" />
-          <span>系统与偏好设置</span>
+          <span>{copy.preferences}</span>
         </button>
       </div>
 

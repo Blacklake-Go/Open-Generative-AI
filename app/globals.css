@@ -379,6 +379,94 @@
     box-shadow: var(--shadow-elevation-3);
   }
 
+  /* Jimeng / Dreamina creation mode switch: 40px track, 36px capsule options, iridescent selected state */
+  .mode-switch {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: min(100%, 320px);
+    height: 40px;
+    padding: 2px;
+    border-radius: 110px;
+    background: rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+  }
+  .mode-switch-option {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 36px;
+    padding: 4px 16px;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: #fafafa;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 22px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.1s linear;
+  }
+  .mode-switch-option:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .mode-switch-option:active {
+    background: rgba(255, 255, 255, 0.16);
+    transition: none;
+  }
+  .mode-switch-option:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.55);
+    outline-offset: 2px;
+  }
+  .mode-switch-option[aria-pressed='true'] {
+    --mode-switch-edge-rgb: 250 250 250;
+    color: #1a1a1a;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(var(--mode-switch-edge-rgb)) 0%,
+        rgb(var(--mode-switch-edge-rgb) / 0.78) 6%,
+        rgb(var(--mode-switch-edge-rgb) / 0.65) 13%,
+        rgb(var(--mode-switch-edge-rgb) / 0.37) 25%,
+        transparent 42%,
+        transparent 58%,
+        rgb(var(--mode-switch-edge-rgb) / 0.37) 75%,
+        rgb(var(--mode-switch-edge-rgb) / 0.65) 87%,
+        rgb(var(--mode-switch-edge-rgb) / 0.78) 94%,
+        rgb(var(--mode-switch-edge-rgb)) 100%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        hsla(31, 57%, 93%, 0.14) 3%,
+        hsla(23, 89%, 93%, 0.73) 13%,
+        rgba(255, 226, 206, 0.85) 22%,
+        rgba(255, 221, 197, 0.85) 29%,
+        hsla(37, 63%, 89%, 0.85) 35%,
+        hsla(55, 22%, 90%, 0.85) 41%,
+        rgba(196, 237, 240, 0.85) 48%,
+        rgba(173, 238, 251, 0.85) 54%,
+        rgba(150, 239, 255, 0.85) 61%,
+        rgba(158, 235, 251, 0.84) 67%,
+        rgba(173, 238, 251, 0.85) 73%,
+        rgba(190, 243, 254, 0.85) 80%,
+        rgba(204, 245, 255, 0.78) 86%,
+        rgba(206, 243, 249, 0.4) 92%,
+        rgba(218, 247, 249, 0.11) 97%,
+        transparent 100%
+      ),
+      #fafafa;
+  }
+  .mode-switch-option[aria-pressed='true']:active {
+    --mode-switch-edge-rgb: 178 178 178;
+    background-color: #b2b2b2;
+  }
+
   /* Spatial Prompt Composer Container */
   .prompt-composer-spatial {
     background-color: var(--surface-glass-prompt);

@@ -1,6 +1,6 @@
 import { authenticateUser, createSession, getSessionCookieDomain, json, setSessionCookie } from '@/lib/services/auth';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
-import { normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/locales';
 
 export const runtime = 'nodejs';
 
@@ -21,12 +21,10 @@ export async function POST(request) {
     const session = await createSession(user.id);
     const response = json({ user });
     setSessionCookie(response, session.token, session.expires, request);
-    if (user.locale) {
-      const norm = normalizeLocale(user.locale);
-      const domain = getSessionCookieDomain(request);
-      response.cookies.set('NEXT_LOCALE', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
-      response.cookies.set('locale', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
-    }
+    const norm = normalizeLocale(user.locale || DEFAULT_LOCALE);
+    const domain = getSessionCookieDomain(request);
+    response.cookies.set('NEXT_LOCALE', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
+    response.cookies.set('locale', norm, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     return response;
   } catch (error) {
     console.error('[auth/login]', error);

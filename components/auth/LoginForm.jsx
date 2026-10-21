@@ -37,7 +37,7 @@ const SOCIAL_ICONS = {
   bilibili: { label: '哔哩哔哩', icon: BilibiliIcon },
 };
 
-export default function LoginForm({ locale = 'zh-CN' }) {
+export default function LoginForm({ locale = 'en' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const copy = getAuthCopy(locale).login;

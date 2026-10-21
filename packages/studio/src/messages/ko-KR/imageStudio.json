@@ -44,6 +44,37 @@
     "heading": "만들기 시작하기",
     "subtitle": "장면, 캐릭터, 분위기, 스타일을 설명하고 그것이 실제로 나타나는 것을 지켜보세요."
   },
+  "qualityLabels": {
+    "standard": "표준",
+    "high": "고화질",
+    "medium": "중간",
+    "low": "빠름"
+  },
+  "negativePrompt": {
+    "trigger": "네거티브",
+    "chip": "네거티브: {text}",
+    "title": "네거티브 프롬프트",
+    "placeholder": "피하고 싶은 요소를 설명하세요",
+    "clear": "지우기",
+    "done": "완료",
+    "separator": ", ",
+    "promptSuffix": "피하기: {value}",
+    "presetBlurry": "흐림",
+    "presetLowQuality": "저품질",
+    "presetDeformed": "변형",
+    "presetExtraFingers": "손가락 중복",
+    "presetWatermark": "워터마크",
+    "presetText": "텍스트",
+    "presetDark": "너무 어두움",
+    "presetEdges": "가장자리 깨짐"
+  },
+  "regenerateConfirm": {
+    "title": "이 배치를 다시 생성할까요?",
+    "description": "동일한 프롬프트와 파라미터로 {count}장을 생성합니다.",
+    "cost": "예상 소모",
+    "cancel": "취소",
+    "confirm": "다시 생성"
+  },
   "promptBar": {
     "placeholderMultiImage": "{count} 이미지가 선택됨 - 변환 설명(선택 사항)",
     "placeholderI2I": "이 이미지를 변환하는 방법을 설명하세요(선택사항).",

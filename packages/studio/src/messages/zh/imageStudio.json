@@ -44,6 +44,37 @@
     "heading": "开始使用",
     "subtitle": "描述一个场景、角色、情绪或风格 — 让它跃然眼前"
   },
+  "qualityLabels": {
+    "standard": "标准",
+    "high": "高清",
+    "medium": "中等",
+    "low": "快速"
+  },
+  "negativePrompt": {
+    "trigger": "负面词",
+    "chip": "负面词：{text}",
+    "title": "负面提示词",
+    "placeholder": "描述不希望出现的画面元素",
+    "clear": "清空",
+    "done": "完成",
+    "separator": "、",
+    "promptSuffix": "避免出现：{value}",
+    "presetBlurry": "模糊",
+    "presetLowQuality": "低质量",
+    "presetDeformed": "变形",
+    "presetExtraFingers": "多余手指",
+    "presetWatermark": "水印",
+    "presetText": "文字",
+    "presetDark": "过暗",
+    "presetEdges": "边缘破损"
+  },
+  "regenerateConfirm": {
+    "title": "再次生成这一组？",
+    "description": "将使用相同的提示词和参数生成 {count} 张图片。",
+    "cost": "预计消耗",
+    "cancel": "取消",
+    "confirm": "确认生成"
+  },
   "promptBar": {
     "placeholderMultiImage": "已选择 {count} 张图片 — 描述转换效果（可选）",
     "placeholderI2I": "描述如何转换这张图片（可选）",

@@ -52,7 +52,7 @@ function formatPrice(model, isChinese) {
   return isChinese ? '按量计费' : 'Usage-based';
 }
 
-export default function ModelDetailPageClient({ modelId, locale = 'zh-CN' }) {
+export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
   const isChinese = Boolean(locale?.includes('zh'));
   const { models, telemetryById, loading, error, reload } = useModelDirectory({ range: '24h' });
   const [copied, setCopied] = useState(false);

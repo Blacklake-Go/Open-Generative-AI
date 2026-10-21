@@ -44,6 +44,37 @@
     "heading": "で作成を始めましょう",
     "subtitle": "シーン、キャラクター、雰囲気、スタイルを説明し、それが現実になるのを見てください。"
   },
+  "qualityLabels": {
+    "standard": "標準",
+    "high": "高画質",
+    "medium": "中",
+    "low": "高速"
+  },
+  "negativePrompt": {
+    "trigger": "ネガティブ",
+    "chip": "ネガティブ：{text}",
+    "title": "ネガティブプロンプト",
+    "placeholder": "避けたい要素を入力してください",
+    "clear": "クリア",
+    "done": "完了",
+    "separator": "、",
+    "promptSuffix": "次の要素を避ける：{value}",
+    "presetBlurry": "ぼやけ",
+    "presetLowQuality": "低品質",
+    "presetDeformed": "変形",
+    "presetExtraFingers": "指の重複",
+    "presetWatermark": "透かし",
+    "presetText": "文字",
+    "presetDark": "暗すぎる",
+    "presetEdges": "エッジの破綻"
+  },
+  "regenerateConfirm": {
+    "title": "このバッチを再生成しますか？",
+    "description": "同じプロンプトとパラメータで {count} 枚生成します。",
+    "cost": "推定消費",
+    "cancel": "キャンセル",
+    "confirm": "再生成する"
+  },
   "promptBar": {
     "placeholderMultiImage": "選択された {count} 画像 — 変換の説明 (オプション)",
     "placeholderI2I": "この画像を変換する方法を説明します (オプション)",

@@ -1,8 +1,9 @@
-import { createSession, createUser, json, setSessionCookie, validateCredentials } from '@/lib/services/auth';
+import { createSession, createUser, getSessionCookieDomain, json, setSessionCookie, validateCredentials } from '@/lib/services/auth';
 import { getSettingByKey } from '@/lib/services/settings';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
 import { verifyEmailRegisterCode } from '@/lib/services/emailVerification';
 import { isInviteCodeRequired, checkInviteCodeValid } from '@/lib/services/inviteCodes';
+import { DEFAULT_LOCALE, isSupportedLocale, normalizeLocale } from '@/lib/locales';
 
 export const runtime = 'nodejs';
 
@@ -49,17 +50,26 @@ export async function POST(request) {
       return json({ error: verifyResult.message || '验证码无效或已过期' }, { status: 400 });
     }
 
+    const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value || request.cookies.get('locale')?.value;
+    const initialLocale = (cookieLocale && isSupportedLocale(cookieLocale))
+      ? normalizeLocale(cookieLocale)
+      : (body.locale && isSupportedLocale(body.locale) ? normalizeLocale(body.locale) : DEFAULT_LOCALE);
+
     const result = await createUser(body.email, body.password, {
       registrationSource: 'web_email',
       ip,
       emailVerified: true,
       inviteCode: inviteCode || null,
+      locale: initialLocale,
     });
     if (result.error) return json({ error: result.error }, { status: 409 });
 
     const session = await createSession(result.user.id);
     const response = json({ user: result.user });
     setSessionCookie(response, session.token, session.expires, request);
+    const domain = getSessionCookieDomain(request);
+    response.cookies.set('NEXT_LOCALE', initialLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
+    response.cookies.set('locale', initialLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     return response;
   } catch (error) {
     console.error('[auth/register]', error);

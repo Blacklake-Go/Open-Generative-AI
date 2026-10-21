@@ -44,6 +44,37 @@
     "heading": "開始創作",
     "subtitle": "描述一個場景、人物、情緒或風格——然後看著它變得栩栩如生"
   },
+  "qualityLabels": {
+    "standard": "標準",
+    "high": "高畫質",
+    "medium": "中等",
+    "low": "快速"
+  },
+  "negativePrompt": {
+    "trigger": "負面詞",
+    "chip": "負面詞：{text}",
+    "title": "負面提示詞",
+    "placeholder": "描述不希望出現的畫面元素",
+    "clear": "清空",
+    "done": "完成",
+    "separator": "、",
+    "promptSuffix": "避免出現：{value}",
+    "presetBlurry": "模糊",
+    "presetLowQuality": "低品質",
+    "presetDeformed": "變形",
+    "presetExtraFingers": "多餘手指",
+    "presetWatermark": "浮水印",
+    "presetText": "文字",
+    "presetDark": "過暗",
+    "presetEdges": "邊緣破損"
+  },
+  "regenerateConfirm": {
+    "title": "再次生成這一組？",
+    "description": "將使用相同的提示詞和參數生成 {count} 張圖片。",
+    "cost": "預計消耗",
+    "cancel": "取消",
+    "confirm": "確認生成"
+  },
   "promptBar": {
     "placeholderMultiImage": "所選的 {count} 影像 — 描述轉換（選購）",
     "placeholderI2I": "描述如何變換該圖像（可選）",

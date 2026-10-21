@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
 import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
 
 const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES.map((code) => ({
@@ -14,7 +14,7 @@ const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES.map((code) => ({
 export default function SettingsTab() {
   const [notifications, setNotifications] = useState(true);
   const [highQualityPreview, setHighQualityPreview] = useState(true);
-  const [currentLocale, setCurrentLocale] = useState('zh-CN');
+  const [currentLocale, setCurrentLocale] = useState(DEFAULT_LOCALE);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState('');
   const normalizedLocale = normalizeLocale(currentLocale);
@@ -31,7 +31,7 @@ export default function SettingsTab() {
           if (mounted && data.preferences) {
             setNotifications(data.preferences.notifyOnComplete ?? true);
             setHighQualityPreview(data.preferences.highQualityPreview ?? true);
-            setCurrentLocale(normalizeLocale(data.preferences.locale || 'zh-CN'));
+            setCurrentLocale(normalizeLocale(data.preferences.locale || DEFAULT_LOCALE));
           }
         }
       } catch (err) {

@@ -104,6 +104,7 @@ export function ImageSpecPopover({
   showQuality = true,
   batchSize = 1,
   onChangeBatchSize,
+  formatQuality = (value) => value,
   customWidth = null,
   customHeight = null,
   onChangeDimensions,
@@ -201,7 +202,7 @@ export function ImageSpecPopover({
           <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
             <span>{qualityLabel || t.titleResolution || "分辨率"}</span>
             <span className="text-[10px] text-ink-subtle font-normal">
-              {selectedQuality || resolutions[0]}
+              {formatQuality(selectedQuality || resolutions[0])}
             </span>
           </div>
           <div
@@ -224,7 +225,7 @@ export function ImageSpecPopover({
                       : "text-ink-muted hover:text-ink hover:bg-wash-strong"
                   }`}
                 >
-                  {res}
+                  {formatQuality(res)}
                 </button>
               );
             })}

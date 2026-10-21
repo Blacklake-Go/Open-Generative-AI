@@ -16,7 +16,7 @@ export async function POST(request) {
     if (!limit.allowed) return rateLimitResponse(limit);
     const body = await request.json();
     const provider = String(body.provider || '').toLowerCase();
-    if (!['stripe', 'wechat', 'alipay'].includes(provider)) return json({ error: '不支持的支付渠道' }, { status: 400 });
+    if (!['stripe', 'wechat', 'alipay', 'paypal'].includes(provider)) return json({ error: '不支持的支付渠道' }, { status: 400 });
     const availability = await assertPaymentChannelUsable(provider);
     if (!availability.ok) return json({ error: availability.error }, { status: availability.status });
     const planId = String(body.planId || '');

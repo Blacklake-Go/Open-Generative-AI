@@ -28,6 +28,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCH
   components \
   lib \
   plugins \
+  src \
   messages \
   scripts \
   public \
@@ -104,6 +105,10 @@ if [ -d \"\$STAGE/plugins\" ]; then
   rsync -a \"\$STAGE/plugins/\" \"\$WEB_DIR/plugins/\"
   chown -R www:www \"\$WEB_DIR/plugins\"
 fi
+if [ -d \"\$STAGE/src\" ]; then
+  rsync -a \"\$STAGE/src/\" \"\$WEB_DIR/src/\"
+  chown -R www:www \"\$WEB_DIR/src\"
+fi
 rsync -a \"\$STAGE/messages/\" \"\$WEB_DIR/messages/\"
 rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
 if [ -d \"\$STAGE/public\" ]; then
@@ -130,7 +135,7 @@ chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$W
 
 # 执行数据库版本迁移
 echo \"执行数据库版本迁移 (058 等)...\"
-(cd \"\$WEB_DIR\" && sudo -u www node --env-file=/etc/supdance.env scripts/migrate.mjs)
+(cd \"\$WEB_DIR\" && node --env-file=/etc/supdance.env scripts/migrate.mjs)
 
 # 清理暂存文件
 rm -rf \"\$STAGE\" /tmp/source_supdance_fusion.tar.gz /tmp/next_supdance_fusion.tar.gz

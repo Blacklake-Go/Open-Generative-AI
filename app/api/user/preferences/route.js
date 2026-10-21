@@ -1,6 +1,6 @@
 import { getSessionCookieDomain, getUserFromRequest, json } from '@/lib/services/auth';
 import { queryOne, execute } from '@/lib/application/dataAccess.js';
-import { isSupportedLocale, normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, isSupportedLocale, normalizeLocale } from '@/lib/locales';
 import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
 
 export const runtime = 'nodejs';
@@ -20,7 +20,7 @@ export async function GET(request) {
     preferences: {
       notifyOnComplete: preferences.notifyOnComplete ?? true,
       highQualityPreview: preferences.highQualityPreview ?? true,
-      locale: normalizeLocale(row?.locale || 'zh-CN'),
+      locale: normalizeLocale(preferences.locale || row?.locale || DEFAULT_LOCALE),
     },
   });
 }
@@ -40,11 +40,17 @@ export async function PUT(request) {
 
     const row = await queryOne('SELECT locale, social_links FROM users WHERE id = $1', [user.id]);
     const currentLinks = row?.social_links && typeof row.social_links === 'object' ? row.social_links : {};
+
+    let targetLocale = null;
+    if (locale !== undefined && isSupportedLocale(locale)) {
+      targetLocale = normalizeLocale(locale);
+    }
     
     const updatedPreferences = {
       ...(currentLinks.preferences || {}),
       ...(notifyOnComplete !== undefined ? { notifyOnComplete: Boolean(notifyOnComplete) } : {}),
       ...(highQualityPreview !== undefined ? { highQualityPreview: Boolean(highQualityPreview) } : {}),
+      ...(targetLocale ? { locale: targetLocale } : {}),
     };
 
     const newLinks = {
@@ -52,27 +58,29 @@ export async function PUT(request) {
       preferences: updatedPreferences,
     };
 
-    let targetLocale = normalizeLocale(row?.locale || 'zh-CN');
-    if (locale !== undefined) {
-      if (isSupportedLocale(locale)) {
-        targetLocale = normalizeLocale(locale);
-      }
+    if (targetLocale) {
+      await execute(
+        'UPDATE users SET social_links = $1, locale = $2, updated_at = NOW() WHERE id = $3',
+        [JSON.stringify(newLinks), targetLocale, user.id]
+      );
+    } else {
+      await execute(
+        'UPDATE users SET social_links = $1, updated_at = NOW() WHERE id = $2',
+        [JSON.stringify(newLinks), user.id]
+      );
     }
 
-    await execute(
-      'UPDATE users SET social_links = $1, locale = $2, updated_at = NOW() WHERE id = $3',
-      [JSON.stringify(newLinks), targetLocale, user.id]
-    );
+    const effectiveLocale = normalizeLocale(targetLocale || updatedPreferences.locale || row?.locale || DEFAULT_LOCALE);
 
     const response = json({
       success: true,
       preferences: {
         ...updatedPreferences,
-        locale: targetLocale,
+        locale: effectiveLocale,
       },
     });
 
-    if (locale !== undefined) {
+    if (targetLocale) {
       const domain = getSessionCookieDomain(request);
       response.cookies.set('NEXT_LOCALE', targetLocale, {
         path: '/',

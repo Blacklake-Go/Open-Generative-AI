@@ -53,6 +53,25 @@ function AlipayIcon({ className = 'size-5' }) {
   );
 }
 
+function PayPalIcon({ className = 'size-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.78.78 0 0 1 .77-.655h6.666c3.212 0 5.488 1.487 5.176 4.908-.344 3.766-2.585 5.626-5.836 5.626H9.278l-1.35 6.945a.78.78 0 0 1-.77.655l-.082.038z"
+        fill="#003087"
+      />
+      <path
+        d="M19.066 7.973c-.344 3.766-2.585 5.626-5.836 5.626H10.79l-1.47 7.558a.52.52 0 0 1-.512.436H6.11a.428.428 0 0 1-.422-.494l2.16-13.79c.046-.296.3-.513.6-.513h5.442c3.212 0 5.488 1.487 5.176 4.908v.269z"
+        fill="#0079C1"
+      />
+      <path
+        d="M17.848 8.242c-.314 3.44-2.36 5.14-5.33 5.14H10.08l-1.298 6.673a.475.475 0 0 1-.468.398H5.972a.39.39 0 0 1-.385-.451l1.972-12.593a.547.547 0 0 1 .548-.468h4.97c2.933 0 5.011 1.358 4.771 4.483v.318z"
+        fill="#00457C"
+      />
+    </svg>
+  );
+}
+
 // 商业订阅默认备用数据 (v2.2 价格体系: 140/350/800/1760)
 const FALLBACK_MEMBERSHIP_TIERS = [
   { id: 'starter', name: 'Starter (入门探索版)', monthlyCny: 140, monthlyOriginCny: 233, yearlyCny: 1680, yearlyOriginCny: 2800, quarterlyCny: 420, quarterlyOriginCny: 700, quotaBase: 2000, features: ['每月 2,000 创作积分', '2 路并行生成', '5GB 专属资产存储'] },
@@ -338,8 +357,8 @@ export default function RechargeModal({
         throw new Error(payload.error || '获取支付通道失败，请稍后重试');
       }
 
-      // 国际信用卡 Stripe 重定向
-      if (activeProvider === 'stripe' && payload.checkoutUrl) {
+      // Stripe 与 PayPal 外部收银台重定向
+      if ((activeProvider === 'stripe' || activeProvider === 'paypal') && payload.checkoutUrl) {
         window.location.assign(payload.checkoutUrl);
         return;
       }
@@ -796,7 +815,7 @@ export default function RechargeModal({
                   onClick={() => handleCreateOrder(planId, payMethod, billingCycle)}
                   disabled={loading || !availableProviders[payMethod]?.enabled}
                 >
-                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : '立即支付'}
+                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : payMethod === 'paypal' ? '前往 PayPal 收银台' : '立即支付'}
                 </Button>
               </div>
             </div>
@@ -863,7 +882,7 @@ export default function RechargeModal({
                   onClick={() => handleCreateOrder(selectedPackId || 'credit_140', payMethod, 'one_time')}
                   disabled={loading || !availableProviders[payMethod]?.enabled}
                 >
-                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : '立即支付'}
+                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : payMethod === 'paypal' ? '前往 PayPal 收银台' : '立即支付'}
                 </Button>
               </div>
             </div>
@@ -1067,6 +1086,21 @@ export default function RechargeModal({
             >
               <WeChatPayIcon className="size-4" />
               <span>微信支付</span>
+            </button>
+          )}
+
+          {availableProviders?.paypal?.enabled === true && (
+            <button
+              type="button"
+              onClick={() => setPayMethod('paypal')}
+              className={`flex items-center justify-center gap-2 h-10 px-5 rounded-lg border font-medium text-xs transition-[background-color,border-color,color,box-shadow] cursor-pointer ${
+                payMethod === 'paypal'
+                  ? 'border-brand-line bg-brand-soft text-ink ring-2 ring-brand-ring shadow-elevation-1'
+                  : 'border-line-subtle bg-well text-ink-muted hover:border-line-strong hover:text-ink'
+              }`}
+            >
+              <PayPalIcon className="size-4" />
+              <span>PayPal</span>
             </button>
           )}
 

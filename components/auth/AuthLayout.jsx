@@ -10,7 +10,7 @@ import { getAuthCopy, getAuthRoutes, normalizeAuthLocale } from '@/lib/authCopy'
 
 export default function AuthLayout({
   children,
-  locale = 'zh-CN',
+  locale = 'en',
   title = '',
   subtitle = '',
 }) {

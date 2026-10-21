@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifySmsCode } from '@/lib/sms';
 import { findOrCreateUserByPhone, createSession, getSessionCookieDomain, setSessionCookie, json } from '@/lib/services/auth';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
-import { normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, isSupportedLocale, normalizeLocale } from '@/lib/locales';
 
 export const runtime = 'nodejs';
 
@@ -32,11 +32,17 @@ export async function POST(request) {
     }
 
     // 2. 获取或创建用户主体与 auth_accounts 凭据
+    const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value || request.cookies.get('locale')?.value;
+    const initialLocale = (cookieLocale && isSupportedLocale(cookieLocale))
+      ? normalizeLocale(cookieLocale)
+      : (body.locale && isSupportedLocale(body.locale) ? normalizeLocale(body.locale) : DEFAULT_LOCALE);
+
     const result = await findOrCreateUserByPhone({
       phone,
       countryCode,
       registrationSource: 'phone_sms',
-      ip
+      ip,
+      locale: initialLocale,
     });
 
     if (result.error) {
@@ -47,6 +53,7 @@ export async function POST(request) {
 
     // 3. 签发会话
     const session = await createSession(user.id);
+    const userLocale = normalizeLocale(user.locale || initialLocale || DEFAULT_LOCALE);
     const response = json({
       user: {
         id: user.id,
@@ -57,7 +64,7 @@ export async function POST(request) {
         email: user.email,
         role: user.role,
         status: user.status,
-        locale: user.locale || 'zh-CN',
+        locale: userLocale,
         credits: Number(user.credits || 0),
         loginProviders: ['phone']
       },
@@ -65,7 +72,6 @@ export async function POST(request) {
     });
 
     setSessionCookie(response, session.token, session.expires, request);
-    const userLocale = normalizeLocale(user.locale || 'zh-CN');
     const domain = getSessionCookieDomain(request);
     response.cookies.set('NEXT_LOCALE', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });
     response.cookies.set('locale', userLocale, { path: '/', maxAge: 31536000, sameSite: 'lax', ...(domain ? { domain } : {}) });

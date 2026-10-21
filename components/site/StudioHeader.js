@@ -14,7 +14,7 @@ import SubscriptionModal from '@/components/subscription/SubscriptionModal';
 import { useBranding } from '@/lib/hooks/useBranding';
 import { useUserSession } from '@/lib/hooks/useUserSession';
 import { getAuthRoutes } from '@/lib/authCopy';
-import { getCommonCopy, getLocaleConfig, getLocaleFromPathname, matchPathLocale, normalizeLocale, localizeStudioPath } from '@/lib/locales';
+import { DEFAULT_LOCALE, getCommonCopy, getLocaleConfig, getLocaleFromPathname, matchPathLocale, normalizeLocale, localizeStudioPath } from '@/lib/locales';
 import BrandLogo from '@/components/site/BrandLogo';
 import TopMegaNavigation from '@/components/navigation/TopMegaNavigation';
 import { getMegaNavCategories } from '@/config/mega-navigation';
@@ -29,7 +29,7 @@ export function BrandMark({ compact = false, locale = null }) {
     const m = document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : null;
   };
-  const activeLocale = normalizeLocale(locale || matchPathLocale(pathname) || getCookieLocale() || 'zh-CN');
+  const activeLocale = normalizeLocale(locale || matchPathLocale(pathname) || getCookieLocale() || DEFAULT_LOCALE);
   const homeHref = '/';
   const logoHref = brand?.logoHref || homeHref;
   const logoTarget = brand?.logoTarget || '_self';
@@ -89,7 +89,7 @@ export default function StudioHeader({
     matchPathLocale(pathname) ||
     getCookieLocale() ||
     user?.locale ||
-    'zh-CN'
+    DEFAULT_LOCALE
   );
   const copy = getCommonCopy(activeLocale);
   const studioHref = localizeStudioPath(activeLocale);

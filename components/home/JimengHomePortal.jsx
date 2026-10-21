@@ -7,8 +7,11 @@ import toast from 'react-hot-toast';
 import {
   Layers,
   Sparkles,
-  ExternalLink,
-  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
+  Plus,
+  Lock,
+  AtSign,
   Image as ImageIcon,
   Film,
   Volume2,
@@ -26,6 +29,17 @@ import { useUserSession } from '@/lib/hooks/useUserSession';
 import { localizeStudioPath, normalizeLocale, getCommonCopy, getLocaleConfig } from '@/lib/locales';
 import HomeStudioPromptComposer from './HomeStudioPromptComposer';
 import AuthModal from '@/components/AuthModal';
+
+// 画布卡片占位封面：无缩略图时使用确定性的氛围渐变，贴近即梦的哑光质感
+const CANVAS_CARD_BACKDROPS = [
+  'radial-gradient(circle at 28% 18%, rgba(255, 214, 190, 0.16), transparent 58%), linear-gradient(135deg, #38232f 0%, #1b1f2d 58%, #0d0f13 100%)',
+  'radial-gradient(circle at 72% 14%, rgba(170, 238, 255, 0.14), transparent 56%), linear-gradient(135deg, #1d3440 0%, #16202a 58%, #0d0f13 100%)',
+  'radial-gradient(circle at 32% 78%, rgba(214, 196, 255, 0.12), transparent 55%), linear-gradient(135deg, #2c2938 0%, #1d2029 58%, #0d0f13 100%)',
+];
+
+// 图像创作入口卡片氛围底
+const IMAGE_CREATION_BACKDROP =
+  'radial-gradient(circle at 70% 22%, rgba(255, 190, 214, 0.15), transparent 56%), linear-gradient(135deg, #322234 0%, #1d2029 58%, #0d0f13 100%)';
 
 // 动态模式快捷技能预设标签列表（涵盖图像、视频、音频、Agent、数字人 5 模态）
 const getSkillPresets = (locale, tHome, mode = 'image') => {
@@ -296,6 +310,60 @@ const getSkillPresets = (locale, tHome, mode = 'image') => {
   ];
 };
 
+// 画布模式技能工作流标签（视频反解 / 创作分镜 / 广告导演 / 剧本 / 短片）
+const getCanvasSkillPresets = (locale) => {
+  const norm = normalizeLocale(locale);
+  const isZh = norm.startsWith('zh');
+  return [
+    {
+      id: 'video-reverse',
+      label: isZh ? '/ 视频反解' : '/ Video Deconstruction',
+      badge: 'New',
+      prompt: isZh
+        ? '上传一段视频，逐帧反解其镜头语言、构图、色调与运镜，生成可复刻的分镜提示词'
+        : 'Deconstruct an uploaded video frame by frame into camera language, composition, tone and re-creatable storyboard prompts',
+    },
+    {
+      id: 'storyboard-creator',
+      label: isZh ? '/ 创作分镜' : '/ Storyboard Creator',
+      badge: 'New',
+      prompt: isZh
+        ? '根据主题自动扩写5幕电影级镜头脚本，包含景别、运镜、光影与音效设计'
+        : 'Expand a theme into a five-act cinematic shot script with framing, camera moves, lighting and sound design',
+    },
+    {
+      id: 'ad-film-director',
+      label: isZh ? '/ 全流程广告片导演' : '/ Full-Funnel Ad Director',
+      badge: 'New',
+      prompt: isZh
+        ? '从创意洞察、分镜脚本到成片交付，全流程导演一部商业广告大片'
+        : 'Direct a commercial film end-to-end, from creative insight and storyboard to final delivery',
+    },
+    {
+      id: 'script-development',
+      label: isZh ? '/ 剧本开发' : '/ Script Development',
+      badge: 'New',
+      prompt: isZh
+        ? '围绕核心创意展开完整剧本：人物设定、三幕结构与对白设计'
+        : 'Develop a complete script around the core idea: character profiles, three-act structure and dialogue design',
+    },
+    {
+      id: 'drama-short-film',
+      label: isZh ? '/ 剧情短片' : '/ Drama Short Film',
+      badge: 'New',
+      prompt: isZh
+        ? '将你的故事改编为有起承转合的剧情短片脚本，含镜头与氛围设计'
+        : 'Adapt your story into a dramatic short film script with shot and mood design',
+    },
+    {
+      id: 'more-canvas-skills',
+      label: isZh ? '更多技能 ›' : 'More Skills ›',
+      badge: null,
+      href: `${localizeStudioPath(norm)}?tab=agents`,
+    },
+  ];
+};
+
 // 最近上新展台卡片（全站 SupDance 真实生态与同款参数装配）
 const getRecentFeatures = (locale, tHome, rootPath) => {
   const norm = normalizeLocale(locale);
@@ -371,6 +439,12 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   const [galleryTab, setGalleryTab] = useState('featured'); // 'user' | 'featured'
   const [previewModalItem, setPreviewModalItem] = useState(null);
 
+  // 画布模式：最近云端画布与底部 Agent 输入框
+  const [canvasProjects, setCanvasProjects] = useState([]);
+  const [loadingCanvasProjects, setLoadingCanvasProjects] = useState(false);
+  const [canvasPrompt, setCanvasPrompt] = useState('');
+  const canvasInputRef = useRef(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -384,6 +458,7 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   const assetHref = rootPath ? `${rootPath}/assets` : '/assets';
 
   const skillPresets = getSkillPresets(normLocale, tHome, composerMode);
+  const canvasSkillPresets = getCanvasSkillPresets(normLocale);
   const recentFeatures = getRecentFeatures(normLocale, tHome, rootPath);
 
   // 请求真实后端 /api/generations 接口装配历史创作
@@ -414,6 +489,37 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
   useEffect(() => {
     fetchRecentGenerations();
   }, [fetchRecentGenerations]);
+
+  // 读取最近云端画布（最多展示 3 个）
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setCanvasProjects([]);
+      setLoadingCanvasProjects(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+    setLoadingCanvasProjects(true);
+    fetch('/api/canvas/projects', { credentials: 'include', cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data?.projects) ? data.projects : [];
+        setCanvasProjects(list.slice(0, 2));
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.warn('[JimengHomePortal] Failed to load canvas projects:', err);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCanvasProjects(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // 全局账户额度守卫：在首页遇到未登录时弹出统一 AuthModal
   const requireAccountGate = useCallback(() => {
@@ -462,11 +568,45 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
       if (queuedComposerAction.type === 'applyPreset') {
         composerRef.current.applyCreationPreset(queuedComposerAction.payload);
       } else if (queuedComposerAction.type === 'setPrompt') {
-        composerRef.current.setPromptText(queuedComposerAction.prompt);
+        composerRef.current.setPromptText(queuedComposerAction.prompt, queuedComposerAction.mode);
       }
       setQueuedComposerAction(null);
     }
   }, [activeMode, queuedComposerAction]);
+
+  // 画布底部输入框：将灵感带入 Agent 创作台
+  const handleCanvasPromptSubmit = (event) => {
+    event.preventDefault();
+    const prompt = canvasPrompt.trim();
+    if (!prompt) return;
+    setCanvasPrompt('');
+    setActiveMode('generate');
+    setQueuedComposerAction({ type: 'setPrompt', prompt, mode: 'agent' });
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+    toast.success(isZh ? '已带入 Agent 创作台，确认后即可开始' : 'Prompt loaded into the Agent composer');
+  };
+
+  // 输入框快捷操作：聚焦 / 插入技能斜杠 / 插入主体 @
+  const handleCanvasInputAction = (action) => {
+    if (action === 'skill') {
+      setCanvasPrompt((prev) => `${prev}${prev.trim() && !prev.endsWith(' ') ? ' ' : ''}/`);
+    } else if (action === 'subject') {
+      setCanvasPrompt((prev) => `${prev}${prev.trim() && !prev.endsWith(' ') ? ' ' : ''}@`);
+    }
+    canvasInputRef.current?.focus();
+  };
+
+  // 画布模式技能标签：切入生成模式并带入 Agent 创作台
+  const handleCanvasSkillClick = (skill) => {
+    if (skill.href) {
+      router.push(skill.href);
+      return;
+    }
+    setActiveMode('generate');
+    setQueuedComposerAction({ type: 'setPrompt', prompt: skill.prompt, mode: 'agent' });
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+    toast.success(isZh ? `已应用技能: ${skill.label.replace('/ ', '')}` : `Applied skill: ${skill.label}`);
+  };
 
   // 点击展台卡片：一键装配创作参数或跳转
   const handleFeatureCardClick = (item) => {
@@ -582,127 +722,257 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
         <div className="relative mb-8 text-center flex flex-col items-center">
           {/* Ambient backdrop glow */}
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[340px] sm:w-[540px] h-[160px] bg-brand/15 blur-[90px] pointer-events-none rounded-full" />
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-center select-none relative z-10 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
-            <span className="bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
-              {isZh ? '创造任何你' : 'Create anything you'}
-            </span>
-            <span className="italic font-serif bg-gradient-to-r from-brand-hover via-pink-400 to-rose-300 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(225,29,116,0.35)]">
-              {isZh ? '想象的事物' : 'imagine'}
-            </span>
-          </h1>
-          <p className="text-xs sm:text-sm text-ink-muted text-center max-w-xl mx-auto mt-3 font-normal leading-relaxed relative z-10">
-            {getGreeting()} · {isZh ? '全模态前沿模型，多模态视听无限画布' : 'Next-Gen Multi-modal AI Creative Engine & Infinite Canvas'}
-          </p>
+
+          {activeMode === 'canvas' ? (
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-center select-none relative z-10">
+              <span className="bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                {getGreeting()}
+              </span>
+            </h1>
+          ) : (
+            <>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-center select-none relative z-10 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+                <span className="bg-gradient-to-b from-white via-white/95 to-white/70 bg-clip-text text-transparent">
+                  {isZh ? '创造任何你' : 'Create anything you'}
+                </span>
+                <span className="italic font-serif bg-gradient-to-r from-brand-hover via-pink-400 to-rose-300 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(225,29,116,0.35)]">
+                  {isZh ? '想象的事物' : 'imagine'}
+                </span>
+              </h1>
+              <p className="text-xs sm:text-sm text-ink-muted text-center max-w-xl mx-auto mt-3 font-normal leading-relaxed relative z-10">
+                {getGreeting()} · {isZh ? '全模态前沿模型，多模态视听无限画布' : 'Next-Gen Multi-modal AI Creative Engine & Infinite Canvas'}
+              </p>
+            </>
+          )}
         </div>
 
-        {/* 核心模式分段器 (创作 vs 画布) — 严格遵循 UI_REPAIR_INSTRUCTION.md 规范 */}
+        {/* 核心模式分段器 (生成 vs 画布) — 对齐即梦胶囊切换器视觉与动效 */}
         <div
           data-pill-segmented
-          className="inline-flex items-center p-1 rounded-full bg-[#181a20]/90 border border-white/10 shadow-elevation-1 mb-8 backdrop-blur-md"
+          role="group"
+          aria-label={isZh ? '创作类型' : 'Creation type'}
+          className="mode-switch rounded-full mb-8"
         >
           <button
             type="button"
             data-pill-segment-item
+            aria-pressed={activeMode === 'generate'}
             onClick={() => setActiveMode('generate')}
-            className={`h-8 px-6 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-              activeMode === 'generate'
-                ? 'bg-white text-black font-semibold shadow-elevation-1 scale-100'
-                : 'text-ink-muted hover:text-ink'
-            }`}
+            className="mode-switch-option rounded-full"
           >
-            {tHome.modeGenerate || (isZh ? '创作' : 'Create')}
+            {tHome.modeGenerate || (isZh ? '生成' : 'Generate')}
           </button>
           <button
             type="button"
             data-pill-segment-item
+            aria-pressed={activeMode === 'canvas'}
             onClick={() => setActiveMode('canvas')}
-            className={`h-8 px-6 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-              activeMode === 'canvas'
-                ? 'bg-white text-black font-semibold shadow-elevation-1 scale-100'
-                : 'text-ink-muted hover:text-ink'
-            }`}
+            className="mode-switch-option rounded-full"
           >
             {tHome.modeCanvas || (isZh ? '画布' : 'Canvas')}
           </button>
         </div>
 
-        {/* 画布模式专属空间导引面板 (当选择画布模式时展示) */}
+        {/* 画布模式：即梦式画布首页（新建画布 + 最近画布 + Agent 输入框） */}
         {activeMode === 'canvas' ? (
-          <div className="w-full max-w-[880px] rounded-2xl bg-[#16181d]/90 border border-white/15 p-6 sm:p-8 backdrop-blur-xl shadow-elevation-3 flex flex-col gap-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="size-11 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
-                  <Layers className="size-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">
-                    {isZh ? 'SupDance 创意画布工作台' : 'SupDance Creative Canvas Workspaces'}
-                  </h3>
-                  <p className="text-xs text-ink-muted mt-0.5">
-                    {isZh ? '选择适合您创作流程的画布空间：专业分层画板或无限灵感白板' : 'Choose your canvas workspace: Layered Studio or Infinite Visual Canvas'}
-                  </p>
-                </div>
-              </div>
+          <div className="w-full max-w-[1280px] flex flex-col animate-fade-in">
+            <div className="mb-3 flex items-center justify-end gap-5 px-1">
               <button
                 type="button"
-                onClick={() => setActiveMode('generate')}
-                className="text-xs text-ink-subtle hover:text-white px-3 py-1.5 rounded-lg border border-white/10 hover:bg-wash transition-colors"
-              >
-                {isZh ? '← 返回极速生成' : '← Back to Generator'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option 1: 图层工作室 */}
-              <div
                 onClick={() => router.push(`${studioBase}?tab=layers`)}
-                className="group relative p-5 rounded-xl border border-white/10 hover:border-brand-line bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer transition-all duration-200 flex flex-col justify-between min-h-[160px]"
+                className="flex items-center gap-1.5 text-xs text-ink-subtle hover:text-white transition-colors cursor-pointer"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-brand/20 text-brand border border-brand/30 uppercase tracking-wider">
-                      STUDIO TAB
-                    </span>
-                    <ArrowRight className="size-4 text-ink-subtle group-hover:text-brand group-hover:translate-x-1 transition-all" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-brand transition-colors">
-                    {isZh ? '图层画板 (Layers Studio)' : 'Layers Studio'}
-                  </h4>
-                  <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-                    {isZh ? '深度图层分离、主体微调重绘与多素材精准排版合成。' : 'Layer decomposition, precise inpainting and visual element composition.'}
-                  </p>
-                </div>
-                <div className="text-[11px] font-semibold text-brand pt-2 flex items-center gap-1">
-                  <span>{isZh ? '立即进入画板 ›' : 'Open Layers Studio ›'}</span>
-                </div>
-              </div>
-
-              {/* Option 2: 无限画布 */}
+                <Layers className="size-3.5" />
+                <span>{isZh ? '图层画板' : 'Layers Studio'}</span>
+              </button>
               <a
                 href="/canvas"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative p-5 rounded-xl border border-white/10 hover:border-brand-line bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer transition-all duration-200 flex flex-col justify-between min-h-[160px]"
+                className="text-xs text-ink-muted hover:text-white transition-colors"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-soft text-brand border border-brand-line uppercase tracking-wider">
-                      STANDALONE
-                    </span>
-                    <ExternalLink className="size-4 text-ink-subtle group-hover:text-brand transition-colors" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-brand transition-colors">
-                    {isZh ? '无限画布 (Infinite Canvas)' : 'Infinite Canvas'}
-                  </h4>
-                  <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-                    {isZh ? '无边界节点式无限大白板，多图联动、视听跨模态灵感串联。' : 'Unbounded node-based board, multi-image cross-modal ideation and infinite zoom.'}
-                  </p>
-                </div>
-                <div className="text-[11px] font-semibold text-brand pt-2 flex items-center gap-1">
-                  <span>{isZh ? '打开无限画布 ↗' : 'Launch Infinite Canvas ↗'}</span>
-                </div>
+                {isZh ? '全部' : 'View all'}
               </a>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {/* 新建画布 */}
+              <a
+                href="/canvas?mode=new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-[#0f1115]/80 hover:bg-[#14161c]/90 hover:border-white/20 transition-all duration-300 flex flex-col items-center justify-center gap-3"
+              >
+                <span className="absolute inset-0 bg-dot-grid opacity-30 pointer-events-none" />
+                <span className="relative z-10 flex size-14 items-center justify-center rounded-2xl bg-white text-black shadow-elevation-2 transition-transform duration-300 group-hover:scale-105">
+                  <Plus className="size-5" strokeWidth={2.4} />
+                </span>
+                <span className="relative z-10 text-sm font-medium text-white/90">
+                  {isZh ? '新建画布' : 'New canvas'}
+                </span>
+              </a>
+
+              {/* 图像创作 */}
+              <Link
+                href={`${studioBase}?tab=image`}
+                title={isZh ? '进入图像创作' : 'Open image creation'}
+                className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 shadow-elevation-1 hover:shadow-elevation-2"
+              >
+                <span
+                  className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                  style={{ backgroundImage: IMAGE_CREATION_BACKDROP }}
+                />
+                <span className="absolute inset-0 bg-dot-grid opacity-[0.08]" />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                <span className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 p-4 sm:p-5">
+                  <span className="min-w-0 flex items-center gap-2">
+                    <ImageIcon className="size-4 shrink-0 text-white/70" />
+                    <span className="truncate text-sm font-semibold text-white/95">
+                      {isZh ? '图像创作' : 'Image creation'}
+                    </span>
+                  </span>
+                  <ArrowUpRight className="size-4 shrink-0 text-white/40 opacity-0 transition-all duration-200 group-hover:opacity-100" />
+                </span>
+              </Link>
+
+              {/* 最近云端画布 */}
+              {loadingCanvasProjects
+                ? Array.from({ length: 2 }).map((_, index) => (
+                    <div
+                      key={`canvas-skeleton-${index}`}
+                      className="aspect-[16/10] animate-pulse rounded-2xl border border-white/[0.06] bg-white/[0.025]"
+                    />
+                  ))
+                : canvasProjects.map((project, index) => (
+                    <a
+                      key={project.id}
+                      href="/canvas"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={isZh ? '在画布中打开' : 'Open in Canvas'}
+                      className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 shadow-elevation-1 hover:shadow-elevation-2"
+                    >
+                      <span
+                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                        style={{ backgroundImage: CANVAS_CARD_BACKDROPS[index % CANVAS_CARD_BACKDROPS.length] }}
+                      />
+                      <span className="absolute inset-0 bg-dot-grid opacity-[0.08]" />
+                      <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                      <span className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 p-4 sm:p-5">
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-white/95">
+                            {project.name || (isZh ? '未命名画布' : 'Untitled canvas')}
+                          </span>
+                          <span className="mt-0.5 block truncate text-[11px] text-white/45 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                            {project.nodeCount || 0} {isZh ? '个节点' : 'nodes'}
+                            {project.updatedAt
+                              ? ` · ${new Date(project.updatedAt).toLocaleDateString(isZh ? 'zh-CN' : 'en-US', { month: '2-digit', day: '2-digit' })}`
+                              : ''}
+                          </span>
+                        </span>
+                        <ArrowUpRight className="size-4 shrink-0 translate-y-1 -translate-x-1 text-white/40 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100" />
+                      </span>
+                    </a>
+                  ))}
+
+              {/* 未登录：同步入口 */}
+              {!user &&
+                [0, 1].map((index) => (
+                  <button
+                    key={`canvas-guest-${index}`}
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    className="group relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25"
+                  >
+                    <span
+                      className="absolute inset-0 opacity-55 transition-transform duration-500 group-hover:scale-105"
+                      style={{
+                        backgroundImage:
+                          CANVAS_CARD_BACKDROPS[(index + 1) % CANVAS_CARD_BACKDROPS.length],
+                      }}
+                    />
+                    <span className="absolute inset-0 bg-dot-grid opacity-[0.08]" />
+                    <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                    <span className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2">
+                      <span className="flex size-8 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white/70 transition-colors duration-200 group-hover:text-white">
+                        <Lock className="size-3.5" />
+                      </span>
+                      <span className="text-xs font-medium text-white/65 transition-colors duration-200 group-hover:text-white/90">
+                        {isZh ? '登录后同步画布' : 'Sign in to sync'}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+            </div>
+
+            {/* 底部 Agent 输入框 */}
+            <form
+              onSubmit={handleCanvasPromptSubmit}
+              className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#16181d]/90 px-4 py-3 shadow-elevation-2 backdrop-blur-xl transition-colors focus-within:border-white/20 sm:px-5"
+            >
+              <input
+                ref={canvasInputRef}
+                value={canvasPrompt}
+                onChange={(event) => setCanvasPrompt(event.target.value)}
+                placeholder={isZh ? '输入想法、剧本或上传参考，支持 / 使用技能，@添加主体，和 Agent 一起创作' : 'Describe your idea, use / for skills, @ to add subjects, and create with Agent'}
+                aria-label={isZh ? '画布 Agent 创作指令' : 'Canvas Agent prompt'}
+                className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-ink-subtle"
+              />
+              <button
+                type="submit"
+                disabled={!canvasPrompt.trim()}
+                aria-label={isZh ? '发送给 Agent' : 'Send to Agent'}
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-black transition-all duration-200 enabled:hover:bg-white/90 enabled:active:scale-95 disabled:bg-white/10 disabled:text-white/30"
+              >
+                <ArrowUp className="size-4" strokeWidth={2.4} />
+              </button>
+            </form>
+
+            {/* 输入框快捷操作行：添加参考 / 技能 / 主体 */}
+            <div className="mt-2.5 flex items-center gap-1.5 px-1">
+              <button
+                type="button"
+                onClick={() => handleCanvasInputAction('focus')}
+                aria-label={isZh ? '添加参考' : 'Add reference'}
+                className="flex size-8 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
+              >
+                <Plus className="size-4" strokeWidth={2.2} />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCanvasInputAction('skill')}
+                className="flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
+              >
+                <Sparkles className="size-3.5 text-brand" />
+                <span>{isZh ? '技能' : 'Skills'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCanvasInputAction('subject')}
+                className="flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
+              >
+                <AtSign className="size-3.5" />
+                <span>{isZh ? '主体' : 'Subject'}</span>
+              </button>
+            </div>
+
+            {/* 画布模式技能工作流标签 */}
+            <div className="mt-4 w-full flex items-center gap-2 overflow-x-auto py-3 no-scrollbar scrollbar-rail">
+              {canvasSkillPresets.map((skill) => (
+                <button
+                  key={skill.id}
+                  type="button"
+                  onClick={() => handleCanvasSkillClick(skill)}
+                  className="h-8 px-3.5 rounded-full text-xs font-medium shrink-0 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-sm bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 text-white/80 hover:text-white"
+                >
+                  <span>{skill.label}</span>
+                  {skill.badge && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                      {skill.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         ) : (
@@ -727,6 +997,8 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
           />
         )}
 
+        {activeMode === 'generate' && (
+          <>
         {/* 快捷技能预设胶囊推荐列表（动态联动当前选中的创作模式） */}
         <div className="w-full max-w-[1080px] flex items-center gap-2 overflow-x-auto py-3.5 no-scrollbar scrollbar-rail">
           {skillPresets.map((skill) => {
@@ -967,6 +1239,8 @@ export default function JimengHomePortal({ locale = 'zh', initialUser = undefine
             </div>
           )}
         </section>
+          </>
+        )}
       </main>
 
       {/* 底部极简 Footer */}

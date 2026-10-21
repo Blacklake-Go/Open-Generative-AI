@@ -77,7 +77,7 @@ function useCountUp(target, duration = 800) {
 
 export default function NewcomerOnboardingModal({
   user,
-  locale = 'zh-CN',
+  locale = 'en',
   studioHref = '/studio',
   isPageMode = false,
   initialStep = 1,

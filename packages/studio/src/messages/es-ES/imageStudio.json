@@ -43,6 +43,37 @@
     "heading": "COMIENCE A CREAR CON",
     "subtitle": "Describe una escena, personaje, estado de ánimo o estilo y observa cómo cobra vida."
   },
+  "qualityLabels": {
+    "standard": "Estándar",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Rápida"
+  },
+  "negativePrompt": {
+    "trigger": "Negativo",
+    "chip": "Negativo: {text}",
+    "title": "Prompt negativo",
+    "placeholder": "Describe lo que quieres evitar",
+    "clear": "Borrar",
+    "done": "Listo",
+    "separator": ", ",
+    "promptSuffix": "Evitar: {value}",
+    "presetBlurry": "borroso",
+    "presetLowQuality": "baja calidad",
+    "presetDeformed": "deformado",
+    "presetExtraFingers": "dedos extra",
+    "presetWatermark": "marca de agua",
+    "presetText": "texto",
+    "presetDark": "demasiado oscuro",
+    "presetEdges": "bordes rotos"
+  },
+  "regenerateConfirm": {
+    "title": "¿Regenerar este lote?",
+    "description": "Se usarán el mismo prompt y los mismos parámetros para generar {count} imagen(es).",
+    "cost": "Coste estimado",
+    "cancel": "Cancelar",
+    "confirm": "Regenerar"
+  },
   "promptBar": {
     "placeholderMultiImage": "Imágenes {count} seleccionadas: describe la transformación (opcional)",
     "placeholderI2I": "Describe cómo transformar esta imagen (opcional)",

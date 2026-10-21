@@ -21,7 +21,7 @@ import {
   KeyRound,
   Coins,
 } from 'lucide-react';
-import { normalizeLocale, LOCALE_CONFIGS, SUPPORTED_LOCALES, getCommonCopy } from '@/lib/locales';
+import { DEFAULT_LOCALE, normalizeLocale, LOCALE_CONFIGS, SUPPORTED_LOCALES, getCommonCopy } from '@/lib/locales';
 import { getAuthRoutes } from '@/lib/authCopy';
 import { switchLocale } from '@/lib/client/localeSwitch';
 import { openGlobalAccountModal } from '@/lib/accountEvents';
@@ -96,7 +96,7 @@ export default function UserDropdownMenu({
     const m = document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : null;
   };
-  const activeLocale = normalizeLocale(locale || user?.locale || getCookieLocale() || 'zh-CN');
+  const activeLocale = normalizeLocale(locale || user?.locale || getCookieLocale() || DEFAULT_LOCALE);
   const activeLanguage = LANGUAGE_LIST.find((item) => item.code === activeLocale) || LANGUAGE_LIST[0];
   const authRoutes = getAuthRoutes(activeLocale);
   const profileUrl = authRoutes.profileUrl || (activeLocale.startsWith('zh') ? '/zh/profile' : '/profile');

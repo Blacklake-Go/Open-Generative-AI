@@ -442,8 +442,18 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
 
   // Expose imperative handle for parent component (JimengHomePortal)
   useImperativeHandle(ref, () => ({
-    setPromptText: (text) => {
-      updateCurrentDraft({ prompt: text || '' });
+    setPromptText: (text, modeId) => {
+      const targetMode = modeId && CREATION_MODES.some((m) => m.id === modeId) ? modeId : activeTab;
+      if (targetMode !== activeTab) {
+        handleSwitchTab(targetMode);
+      }
+      setDrafts((prev) => ({
+        ...prev,
+        [targetMode]: {
+          ...(prev[targetMode] || {}),
+          prompt: text || '',
+        },
+      }));
       textareaRef.current?.focus();
     },
     appendPromptText: (text) => {

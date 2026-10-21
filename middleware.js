@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLocaleConfig, getLocaleFromPathname, isSupportedLocale, normalizeLocale, SUPPORTED_LOCALES } from './lib/locales';
+import { getLocaleConfig, getLocaleFromPathname, isSupportedLocale, normalizeLocale, SUPPORTED_LOCALES } from './lib/locales.js';
 /* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
 import { handleChinaIpBlockMiddleware } from './plugins/china-ip-block/index.js';
 /* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
@@ -191,21 +191,8 @@ export async function middleware(request) {
             locale = normalizedQueryLocale;
         } else if (cookieLocale && isSupportedLocale(cookieLocale) && SUPPORTED_LOCALES.includes(normalizedCookieLocale)) {
             locale = normalizedCookieLocale;
-        } else {
-            const acceptLang = request.headers.get('accept-language');
-            if (acceptLang) {
-                const first = acceptLang.split(',')[0]?.trim()?.toLowerCase() || '';
-                if (first.startsWith('zh')) {
-                    locale = (first.includes('tw') || first.includes('hk')) ? 'zh-TW' : 'zh-CN';
-                } else if (first.startsWith('ja')) {
-                    locale = 'ja-JP';
-                } else if (first.startsWith('ko')) {
-                    locale = 'ko-KR';
-                } else if (first.startsWith('es')) {
-                    locale = 'es';
-                }
-            }
         }
+        // 强制默认英语：不通过 Accept-Language 标头自动变动语言，除非用户访问过并显式改过语言或登录设置过
     }
 
     // 5. 工作台与登录多语言直达：若非默认英文语言且访问未加前缀的 /studio 或 /login，跳转至对应工作台/登录页根路径（如 /zh/studio, /zh/login）

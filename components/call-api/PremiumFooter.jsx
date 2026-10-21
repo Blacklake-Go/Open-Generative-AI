@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 export default function PremiumFooter() {
-  const [currentLocale, setCurrentLocale] = useState('zh-CN');
+  const [currentLocale, setCurrentLocale] = useState('en');
 
   return (
     <footer className="relative mt-auto border-t border-line bg-canvas pt-20 pb-12 overflow-hidden select-none">

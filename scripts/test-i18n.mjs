@@ -72,29 +72,28 @@ const reqCookie = new Request('https://domain.com/api/test', {
 assert.strictEqual(getRequestLocale(reqCookie), 'ko-KR');
 console.log('   ✓ Cookie NEXT_LOCALE 探测成功 -> ko-KR');
 
-// 3.4 从 Accept-Language 标头探测
+// 3.4 默认强制为英语 (Accept-Language 标头不会篡改默认语言)
 const reqAcceptZh = new Request('https://domain.com/api/test', {
   headers: { 'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8' }
 });
-assert.strictEqual(getRequestLocale(reqAcceptZh), 'zh-CN');
-console.log('   ✓ Accept-Language: zh-CN 探测成功 -> zh-CN');
+assert.strictEqual(getRequestLocale(reqAcceptZh), 'en');
+console.log('   ✓ 默认强制英语: Accept-Language 不覆盖默认语言 -> en');
 
-const reqAcceptEn = new Request('https://domain.com/api/test', {
-  headers: { 'accept-language': 'en-US,en;q=0.9' }
-});
-assert.strictEqual(getRequestLocale(reqAcceptEn), 'en');
-console.log('   ✓ Accept-Language: en-US 探测成功 -> en');
+assert.strictEqual(getRequestLocale(reqAcceptZh, { fallbackToAcceptLanguage: true }), 'zh-CN');
+console.log('   ✓ 显式启用兼容模式时 Accept-Language 探测 -> zh-CN');
 
 const reqAcceptEs = new Request('https://domain.com/api/test', {
   headers: { 'accept-language': 'es-ES,es;q=0.9,en;q=0.8' }
 });
-assert.strictEqual(getRequestLocale(reqAcceptEs), 'es');
-console.log('   ✓ Accept-Language: es-ES 探测成功 -> es');
+assert.strictEqual(getRequestLocale(reqAcceptEs), 'en');
+console.log('   ✓ 默认强制英语: 西班牙语 Accept-Language 不覆盖 -> en');
 
 // 4. 测试后端 API 路由真实调用与国际化返回
 console.log('\n4. 模拟后端 API 多语言响应测试...');
-const { t: apiZhT } = getApiI18n(reqAcceptZh);
-const { t: apiEnT } = getApiI18n(reqAcceptEn);
+const reqZhHeader = new Request('https://domain.com/api/test', { headers: { 'x-locale': 'zh-CN' } });
+const reqEnHeader = new Request('https://domain.com/api/test', { headers: { 'x-locale': 'en' } });
+const { t: apiZhT } = getApiI18n(reqZhHeader);
+const { t: apiEnT } = getApiI18n(reqEnHeader);
 
 assert.strictEqual(apiZhT('api.unauthorized'), '未授权，请先登录');
 assert.strictEqual(apiEnT('api.unauthorized'), 'Unauthorized, please login first');

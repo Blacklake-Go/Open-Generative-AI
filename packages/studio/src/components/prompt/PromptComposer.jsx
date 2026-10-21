@@ -349,7 +349,7 @@ export function PromptSegmentOption({
   );
 }
 
-export function PromptComposer({
+export const PromptComposer = forwardRef(function PromptComposer({
   children,
   className = "",
   panelClassName = "",
@@ -358,9 +358,9 @@ export function PromptComposer({
   expanded = false,
   flush = false,
   minHeightClassName = "min-h-[70px] focus-within:min-h-[184px]",
-}) {
+}, ref) {
   return (
-    <div className={joinClasses(positionClassName, className)} style={style}>
+    <div ref={ref} className={joinClasses(positionClassName, className)} style={style}>
       <div
         className={joinClasses(
           flush
@@ -376,7 +376,7 @@ export function PromptComposer({
       </div>
     </div>
   );
-}
+});
 
 export const PromptTextarea = forwardRef(function PromptTextarea(
   {

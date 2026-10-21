@@ -3,6 +3,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, LogOut, User, Activity, UserRound, CreditCard, BarChart2 } from 'lucide-react';
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/locales';
 
 export const NAV_ITEMS = [
   { id: 'activity', label: '活跃历史', icon: Activity },
@@ -41,9 +42,32 @@ export default function AccountLayout({
 }) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = React.useState(false);
+
+  const cookieLocale = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/)?.[1] : null;
+  const activeLocale = normalizeLocale(user?.locale || cookieLocale || DEFAULT_LOCALE);
+  const isZh = activeLocale.startsWith('zh');
+
+  const localizedNavLabels = {
+    activity: isZh ? '活跃历史' : (activeLocale === 'ja-JP' ? 'アクティビティ履歴' : (activeLocale === 'ko-KR' ? '활동 내역' : (activeLocale === 'es' ? 'Actividad' : 'Activity & History'))),
+    settings: isZh ? '账号与设置' : (activeLocale === 'ja-JP' ? 'アカウントと設定' : (activeLocale === 'ko-KR' ? '계정 및 설정' : (activeLocale === 'es' ? 'Cuenta y ajustes' : 'Account & Settings'))),
+    billing: isZh ? '订阅与账单' : (activeLocale === 'ja-JP' ? 'サブスクリプションと請求' : (activeLocale === 'ko-KR' ? '구독 및 청구' : (activeLocale === 'es' ? 'Suscripción y facturación' : 'Subscription & Billing'))),
+    usage: isZh ? '额度明细' : (activeLocale === 'ja-JP' ? 'クォータ詳細' : (activeLocale === 'ko-KR' ? '사용량 세부정보' : (activeLocale === 'es' ? 'Detalles de cuota' : 'Quota & Usage'))),
+  };
+
+  const copy = {
+    title: isZh ? '个人中心' : (activeLocale === 'ja-JP' ? 'アカウントセンター' : (activeLocale === 'ko-KR' ? '계정 센터' : (activeLocale === 'es' ? 'Centro de cuenta' : 'Account Center'))),
+    logout: isZh ? '退出登录' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Cerrar sesión' : 'Sign out'))),
+    loggingOut: isZh ? '正在退出…' : (activeLocale === 'ja-JP' ? 'ログアウト中…' : (activeLocale === 'ko-KR' ? '로그아웃 중…' : (activeLocale === 'es' ? 'Cerrando sesión…' : 'Signing out…'))),
+    mobileLogout: isZh ? '退出' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Salir' : 'Sign out'))),
+    login: isZh ? '立即登录' : (activeLocale === 'ja-JP' ? 'ログイン' : (activeLocale === 'ko-KR' ? '로그인' : (activeLocale === 'es' ? 'Iniciar sesión' : 'Log in'))),
+    close: isZh ? '关闭 (Esc)' : (activeLocale === 'ja-JP' ? '閉じる (Esc)' : (activeLocale === 'ko-KR' ? '닫기 (Esc)' : (activeLocale === 'es' ? 'Cerrar (Esc)' : 'Close (Esc)'))),
+    closeAria: isZh ? '关闭弹窗' : (activeLocale === 'ja-JP' ? 'ポップアップを閉じる' : (activeLocale === 'ko-KR' ? '팝업 닫기' : (activeLocale === 'es' ? 'Cerrar ventana' : 'Close modal'))),
+  };
+
   const currentNormalizedTab = normalizeTab(activeTab);
   const currentItem = NAV_ITEMS.find((item) => item.id === currentNormalizedTab) || NAV_ITEMS[0];
   const CurrentIcon = currentItem.icon;
+  const currentItemLabel = localizedNavLabels[currentItem.id] || currentItem.label;
 
   const handleClose = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -90,7 +114,7 @@ export default function AccountLayout({
       onClick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
-      aria-label="个人中心与设置"
+      aria-label={copy.title}
     >
       {/* 左侧垂直侧栏导航 (竖排 Tab) */}
       <aside className="w-full md:w-60 lg:w-64 shrink-0 border-b md:border-b-0 md:border-r border-line-subtle bg-surface flex flex-col justify-between">
@@ -101,15 +125,16 @@ export default function AccountLayout({
               ACCOUNT CENTER
             </span>
             <h2 className="mt-0.5 text-base font-bold text-ink tracking-tight">
-              个人中心
+              {copy.title}
             </h2>
           </div>
 
           {/* 竖排导航列表 */}
-          <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none" aria-label="个人中心导航">
+          <nav className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 scrollbar-none" aria-label={copy.title}>
             {NAV_ITEMS.map((item) => {
               const isActive = currentNormalizedTab === item.id;
               const Icon = item.icon;
+              const navLabel = localizedNavLabels[item.id] || item.label;
               return (
                 <button
                   key={item.id}
@@ -126,7 +151,7 @@ export default function AccountLayout({
                     <span className="hidden md:block absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r-full bg-brand shadow-[0_0_8px_rgba(225,29,116,0.6)]" />
                   )}
                   <Icon className={`size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-brand' : 'text-ink-muted group-hover:text-ink'}`} />
-                  <span className="truncate text-left">{item.label}</span>
+                  <span className="truncate text-left">{navLabel}</span>
                 </button>
               );
             })}
@@ -151,7 +176,7 @@ export default function AccountLayout({
                 className="flex w-full items-center justify-center gap-2 px-3 py-2 rounded-xl text-caption font-medium text-ink-muted hover:text-danger hover:bg-danger-soft/20 transition-colors cursor-pointer disabled:opacity-50 border border-line-subtle/50"
               >
                 <LogOut className={`size-3.5 ${loggingOut ? 'animate-spin' : ''}`} />
-                <span>{loggingOut ? '正在退出…' : '退出登录'}</span>
+                <span>{loggingOut ? copy.loggingOut : copy.logout}</span>
               </button>
             ) : (
               <button
@@ -163,7 +188,7 @@ export default function AccountLayout({
                 className="flex w-full items-center justify-center gap-2 px-3.5 py-2 rounded-full text-caption font-semibold text-brand bg-brand-soft border border-brand-line hover:bg-brand-pressed active:scale-[0.98] active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1"
               >
                 <User className="size-3.5" />
-                <span>立即登录</span>
+                <span>{copy.login}</span>
               </button>
             )}
           </div>
@@ -180,7 +205,7 @@ export default function AccountLayout({
               className="flex items-center gap-1.5 text-ink-muted hover:text-danger text-caption font-medium cursor-pointer"
             >
               <LogOut className="size-3" />
-              <span>{loggingOut ? '退出中…' : '退出'}</span>
+              <span>{loggingOut ? copy.loggingOut : copy.mobileLogout}</span>
             </button>
           )}
         </div>
@@ -193,7 +218,7 @@ export default function AccountLayout({
           <div className="flex items-center gap-2.5">
             <CurrentIcon className="size-4 text-brand" />
             <h1 className="text-body-sm font-bold text-ink tracking-tight">
-              {currentItem.label}
+              {currentItemLabel}
             </h1>
           </div>
 
@@ -202,8 +227,8 @@ export default function AccountLayout({
             type="button"
             onClick={handleClose}
             className="size-8 rounded-full flex items-center justify-center text-ink-muted hover:text-ink hover:bg-wash active:scale-[0.98] active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
-            title="关闭 (Esc)"
-            aria-label="关闭弹窗"
+            title={copy.close}
+            aria-label={copy.closeAria}
           >
             <X className="size-4" />
           </button>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getAuthCopy, getAuthRoutes } from '@/lib/authCopy';
 
-export default function ChangePasswordForm({ locale = 'zh-CN' }) {
+export default function ChangePasswordForm({ locale = 'en' }) {
   const router = useRouter();
   const copy = getAuthCopy(locale).change;
   const routes = getAuthRoutes(locale);
