@@ -32,6 +32,7 @@ COPYFILE_DISABLE=1 tar --no-xattrs --exclude='public/uploads' -czf "$SOURCE_ARCH
   messages \
   scripts \
   public \
+  config \
   middleware.js \
   tailwind.config.js \
   next.config.mjs \
@@ -114,6 +115,9 @@ rsync -a \"\$STAGE/scripts/\" \"\$WEB_DIR/scripts/\"
 if [ -d \"\$STAGE/public\" ]; then
   rsync -a --exclude=\"uploads\" \"\$STAGE/public/\" \"\$WEB_DIR/public/\"
 fi
+if [ -d \"\$STAGE/config\" ]; then
+  rsync -a \"\$STAGE/config/\" \"\$WEB_DIR/config/\"
+fi
 cp \"\$STAGE/middleware.js\" \"\$WEB_DIR/middleware.js\"
 cp \"\$STAGE/app/globals.css\" \"\$WEB_DIR/app/globals.css\"
 cp \"\$STAGE/tailwind.config.js\" \"\$WEB_DIR/tailwind.config.js\"
@@ -131,6 +135,7 @@ chown -R www:www \"\$WEB_DIR/lib\"
 chown -R www:www \"\$WEB_DIR/messages\"
 chown -R www:www \"\$WEB_DIR/scripts\"
 chown -R www:www \"\$WEB_DIR/public\"
+chown -R www:www \"\$WEB_DIR/config\" 2>/dev/null || true
 chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$WEB_DIR/next.config.mjs\" \"\$WEB_DIR/package.json\"
 
 # 执行数据库版本迁移
