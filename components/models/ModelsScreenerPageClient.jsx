@@ -30,15 +30,142 @@ function formatLatency(value) {
   return `${Math.round(ms)}ms`;
 }
 
-function formatPrice(model, isChinese) {
-  if (model?.pricingType === 'free') return isChinese ? '免费' : 'Free';
+import { normalizeLocale } from '@/lib/locales';
+
+const I18N_STRINGS = {
+  'zh-CN': {
+    statsBadge: '真实调用统计 · 24h',
+    title: '模型总览',
+    description: '已上架模型与过去 24 小时的调用量、成功率、耗时和价格。所有统计均来自实际生成任务记录。',
+    kpiCalls: '24h 总调用',
+    kpiSuccess: '成功率',
+    kpiActive: '活跃模型',
+    kpiLatency: 'P90 耗时',
+    topTitle: '24h 调用领先模型',
+    topSubtitle: '按实际调用量排序，仅展示已上架模型。',
+    viewAll: '查看全部',
+    retry: '重试',
+    empty: '暂时没有可展示的模型',
+    callsPrefix: '24h 调用',
+    noRecord: '暂无记录',
+    avgLatency: '平均耗时',
+  },
+  'zh-TW': {
+    statsBadge: '真實調用統計 · 24h',
+    title: '模型總覽',
+    description: '已上架模型與過去 24 小時的調用量、成功率、耗時和價格。所有統計均來自實際生成任務記錄。',
+    kpiCalls: '24h 總調用',
+    kpiSuccess: '成功率',
+    kpiActive: '活躍模型',
+    kpiLatency: 'P90 耗時',
+    topTitle: '24h 調用領先模型',
+    topSubtitle: '按實際調用量排序，僅展示已上架模型。',
+    viewAll: '查看全部',
+    retry: '重試',
+    empty: '暫時沒有可展示的模型',
+    callsPrefix: '24h 調用',
+    noRecord: '暫無記錄',
+    avgLatency: '平均耗時',
+  },
+  'ja-JP': {
+    statsBadge: '実際呼出統計 · 24h',
+    title: 'モデル一覧',
+    description: '掲載モデルと過去24時間の呼び出し数、成功率、レイテンシ、料金。すべて実際の生成タスク記録に基づきます。',
+    kpiCalls: '24h 総呼出',
+    kpiSuccess: '成功率',
+    kpiActive: 'アクティブモデル',
+    kpiLatency: 'P90 レイテンシ',
+    topTitle: '24時間人気トップモデル',
+    topSubtitle: '実際の呼び出し数順、掲載中モデルのみ表示。',
+    viewAll: 'すべて見る',
+    retry: '再試行',
+    empty: '表示可能なモデルがありません',
+    callsPrefix: '24h 呼出',
+    noRecord: '記録なし',
+    avgLatency: '平均所要時間',
+  },
+  'ko-KR': {
+    statsBadge: '실제 호출 통계 · 24h',
+    title: '모델 디렉토리',
+    description: '등록된 모델과 지난 24시간의 호출량, 성공률, 지연 시간 및 가격입니다. 모든 통계는 실제 생성 기록을 기반으로 합니다.',
+    kpiCalls: '24h 총 호출',
+    kpiSuccess: '성공률',
+    kpiActive: '활성 모델',
+    kpiLatency: 'P90 지연 시간',
+    topTitle: '24시간 최다 호출 모델',
+    topSubtitle: '실제 호출 수 순위, 등록된 모델만 표시됩니다.',
+    viewAll: '모두 보기',
+    retry: '다시 시도',
+    empty: '표시할 모델이 없습니다',
+    callsPrefix: '24h 호출',
+    noRecord: '기록 없음',
+    avgLatency: '평균 지연 시간',
+  },
+  es: {
+    statsBadge: 'Estadísticas reales · 24h',
+    title: 'Directorio de Modelos',
+    description: 'Modelos disponibles con llamadas en las últimas 24h, tasa de éxito, latencia y precios basados en registros reales.',
+    kpiCalls: 'Llamadas 24h',
+    kpiSuccess: 'Tasa de éxito',
+    kpiActive: 'Modelos activos',
+    kpiLatency: 'Latencia P90',
+    topTitle: 'Más usados en 24h',
+    topSubtitle: 'Ordenados por llamadas reales entre modelos listados.',
+    viewAll: 'Ver todos',
+    retry: 'Reintentar',
+    empty: 'No hay modelos disponibles',
+    callsPrefix: 'Llamadas 24h',
+    noRecord: 'Sin llamadas',
+    avgLatency: 'Latencia prom.',
+  },
+  en: {
+    statsBadge: 'Actual usage · 24h',
+    title: 'Model Directory',
+    description: 'Listed models with actual 24-hour calls, success rate, latency, and pricing from real generation records.',
+    kpiCalls: '24h calls',
+    kpiSuccess: 'Success rate',
+    kpiActive: 'Active models',
+    kpiLatency: 'P90 latency',
+    topTitle: 'Most used in 24h',
+    topSubtitle: 'Ranked by actual calls among listed models.',
+    viewAll: 'View all',
+    retry: 'Retry',
+    empty: 'No models available yet',
+    callsPrefix: '24h calls',
+    noRecord: 'No calls',
+    avgLatency: 'Avg latency',
+  },
+};
+
+function formatPrice(model, norm) {
+  if (model?.pricingType === 'free') {
+    if (norm === 'zh-CN') return '免费';
+    if (norm === 'zh-TW') return '免費';
+    if (norm === 'ja-JP') return '無料';
+    if (norm === 'ko-KR') return '무료';
+    if (norm === 'es') return 'Gratis';
+    return 'Free';
+  }
   const price = Number(model?.creditsPrice);
-  if (Number.isFinite(price) && price > 0) return isChinese ? `${price} 算力点起` : `${price} credits from`;
-  return isChinese ? '按量计费' : 'Usage-based';
+  if (Number.isFinite(price) && price > 0) {
+    if (norm === 'zh-CN') return `${price} 算力点起`;
+    if (norm === 'zh-TW') return `${price} 算力點起`;
+    if (norm === 'ja-JP') return `${price} クレジット〜`;
+    if (norm === 'ko-KR') return `${price} 크레딧부터`;
+    if (norm === 'es') return `Desde ${price} créditos`;
+    return `${price} credits from`;
+  }
+  if (norm === 'zh-CN') return '按量计费';
+  if (norm === 'zh-TW') return '按量計費';
+  if (norm === 'ja-JP') return '従量課金';
+  if (norm === 'ko-KR') return '종량제 과금';
+  if (norm === 'es') return 'Pago por uso';
+  return 'Usage-based';
 }
 
 export default function ModelsScreenerPageClient({ locale = 'en' }) {
-  const isChinese = Boolean(locale?.includes('zh'));
+  const norm = normalizeLocale(locale);
+  const copy = I18N_STRINGS[norm] || I18N_STRINGS.en;
   const { models, telemetry, telemetryById, loading, error, reload } = useModelDirectory({ range: '24h' });
 
   const activeById = useMemo(() => {
@@ -62,22 +189,22 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
   const kpi = telemetry.kpi || {};
   const summaryCards = [
     {
-      label: isChinese ? '24h 总调用' : '24h calls',
+      label: copy.kpiCalls,
       value: loading ? '…' : error ? '—' : formatCalls(kpi.totalCalls),
       icon: BarChart3,
     },
     {
-      label: isChinese ? '成功率' : 'Success rate',
+      label: copy.kpiSuccess,
       value: loading ? '…' : error ? '—' : Number(kpi.totalCalls) > 0 ? `${Number(kpi.successRate || 0).toFixed(1)}%` : '—',
       icon: Activity,
     },
     {
-      label: isChinese ? '活跃模型' : 'Active models',
+      label: copy.kpiActive,
       value: loading ? '…' : error ? '—' : String(kpi.activeModelsCount || 0),
       icon: Layers,
     },
     {
-      label: isChinese ? 'P90 耗时' : 'P90 latency',
+      label: copy.kpiLatency,
       value: loading ? '…' : error ? '—' : formatLatency(kpi.p90DurationMs),
       icon: Zap,
     },
@@ -96,15 +223,13 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
           <div>
             <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-mono text-brand">
               <BarChart3 className="h-3.5 w-3.5" />
-              <span>{isChinese ? '真实调用统计 · 24h' : 'Actual usage · 24h'}</span>
+              <span>{copy.statsBadge}</span>
             </div>
             <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl lg:text-5xl">
-              {isChinese ? '模型总览' : 'Model Directory'}
+              {copy.title}
             </h1>
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-ink-muted sm:text-sm">
-              {isChinese
-                ? '已上架模型与过去 24 小时的调用量、成功率、耗时和价格。所有统计均来自实际生成任务记录。'
-                : 'Listed models with actual 24-hour calls, success rate, latency, and pricing from real generation records.'}
+              {copy.description}
             </p>
           </div>
 
@@ -127,13 +252,13 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
         <div className="mb-12">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-ink">{isChinese ? '24h 调用领先模型' : 'Most used in 24h'}</h2>
+              <h2 className="text-lg font-bold text-ink">{copy.topTitle}</h2>
               <p className="mt-1 text-xs text-ink-muted">
-                {isChinese ? '按实际调用量排序，仅展示已上架模型。' : 'Ranked by actual calls among listed models.'}
+                {copy.topSubtitle}
               </p>
             </div>
             <Link href="#model-table" className="inline-flex items-center gap-1 text-xs font-semibold text-brand">
-              {isChinese ? '查看全部' : 'View all'}
+              {copy.viewAll}
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -147,7 +272,7 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 font-bold text-ink-on-accent"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
-                {isChinese ? '重试' : 'Retry'}
+                {copy.retry}
               </button>
             </div>
           ) : loading ? (
@@ -160,13 +285,13 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
             <div className="rounded-2xl border border-line bg-surface px-6 py-10 text-center">
               <Cpu className="mx-auto h-6 w-6 text-ink-muted" />
               <p className="mt-3 text-sm font-semibold text-ink">
-                {isChinese ? '暂时没有可展示的模型' : 'No models available yet'}
+                {copy.empty}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
               {topModels.map(({ stats, model }) => {
-                const modelUrl = isChinese
+                const modelUrl = norm === 'zh-CN'
                   ? `/zh/models/${encodeURIComponent(model.id)}`
                   : `/models/${encodeURIComponent(model.id)}`;
                 return (
@@ -198,20 +323,20 @@ export default function ModelsScreenerPageClient({ locale = 'en' }) {
                         </span>
                       </div>
 
-                      <div className="text-2xl font-black tracking-tight text-ink">{formatPrice(model, isChinese)}</div>
+                      <div className="text-2xl font-black tracking-tight text-ink">{formatPrice(model, norm)}</div>
                       <div className="mt-2 flex items-center justify-between text-[11px] text-ink-muted">
                         <span>
-                          {isChinese ? '24h 调用' : '24h calls'}:{' '}
+                          {copy.callsPrefix}:{' '}
                           <strong className="font-semibold text-ink">{stats ? formatCalls(stats.totalCalls) : '—'}</strong>
                         </span>
                         <span className={stats && Number(stats.totalCalls) > 0 && stats.successRate >= 95 ? 'text-emerald-500' : 'text-ink-muted'}>
-                          {stats && Number(stats.totalCalls) > 0 ? `${Number(stats.successRate).toFixed(1)}%` : (isChinese ? '暂无记录' : 'No calls')}
+                          {stats && Number(stats.totalCalls) > 0 ? `${Number(stats.successRate).toFixed(1)}%` : copy.noRecord}
                         </span>
                       </div>
                     </div>
 
                     <div className="mt-4 flex items-center justify-between border-t border-line pt-3 text-[11px] text-ink-muted">
-                      <span>{isChinese ? '平均耗时' : 'Avg latency'}: {stats ? formatLatency(stats.avgDurationMs) : '—'}</span>
+                      <span>{copy.avgLatency}: {stats ? formatLatency(stats.avgDurationMs) : '—'}</span>
                       <ArrowRight className="h-3.5 w-3.5 text-brand transition group-hover:translate-x-0.5" />
                     </div>
                   </Link>

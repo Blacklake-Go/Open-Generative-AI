@@ -1,10 +1,13 @@
 import CommunityClient from '@/components/community/CommunityClient';
+import { getServerLocale } from '@/lib/server/serverLocale';
 
 export const metadata = {
-  title: '社区 — 探索 AI 艺术灵感与一键做同款 | SupDance AI Studio',
-  description: '汇聚生图、生视频、生音乐等前沿 AI 艺术创作，支持查看提示词与参数，一键同款生成。',
+  title: 'Community — AI Art Inspiration & Creative Workflows | SupDance',
+  description: 'Explore generative AI image, video, and audio creations. Inspect prompts and parameters, and remix in one click.',
 };
 
-export default function CommunityPage() {
-  return <CommunityClient locale="en" />;
+export default async function CommunityPage() {
+  const locale = await getServerLocale();
+  return <CommunityClient locale={locale} />;
 }
+

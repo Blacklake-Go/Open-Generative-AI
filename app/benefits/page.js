@@ -1,10 +1,13 @@
 import BenefitsClient from '@/components/benefits/BenefitsClient';
+import { getServerLocale } from '@/lib/server/serverLocale';
 
 export const metadata = {
-  title: '硬币小铺 — SupDance AI Studio',
-  description: '每天来打个卡、说句真话，攒下的硬币可以换星座头像框和出图优先卡。',
+  title: 'Coin Shop — SupDance AI Studio',
+  description: 'Check in daily, share feedback, and redeem coins for zodiac avatar frames and fast generation cards.',
 };
 
-export default function BenefitsPage() {
-  return <BenefitsClient />;
+export default async function BenefitsPage() {
+  const locale = await getServerLocale();
+  return <BenefitsClient locale={locale} />;
 }
+

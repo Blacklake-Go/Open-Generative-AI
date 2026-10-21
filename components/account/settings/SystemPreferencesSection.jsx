@@ -1,42 +1,71 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DEFAULT_LOCALE, getLocaleConfig, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/locales';
 import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
-import { Bell, Eye, Globe, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bell, Eye, Globe, CheckCircle2, AlertCircle, ChevronDown, Check } from 'lucide-react';
 
-const SUPPORTED_LANGUAGES = SUPPORTED_LOCALES.map((code) => ({
-  code,
-  label: LOCALE_CONFIGS[code]?.nativeName || code,
-}));
+const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'zh-CN', label: '简体中文', flag: '🇨🇳' },
+  { code: 'ja-JP', label: '日本語', flag: '🇯🇵' },
+  { code: 'ko-KR', label: '한국어', flag: '🇰🇷' },
+  { code: 'zh-TW', label: '繁體中文', flag: '🇭🇰' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+];
 
 export default function SystemPreferencesSection({ user = null, className = '' }) {
   const [notifications, setNotifications] = useState(() => user?.preferences?.notifyOnComplete ?? true);
   const [highQualityPreview, setHighQualityPreview] = useState(() => user?.preferences?.highQualityPreview ?? true);
-  const [currentLocale, setCurrentLocale] = useState(() => normalizeLocale(user?.locale || DEFAULT_LOCALE));
+  const [currentLocale, setCurrentLocale] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const local = JSON.parse(localStorage.getItem('supdance_user_preferences') || '{}');
+        if (local.locale) return normalizeLocale(local.locale);
+        const match = document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/);
+        if (match) return normalizeLocale(decodeURIComponent(match[1]));
+      } catch {}
+    }
+    return normalizeLocale(user?.locale || DEFAULT_LOCALE);
+  });
   const [loading, setLoading] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  const normalizedLocale = normalizeLocale(currentLocale);
-  const activeLangLabel = SUPPORTED_LANGUAGES.find((l) => l.code === normalizedLocale)?.label || normalizedLocale;
+  const dropdownRef = useRef(null);
 
-  const isZh = normalizedLocale.startsWith('zh');
+  const normalizedLocale = normalizeLocale(currentLocale);
+  const activeLangItem = SUPPORTED_LANGUAGES.find((l) => l.code === normalizedLocale) || SUPPORTED_LANGUAGES[0];
+  const activeLangLabel = activeLangItem.label;
+
+  const isZhTw = normalizedLocale === 'zh-TW';
+  const isZhCn = normalizedLocale === 'zh-CN' || normalizedLocale === 'zh';
   const copy = {
-    title: isZh ? '偏好与体验' : (normalizedLocale === 'ja-JP' ? '環境設定と体験' : (normalizedLocale === 'ko-KR' ? '환경설정 및 경험' : (normalizedLocale === 'es' ? 'Preferencias y experiencia' : 'Preferences & Experience'))),
-    notifications: isZh ? '生成完成通知' : (normalizedLocale === 'ja-JP' ? '生成完了通知' : (normalizedLocale === 'ko-KR' ? '생성 완료 알림' : (normalizedLocale === 'es' ? 'Notificaciones de generación' : 'Generation Notifications'))),
-    notificationsDesc: isZh ? '在视频、音频或图像生成完毕后推送提醒' : (normalizedLocale === 'ja-JP' ? '画像・動画・音声の生成完了時にプッシュ通知' : (normalizedLocale === 'ko-KR' ? '이미지, 비디오 또는 오디오 생성 완료 시 푸시 알림' : (normalizedLocale === 'es' ? 'Recibir notificaciones cuando se completen las generaciones' : 'Receive push notifications when image, video, or audio tasks complete'))),
-    preview: isZh ? '高画质即时预览' : (normalizedLocale === 'ja-JP' ? '高画質リアルタイムプレビュー' : (normalizedLocale === 'ko-KR' ? '고화질 실시간 미리보기' : (normalizedLocale === 'es' ? 'Vista previa de alta calidad' : 'High-Quality Live Preview'))),
-    previewDesc: isZh ? '在工作区使用全保真动态预览（消耗更多显存与带宽）' : (normalizedLocale === 'ja-JP' ? 'ワークスペースで全解像度プレビューを使用（メモリ・帯域幅消費）' : (normalizedLocale === 'ko-KR' ? '작업 공간에서 전체 해상도 미리보기 사용 (메모리 및 대역폭 추가 소모)' : (normalizedLocale === 'es' ? 'Usar vista previa de fidelidad total en el espacio de trabajo' : 'Render full-fidelity preview in workspace (uses more memory and bandwidth)'))),
-    language: isZh ? '界面语言' : (normalizedLocale === 'ja-JP' ? 'インターフェース言語' : (normalizedLocale === 'ko-KR' ? '인터페이스 언어' : (normalizedLocale === 'es' ? 'Idioma de la interfaz' : 'Interface Language'))),
-    currentLang: isZh ? `当前选择：${activeLangLabel}` : (normalizedLocale === 'ja-JP' ? `現在の選択：${activeLangLabel}` : (normalizedLocale === 'ko-KR' ? `현재 선택: ${activeLangLabel}` : (normalizedLocale === 'es' ? `Selección actual: ${activeLangLabel}` : `Current selection: ${activeLangLabel}`))),
-    placeholder: isZh ? '选择语言' : (normalizedLocale === 'ja-JP' ? '言語を選択' : (normalizedLocale === 'ko-KR' ? '언어 선택' : (normalizedLocale === 'es' ? 'Seleccionar idioma' : 'Select Language'))),
-    syncedToast: isZh ? '偏好设置已同步至数据库' : (normalizedLocale === 'ja-JP' ? '設定がデータベースに同期されました' : (normalizedLocale === 'ko-KR' ? '환경설정이 데이터베이스에 동기화되었습니다' : (normalizedLocale === 'es' ? 'Preferencias sincronizadas con la base de datos' : 'Preferences synced to database'))),
-    saveFailed: isZh ? '设置保存失败' : (normalizedLocale === 'ja-JP' ? '設定の保存に失敗しました' : (normalizedLocale === 'ko-KR' ? '설정 저장에 실패했습니다' : (normalizedLocale === 'es' ? 'Error al guardar ajustes' : 'Failed to save settings'))),
-    networkError: isZh ? '网络异常，无法保存偏好设置' : (normalizedLocale === 'ja-JP' ? '网络连接异常' : (normalizedLocale === 'ko-KR' ? '네트워크 오류가 발생했습니다' : (normalizedLocale === 'es' ? 'Error de red' : 'Network error, unable to save preferences'))),
+    title: isZhTw ? '偏好與體驗' : (isZhCn ? '偏好与体验' : (normalizedLocale === 'ja-JP' ? '環境設定と体験' : (normalizedLocale === 'ko-KR' ? '환경설정 및 경험' : (normalizedLocale === 'es' ? 'Preferencias y experiencia' : 'Preferences & Experience')))),
+    notifications: isZhTw ? '生成完成通知' : (isZhCn ? '生成完成通知' : (normalizedLocale === 'ja-JP' ? '生成完了通知' : (normalizedLocale === 'ko-KR' ? '생성 완료 알림' : (normalizedLocale === 'es' ? 'Notificaciones de generación' : 'Generation Notifications')))),
+    notificationsDesc: isZhTw ? '在影片、音訊或圖像生成完畢後推播提醒' : (isZhCn ? '在视频、音频或图像生成完毕后推送提醒' : (normalizedLocale === 'ja-JP' ? '画像・動画・音声の生成完了時にプッシュ通知' : (normalizedLocale === 'ko-KR' ? '이미지, 비디오 또는 오디오 생성 완료 시 푸시 알림' : (normalizedLocale === 'es' ? 'Recibir notificaciones cuando se completen las generaciones' : 'Receive push notifications when image, video, or audio tasks complete')))),
+    preview: isZhTw ? '高畫質即時預覽' : (isZhCn ? '高画质即时预览' : (normalizedLocale === 'ja-JP' ? '高画質リアルタイムプレビュー' : (normalizedLocale === 'ko-KR' ? '고화질 실시간 미리보기' : (normalizedLocale === 'es' ? 'Vista previa de alta calidad' : 'High-Quality Live Preview')))),
+    previewDesc: isZhTw ? '在工作區使用全保真動態預覽（消耗更多顯存與頻寬）' : (isZhCn ? '在工作区使用全保真动态预览（消耗更多显存与带宽）' : (normalizedLocale === 'ja-JP' ? 'ワークスペースで全解像度プレビューを使用（メモリ・帯域幅消費）' : (normalizedLocale === 'ko-KR' ? '작업 공간에서 전체 해상도 미리보기 사용 (메모리 및 대역폭 추가 소모)' : (normalizedLocale === 'es' ? 'Usar vista previa de fidelidad total en el espacio de trabajo' : 'Render full-fidelity preview in workspace (uses more memory and bandwidth)')))),
+    language: isZhTw ? '介面語言' : (isZhCn ? '界面语言' : (normalizedLocale === 'ja-JP' ? 'インターフェース言語' : (normalizedLocale === 'ko-KR' ? '인터페이스 언어' : (normalizedLocale === 'es' ? 'Idioma de la interfaz' : 'Interface Language')))),
+    currentLang: isZhTw ? `目前選擇：${activeLangLabel}` : (isZhCn ? `当前选择：${activeLangLabel}` : (normalizedLocale === 'ja-JP' ? `現在の選択：${activeLangLabel}` : (normalizedLocale === 'ko-KR' ? `현재 선택: ${activeLangLabel}` : (normalizedLocale === 'es' ? `Selección actual: ${activeLangLabel}` : `Current selection: ${activeLangLabel}`)))),
+    placeholder: isZhTw ? '選擇語言' : (isZhCn ? '选择语言' : (normalizedLocale === 'ja-JP' ? '言語を選択' : (normalizedLocale === 'ko-KR' ? '언어 선택' : (normalizedLocale === 'es' ? 'Seleccionar idioma' : 'Select Language')))),
+    syncedToast: isZhTw ? '偏好設定已同步至資料庫' : (isZhCn ? '偏好设置已同步至数据库' : (normalizedLocale === 'ja-JP' ? '設定がデータベースに同期されました' : (normalizedLocale === 'ko-KR' ? '환경설정이 데이터베이스에 동기화되었습니다' : (normalizedLocale === 'es' ? 'Preferencias sincronizadas con la base de datos' : 'Preferences synced to database')))),
+    saveFailed: isZhTw ? '設定儲存失敗' : (isZhCn ? '设置保存失败' : (normalizedLocale === 'ja-JP' ? '設定の保存に失敗しました' : (normalizedLocale === 'ko-KR' ? '설정 저장에 실패했습니다' : (normalizedLocale === 'es' ? 'Error al guardar ajustes' : 'Failed to save settings')))),
+    networkError: isZhTw ? '網路異常，無法儲存偏好設定' : (isZhCn ? '网络异常，无法保存偏好设置' : (normalizedLocale === 'ja-JP' ? 'ネットワーク接続異常' : (normalizedLocale === 'ko-KR' ? '네트워크 오류가 발생했습니다' : (normalizedLocale === 'es' ? 'Error de red' : 'Network error, unable to save preferences')))),
   };
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // 1. 从后端加载真实偏好设置，若有本地快照先即时应用
   useEffect(() => {
@@ -136,10 +165,14 @@ export default function SystemPreferencesSection({ user = null, className = '' }
     await savePreference({ highQualityPreview: val });
   };
 
-  const handleLanguageChange = async (val) => {
-    const norm = normalizeLocale(val);
+  const handleLanguageChange = async (targetCode) => {
+    setDropdownOpen(false);
+    const norm = normalizeLocale(targetCode);
+    if (norm === normalizedLocale) return;
+
     setCurrentLocale(norm);
     await savePreference({ locale: norm });
+
     try {
       const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
       const search = typeof window !== 'undefined' ? window.location.search : '';
@@ -147,6 +180,15 @@ export default function SystemPreferencesSection({ user = null, className = '' }
     } catch (err) {
       console.warn('Locale cookie write failed, falling back to reload', err);
       window.location.reload();
+    }
+  };
+
+  const handleTriggerKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setDropdownOpen(false);
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      setDropdownOpen((prev) => !prev);
     }
   };
 
@@ -219,7 +261,7 @@ export default function SystemPreferencesSection({ user = null, className = '' }
             </label>
           </div>
 
-          {/* 多语言切换 */}
+          {/* 多语言切换：流畅交互式下拉菜单，支持勾选高亮与确认生效 */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <div className="size-8 rounded-lg bg-wash border border-line-subtle flex items-center justify-center shrink-0">
@@ -230,19 +272,58 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                 <p className="text-caption text-ink-muted">{copy.currentLang}</p>
               </div>
             </div>
-            <div className="w-40">
-              <Select value={normalizedLocale} onValueChange={handleLanguageChange} disabled={loading}>
-                <SelectTrigger className="w-full bg-well border-line-subtle text-xs rounded-xl h-9">
-                  <SelectValue placeholder={copy.placeholder} />
-                </SelectTrigger>
-                <SelectContent className="bg-overlay border-line-subtle rounded-xl">
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code} className="text-xs">
-                      {lang.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                onKeyDown={handleTriggerKeyDown}
+                aria-haspopup="listbox"
+                aria-expanded={dropdownOpen}
+                className="w-48 bg-well border border-line-subtle hover:border-line-strong text-ink text-xs font-medium rounded-xl h-9 px-3 flex items-center justify-between gap-2 cursor-pointer transition-[border-color,background-color] duration-fast outline-none focus-visible:ring-1 focus-visible:ring-brand-ring active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm select-none leading-none">{activeLangItem.flag}</span>
+                  <span className="truncate text-ink font-medium">{activeLangItem.label}</span>
+                </div>
+                <ChevronDown
+                  className={`size-3.5 text-ink-muted shrink-0 transition-transform duration-fast ${
+                    dropdownOpen ? 'rotate-180 text-brand' : ''
+                  }`}
+                />
+              </button>
+
+              {dropdownOpen && (
+                <div
+                  role="listbox"
+                  aria-label={copy.language}
+                  className="absolute right-0 top-full mt-1.5 w-52 py-1.5 rounded-xl border border-line-strong bg-overlay shadow-elevation-3 z-50 animate-fade-in"
+                >
+                  {SUPPORTED_LANGUAGES.map((lang) => {
+                    const isSelected = lang.code === normalizedLocale;
+                    return (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => handleLanguageChange(lang.code)}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-colors duration-fast cursor-pointer ${
+                          isSelected
+                            ? 'bg-brand/15 text-brand font-semibold'
+                            : 'text-ink-muted hover:text-ink hover:bg-wash-strong'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-sm select-none leading-none">{lang.flag}</span>
+                          <span className="truncate">{lang.label}</span>
+                        </div>
+                        {isSelected && <Check className="size-4 text-brand shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

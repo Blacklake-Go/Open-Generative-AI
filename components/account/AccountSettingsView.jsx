@@ -21,11 +21,12 @@ export default function AccountSettingsView({
 
   const cookieLocale = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/)?.[1] : null;
   const activeLocale = normalizeLocale(user?.locale || cookieLocale || DEFAULT_LOCALE);
-  const isZh = activeLocale.startsWith('zh');
+  const isZhTw = activeLocale === 'zh-TW';
+  const isZhCn = activeLocale === 'zh-CN' || activeLocale === 'zh';
 
   const copy = {
-    profile: isZh ? '账户资料与安全' : (activeLocale === 'ja-JP' ? 'プロフィールとセキュリティ' : (activeLocale === 'ko-KR' ? '프로필 및 보안' : (activeLocale === 'es' ? 'Perfil y seguridad' : 'Profile & Security'))),
-    preferences: isZh ? '系统与偏好设置' : (activeLocale === 'ja-JP' ? 'システムと環境設定' : (activeLocale === 'ko-KR' ? '시스템 및 환경설정' : (activeLocale === 'es' ? 'Sistema y preferencias' : 'System & Preferences'))),
+    profile: isZhTw ? '帳戶資料與安全' : (isZhCn ? '账户资料与安全' : (activeLocale === 'ja-JP' ? 'プロフィールとセキュリティ' : (activeLocale === 'ko-KR' ? '프로필 및 보안' : (activeLocale === 'es' ? 'Perfil y seguridad' : 'Profile & Security')))),
+    preferences: isZhTw ? '系統與偏好設定' : (isZhCn ? '系统与偏好设置' : (activeLocale === 'ja-JP' ? 'システムと環境設定' : (activeLocale === 'ko-KR' ? '시스템 및 환경설정' : (activeLocale === 'es' ? 'Sistema y preferencias' : 'System & Preferences')))),
   };
 
   return (

@@ -45,23 +45,24 @@ export default function AccountLayout({
 
   const cookieLocale = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale)=([^;]+)/)?.[1] : null;
   const activeLocale = normalizeLocale(user?.locale || cookieLocale || DEFAULT_LOCALE);
-  const isZh = activeLocale.startsWith('zh');
+  const isZhTw = activeLocale === 'zh-TW';
+  const isZhCn = activeLocale === 'zh-CN' || activeLocale === 'zh';
 
   const localizedNavLabels = {
-    activity: isZh ? '活跃历史' : (activeLocale === 'ja-JP' ? 'アクティビティ履歴' : (activeLocale === 'ko-KR' ? '활동 내역' : (activeLocale === 'es' ? 'Actividad' : 'Activity & History'))),
-    settings: isZh ? '账号与设置' : (activeLocale === 'ja-JP' ? 'アカウントと設定' : (activeLocale === 'ko-KR' ? '계정 및 설정' : (activeLocale === 'es' ? 'Cuenta y ajustes' : 'Account & Settings'))),
-    billing: isZh ? '订阅与账单' : (activeLocale === 'ja-JP' ? 'サブスクリプションと請求' : (activeLocale === 'ko-KR' ? '구독 및 청구' : (activeLocale === 'es' ? 'Suscripción y facturación' : 'Subscription & Billing'))),
-    usage: isZh ? '额度明细' : (activeLocale === 'ja-JP' ? 'クォータ詳細' : (activeLocale === 'ko-KR' ? '사용량 세부정보' : (activeLocale === 'es' ? 'Detalles de cuota' : 'Quota & Usage'))),
+    activity: isZhTw ? '活躍歷史' : (isZhCn ? '活跃历史' : (activeLocale === 'ja-JP' ? 'アクティビティ履歴' : (activeLocale === 'ko-KR' ? '활동 내역' : (activeLocale === 'es' ? 'Actividad' : 'Activity & History')))),
+    settings: isZhTw ? '帳號與設定' : (isZhCn ? '账号与设置' : (activeLocale === 'ja-JP' ? 'アカウントと設定' : (activeLocale === 'ko-KR' ? '계정 및 설정' : (activeLocale === 'es' ? 'Cuenta y ajustes' : 'Account & Settings')))),
+    billing: isZhTw ? '訂閱與帳單' : (isZhCn ? '订阅与账单' : (activeLocale === 'ja-JP' ? 'サブスクリプションと請求' : (activeLocale === 'ko-KR' ? '구독 및 청구' : (activeLocale === 'es' ? 'Suscripción y facturación' : 'Subscription & Billing')))),
+    usage: isZhTw ? '額度明細' : (isZhCn ? '额度明细' : (activeLocale === 'ja-JP' ? 'クォータ詳細' : (activeLocale === 'ko-KR' ? '사용량 세부정보' : (activeLocale === 'es' ? 'Detalles de cuota' : 'Quota & Usage')))),
   };
 
   const copy = {
-    title: isZh ? '个人中心' : (activeLocale === 'ja-JP' ? 'アカウントセンター' : (activeLocale === 'ko-KR' ? '계정 센터' : (activeLocale === 'es' ? 'Centro de cuenta' : 'Account Center'))),
-    logout: isZh ? '退出登录' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Cerrar sesión' : 'Sign out'))),
-    loggingOut: isZh ? '正在退出…' : (activeLocale === 'ja-JP' ? 'ログアウト中…' : (activeLocale === 'ko-KR' ? '로그아웃 중…' : (activeLocale === 'es' ? 'Cerrando sesión…' : 'Signing out…'))),
-    mobileLogout: isZh ? '退出' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Salir' : 'Sign out'))),
-    login: isZh ? '立即登录' : (activeLocale === 'ja-JP' ? 'ログイン' : (activeLocale === 'ko-KR' ? '로그인' : (activeLocale === 'es' ? 'Iniciar sesión' : 'Log in'))),
-    close: isZh ? '关闭 (Esc)' : (activeLocale === 'ja-JP' ? '閉じる (Esc)' : (activeLocale === 'ko-KR' ? '닫기 (Esc)' : (activeLocale === 'es' ? 'Cerrar (Esc)' : 'Close (Esc)'))),
-    closeAria: isZh ? '关闭弹窗' : (activeLocale === 'ja-JP' ? 'ポップアップを閉じる' : (activeLocale === 'ko-KR' ? '팝업 닫기' : (activeLocale === 'es' ? 'Cerrar ventana' : 'Close modal'))),
+    title: isZhTw ? '個人中心' : (isZhCn ? '个人中心' : (activeLocale === 'ja-JP' ? 'アカウントセンター' : (activeLocale === 'ko-KR' ? '계정 센터' : (activeLocale === 'es' ? 'Centro de cuenta' : 'Account Center')))),
+    logout: isZhTw ? '登出' : (isZhCn ? '退出登录' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Cerrar sesión' : 'Sign out')))),
+    loggingOut: isZhTw ? '正在登出…' : (isZhCn ? '正在退出…' : (activeLocale === 'ja-JP' ? 'ログアウト中…' : (activeLocale === 'ko-KR' ? '로그아웃 중…' : (activeLocale === 'es' ? 'Cerrando sesión…' : 'Signing out…')))),
+    mobileLogout: isZhTw ? '登出' : (isZhCn ? '退出' : (activeLocale === 'ja-JP' ? 'ログアウト' : (activeLocale === 'ko-KR' ? '로그아웃' : (activeLocale === 'es' ? 'Salir' : 'Sign out')))),
+    login: isZhTw ? '立即登入' : (isZhCn ? '立即登录' : (activeLocale === 'ja-JP' ? 'ログイン' : (activeLocale === 'ko-KR' ? '로그인' : (activeLocale === 'es' ? 'Iniciar sesión' : 'Log in')))),
+    close: isZhTw ? '關閉 (Esc)' : (isZhCn ? '关闭 (Esc)' : (activeLocale === 'ja-JP' ? '閉じる (Esc)' : (activeLocale === 'ko-KR' ? '닫기 (Esc)' : (activeLocale === 'es' ? 'Cerrar (Esc)' : 'Close (Esc)')))),
+    closeAria: isZhTw ? '關閉彈窗' : (isZhCn ? '关闭弹窗' : (activeLocale === 'ja-JP' ? 'ポップアップを閉じる' : (activeLocale === 'ko-KR' ? '팝업 닫기' : (activeLocale === 'es' ? 'Cerrar ventana' : 'Close modal')))),
   };
 
   const currentNormalizedTab = normalizeTab(activeTab);
