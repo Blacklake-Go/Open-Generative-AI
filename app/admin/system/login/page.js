@@ -38,7 +38,7 @@ const REGION_META = {
 
 export default async function LoginMethodsPage() {
   const user = await requireAdminPagePermission(PERMISSIONS.providersRead);
-  const canWrite = hasPermission(user, PERMISSIONS.providersWrite);
+  const canWrite = hasPermission(user?.role || user, PERMISSIONS.providersWrite);
 
   const [providersOverview, socialSetting, smsOverview] = await Promise.all([
     getProvidersOverview(),
