@@ -14,6 +14,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import ModelBrandLogo from '@/components/models/ModelBrandLogo';
+import BrandLogo from '@/components/site/BrandLogo';
+import { useBranding } from '@/lib/hooks/useBranding';
 
 // 核心大模型矩阵导航定义 (按模态分类，涵盖官方品牌 ID 与直达路由)
 const FOOTER_MODEL_GROUPS = [
@@ -183,6 +185,10 @@ const FOOTER_MODEL_GROUPS = [
 
 export default function AboutFooter({ locale = 'en' }) {
   const isChinese = Boolean(locale?.includes('zh'));
+  const { brand } = useBranding();
+  const brandName = brand?.brandName || 'SupDance';
+  const logoHref = brand?.logoHref || (isChinese ? '/zh' : '/');
+  const logoTarget = brand?.logoTarget || '_self';
 
   const getModelUrl = (modelId) => {
     return isChinese ? `/zh/models/${modelId}` : `/models/${modelId}`;
@@ -351,20 +357,20 @@ export default function AboutFooter({ locale = 'en' }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-white/[0.08]">
           {/* 第 1 列：品牌微标与企业愿景 (占据 4 列) */}
           <div className="lg:col-span-4 flex flex-col items-start space-y-4">
-            <Link href="/" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#e11d74] via-[#3772FF] to-[#00f5d4] p-[1.5px] shadow-[0_0_20px_rgba(225,29,116,0.35)] group-hover:scale-105 transition-transform">
-                <div className="w-full h-full rounded-[9.5px] bg-[#0c0d12] flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white fill-current" />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-black text-lg text-white tracking-tight group-hover:text-[#00f5d4] transition-colors">
-                  SupDance
-                </span>
-                <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
-                  Generative AI Workspace
-                </span>
-              </div>
+            <Link
+              href={logoHref}
+              target={logoTarget}
+              className="group flex flex-col items-start gap-1.5 cursor-pointer"
+              aria-label={`${brandName} Home`}
+            >
+              <BrandLogo
+                brand={brand}
+                className="inline-flex items-center gap-2.5 [&>span:first-child]:group-hover:scale-105 transition-transform duration-200"
+                nameClassName="text-lg font-black tracking-tight text-white group-hover:text-[#00f5d4] transition-colors"
+              />
+              <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
+                {brand?.brandSlogan || (isChinese ? 'AI 创意工作室' : 'Generative AI Workspace')}
+              </span>
             </Link>
 
             <p className="text-xs text-white/60 leading-relaxed max-w-sm">
@@ -374,7 +380,7 @@ export default function AboutFooter({ locale = 'en' }) {
             </p>
 
             <div className="pt-2 text-xs font-mono text-white/50 space-y-1">
-              <div>support@Supdance.com</div>
+              <div>support@{brandName.toLowerCase()}.com</div>
             </div>
           </div>
 
@@ -448,8 +454,8 @@ export default function AboutFooter({ locale = 'en' }) {
             </div>
             <p className="text-xs text-white/50 leading-relaxed">
               {isChinese
-                ? '订阅 SupDance 技术周报，第一时间获取模型与产品更新公告。'
-                : 'Subscribe to receive foundation model updates and technical release notes.'}
+                ? `订阅 ${brandName} 技术周报，第一时间获取模型与产品更新公告。`
+                : `Subscribe to receive ${brandName} foundation model updates and technical release notes.`}
             </p>
 
             <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-[#12141c] p-3 text-xs text-white/60">
@@ -498,7 +504,7 @@ export default function AboutFooter({ locale = 'en' }) {
         {/* ========================================================= */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-white/40">
           <div className="flex flex-wrap items-center gap-2">
-            <span>© 2026 SupDance (supdance.com). All Rights Reserved.</span>
+            <span>© 2026 {brandName} ({brandName.toLowerCase()}.com). All Rights Reserved.</span>
             <span className="hidden sm:inline">·</span>
             <a
               href="https://beian.miit.gov.cn/"

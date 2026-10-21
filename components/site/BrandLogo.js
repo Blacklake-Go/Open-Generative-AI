@@ -35,6 +35,8 @@ export default function BrandLogo({
   brand,
   className = 'inline-flex items-center gap-2.5',
   nameClassName = 'text-sm font-bold tracking-tight text-white font-jost',
+  imageClassName = 'h-full w-auto max-h-8 max-w-[180px] object-contain',
+  showName = undefined,
 }) {
   const [imgError, setImgError] = useState(false);
 
@@ -45,15 +47,17 @@ export default function BrandLogo({
   const brandName = brand?.brandName || 'SupDance';
   const logoBgColor = brand?.logoBgColor || '#e11d74';
   const logoTextColor = brand?.logoTextColor || '#ffffff';
+  const hasImage = Boolean(brand?.logoUrl && !imgError);
+  const shouldShowName = showName !== undefined ? showName : Boolean(brand?.showBrandName || !hasImage);
 
   return (
     <span className={className} aria-label={brandName}>
-      {brand?.logoUrl && !imgError ? (
+      {hasImage ? (
         <span className="h-8 max-w-[180px] flex items-center justify-center transition-transform duration-200">
           <img
             src={brand.logoUrl}
             alt={brandName}
-            className="h-full w-auto max-h-8 max-w-[180px] object-contain"
+            className={imageClassName}
             onError={() => setImgError(true)}
           />
         </span>
@@ -73,7 +77,7 @@ export default function BrandLogo({
         </span>
       )}
 
-      {brand?.showBrandName && <span className={nameClassName}>{brandName}</span>}
+      {shouldShowName && <span className={nameClassName}>{brandName}</span>}
     </span>
   );
 }
