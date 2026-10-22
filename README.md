@@ -1,607 +1,238 @@
-# Open Generative AI — Unrestricted Open-Source Alternative to AI Video Platforms
-
-[![Powered by MuAPI](https://img.shields.io/badge/Powered%20by-MuAPI-6366f1?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMSAxNHYtNGgtMnYtMmg0djZoLTJ6bTAtOFY2aDJ2MmgtMnoiLz48L3N2Zz4=)](https://muapi.ai?utm_source=github&utm_medium=badge&utm_campaign=open-generative-ai)
-
-
-> **The free, open-source alternative to AI Video Platforms.** Generate AI images and videos using 400+ state-of-the-art models across 14 studios — no content filters, no closed ecosystem, no subscription fees.
-
-**Community:** Join [Discord](https://discord.gg/tANKJkHck) for discussions and support
-
-<p align="center"><a href="https://youtu.be/kT1CO4BYV3A"><img src="https://i.ytimg.com/vi/kT1CO4BYV3A/maxresdefault.jpg" width="720"></a></p>
-<p align="center"><a href="https://youtu.be/kT1CO4BYV3A"><b>▶ Watch: Free Unlimited AI Image Generator (Truly no limits, Open Source, No Watermark) </b></a></p>
+# SupDance (Open Generative AI)
 
 <p align="center">
-  <a href="https://github.com/Anil-matcha/awesome-generative-ai-apps">
-    <img src="https://img.shields.io/badge/Part%20of-Awesome%20Generative%20AI%20Apps-FFD700?style=for-the-badge&logo=github&logoColor=black" alt="Awesome Generative AI Apps">
-  </a>
+  <img src="https://img.shields.io/badge/Next.js-15.5-black?style=flat-square&logo=next.js" alt="Next.js 15">
+  <img src="https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react" alt="React 19">
+  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38bdf8?style=flat-square&logo=tailwind-css" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/i18n-6%20Locales-emerald?style=flat-square" alt="i18n">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License MIT">
 </p>
 
-> 🎨 **[Explore 50+ more open-source AI apps →](https://github.com/Anil-matcha/awesome-generative-ai-apps)**
+<p align="center">
+  <b>企业级多模态生成式 AI 生产力工坊 · 全景视听大模型矩阵 · 短剧出海与分镜导演工作流</b>
+</p>
 
-## 💰 Turn This Into Your Own Product — White Label & Resell
+<p align="center">
+  <a href="https://www.supdance.com">官方体验入口 (www.supdance.com)</a>
+  <span> · </span>
+  <a href="#-核心特性矩阵">核心特性</a>
+  <span> · </span>
+  <a href="#-短剧工作坊与画布工具集">短剧工作坊</a>
+  <span> · </span>
+  <a href="#-快速开始">快速开始</a>
+  <span> · </span>
+  <a href="#-工程治理与架构">系统架构</a>
+</p>
 
-Want to launch this as **your own branded AI studio** and charge your own customers for it? [MuAPI White Label](https://muapi.ai/white-label?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai) lets you spin up a fully white-labeled version of this app — your logo, your colors, your custom domain, your own pricing — with zero infra to manage. You keep the markup on every generation; MuAPI handles the models, the queue, and the billing plumbing underneath.
+---
 
-- **Your branding** — logo, color theme, and a custom domain (e.g. `studio.yourbrand.com`)
-- **Your pricing** — set your own credit/subscription prices for end users, keep the margin
-- **No infra** — no servers, workers, or model hosting to run yourself
-- **All studios included** — Image, Video, Audio, Lip Sync, Cinema, Workflows, and more, depending on plan
+<p align="center">
+  <img src="docs/assets/supdance-home-preview.png" alt="SupDance AI Studio 核心界面预览" width="100%" style="border-radius: 14px; box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.08);">
+</p>
 
-Plans start at $49/mo. [Get started with White Label →](https://muapi.ai/white-label?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai)
+<p align="center">
+  <sub>✨ <b>创造任何你想象的事物</b> — SupDance 核心控制台：全模态前沿模型调度与沉浸式极光视听无限画布</sub>
+</p>
 
-### What similar AI studios charge their users
+---
 
-Consumer AI image/video platforms almost all run on paid monthly subscriptions — this is the same playbook you'd run under your own brand:
+## 📖 项目简介 (Overview)
 
-| Platform | Typical subscription range |
+**SupDance**（原 Open Generative AI 深度定制工业级增强版）是一套面向企业、影视创作者、短剧出海团队与数字艺术家的**多模态生成式 AI 生产力平台与创意操作系统**。
+
+本项目在开源社区优秀的生成式 AI 架构基础上，进行了深入全方位的工业级改造与业务重塑：
+- **影视与短剧工作流深耕**：提供独立的短剧工作坊、分镜脚本智能体、工业级六大三视图/分镜预设与无限节点画布工具。
+- **全前沿模型矩阵网关**：官方级集成火山引擎（即梦 Seedream 4.5/5.0、Seedance 2.5 运镜）、快手可灵 Kling 2.6 Pro、MiniMax 海螺、阿里通义万相、FLUX、Suno 与 DeepSeek。
+- **极光流体空间交互**：独创 7 层物理仿真空间光影与极光粒子系统（`SpatialBackground`），兼备极高审美质感与指针交互安全。
+- **全栈国际化与本土商业闭环**：覆盖 6 种主流语言，原生支持微信支付、QQ 登录、支付宝以及海外主流 OAuth。
+
+---
+
+## ✨ 核心特性矩阵 (Key Highlights)
+
+### 🎬 1. 短剧工作坊与画布工具集 (Drama Workshop & Canvas Studio)
+针对短剧出海、漫剧制作与影视前期视效，系统提供专门的独立工具路由与预设集：
+* **扩图 (Outpaint)**：支持 1.5x / 2.0x 智能视野延展，自动保持画幅比例与环境连续性。
+* **智能超清 (Upscale)**：2K / 4K 级画质无损增强与细节高精度重建。
+* **智能抠图 (Cutout)**：发丝级主体分割与透明通道提取。
+* **多角度生成 (Multi-Angle)**：保持角色/物体面部与特征一致的前提下，旋转多视点拍摄角度。
+* **6 大工业级分镜与三视图预设**：
+  * 🎭 **人物三视图** (`/zh/canvas-tools/three-view/character`)：正/侧/背三面角色设定图。
+  * 👤 **面部三视图** (`/zh/canvas-tools/three-view/face`)：特写机位与五官特征锁定。
+  * 📦 **产品三视图** (`/zh/canvas-tools/three-view/product`)：商业产品与工业建模打样。
+  * 🗺️ **场景俯视图** (`/zh/canvas-tools/three-view/scene-top-view`)：宏观场景场记与空间调度。
+  * 🎞️ **连续分镜图** (`/zh/canvas-tools/three-view/storyboard`)：故事脉络连贯叙事板。
+  * 🔲 **多机位九宫格** (`/zh/canvas-tools/three-view/nine-grid`)：全机位景别构图矩阵。
+* **安全鉴权代理**：线上任务生成结果基于用户会话凭证流式安全代理回传，彻底杜绝云端原图未授权外链与泄露风险。
+
+### ⚡ 2. 全球前沿视觉大模型直连矩阵 (Foundation Model Matrix)
+* **字节跳动 · 即梦 (Seedream 4.5 / 5.0)**：独家实现分辨率档位与画幅宽高比例的自动智能换算（`VolcengineAdapter`），彻底杜绝非方形画幅压扁变形。
+* **字节跳动 · Seedance 2.5 运镜视频**：60 FPS 电影级镜头运动控制与多时长档位支持。
+* **快手 · 可灵 (Kling 2.6 Pro)**：影视级高动态运镜视频生成。
+* **MiniMax · 海螺视频 (Hailuo 2.3)**：高质感写实动态视频渲染。
+* **阿里 · 通义万相 (Wan 2.1 / 2.2)**：图生视频、文生图流体级真实光影渲染。
+* **黑森林实验室 · FLUX.1 [dev]**：4K 高保真排印与艺术质感输出。
+* **Suno & ElevenLabs**：商业级流行乐曲谱曲生成与零样本极速声音克隆。
+* **DeepSeek 官方网关**：原生集成官方模型路由与提示词创意生成。
+
+### 🌌 3. 空间光影与极光物理系统 (Spatial Aurora UI)
+* **7 层流体光场仿真**：基于 CSS 变量与现代物理色彩曲线，动态渲染具有呼吸感与空间景深的极光光场。
+* **指针事件穿透安全**：全域背景与浮动图层经过严格 Pointer-Events 安全隔离，零干扰任何页面点击与滚动。
+* **微质感非胶囊现代美学**：严格遵循 `UI_DESIGN_SYSTEM.md`，使用分层柔和投影与统一边框色阶，告别大圆角失真。
+
+### 🌐 4. 全栈多语言与全球化商业闭环 (Global i18n & Commerce)
+* **6 国多语言全链路支持**：
+  * 简体中文 (`zh-CN`) / 繁体中文 (`zh-TW`)
+  * 英语 (`en`) / 日语 (`ja-JP`) / 韩语 (`ko-KR`) / 西班牙语 (`es`)
+  * 包含路由自适应、服务端首选语言嗅探与字典结构校验测试套件。
+* **本土化与海外双通道身份验证**：
+  * 微信公众号 / 开放平台扫码登录
+  * QQ 互联企鹅图标快捷授权登录
+  * 手机短信验证码与邮箱验证
+  * Google、X (Twitter)、TikTok、Instagram OAuth 统一网关
+* **多渠道支付结算体系**：
+  * 原生微信支付商户直连（支持 PC 端 Native 扫码与移动端 H5 唤起）
+  * 支付宝网页与当面付扫码
+  * 算力积分（Credits）统一核算、充值档位与账单流水追溯
+
+---
+
+## 🛠️ 技术栈 (Tech Stack)
+
+| 领域 | 核心选用技术 |
 |---|---|
-| Midjourney | ~$10–$120/mo (Basic → Mega) |
-| Runway | ~$12–$76/mo (Standard → Unlimited), custom Enterprise |
-| Kling AI | ~$10–$92/mo across Standard → Premier tiers |
-| Luma Dream Machine | ~$10–$100+/mo |
-| Pika | ~$8–$58/mo |
-
-*(Figures are approximate, general-market ranges and change over time — check each platform's current pricing page before quoting them.)* With MuAPI White Label, you set these numbers yourself for your own end users — the subscription revenue is yours.
-
----
-
-## Related Projects
-
-This is a curated set of high-value hubs, popular distribution tools, and model-specific integrations rather than a directory of every related repository.
-
-- [awesome-generative-ai-apps](https://github.com/Anil-matcha/awesome-generative-ai-apps) — catalog of open-source generative-AI applications.
-- [awesome-ai-video-models](https://github.com/Anil-matcha/awesome-ai-video-models) — compare video models by API, price, and capability.
-- [awesome-ai-image-models](https://github.com/Anil-matcha/awesome-ai-image-models) — compare image models by API, price, and quality.
-- [AI-Youtube-Shorts-Generator](https://github.com/SamurAIGPT/AI-Youtube-Shorts-Generator) — Open-source Opus Clip alternative application.
-- [Open-AI-Design-Agent](https://github.com/Anil-matcha/Open-AI-Design-Agent) — Ppen-source autonomous AI design agent.
-- [Generative-Media-Skills](https://github.com/SamurAIGPT/Generative-Media-Skills) — Agent-ready skills for driving generative-media workflows.
-- [Seedance-2.5-API](https://github.com/SamurAIGPT/Seedance-2.5-API) — Python SDK for Seedance 2.5 video generation.
-
-## 🌐 Try it Online — No Install Required
-
-**Hosted version:** [https://muapi.ai/open-generative-ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai](https://muapi.ai/open-generative-ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai)
-
-Use all studios (Image, Video, Audio, AI Clipping, Vibe Motion, Lip Sync, Cinema, Marketing, Workflows, Agents, Design Agent, Apps, MCP & CLI) directly in your browser — no Node.js, no setup. Sign up for a free account to start generating. The hosted version is always up to date with the latest models.
-
-**Follow** the [creator](https://x.com/matchaman11) for updates
+| **前端框架** | Next.js 15.5 (App Router), React 19, TypeScript / Modern ES |
+| **样式与动效** | Tailwind CSS 3.4, PostCSS, Lucide React, Framer-motion, Spatial Aurora Engine |
+| **服务端运行时** | Node.js 20+ (ES Modules), Next.js Server Components, API Route Handlers |
+| **数据持久化** | PostgreSQL 16+, 连接池管理, 声明式 SQL 脚本版本化迁移 (`001`~`074`) |
+| **国际化 (i18n)** | 自研高性能无缝语言路由引擎，多端同构翻译与动态变量插值 |
+| **媒体与适配** | Sharp 图像高性能处理, Volcengine SDK, MuAPI Gateway, RESTful Stream Proxy |
+| **工程化保障** | Playwright (E2E), ESLint, 自动化发布安全性自检脚本 (`release-safety-check`) |
 
 ---
 
-## ⬇️ Download Desktop App
+## 🚀 快速开始 (Quick Start)
 
-One-click installers — no Node.js or terminal required.
+### 1. 环境准备
+确保本机安装了以下环境：
+* **Node.js**: `v20.10.0` 或更高版本
+* **pnpm** 或 **npm**: 建议使用 `pnpm 9+` 或 `npm 10+`
+* **PostgreSQL**: 14+ 实例已就绪
 
-| Platform | Download |
-|---|---|
-| macOS Apple Silicon (M1/M2/M3/M4) | [Open Generative AI-1.0.9-arm64.dmg](https://github.com/Anil-matcha/Open-Generative-AI/releases/download/v1.0.9/Open.Generative.AI-1.0.9-arm64.dmg) |
-| macOS Intel (x64) | [Open Generative AI-1.0.9.dmg](https://github.com/Anil-matcha/Open-Generative-AI/releases/download/v1.0.9/Open.Generative.AI-1.0.9.dmg) |
-| Windows (x64) | [Open Generative AI Setup 1.0.9.exe](https://github.com/Anil-matcha/Open-Generative-AI/releases/download/v1.0.9/Open.Generative.AI.Setup.1.0.9.exe) |
-| Linux (Ubuntu x64) | [v1.0.9 release](https://github.com/Anil-matcha/Open-Generative-AI/releases/tag/v1.0.9) (`.AppImage` / `.deb`), or build locally with `npm run electron:build:linux`. |
-
-All releases: [github.com/Anil-matcha/Open-Generative-AI/releases](https://github.com/Anil-matcha/Open-Generative-AI/releases)
-
-### macOS Installation Guide
-
-Because the app is not notarized by Apple, macOS Gatekeeper will block it on first launch. Follow these steps:
-
-**Step 1** — Mount the DMG and drag the app to `/Applications`
-
-**Step 2** — Open Terminal and run:
+### 2. 获取代码与依赖安装
 ```bash
-xattr -cr "/Applications/Open Generative AI.app"
-```
-
-**Step 3** — Right-click the app in `/Applications` → click **Open** → click **Open** again on the dialog
-
-> You only need to do this once. After that, the app opens normally.
-
-**Alternative (no Terminal):**
-1. Try to open the app — macOS will block it
-2. Go to **System Settings → Privacy & Security**
-3. Scroll down to find _"Open Generative AI was blocked"_
-4. Click **Open Anyway** → **Open**
-
-### Windows Installation — SmartScreen warning fix
-
-Windows SmartScreen may show a warning because the installer is not code-signed:
-
-1. Click **More info** on the SmartScreen dialog
-2. Click **Run anyway**
-
-The app will install silently to `%LocalAppData%` with a Start Menu shortcut.
-
-### Ubuntu / Linux Installation
-
-Linux artifacts are available when building with Electron Builder:
-
-```bash
-# Build Linux installers (AppImage + .deb)
-npm run electron:build:linux
-```
-
-Generated files are written to the `release/` folder:
-- **AppImage** — portable, run directly after making executable:
-  ```bash
-  chmod +x "release/Open Generative AI-*.AppImage"
-  ./release/Open\ Generative\ AI-*.AppImage
-  ```
-- **.deb** — install on Debian/Ubuntu:
-  ```bash
-  sudo apt install ./release/open-generative-ai_*_amd64.deb
-  ```
-
-If AppImage fails to start on older systems, install `libfuse2`:
-
-```bash
-sudo apt install libfuse2
-```
-
-#### Ubuntu 24.04+ / AppArmor sandbox restriction
-
-Ubuntu 24.04 and later enable a kernel security policy (`apparmor_restrict_unprivileged_userns`) that blocks Chromium's user-namespace sandbox. If the app fails to start silently or crashes immediately, you have two options:
-
-**Option A — Recommended: install the `.deb` instead.**
-The `.deb` package ships an AppArmor profile that grants the required permission automatically on install with no system-wide changes.
-
-**Option B — Temporary system fix (AppImage users):**
-```bash
-sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-```
-This lasts until next reboot. To make it permanent:
-```bash
-echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-userns.conf
-```
-
----
-
-Open Generative AI is a free, open-source AI image, video, cinema, and lip sync studio that brings creative workflows to everyone. No content filters, no prompt rejections, no guardrails — just full creative freedom. Powered by [Muapi.ai](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai), it supports text-to-image, image-to-image, text-to-video, image-to-video, and audio-driven lip sync generation across models like Flux, Nano Banana, Midjourney, Kling, Sora, Veo, Seedream, Infinite Talk, LTX Lipsync, Wan 2.2, and more — all from a sleek, modern interface you can self-host and customize.
-
-**Why Open Generative AI instead of other AI Video Platforms?**
-- **No filters** — no content filters, no nanny guardrails, no prompt rejections
-- **Free & open-source** — no subscription, no vendor lock-in
-- **Self-hosted** — your data stays on your machine, full creative control
-- **200+ models** — text-to-image, image-to-image, text-to-video, image-to-video, lip sync
-- **Multi-image input** — feed up to 14 reference images into compatible models
-- **Lip Sync Studio** — animate portraits or sync lips to any audio with 9 dedicated models
-- **Extensible** — add your own models, modify the UI, build on top of it
-
-For a deep dive into the technical architecture and the philosophy behind the "Infinite Budget" cinema workflow, see our [comprehensive guide and roadmap](https://medium.com/@anilmatcha/).
-
-## ⚡ Local Model Inference (Desktop App Only)
-
-The desktop app supports **two independent local engines**. Pick whichever fits the machine you actually run on:
-
-| Engine | What it is | Best for |
-|---|---|---|
-| **sd.cpp** (bundled) | C++ engine from [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp), runs on the same machine as the app. Metal GPU on Apple Silicon, CUDA/Vulkan/ROCm on Linux/Windows. | Image-only models. Works on Mac M-series. |
-| **Wan2GP** (BYO server) | HTTP client to a user-run [Wan2GP](https://github.com/deepbeepmeep/Wan2GP) server. The server runs Python + PyTorch on a CUDA/ROCm GPU; the desktop app only sends prompts and receives results. | Video models (Wan 2.2, Hunyuan, LTX) and large image models (Flux, Qwen-Image). NVIDIA/AMD GPU required on the *server*; the desktop app itself can run on a Mac. |
-
-Both engines share the same UI: open **Settings → Local Models** to configure each.
-
-### Engine 1 — sd.cpp (bundled)
-
-| Model | Type | Size | Notes |
-|---|---|---|---|
-| **Z-Image Turbo** ⚡ | Diffusion Transformer | 2.5 GB + 2.7 GB aux | 8-step turbo. Heavy on memory. |
-| **Z-Image Base** ⚡ | Diffusion Transformer | 3.5 GB + 2.7 GB aux | 50-step high-quality. Heavy on memory. |
-| **Dreamshaper 8** | SD 1.5 | 2.1 GB | 20-step versatile. Lightest tested option on Mac. |
-| **Realistic Vision v5.1** | SD 1.5 | 2.1 GB | 25-step photorealistic |
-| **Anything v5** | SD 1.5 | 2.1 GB | 20-step anime/illustration |
-| **SDXL Base 1.0** | SDXL | 6.9 GB | 30-step high-res |
-
-> **Z-Image models** require two shared auxiliary files (downloaded once, shared across both models):
-> - **Qwen3-4B Text Encoder** — 2.4 GB
-> - **FLUX VAE** — 335 MB
-
-**How to use:**
-1. Open **Settings → Local Models** in the desktop app
-2. Install the **sd.cpp inference engine** (one click — auto-downloaded)
-3. Download your chosen model (and auxiliary files for Z-Image)
-4. In **Image Studio**, click the **⚡ Local** toggle next to the model selector
-5. Select your local model and generate — no API key needed
-
-All downloads happen inside the app. Nothing is installed system-wide.
-
-By default, `sd.cpp` stores the engine, model weights, and temporary downloads under Electron's app data directory. Common paths are:
-
-- macOS: `~/Library/Application Support/open-generative-ai/local-ai`
-- Windows: `%APPDATA%\open-generative-ai\local-ai`
-- Linux: `~/.config/open-generative-ai/local-ai`
-
-To keep multi-GB model weights on another drive, set `OPEN_GENERATIVE_AI_LOCAL_AI_DIR`
-before launching the desktop app. The app will create `bin/`, `models/`, and `tmp/`
-inside that directory, and **Settings -> Local Models** shows the resolved model folder.
-Local engine output and download errors are written to the app process console, so launch
-from Terminal or PowerShell when you need troubleshooting logs.
-
-### Engine 2 — Wan2GP (remote Gradio server)
-
-The app does **not** bundle Python or model weights for Wan2GP. You run Wan2GP yourself on a machine with a CUDA or ROCm GPU and point the desktop app at its URL.
-
-```bash
-# On your GPU machine
-git clone https://github.com/deepbeepmeep/Wan2GP
-cd Wan2GP
-./install.sh                          # or install.bat on Windows
-python wgp.py --listen --server-name 0.0.0.0   # binds to all interfaces
-```
-
-Then in the desktop app: **Settings → Local Models → Wan2GP server**, paste the URL (e.g. `http://192.168.1.42:7860`), click **Test**, then **Save**. The Wan2GP models become available — image models in **Image Studio**, video models reachable via the same generation API (Image Studio rejects video output explicitly; full Video Studio wiring is on the roadmap).
-
-| Model | Type | Notes |
-|---|---|---|
-| **Flux.1 Dev** | Image | 1024px, 28 steps |
-| **Qwen Image** | Image | 1024px, 30 steps |
-| **Wan 2.2 (T2V / I2V)** | Video | Slow on consumer GPUs |
-| **Hunyuan Video** | Video | High-quality T2V |
-| **LTX Video** | Video | Fastest video option |
-
-> **Why a separate server?** Wan2GP's runtime (Sage attention, flash-attn, AWQ/GGUF kernels) is CUDA-only — there is no MPS / Apple Silicon path. Treating it as a remote server lets a Mac-only user keep the desktop app while offloading inference to a Linux/Windows GPU box, a gaming PC on the LAN, or a rented RunPod/vast.ai instance.
-
-> **Local inference is only available in the desktop app.** The hosted web version always uses cloud APIs.
-
-### Hardware Notes
-
-- **sd.cpp** runs on CPU (all platforms) and **Metal GPU** on Apple Silicon (M1/M2/M3/M4); CUDA/Vulkan/ROCm on Linux/Windows.
-- Metal GPU acceleration is built into the macOS desktop binary — significantly faster than CPU-only.
-- Recommended for sd.cpp Z-Image: 16 GB RAM (7.4 GB weights + 2.4 GB compute buffer). On a base 8 GB M-series Mac, **Z-Image is known to hang the system** — stick to SD 1.5 there.
-- For SD 1.5 on M2: expect ~1–2 s/step with the Metal dylib active. If you see ~10 s/step instead, the binary may have fallen back to CPU — see verification below.
-
-### Verifying the SD 1.5 path (the fastest sanity test on Mac)
-
-If you want to confirm sd.cpp is installed correctly without going through the UI, you can drive `sd-cli` directly. This is the same binary the app uses.
-
-```bash
-# 1. App data layout (created on first app launch)
-APP_DATA="${OPEN_GENERATIVE_AI_LOCAL_AI_DIR:-$HOME/Library/Application Support/open-generative-ai/local-ai}"
-ls "$APP_DATA/bin"     # sd-cli, libstable-diffusion.dylib
-ls "$APP_DATA/models"  # whatever you've downloaded
-
-# 2. Grab a small SD 1.5 model directly (Dreamshaper 8, ~2 GB)
-curl -L --fail --progress-bar \
-  -o "$APP_DATA/models/DreamShaper_8_pruned.safetensors" \
-  "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors"
-
-# 3. Run a single 512x512 / 12-step inference
-DYLD_LIBRARY_PATH="$APP_DATA/bin" "$APP_DATA/bin/sd-cli" \
-  -m "$APP_DATA/models/DreamShaper_8_pruned.safetensors" \
-  -p "a serene mountain lake at sunrise, oil painting" \
-  -o /tmp/sd15-test.png \
-  --steps 12 -H 512 -W 512 --cfg-scale 7.5 --seed 42 \
-  --sampling-method euler_a
-```
-
-A healthy run on Apple Silicon prints `total params memory size = 1969.78MB (VRAM 1969.78MB, RAM 0.00MB)` (Metal-backed) and produces a coherent 512×512 PNG. If `VRAM` is `0.00MB` instead, the dylib is CPU-only — check `otool -L "$APP_DATA/bin/libstable-diffusion.dylib" | grep -i metal` and reinstall the engine from **Settings → Local Models** if Metal is missing.
-
----
-
-## ✨ Features
-
-- **Image Studio** — Generate images from text prompts (50+ text-to-image models) or transform existing images (55+ image-to-image models). Switches model set automatically based on whether a reference image is provided. Quality and resolution controls visible for models that support them.
-- **Local Inference** — Two engines: **sd.cpp** (bundled, runs on Mac/Win/Linux with Metal/CUDA/Vulkan/ROCm) for SD 1.5, SDXL, and Z-Image; and **Wan2GP** (BYO Gradio server) for Flux, Qwen-Image, and video models (Wan 2.2, Hunyuan, LTX). Configure both in Settings → Local Models.
-- **Multi-Image Input** — Upload up to 14 reference images for compatible edit models (Nano Banana 2 Edit, Flux Kontext Dev, GPT-4o Edit, and more). Multi-select picker with order badges, batch upload, and a "Use Selected" confirmation flow.
-- **Video Studio** — Generate videos from text prompts (40+ text-to-video models) or animate a start-frame image (60+ image-to-video models). Same intelligent mode switching as Image Studio.
-- **Audio Studio** — Generate and edit AI audio/music from text prompts.
-- **AI Clipping** — Auto-clip and extract highlights from longer video content.
-- **Vibe Motion Studio** — Motion/animation generation studio for stylized video effects.
-- **Lip Sync Studio** — Animate portrait images or sync lips on existing videos using audio. 9 dedicated models across two modes: portrait image + audio → talking video, and video + audio → lipsync video.
-- **Body Swap (Recast) Studio** — Swap/recast a subject's body or appearance in an image or video.
-- **Cinema Studio** — Interface for photorealistic cinematic shots with pro camera controls (Lens, Focal Length, Aperture)
-- **Marketing Studio** — Generate ad and marketing-ready creative variations from a single input.
-- **Workflow Studio** — Build and run multi-step AI pipelines visually. Chain image, video, and audio models into automated flows. Browse community templates, create your own with a node-based editor, and run them via an interactive playground.
-- **Agent Studio** — Multi-turn creative agent that plans and executes generation tasks conversationally.
-- **Design Agent Studio** — Canvas-based autonomous design agent for iterative visual work.
-- **Explore Apps** — Directory of app templates and use-cases built on the same model catalog.
-- **AI Influencer Studio** — Tools for creating and managing consistent AI persona/influencer content.
-- **Upload History** — Reference images are uploaded once and stored locally. A picker panel lets you reuse any previously uploaded image across sessions — no re-uploading.
-- **Smart Controls** — Dynamic aspect ratio, resolution/quality, and duration pickers that adapt to each model's capabilities (including t2i models with resolution or quality options)
-- **Generation History** — Browse, revisit, and download all past generations (persisted in browser storage)
-- **Image & Video Download** — One-click download of generated outputs in full resolution
-- **API Key Management** — Secure API key storage in browser localStorage (never sent to any server except Muapi)
-- **Responsive Design** — Works seamlessly on desktop and mobile with dark glassmorphism UI
-
-### 🖼️ Image Studio — Dual Mode
-
-The Image Studio automatically switches between two model sets:
-
-| Mode | Trigger | Models | Prompt |
-| :--- | :--- | :--- | :--- |
-| **Text-to-Image** | Default (no image) | 50+ t2i models (Flux, Nano Banana 2, Seedream 5.0, Ideogram, GPT-4o, Midjourney…) | Required |
-| **Image-to-Image** | Reference image uploaded | 55+ i2i models (Kontext, Nano Banana 2 Edit, Seedream 5.0 Edit, Seededit, Upscaler…) | Optional |
-
-#### Newly Added Models
-
-| Model | Type | Key Features |
-| :--- | :--- | :--- |
-| **Nano Banana 2** | Text-to-Image | Google Gemini 3.1 Flash Image · Resolution 1K/2K/4K · Google Search enhancement · aspect ratio `auto` |
-| **Nano Banana 2 Edit** | Image-to-Image | Up to **14 reference images** · Resolution 1K/2K/4K · Google Search enhancement |
-| **Seedream 5.0** | Text-to-Image | ByteDance · Quality basic/high · 8 aspect ratios · up to 4K |
-| **Seedream 5.0 Edit** | Image-to-Image | ByteDance · Natural language style transfer · Quality basic/high |
-| **MiniMax Image 01** | Text-to-Image | MiniMax · 8 aspect ratios · up to 4 images per request · 1500 char prompt |
-
-#### Multi-Image Input
-
-Models that accept multiple reference images expose a multi-select picker when active:
-
-| Model | Max Images |
-| :--- | :--- |
-| Nano Banana 2 Edit | 14 |
-| Nano Banana Edit | 10 |
-| Flux Kontext Dev I2I | 10 |
-| Kling O1 Edit Image | 10 |
-| GPT-4o Edit / GPT Image 1.5 Edit | 10 |
-| Bytedance Seedream Edit v4 / v4.5 | 10 |
-| Vidu Q2 Reference to Image | 7 |
-| Flux 2 Flex/Pro Edit | 8 |
-| Nano Banana Pro Edit | 8 |
-| Flux Kontext Pro/Max I2I | 2 |
-| Wan 2.5/2.6 Image Edit | 2–3 |
-| Qwen Image Edit Plus / 2511 | 3 |
-| GPT-4o Image to Image | 5 |
-| Flux 2 Klein 4b/9b Edit | 4 |
-
-When a multi-image model is selected the upload trigger switches to multi-select mode:
-- **Checkboxes with order numbers** — images are sent to the model in the order you select them
-- **Batch upload** — pick multiple files at once from your file dialog
-- **Count badge** on the trigger shows how many images are active; a `+` badge appears when more slots are available
-- **"Use Selected" button** confirms and closes the picker
-
-### 🎬 Video Studio — Dual Mode
-
-The Video Studio follows the same pattern:
-
-| Mode | Trigger | Models | Prompt |
-| :--- | :--- | :--- | :--- |
-| **Text-to-Video** | Default (no image) | 40+ t2v models (Kling, Sora, Veo, Wan, Seedance 2.0, Hailuo, Runway…) | Required |
-| **Image-to-Video** | Start frame uploaded | 60+ i2v models (Kling I2V, Veo3 I2V, Runway I2V, Wan I2V, Seedance 2.0 I2V, Midjourney I2V…) | Optional |
-
-#### Newly Added Models
-
-| Model | Type | Key Features |
-| :--- | :--- | :--- |
-| **Seedance 2.0** | Text-to-Video | ByteDance · Aspect ratios 16:9 / 9:16 / 4:3 / 3:4 · Duration 5 / 10 / 15s · Quality basic/high |
-| **Seedance 2.0 I2V** | Image-to-Video | ByteDance · Animate images into video · Up to 9 reference images · Aspect ratios 16:9 / 9:16 / 4:3 / 3:4 · Duration 5 / 10 / 15s · Quality basic/high |
-| **Seedance 2.0 Extend** | Video Extension | ByteDance · Seamlessly continue any Seedance 2.0 generation · Preserves style, motion & audio · Optional continuation prompt · Duration 5 / 10 / 15s · Quality basic/high |
-| **Grok Imagine T2V** | Text-to-Video | xAI · Duration 6 / 10 / **15s** · Modes: fun / normal / spicy · Aspect ratios 9:16 / 16:9 / 2:3 / 3:2 / 1:1 |
-| **Grok Imagine I2V** | Image-to-Video | xAI · Duration 6 / 10 / **15s** · Modes: fun / normal / spicy · Cinematic motion from still images |
-| **MiniMax Hailuo 02 / 2.3 Standard & Pro** | Text-to-Video / Image-to-Video | MiniMax · Full HD video · Multiple aspect ratios · Fast variant included |
-
-### 🎙️ Lip Sync Studio
-
-The **Lip Sync Studio** generates audio-driven talking videos using 9 models across two input modes:
-
-| Mode | Trigger | Description |
-| :--- | :--- | :--- |
-| **Portrait Image** | Default | Upload a portrait image + audio file → animated talking video |
-| **Video** | Switch to Video mode | Upload an existing video + audio file → lipsync video |
-
-#### Image-based Models (Portrait Image + Audio → Video)
-
-| Model | Endpoint | Resolutions | Prompt |
-| :--- | :--- | :--- | :--- |
-| **Infinite Talk** | `infinitetalk-image-to-video` | 480p, 720p | Optional |
-| **Wan 2.2 Speech to Video** | `wan2.2-speech-to-video` | 480p, 720p | Optional |
-| **LTX 2.3 Lipsync** | `ltx-2.3-lipsync` | 480p, 720p, 1080p | Optional |
-| **LTX 2 19B Lipsync** | `ltx-2-19b-lipsync` | 480p, 720p, 1080p | Optional |
-
-#### Video-based Models (Video + Audio → Lipsync Video)
-
-| Model | Endpoint | Resolutions | Prompt |
-| :--- | :--- | :--- | :--- |
-| **Sync Lipsync** | `sync-lipsync` | — | — |
-| **LatentSync** | `latentsync-video` | — | — |
-| **Creatify Lipsync** | `creatify-lipsync` | — | — |
-| **Veed Lipsync** | `veed-lipsync` | — | — |
-| **Infinite Talk V2V** | `infinitetalk-video-to-video` | 480p, 720p | Optional |
-
-**How it works:**
-1. Select **Portrait Image** or **Video** mode using the toggle
-2. Upload your portrait image (or video) using the image/video upload button
-3. Upload your audio file using the audio upload button
-4. Optionally enter a prompt to guide the motion style
-5. Select a model and resolution (where supported), then click **Generate**
-
-Generation history is saved separately in `lipsync_history` and pending jobs resume automatically on page reload.
-
-### 🔀 Workflow Studio
-
-The **Workflow Studio** lets you build and run multi-step AI pipelines without writing code.
-
-**Key capabilities:**
-- **Templates** — Start from pre-built workflows (image chains, video pipelines, and more)
-- **My Workflows** — Save and manage your own custom pipelines
-- **Community** — Browse and run workflows published by other users
-- **Node-based Builder** — Drag-and-drop visual editor to connect models and route outputs between steps
-- **Playground** — Run any workflow interactively with a form UI; results render inline
-- **API execution** — Every workflow is also callable via the Muapi API
-
-> 💡 **Want to add workflows to your own app?** Check out **[Vibe Workflow](https://github.com/SamurAIGPT/Vibe-Workflow)** — the open-source workflow engine powering this feature. Drop it into any project.
-
-### 🎥 Cinema Studio Controls
-
-The **Cinema Studio** offers precise control over the virtual camera, translating your choices into optimized prompt modifiers:
-
-| Category | Available Options |
-| :--- | :--- |
-| **Cameras** | Modular 8K Digital, Full-Frame Cine Digital, Grand Format 70mm Film, Studio Digital S35, Classic 16mm Film, Premium Large Format Digital |
-| **Lenses** | Creative Tilt, Compact Anamorphic, Extreme Macro, 70s Cinema Prime, Classic Anamorphic, Premium Modern Prime, Warm Cinema Prime, Swirl Bokeh Portrait, Vintage Prime, Halation Diffusion, Clinical Sharp Prime |
-| **Focal Lengths** | 8mm (Ultra-Wide), 14mm, 24mm, 35mm (Human Eye), 50mm (Portrait), 85mm (Tight Portrait) |
-| **Apertures** | f/1.4 (Shallow DoF), f/4 (Balanced), f/11 (Deep Focus) |
-
-### 📁 Upload History & Picker
-
-Every image you upload is saved locally (URL + thumbnail) so you never upload the same file twice:
-
-- Click the upload button to open the **reference image picker**
-- Previously uploaded images appear in a 3-column grid with thumbnails
-- **Single-image models** — click a thumbnail to instantly select and close
-- **Multi-image models** — toggle multiple thumbnails (shown with order numbers), then click **Use Selected**
-- Upload new images with the **Upload files** button (supports multi-file selection in multi-image mode)
-- Remove individual images from history with the ✕ button
-- History persists across browser sessions (stored in `localStorage`)
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18+)
-- A [Muapi.ai access key](https://muapi.ai/access-keys?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai). Copy the generated key value into the app; do not enter the key name or label.
-
-### Setup
-
-> **Most users want the desktop app, not this dev path.** If you just want to run Open Generative AI on your machine, [download a prebuilt installer](#-download-desktop-app) instead — no Node.js required. The instructions below are for contributors building from source.
-
-Pick the entry point that matches your goal:
-
-- **Desktop app (Electron)** → `npm run electron:dev`
-- **Hosted web version (Next.js)** → `npm run dev`
-
-```bash
-# Clone the repository (with submodules — required for the workflow + agent packages)
-git clone --recurse-submodules https://github.com/Anil-matcha/Open-Generative-AI.git
+# 克隆本二开仓库
+git clone https://github.com/Blacklake-Go/Open-Generative-AI.git
 cd Open-Generative-AI
 
-# If you already cloned without --recurse-submodules, run this once:
-# git submodule update --init --recursive
-
-# Install dependencies + build workspace packages (studio, workflow, agents).
-# This step is REQUIRED — `npm install` alone is not enough; the workspaces
-# need to be built before either dev script will work.
+# 安装依赖并编译本地工作区依赖包 (Studio / Workflow / AI Agents)
 npm run setup
-
-# Then start ONE of:
-npm run electron:dev   # Desktop app (Electron + Vite) — recommended
-npm run dev            # Hosted web version (Next.js) → http://localhost:3000
+# 或者执行:
+# pnpm install && npm run build:packages
 ```
 
-You'll be prompted to enter your Muapi API key on first use (skip the key if you only plan to use local models).
+### 3. 配置环境变量
+在项目根目录创建或编辑 `.env.local`：
+```ini
+# 数据库连接
+DATABASE_URL="postgresql://user:password@localhost:5432/supdance"
 
-> **Troubleshooting — `Couldn't find a 'pages' directory`**: this means Next.js can't see the `app/` folder. Confirm you're running `npm run dev` from the repo root (the directory that contains `app/`, `package.json`, and `next.config.mjs`), and that you cloned with submodules. Re-run `npm run setup` if `packages/Vibe-Workflow` or `packages/agents` are empty.
+# 站点域名与密钥
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+JWT_SECRET="your-strong-jwt-secret-key"
 
-### Production Build
+# AI 服务商密钥（按需配置）
+VOLCENGINE_ACCESS_KEY="your-volcengine-ak"
+VOLCENGINE_SECRET_KEY="your-volcengine-sk"
+DEEPSEEK_API_KEY="your-deepseek-api-key"
+```
 
+### 4. 数据库版本迁移
+系统内置自动化迁移检查器，可一键将数据库升级至最新结构：
 ```bash
+npm run db:migrate
+```
+
+### 5. 启动本地开发服务
+```bash
+npm run dev
+```
+打开浏览器访问 [http://localhost:3000](http://localhost:3000)，即可体验完整的 SupDance 生成式创作中心。
+
+### 6. 生产环境构建与检查
+```bash
+# 验证多语言字典完整性
+npm run test:i18n
+
+# 验证发布安全性规范与文件规则
+npm run release:check
+
+# 执行 Next.js 全量生产编译
 npm run build
-npm run start
 ```
 
-### Desktop App Build
+---
 
-Build native desktop apps with Electron:
+## 📂 核心目录结构 (Repository Structure)
 
+```text
+├── app/                        # Next.js App Router 路由体系
+│   ├── [locale]/               # 国际化动态路由页面
+│   ├── admin/                  # 管理后台控制台（模型管理、用户审计、登录设置等）
+│   ├── api/                    # 后端服务接口 (API Handlers)
+│   │   ├── auth/               # 认证、OAuth 登录与第三方回调
+│   │   ├── canvas-tools/       # 短剧工作坊能力规格、生成计划与安全结果代理
+│   │   ├── generation/         # 任务生成、报价与流水调度
+│   │   └── ...
+│   ├── canvas-tools/           # 画布工具短链接跳转与独立入口
+│   ├── lab/                    # 短剧工作坊总入口与多语言跳转
+│   ├── zh/                     # 中文专属优化路由 (/zh/lab, /zh/canvas-tools 等)
+│   └── globals.css             # 全站设计系统与颜色 Token 源定义
+├── components/                 # 全局业务与 UI 组件库
+│   ├── about/                  # 关于页面与模型生态大盘组件
+│   ├── auth/                   # 认证、登录弹窗、社交登录按钮组
+│   ├── canvasTools/            # 画布工具独立工作台 (CanvasToolsStudio)
+│   ├── lab/                    # 实验室短剧工作坊能力卡片组
+│   ├── navigation/             # 统一顶部 Mega Navigation 与移动端抽屉
+│   ├── site/                   # 品牌图标、页头、模型生态滑块
+│   └── spatial/                # 空间光影物理仿真系统 (SpatialBackground)
+├── config/                     # 站点配置文件 (如 mega-navigation.js 导航体系)
+├── docs/                       # 系统工程架构文档与 UI 设计系统规范
+├── lib/                        # 核心服务逻辑与工具层
+│   ├── adapters/               # 模型服务商适配器 (Volcengine, DeepSeek 等)
+│   ├── canvasTools/            # 画布工具规格、预设配置与选型定义
+│   ├── db/migrations/          # 001~074 号数据库全量升级 SQL 补丁
+│   ├── locales.js              # 多语言配置与路由辅助函数
+│   └── services/               # 任务生成核心引擎、存储抽象、认证服务
+├── packages/                   # 内部独立模块工作空间
+│   └── studio/                 # 核心可视化 Studio 画布套件
+├── public/                     # 静态公共资源库 (品牌资产、社交图标、演示样例)
+└── scripts/                    # 运维部署、自动化脚本与健康检查工具
+    └── deploy-supdance-fusion.sh # 生产环境一键原子切换发布脚本
+```
+
+---
+
+## 🛡️ 线上生产部署架构 (Production Deployment)
+
+线上生产环境使用双机热备与原子目录替换策略进行平滑更新，无需停机中断现有连接：
 ```bash
-# macOS (DMG — Intel + Apple Silicon)
-npm run electron:build
-
-# Windows (NSIS installer — x64 + ARM64)
-npm run electron:build:win
-
-# Linux (AppImage + DEB — x64)
-npm run electron:build:linux
-
-# Both platforms in one pass
-npm run electron:build:all
+# 执行自动化打包、上传与生产原子发布
+bash scripts/deploy-supdance-fusion.sh
 ```
-
-Installers are output to the `release/` folder. Pre-built binaries are also available on the [Releases page](https://github.com/Anil-matcha/Open-Generative-AI/releases).
-
-## 🏗️ Architecture
-
-The app is a **Next.js monorepo** with a shared `packages/studio` component library.
-
-```
-Open-Generative-AI/
-├── app/                        # Next.js App Router
-│   ├── layout.js               # Root layout (Tailwind, fonts)
-│   ├── page.js                 # Redirects → /studio
-│   └── studio/
-│       └── page.js             # Studio page — renders StandaloneShell
-├── components/
-│   ├── StandaloneShell.js      # Tab nav + BYOK (API key from localStorage)
-│   └── ApiKeyModal.js          # API key entry modal
-├── packages/
-│   └── studio/                 # Shared React component library
-│       └── src/
-│           ├── index.js        # Exports: ImageStudio, VideoStudio, AudioStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, MarketingStudio, WorkflowStudio, AgentStudio, DesignAgentStudio, AppsStudio, AiInfluencerStudio, McpCliStudio
-│           ├── models.js       # 400+ model definitions (single source of truth)
-│           ├── muapi.js        # API client (named exports, apiKey as first param)
-│           └── components/
-│               ├── ImageStudio.jsx    # Dual-mode t2i/i2i studio
-│               ├── VideoStudio.jsx    # Dual-mode t2v/i2v studio
-│               ├── LipSyncStudio.jsx  # Portrait/video + audio → talking video
-│               ├── CinemaStudio.jsx   # Pro studio with camera controls
-│               └── WorkflowStudio.jsx # Multi-step pipeline builder & playground
-├── next.config.mjs             # transpilePackages: ['studio']
-├── tailwind.config.js
-└── package.json                # workspaces: ["packages/studio"]
-```
-
-The `packages/studio` library is also consumed by the hosted version on [muapi.ai](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai) — model updates made in `packages/studio/src/models.js` apply to both the self-hosted app and the hosted version automatically.
-
-## 🔌 API Integration
-
-The app communicates with [Muapi.ai](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai) using a two-step pattern:
-
-1. **Submit** — `POST /api/v1/{model-endpoint}` with prompt and parameters
-2. **Poll** — `GET /api/v1/predictions/{request_id}/result` until status is `completed`
-
-Authentication uses the `x-api-key` header. During development, a Vite proxy handles CORS by routing `/api` requests to `https://api.muapi.ai`.
-
-File uploads use `POST /api/v1/upload_file` (multipart/form-data) and return a hosted URL that is passed to image-conditioned models. For multi-image models the full `images_list` array is forwarded to the API in one request.
-
-Lip sync jobs use the same two-step pattern: a dedicated `processLipSync()` method accepts `image_url` or `video_url` alongside `audio_url`, dispatches to the model's endpoint, and polls until the output video URL is available.
-
-## 🎨 Supported Model Categories
-
-| Category | Count | Examples |
-|---|---|---|
-| **Text-to-Image** | 70+ | Flux Dev, Nano Banana 2, Seedream 5.0, Ideogram v3, Midjourney v7, GPT-4o, SDXL |
-| **Image-to-Image** | 70+ | Nano Banana 2 Edit (×14), Flux Kontext Pro, GPT-4o Edit, Seededit v3, Upscaler, Background Remover |
-| **Text-to-Video** | 85+ | Kling v3, Sora 2, Veo 3, Wan 2.6, Seedance 2.0, Seedance 2.0 Extend, Seedance Pro, Hailuo 2.3, Runway Gen-3 |
-| **Image-to-Video** | 120+ | Kling v2.1 I2V, Veo3 I2V, Runway I2V, Seedance 2.0 I2V, Midjourney v7 I2V, Hunyuan I2V, Wan2.2 I2V |
-| **Video-to-Video** | 35+ | Video effects, AI Clipping, Vibe Motion, video-conditioned edits |
-| **Lip Sync** | 15 | Infinite Talk I2V, Wan 2.2 Speech to Video, LTX 2.3 Lipsync, LTX 2 19B Lipsync, Sync, LatentSync, Creatify, Veed, Infinite Talk V2V |
-| **Body Swap / Recast** | 3 | Subject/appearance recast across image and video |
-| **Audio** | 15+ | Text-to-music, remix, and audio editing models |
-
-(Counts verified against `packages/studio/src/models.js` — total 420+ models across these 8 categories, plus additional models surfaced through Marketing, Agent, and Design Agent studios.)
-
-## 🛠️ Tech Stack
-
-- **Next.js 14** — App Router, server components, fast dev server
-- **React 18** — Studio UI components
-- **Tailwind CSS v3** — Utility-first styling
-- **npm workspaces** — Monorepo with shared `packages/studio` library
-- **Muapi.ai** — AI model API gateway
-
-## 🤔 How is this different from other AI Video Platforms?
-
-**Open Generative AI** is a community-driven, open-source alternative that provides similar creative capabilities without the closed ecosystem:
-
-| | Other providers | Open Generative AI |
-| :--- | :--- | :--- |
-| **Cost** | Subscription-based | Free (open-source) |
-| **Content filters** | Yes — prompts blocked or altered | None |
-| **Restrictions** | Platform guardrails enforced | Full creative freedom |
-| **Models** | Proprietary | 400+ open & commercial models |
-| **Multi-image input** | Limited | Up to 14 images per request |
-| **Lip sync** | No | 9 models, image & video modes |
-| **Hosted version** | Subscription | Free at [muapi.ai/open-generative-ai](https://muapi.ai/open-generative-ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai) |
-| **Self-hosting** | No | Yes |
-| **Customizable** | No | Fully hackable |
-| **Data privacy** | Cloud-based | Your data stays local |
-| **Source code** | Closed | MIT licensed |
-
-## 📄 License
-
-MIT
-
-## 🙏 Credits
-
-Built with [Muapi.ai](https://muapi.ai?utm_source=github&utm_medium=readme&utm_campaign=open-generative-ai) — the unified API for AI image and video generation models.
+该脚本自动完成：
+1. 本地 Next.js 生产产物（`.next`）与源码打包；
+2. 远端服务器自动制作带时间戳的完整回滚快照；
+3. 原子替换当前运行应用并平滑重启 Systemd 服务守护：
+   * `supdance.service` (核心 Web 服务)
+   * `canvas-supdance.service` (画布核心服务)
+   * `supdance-worker.service` (生成调度后台 Worker)
+4. 执行在线健康检查（`/api/ready`、Sitemap、各大核心页面 200 验证）。
 
 ---
-**Deep Dive**: For more details on the "AI Influencer" engine, upcoming "Popcorn" storyboarding features, and the future of this project, read the [full technical overview](https://medium.com/@anilmatcha/).
 
----
-*Looking for a free, open-source AI Video Platform? Open Generative AI is an open-source AI image and video generation studio — with no content filters that you can self-host, customize, and extend.*
+## 🤝 致谢与开源协议 (Credits & License)
+
+- 本项目基于开源项目 [Anil-matcha/Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI) 进行深度二次开发定制，感谢原作者及开源社区奠定的卓越基石。
+- 本项目遵循 [MIT License](LICENSE) 开源协议。
