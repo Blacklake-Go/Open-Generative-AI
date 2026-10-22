@@ -1,10 +1,12 @@
-﻿import CreationsClient from '@/components/creations/CreationsClient';
+import CreationsClient from '@/components/creations/CreationsClient';
+import { getServerLocale } from '@/lib/server/serverLocale';
 
 export const metadata = {
-  title: '个人作品资产中心 — SupDance AI Studio',
-  description: '管理您的生图、生视频、生音乐等全部 AI 创作素材，支持一键分享至社区。',
+  title: 'Creations & Asset Library — SupDance AI Studio',
+  description: 'Manage all your AI-generated images, videos, and music with one-click community sharing.',
 };
 
-export default function CreationsPage() {
-  return <CreationsClient />;
+export default async function CreationsPage() {
+  const locale = await getServerLocale();
+  return <CreationsClient locale={locale} />;
 }

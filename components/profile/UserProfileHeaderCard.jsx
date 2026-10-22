@@ -5,6 +5,8 @@ import { Hash, Copy, Check, Calendar, UserPlus, UserCheck } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { Button } from '@/components/ui/button';
 
+import { getProfileStrings, useProfileLocale } from './profileI18n';
+
 export default function UserProfileHeaderCard({
   creator,
   currentUser = null,
@@ -16,7 +18,11 @@ export default function UserProfileHeaderCard({
   copiedUid = false,
   compact = false,
   className = '',
+  locale = null,
+  strings: stringsProp = null,
 }) {
+  const activeLocale = useProfileLocale(locale);
+  const strings = stringsProp || getProfileStrings(activeLocale);
   if (!creator) return null;
 
   const isOwner = currentUser && (currentUser.id === creator.id || currentUser.userNumber === creator.userNumber);
@@ -39,12 +45,12 @@ export default function UserProfileHeaderCard({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className={`${compact ? 'text-lg' : 'text-xl sm:text-2xl'} font-bold text-ink tracking-tight truncate`}>
-                {creator.displayName || '创作者'}
+                {creator.displayName || strings.creatorDefault}
               </h2>
               <button
                 type="button"
                 onClick={onCopyUid}
-                title="点击复制用户 ID"
+                title={strings.copyUidTitle}
                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono border border-brand-line/40 bg-brand-soft text-brand hover:bg-brand-soft/80 active:scale-95 transition-all cursor-pointer"
               >
                 <Hash className="size-3" />
@@ -53,26 +59,26 @@ export default function UserProfileHeaderCard({
               </button>
               {isOwner && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-wash text-ink-muted border border-line-subtle">
-                  我的主页
+                  {strings.myHomepage}
                 </span>
               )}
             </div>
 
             <p className="mt-1.5 text-xs sm:text-sm text-ink-muted max-w-xl leading-relaxed line-clamp-2">
-              {creator.bio || '这位创作者很神秘，还没有填写个人简介。'}
+              {creator.bio || strings.defaultBio}
             </p>
 
             {/* 粉丝与关注数 */}
             <div className="mt-3 flex items-center gap-4 sm:gap-5 text-xs text-ink-muted">
               <div>
-                <span className="font-semibold text-ink font-mono">{followersCount}</span> 粉丝
+                <span className="font-semibold text-ink font-mono">{followersCount}</span> {strings.followers}
               </div>
               <div>
-                <span className="font-semibold text-ink font-mono">{creator.followingCount || 0}</span> 关注
+                <span className="font-semibold text-ink font-mono">{creator.followingCount || 0}</span> {strings.following}
               </div>
               <div className="text-[11px] text-ink-subtle flex items-center gap-1 hidden sm:flex">
                 <Calendar className="size-3" />
-                <span>加入于 {new Date(creator.createdAt || Date.now()).toLocaleDateString('zh-CN')}</span>
+                <span>{strings.joinedDate(new Date(creator.createdAt || Date.now()).toLocaleDateString(activeLocale))}</span>
               </div>
             </div>
           </div>
@@ -95,12 +101,12 @@ export default function UserProfileHeaderCard({
             {isFollowing ? (
               <>
                 <UserCheck className="size-3.5 mr-1.5" />
-                已关注
+                {strings.followed}
               </>
             ) : (
               <>
                 <UserPlus className="size-3.5 mr-1.5" />
-                关注创作者
+                {strings.followCreator}
               </>
             )}
           </Button>

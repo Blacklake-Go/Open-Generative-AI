@@ -10,6 +10,15 @@ import zhTw from '../messages/zh-TW/mcpCliStudio.json';
 import es from '../messages/es-ES/mcpCliStudio.json';
 import { resolveCopy } from '../i18nUtils';
 
+const MCP_CLI_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 // `title`/`tag` stay canonical (product/package names and short technical
 // category tags); `id` keys into copy.features/copy.quickStart/copy.examples
 // for the translated description/label. `code` blocks are technical and
@@ -67,7 +76,7 @@ function CodeBlock({ children, className = '' }) {
 }
 
 export default function McpCliStudio({ locale = 'en' }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, MCP_CLI_MESSAGES, locale);
 
   return (
     <div className="w-full h-full overflow-y-auto bg-transparent text-white">

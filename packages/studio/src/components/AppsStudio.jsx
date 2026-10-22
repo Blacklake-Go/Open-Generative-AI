@@ -18,6 +18,15 @@ import zhTw from '../messages/zh-TW/appsStudio.json';
 import es from '../messages/es-ES/appsStudio.json';
 import { resolveCopy } from '../i18nUtils';
 
+const APPS_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 const templateApps = [
   {
     name: "AI Headshot Studio",
@@ -128,7 +137,7 @@ const dummyAppsData = [
 ];
 
 export default function AppsStudio({ apiKey, locale = 'en' }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, APPS_MESSAGES, locale);
   const [selectedApp, setSelectedApp] = useState(null);
   const [isRequesting, setIsRequesting] = useState(false);
   const [requestedApps, setRequestedApps] = useState([]);

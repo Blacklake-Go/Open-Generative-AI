@@ -18,6 +18,7 @@ import {
 import RechargeModal from '@/components/account/RechargeModal';
 import AuthModal from '@/components/AuthModal';
 import { EXCLUSIVE_BENEFITS } from '@/lib/pricing/exclusiveBenefits';
+import { getSubscriptionStrings, useSubscriptionLocale } from './subscriptionI18n';
 
 // 支付方式徽标
 function WeChatPayIcon({ className = 'size-4' }) {
@@ -78,7 +79,11 @@ export default function SubscriptionModal({
   onOpenAuth = null,
   onSuccess = null,
   isInline = false,
+  locale = null,
 }) {
+  const activeLocale = useSubscriptionLocale(locale);
+  const strings = useMemo(() => getSubscriptionStrings(activeLocale), [activeLocale]);
+
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -341,17 +346,18 @@ export default function SubscriptionModal({
         const yearlyPrice = p.yearlyPrice ?? p.yearlyCny ?? isBuiltIn?.yearlyPrice ?? Math.round(monthlyPrice * 10);
         const yearlyOrigin = p.yearlyOrigin ?? p.yearlyOriginCny ?? isBuiltIn?.yearlyOrigin ?? monthlyOrigin * 12;
         const quotaBase = p.creditsMonthly ?? p.quotaBase ?? isBuiltIn?.creditsMonthly ?? 2000;
-        const badge = p.badge || isBuiltIn?.badge || null;
-        const highlight = p.highlight ?? (p.id === 'basic' || badge?.includes('受') || badge?.includes('推荐'));
+        const badge = p.id === 'basic' ? strings.badgeRecommended : p.id === 'pro' ? strings.badgeFlagship : (p.badge || isBuiltIn?.badge || null);
+        const topRoofWindow = p.id === 'basic' ? strings.roofBasic : p.id === 'pro' ? strings.roofPro : (p.topRoofWindow || isBuiltIn?.topRoofWindow || null);
+        const highlight = p.highlight ?? (p.id === 'basic' || badge?.includes('受') || badge?.includes('推荐') || badge === strings.badgeRecommended);
         const exclusive = p.exclusiveFeatures || p.meta?.exclusiveFeatures || isBuiltIn?.exclusiveFeatures || [];
 
         return {
           id: p.id,
           codeName: p.codeName || isBuiltIn?.codeName || p.id.toUpperCase(),
-          name: p.name || isBuiltIn?.name,
+          name: strings.planNames?.[p.id] || p.name || isBuiltIn?.name,
           tagMonthly: isBuiltIn?.tagMonthly || '限时优惠',
-          tagQuarterly: isBuiltIn?.tagQuarterly || '限时 9折',
-          tagYearly: isBuiltIn?.tagYearly || '最低 4.1折',
+          tagQuarterly: isBuiltIn?.tagQuarterly || strings.tagQuarterly,
+          tagYearly: isBuiltIn?.tagYearly || strings.tagYearly,
           monthlyPrice,
           monthlyOrigin,
           quarterlyPrice,
@@ -362,7 +368,7 @@ export default function SubscriptionModal({
           bonusCredits: isBuiltIn?.bonusCredits || 0,
           highlight,
           badge,
-          topRoofWindow: isBuiltIn?.topRoofWindow || null,
+          topRoofWindow,
           cardBorderClass: isBuiltIn?.cardBorderClass || 'border-line hover:border-line-strong',
           btnBgClass: isBuiltIn?.btnBgClass || 'bg-white text-ink-inverse hover:bg-zinc-200',
           modelRates: isBuiltIn?.modelRates || {
@@ -378,7 +384,7 @@ export default function SubscriptionModal({
           moreFeatures: p.moreFeatures?.length ? p.moreFeatures : (isBuiltIn?.moreFeatures || (Array.isArray(p.features) ? p.features : [])),
         };
       });
-  }, [dynamicPlans, PLANS]);
+  }, [dynamicPlans, PLANS, strings]);
 
   const handleSubscribe = (plan) => {
     if (!currentUser) {
@@ -410,7 +416,7 @@ export default function SubscriptionModal({
       } p-4 sm:p-7 text-ink shadow-elevation-4`}
       role={isInline ? 'region' : 'dialog'}
       aria-modal={isInline ? undefined : 'true'}
-      aria-label="会员订阅方案"
+      aria-label={strings.modalAria}
       onClick={(e) => e.stopPropagation()}
     >
       {/* 顶部右侧：关闭按钮 (弹窗模式生效) */}
@@ -420,7 +426,7 @@ export default function SubscriptionModal({
             type="button"
             onClick={onClose}
             className="flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink active:scale-95 active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
-            aria-label="关闭"
+            aria-label={strings.closeAria}
           >
             <X className="size-4" />
           </button>
@@ -432,7 +438,7 @@ export default function SubscriptionModal({
         <div className="flex items-center gap-2 truncate">
           <Sparkles className="size-3.5 text-brand shrink-0" />
           <span className="font-semibold text-ink truncate">
-            双节超值特惠，年付会员享最高加赠，Seedance 2.5 720P 低至0.32元/秒
+            {strings.promoBanner}
           </span>
         </div>
         <button
@@ -440,17 +446,17 @@ export default function SubscriptionModal({
           onClick={() => setBillingCycle('yearly')}
           className="rounded-full bg-brand px-3.5 py-1 text-micro font-bold text-ink-on-accent hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer shadow-elevation-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
         >
-          立即抢购
+          {strings.buyNow}
         </button>
       </div>
 
       {/* 顶部标题区 */}
       <div className="text-center pt-1 pb-5">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-ink">
-          订阅会员 升级你的导演权益
+          {strings.title}
         </h1>
         <p className="mt-2 text-xs sm:text-sm text-ink-muted max-w-xl mx-auto">
-          专享高并发 GPU 算力通道 · 200+ 顶级 AI 模型全开 · 支持支付宝与微信支付
+          {strings.subtitle}
         </p>
       </div>
 
@@ -471,7 +477,7 @@ export default function SubscriptionModal({
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            月付
+            {strings.monthly}
           </button>
           <button
             type="button"
@@ -483,9 +489,9 @@ export default function SubscriptionModal({
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            <span>季付</span>
+            <span>{strings.quarterly}</span>
             <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-bold">
-              最高9折
+              {strings.tagQuarterly}
             </span>
           </button>
           <button
@@ -498,9 +504,9 @@ export default function SubscriptionModal({
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            <span>年付</span>
+            <span>{strings.yearly}</span>
             <span className="rounded-full bg-brand-soft text-brand border border-brand-line px-1.5 py-0.5 text-[9px] font-bold">
-              最高省2月
+              {strings.tagYearly}
             </span>
           </button>
         </div>
@@ -513,8 +519,8 @@ export default function SubscriptionModal({
             className="flex h-10 items-center gap-1.5 rounded-full border border-brand-line bg-brand-soft px-4 text-xs font-bold text-brand hover:bg-brand-pressed transition-all hover:scale-105 active:scale-95 shadow-elevation-1 cursor-pointer"
           >
             <Gift className="size-3.5 text-brand" />
-            <span>单独购买算力包</span>
-            <span className="rounded-full bg-brand text-ink-on-accent px-1.5 py-0.5 text-[9px]">永久有效/加赠</span>
+            <span>{strings.buyCreditsShortcut}</span>
+            <span className="rounded-full bg-brand text-ink-on-accent px-1.5 py-0.5 text-[9px]">{strings.buyCreditsSub}</span>
           </button>
         </div>
       </div>
@@ -611,7 +617,7 @@ export default function SubscriptionModal({
                     </span>
                     {originPrice ? (
                       <span className="text-xs text-ink-subtle line-through font-mono">
-                        / 年 ¥{originPrice}
+                        {strings.perYearOrigin(originPrice)}
                       </span>
                     ) : null}
                   </div>
@@ -621,23 +627,23 @@ export default function SubscriptionModal({
                     {/* 行 1: 每月到账算力 + 加赠 */}
                     <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
                       <span className="text-amber-400">⚡</span>
-                      <span>{plan.creditsMonthly.toLocaleString()} / 月</span>
+                      <span>{strings.creditsPerMonth(plan.creditsMonthly)}</span>
                       {plan.bonusCredits > 0 && (
                         <span className="text-emerald-400 font-normal">
-                          + 🎁 {plan.bonusCredits.toLocaleString()} 首充加赠
+                          {strings.bonusCreditsTag(plan.bonusCredits)}
                         </span>
                       )}
                     </div>
 
                     {/* 行 2: 折合月单价与单点折算成本 */}
                     <div className="text-[11px] text-ink-muted">
-                      ¥{perMonthPrice} / 月，1 算力 ≈ {unitCost}
+                      {strings.unitCostLine(perMonthPrice, unitCost)}
                     </div>
 
                     {/* 行 3: 立即到账与签到权益说明 */}
                     <div className="flex items-center text-[10px] text-ink-subtle">
-                      <span>立即获得 {plan.creditsMonthly.toLocaleString()} 算力 + 会员签到赠送</span>
-                      <InfoTooltip text="开通后算力全额即时到账；每日签到额外赠送免费创作额度，可在个人资产中心查收。" />
+                      <span>{strings.immediateCredits(plan.creditsMonthly)}</span>
+                      <InfoTooltip text={strings.checkInTooltip} />
                     </div>
                   </div>
 
@@ -651,24 +657,24 @@ export default function SubscriptionModal({
                     {isRechargeOpen && selectedPlanId === plan.id ? (
                       <>
                         <Loader2 className="size-3.5 animate-spin" />
-                        <span>正在拉起支付...</span>
+                        <span>{strings.subscribing}</span>
                       </>
                     ) : (
-                      <span>订阅</span>
+                      <span>{strings.subscribe}</span>
                     )}
                   </button>
 
                   {/* 模块一：常用模型折算 */}
                   <div className="mt-5 border-t border-line pt-4 min-h-[148px]">
                     <div className="flex items-center gap-1 text-[11px] font-bold text-ink-muted mb-2.5">
-                      <span>常用模型折算</span>
-                      <InfoTooltip text="根据当前方案折算成本及模型每秒/每张算力消耗综合测算，实际按真实渲染规格计费。" />
+                      <span>{strings.modelRatesTitle}</span>
+                      <InfoTooltip text={strings.modelRatesTooltip} />
                     </div>
 
                     <div className="space-y-1.5 text-xs text-ink">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-ink-muted flex items-center gap-1">
-                          <span>✦</span> Seedance2.0 pro 720p
+                          {strings.modelLabels.seedancePro}
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.seedancePro.highlight === 'pink'
@@ -683,7 +689,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-ink-muted flex items-center gap-1">
-                          <span>✦</span> Seedance 2.5 720p
+                          {strings.modelLabels.seedance25}
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.seedance25.highlight === 'pink'
@@ -698,7 +704,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-ink-muted flex items-center gap-1">
-                          <span>✦</span> MiniMax H3 Max Turbo
+                          {strings.modelLabels.minimaxH3}
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.minimaxH3.highlight === 'pink'
@@ -713,7 +719,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-ink-muted flex items-center gap-1">
-                          <span>✦</span> 顶级图像 (Flux/SD) 2K
+                          {strings.modelLabels.fluxPro}
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.fluxPro.highlight === 'pink'
@@ -731,62 +737,62 @@ export default function SubscriptionModal({
                   {/* 模块二：会员专用模型 */}
                   <div className="mt-5 border-t border-line pt-4 min-h-[196px]">
                     <div className="flex items-center gap-1 text-[11px] font-bold text-ink-muted mb-2.5">
-                      <span>会员专用模型</span>
+                      <span>{strings.exclusiveModelsTitle}</span>
                     </div>
 
                     <div className="space-y-1.5 text-xs text-ink">
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>Seedance 2.5</span>
+                          <span>{strings.modelLabels.mSeedance25}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>Seedance2.0 Pro / Fast / mini</span>
+                          <span>{strings.modelLabels.mSeedance20}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>Sora、Kling、Runway 等</span>
-                          <InfoTooltip text="支持 Sora 2、Kling 2.0 及 Runway Gen-3 等前沿影视级模型" />
+                          <span>{strings.modelLabels.mSoraKling}</span>
+                          <InfoTooltip text={strings.soraKlingTooltip} />
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
-                          最低4.2折
+                          {strings.discount42}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>Flux.1 Pro / Midjourney</span>
+                          <span>{strings.modelLabels.mFluxMj}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
-                          最低5折
+                          {strings.discount50}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>MiniMax 音乐 / 高清数字人</span>
+                          <span>{strings.modelLabels.mMiniMax}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
-                          6.4折
+                          {strings.discount36}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Check className="size-3 text-emerald-400 shrink-0" />
-                          <span>4K 极清超采样 / 商业渲染</span>
+                          <span>{strings.modelLabels.m4kExport}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
-                          最低5折
+                          {strings.discount50}
                         </span>
                       </div>
                     </div>
@@ -797,18 +803,17 @@ export default function SubscriptionModal({
                     <div className="mt-4 rounded-xl border border-brand-line bg-brand-soft p-2.5 space-y-1.5 min-h-[58px]">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-brand flex items-center gap-1">
                         <Sparkles className="size-3 text-brand" />
-                        <span>专属特权</span>
+                        <span>{strings.exclusivePrivileges}</span>
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {plan.exclusiveFeatures.map((key) => {
-                          const b = EXCLUSIVE_BENEFITS.find((x) => x.key === key);
-                          if (!b) return null;
+                          const label = strings.benefitLabels?.[key] || EXCLUSIVE_BENEFITS.find((x) => x.key === key)?.label || key;
                           return (
                             <span
                               key={key}
                               className="inline-flex items-center gap-1 rounded-md bg-wash-press border border-line px-1.5 py-0.5 text-[9px] font-semibold text-ink"
                             >
-                              <span>{b.label}</span>
+                              <span>{label}</span>
                             </span>
                           );
                         })}
@@ -823,7 +828,7 @@ export default function SubscriptionModal({
                       onClick={() => toggleMoreFeatures(plan.id)}
                       className="w-full flex items-center justify-center gap-1 text-[11px] font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
                     >
-                      <span>更多权益</span>
+                      <span>{strings.moreFeatures}</span>
                       <ChevronDown className={`size-3.5 transition-transform duration-200 ${
                         isMoreOpen ? 'rotate-180 text-brand' : ''
                       }`} />
@@ -847,11 +852,11 @@ export default function SubscriptionModal({
                   <span className="flex items-center gap-1">
                     <AlipayIcon className="size-3" />
                     <WeChatPayIcon className="size-3" />
-                    <span>即时开通</span>
+                    <span>{strings.instantActivation}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="size-3 text-brand" />
-                    <span>未成功秒级退</span>
+                    <span>{strings.refundGuarantee}</span>
                   </span>
                 </div>
               </div>
@@ -869,111 +874,20 @@ export default function SubscriptionModal({
             className="inline-flex items-center gap-2 text-sm font-bold text-ink hover:text-brand transition-colors cursor-pointer group"
           >
             <HelpCircle className="size-4 text-brand group-hover:scale-110 transition-transform" />
-            <span>订阅与算力常见问题 (点击{showFaq ? '收起' : '展开查看'})</span>
+            <span>{strings.faqTitle(showFaq)}</span>
             {showFaq ? <ChevronUp className="size-4 text-ink-muted" /> : <ChevronDown className="size-4 text-ink-muted" />}
           </button>
 
           {showFaq && (
             <div className="text-[11px] text-ink-subtle hidden sm:block">
-              包含套餐升降档规则、退款保证、商用版权与支付凭证
+              {strings.faqSubtitle}
             </div>
           )}
         </div>
 
         {showFaq && (
           <div className="space-y-2.5 max-w-4xl mx-auto text-left animate-in fade-in duration-200">
-            {(faqConfig?.items || [
-              {
-                id: 'faq-1',
-                order: 1,
-                question: '什么是订阅制专属额度？与通用算力有何区别？',
-                answer: '订阅额度是每月随会员周期发放的核心资产，享有最高抵扣优先级，当月有效；通用算力永久有效，在月度额度用尽后自动作为备用池抵扣，两者协同保障您的创作不间断。',
-              },
-              {
-                id: 'faq-2',
-                order: 2,
-                question: '生成失败会扣除我的额度吗？',
-                answer: '绝对不会。系统采用两阶段安全预扣机制，因合规拦截或模型超时未完成等非用户原因时，冻结额度将在 1 秒内 100% 自动解冻返还至您的账户。',
-              },
-              {
-                id: 'faq-3',
-                order: 3,
-                question: '支持哪些支付方式与开票？',
-                answer: '全面支持支付宝扫码、微信支付直付及国际信用卡（Visa / MasterCard）。已支付订单可在个人中心“支付凭证”页面预览并下载，企业用户可在个人中心提交开票申请。',
-              },
-              {
-                id: 'faq-4',
-                order: 4,
-                question: '支持随时变更或取消订阅吗？',
-                answer: '由您完全自主控制。您可以随时在个人中心“会员订阅”中查看当前方案、升级档位或管理续费。取消后，已生效周期的全部权益与算力仍可正常使用直至周期届满。',
-              },
-              {
-                id: 'faq-5',
-                order: 5,
-                question: '订阅后切换套餐，算力及权益会怎么变化？',
-                answer: `SupDance 提供灵活的月度、季度与年度订阅方案，每个方案都包含一定数量的算力，可用于图像生成、视频生成、音乐生成与编辑等功能。注：进行档位升级或延长时，暂不支持补差价升级方式，升级支付档位正常价格。具体分为以下六种情况：
-
-(1) 月付套餐：从低档位升级到高档位
-• 剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的订阅套餐，将从升级付款成功之日起，重新按 31 天计算，积分即刻到账
-
-(2) 季付套餐：从低档位升级到高档位
-• 订阅新升级套餐前已发放的、剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的季付订阅套餐，将从升级付款成功之日起，重新按 93 天计算，首月积分即刻到账
-• 退款处理：原低档位套餐中，尚未发放算力月份对应的费用，我们将为您办理退款（原支付路径返还，5-10 个工作日）
-
-(3) 年付套餐：从低档位升级到高档位
-• 订阅新升级套餐前已发放的、剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的年付订阅套餐，将从升级付款成功之日起，重新按 365 天计算，首月积分即刻到账
-• 退款处理：原低档位套餐中，尚未发放算力月份对应的费用，我们将为您办理退款（原支付路径返还，5-10 个工作日）
-
-(4) 同档位套餐：从月付升级为季付
-• 剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的季付订阅套餐，将从升级付款成功之日起，重新按 93 天计算，积分即刻到账
-
-(5) 同档位套餐：从月付升级为年付
-• 订阅新升级套餐前已发放的、剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的年付订阅套餐，将从升级付款成功之日起，重新按 365 天计算，首月积分即刻到账
-• 退款处理：原低档位套餐中，尚未发放算力月份对应的费用，我们将为您办理退款（原支付路径返还，5-10 个工作日）
-
-(6) 同档位套餐：从季付升级为年付
-• 订阅新升级套餐前已发放的、剩余未使用的算力，会继续为您保留（有效期不变）
-• 新的年付订阅套餐，将从升级付款成功之日起，重新按 365 天计算，首月积分即刻到账
-• 退款处理：原低档位套餐中，尚未发放算力月份对应的费用，我们将为您办理退款（原支付路径返还，5-10 个工作日）
-
-温馨提示：如有疑问可随时通过客服渠道或发送邮件至 support@Supdance.com 联系我们。`,
-              },
-              {
-                id: 'faq-6',
-                order: 6,
-                question: '关于自动续费与取消自动续费？',
-                answer: '如果您使用的是周期连续订阅服务，系统将在每个账期届满前 24 小时进行预扣通知或扣款。您可随时在个人中心“会员订阅”中点击关闭自动续费，取消后您当前周期的所有权益与算力仍可正常使用直至周期结束，次期将不再扣款。',
-              },
-              {
-                id: 'faq-7',
-                order: 7,
-                question: '如何申请退款？',
-                answer: '如果您在最近一次付款后未有任何生成行为、权益使用和算力消耗，可在购买后 7 天内申请全额退款。若因系统问题导致生成失败，我们将自动进行相应算力返还。如需申请退款，请发送【您的账号、退款理由】至客服邮箱 support@Supdance.com，审核通过后，退款通常会在 5-10 个工作日内退回原支付方式。',
-              },
-              {
-                id: 'faq-8',
-                order: 8,
-                question: '我们支持下载支付凭证，以及企业用户的开票服务。',
-                answer: '支持。您可以在个人中心“支付凭证”页面预览并下载所有已支付的支付凭证。针对需要财务报销的企业客户，我们提供增值税普通发票与专用发票开具，后台直接录入开票抬头和税号即可快速申请。',
-              },
-              {
-                id: 'faq-9',
-                order: 9,
-                question: '我在 SupDance 生成的内容归谁所有？',
-                answer: '在法律允许的最大范围内，您拥有在 SupDance 上生成的所有内容的所有权。SupDance 不会对用户创作的作品主张任何版权。这意味着您可以自由地发布、下载、分发和商用这些视频及图像。',
-              },
-              {
-                id: 'faq-10',
-                order: 10,
-                question: '免责声明与联系方式',
-                answer: '上述内容仅供参考。SupDance 会根据产品优化与用户体验需要，不断调整功能、价格、订阅方案及算力政策。如出现争议或不一致情况，将以后台系统记录与实际账单数据为准，最终解释权归 SupDance 所有。其他相关细则详见《用户协议》与《隐私政策》。',
-              },
-            ]).map((faq, idx) => {
+            {((faqConfig?.items && activeLocale === 'zh-CN') ? faqConfig.items : strings.faqs).map((faq, idx) => {
               const isExpanded = expandedFaqIds.has(faq.id);
               const displayIndex = faq.order || idx + 1;
               return (
@@ -1018,7 +932,7 @@ export default function SubscriptionModal({
 
             {/* 底部客服与政策说明小注 */}
             <div className="pt-4 text-center text-[11px] text-ink-subtle">
-              <span>如对订阅或开票有任何疑问，请随时联系官方客服：</span>
+              <span>{strings.supportContact}</span>
               <a
                 href={`mailto:${faqConfig?.supportEmail || 'support@Supdance.com'}`}
                 className="text-brand hover:underline ml-1 font-mono"
@@ -1062,6 +976,7 @@ export default function SubscriptionModal({
           initialPlanId={selectedPlanId}
           initialBillingCycle={billingCycle}
           autoCheckout={true}
+          locale={activeLocale}
           onPaySuccess={() => {
             setIsRechargeOpen(false);
             onClose?.();

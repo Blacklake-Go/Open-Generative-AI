@@ -81,6 +81,25 @@ export default function PrivacyPage() {
                 </p>
               </div>
             </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-base/60 p-5">
+              <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-cyan-400" />
+                6. 第三方账号快捷登录与 TikTok 数据保护专项 (TikTok Login & Data Policy)
+              </h2>
+              <div className="space-y-3 text-gray-400">
+                <p>
+                  当您选择使用 TikTok 快捷登录（Login Kit）时，SupDance 仅在您明确授权的前提下申请基础身份凭据（<code>user.info.basic</code>，包括公开头像、昵称及应用唯一标识 open_id），仅用于完成创作者身份识别、账户创建及工作区个性化展示，我们绝不会私自读取或发布您的非公开视频或隐私内容。
+                </p>
+                <p>
+                  <strong>用户数据删除指引 (Data Deletion Request Instructions)：</strong>
+                  创作者可随时在 SupDance「账户中心 - 社交账号绑定」中一键解除 TikTok 授权，亦可通过发送邮件至 <code className="text-cyan-400">privacy@supdance.com</code> 或 <code className="text-cyan-400">support@supdance.com</code> 提交数据清除申请（邮件主题请注明：TikTok Data Deletion Request）。我们在核实用户身份后，将在 30 个自然日内彻底物理清除您名下所有由 TikTok 接口同步的用户元数据及对应凭证。
+                </p>
+                <p lang="en">
+                  When you sign in using TikTok Login Kit, SupDance only requests minimal basic profile information (<code>user.info.basic</code>: avatar, display name, and unique open_id) upon your explicit authorization to facilitate account sign-in and personalized workspace setup. We do not access or post any unauthorized personal content. To request deletion of data obtained via TikTok, you can unlink your TikTok account anytime in Account Settings or email us at <code>privacy@supdance.com</code>. All TikTok user data will be permanently removed from our active databases within 30 days of verification.
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* 底部法律导航联动 */}

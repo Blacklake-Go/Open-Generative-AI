@@ -32,6 +32,15 @@ import ko from "../messages/ko-KR/cinemaStudio.json";
 import zhTw from "../messages/zh-TW/cinemaStudio.json";
 import es from "../messages/es-ES/cinemaStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const CINEMA_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import { isModelActive, getVideoModelById, getI2VModelById, getModelById, getI2IModelById } from "../models.js";
 
 // ─── Constants (inlined from promptUtils) ───────────────────────────────────
@@ -705,7 +714,7 @@ export default function CinemaStudio({
   historyItems,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, CINEMA_MESSAGES, locale);
   const relayCopy = resolveCopy(CINEMA_RELAY_COPY_EN, CINEMA_RELAY_COPY_LOCALES, locale);
   const availableCinemaVideoModels = CINEMA_VIDEO_MODELS.filter((model) => isModelActive(model.id));
   const availableCinemaPhotoModels = CINEMA_PHOTO_MODELS.filter((model) => isModelActive(model.id));

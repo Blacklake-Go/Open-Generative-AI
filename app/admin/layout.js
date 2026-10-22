@@ -44,10 +44,10 @@ export default async function AdminLayout({ children }) {
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <a
-              href="/studio"
+              href="/"
               className="inline-flex h-[38px] items-center rounded-xl bg-brand hover:bg-brand-hover px-4 text-xs font-semibold text-white transition-all active:scale-[0.98] shadow-sm"
             >
-              返回 Studio
+              返回主页
             </a>
             <a
               href="/account"

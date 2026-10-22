@@ -119,6 +119,15 @@ import ko from "../messages/ko-KR/videoStudio.json";
 import zhTw from "../messages/zh-TW/videoStudio.json";
 import es from "../messages/es-ES/videoStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const VIDEO_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import {
   PROVIDER_LOGOS,
   invertLogos,
@@ -863,7 +872,7 @@ export default function VideoStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = useMemo(() => resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale), [locale]);
+  const copy = useMemo(() => resolveCopy(en, VIDEO_MESSAGES, locale), [locale]);
   const relayCopy = useMemo(() => resolveCopy(VIDEO_STUDIO_RELAY_COPY_EN, VIDEO_STUDIO_RELAY_COPY_LOCALES, locale), [locale]);
   const LEGACY_PERSIST_KEY = "hg_video_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

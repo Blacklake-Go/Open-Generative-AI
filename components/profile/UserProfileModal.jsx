@@ -5,6 +5,8 @@ import { X } from 'lucide-react';
 import UserProfileView from './UserProfileView';
 import { openGlobalProfileModal, closeGlobalProfileModal } from '@/lib/profileEvents';
 
+import { getProfileStrings, useProfileLocale } from './profileI18n';
+
 export default function UserProfileModal({
   isOpen = false,
   onClose,
@@ -12,7 +14,11 @@ export default function UserProfileModal({
   creator = null,
   initialTab = 'creations',
   className = '',
+  locale = null,
 }) {
+  const activeLocale = useProfileLocale(locale);
+  const strings = getProfileStrings(activeLocale);
+
   const handleClose = useCallback(() => {
     onClose?.();
   }, [onClose]);
@@ -41,7 +47,7 @@ export default function UserProfileModal({
       }}
       role="dialog"
       aria-modal="true"
-      aria-label="创作者资料"
+      aria-label={strings.ariaLabelProfile}
     >
       <div
         className={`relative w-full max-w-4xl max-h-[90vh] rounded-2xl border border-line-strong bg-overlay shadow-elevation-4 p-5 sm:p-7 overflow-y-auto cursor-default animate-scale-in text-ink ${className}`}
@@ -52,7 +58,7 @@ export default function UserProfileModal({
           type="button"
           onClick={handleClose}
           className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer z-20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
-          aria-label="关闭"
+          aria-label={strings.ariaLabelClose}
         >
           <X className="size-4" />
         </button>
@@ -66,6 +72,7 @@ export default function UserProfileModal({
           showHeader={false}
           showBackLink={false}
           compact={false}
+          locale={activeLocale}
           onClose={handleClose}
         />
       </div>

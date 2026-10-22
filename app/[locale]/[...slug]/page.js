@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { getLocaleConfig, isSupportedLocale } from '@/lib/locales';
 import { LOCALIZED_PATHS, UNPREFIXED_TOP_SEGMENTS } from '@/lib/routePolicy';
@@ -35,6 +36,9 @@ export default async function LocalizedFallback({ params, searchParams }) {
   // 前缀下没建树、但无前缀树里有的那些，就地换语言由 cookie 承载 —— 307 而不是 308：
   // 今天 /ja/pricing 没有日文正文，明天补上了这条跳转就该消失，不该被浏览器永久缓存。
   if (UNPREFIXED_TOP_SEGMENTS.includes(rest[0])) {
+    const cookieStore = await cookies();
+    cookieStore.set('NEXT_LOCALE', config.code, { path: '/', maxAge: 31536000, sameSite: 'lax' });
+    cookieStore.set('locale', config.code, { path: '/', maxAge: 31536000, sameSite: 'lax' });
     redirect(`/${path}${suffix}`);
   }
 

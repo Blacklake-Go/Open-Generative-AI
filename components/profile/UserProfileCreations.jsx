@@ -4,12 +4,19 @@ import React from 'react';
 import { Sparkles, Heart } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
+import { getProfileStrings, useProfileLocale } from './profileI18n';
+
 export default function UserProfileCreations({
   posts = [],
   loading = false,
   onSelectPost,
   columns = 4,
+  locale = null,
+  strings: stringsProp = null,
 }) {
+  const activeLocale = useProfileLocale(locale);
+  const strings = stringsProp || getProfileStrings(activeLocale);
+
   if (loading) {
     return (
       <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${columns >= 4 ? 'lg:grid-cols-4' : ''} gap-4 sm:gap-5`}>
@@ -26,8 +33,8 @@ export default function UserProfileCreations({
         <div className="size-16 rounded-full bg-wash border border-line-subtle flex items-center justify-center text-ink-muted mb-3">
           <Sparkles className="size-8 text-ink-subtle" />
         </div>
-        <p className="text-sm font-medium text-ink">暂无公开作品</p>
-        <p className="text-xs text-ink-muted mt-1">创作者尚未将作品发布到社区大厅。</p>
+        <p className="text-sm font-medium text-ink">{strings.emptyCreationsTitle}</p>
+        <p className="text-xs text-ink-muted mt-1">{strings.emptyCreationsSub}</p>
       </div>
     );
   }
@@ -49,22 +56,22 @@ export default function UserProfileCreations({
             ) : (
               <img
                 src={post.media_url}
-                alt={post.title || '创作作品'}
+                alt={post.title || strings.aiCreation}
                 className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             )}
             <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 backdrop-blur-md text-white border border-white/10">
-              {post.model_name || 'AI 模型'}
+              {post.model_name || strings.aiModel}
             </div>
           </div>
           <div className="p-3.5 flex flex-col gap-1.5 flex-1 justify-between">
-            <p className="text-xs font-semibold text-ink truncate">{post.title || '未命名作品'}</p>
+            <p className="text-xs font-semibold text-ink truncate">{post.title || strings.untitled}</p>
             <div className="flex items-center justify-between text-[11px] text-ink-muted pt-1">
               <span className="flex items-center gap-1">
                 <Heart className="size-3 text-red-400 fill-current" />
                 <span>{post.likes_count || 0}</span>
               </span>
-              <span>{new Date(post.created_at || Date.now()).toLocaleDateString('zh-CN')}</span>
+              <span>{new Date(post.created_at || Date.now()).toLocaleDateString(activeLocale)}</span>
             </div>
           </div>
         </Card>

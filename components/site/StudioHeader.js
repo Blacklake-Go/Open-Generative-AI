@@ -339,29 +339,53 @@ export default function StudioHeader({
                 </span>
               </button>
 
-              {categories.map((cat) => (
-                <div key={cat.id} className="space-y-1">
-                  <div className="px-3 text-caption font-bold text-ink-muted uppercase tracking-wider">
-                    {cat.label}
+              {categories.map((cat) => {
+                const hasFeatures = Array.isArray(cat.features) && cat.features.length > 0;
+
+                if (!hasFeatures) {
+                  const isDirectActive = pathname === cat.href || pathname === `${cat.href}/`;
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={cat.href}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-body-sm font-medium transition-colors ${
+                        isDirectActive ? 'bg-wash-strong text-ink' : 'text-ink hover:bg-wash'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <NavIcon name="sparkles" className="size-4 text-brand" />
+                        <span>{cat.label}</span>
+                      </div>
+                      {cat.badge && <NavBadge badge={cat.badge} />}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={cat.id} className="space-y-1">
+                    <div className="px-3 text-caption font-bold text-ink-muted uppercase tracking-wider">
+                      {cat.label}
+                    </div>
+                    <div className="space-y-0.5">
+                      {cat.features?.map((feat) => (
+                        <Link
+                          key={feat.id}
+                          href={feat.href}
+                          onClick={() => setIsMobileOpen(false)}
+                          className="flex items-center justify-between px-3 py-2 rounded-xl text-caption text-ink-muted hover:text-ink hover:bg-wash transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <NavIcon name={feat.icon} className="size-3.5" />
+                            <span>{feat.label}</span>
+                          </div>
+                          {feat.badge && <NavBadge badge={feat.badge} />}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-0.5">
-                    {cat.features?.map((feat) => (
-                      <Link
-                        key={feat.id}
-                        href={feat.href}
-                        onClick={() => setIsMobileOpen(false)}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-caption text-ink-muted hover:text-ink hover:bg-wash transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <NavIcon name={feat.icon} className="size-3.5" />
-                          <span>{feat.label}</span>
-                        </div>
-                        {feat.badge && <NavBadge badge={feat.badge} />}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               <div className="pt-2 border-t border-line-subtle space-y-1">
                 <Link

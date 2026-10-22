@@ -11,6 +11,7 @@ const zhMessages = require('../messages/zh/common.json');
 const jaMessages = require('../messages/ja-JP/common.json');
 const koMessages = require('../messages/ko-KR/common.json');
 const zhTwMessages = require('../messages/zh-TW/common.json');
+const esMessages = require('../messages/es/common.json');
 
 const MESSAGES = {
   en: enMessages,
@@ -18,6 +19,7 @@ const MESSAGES = {
   'ja-JP': jaMessages,
   'ko-KR': koMessages,
   'zh-TW': zhTwMessages,
+  es: esMessages,
 };
 
 export default getRequestConfig(async () => {

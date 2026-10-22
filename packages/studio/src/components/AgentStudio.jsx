@@ -23,6 +23,15 @@ import es from "../messages/es-ES/agentStudio.json";
 import { resolveCopy } from "../i18nUtils";
 import { PromptInputField } from "./prompt/PromptInputField.jsx";
 
+const AGENT_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function timeAgo(dateStr, copy) {
   if (!dateStr) return "";
@@ -247,7 +256,7 @@ export default function AgentStudio({
 }) {
   const router = useRouter();
   const params = useParams();
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, AGENT_MESSAGES, locale);
 
   const effectiveApiKey = apiKey || (signedIn ? 'supdance-account-session' : null);
   const [selectedModel, setSelectedModel] = useState(() => {

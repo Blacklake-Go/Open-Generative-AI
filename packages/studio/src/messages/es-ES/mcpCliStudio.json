@@ -1,35 +1,35 @@
 {
   "hero": {
     "badge": "Para desarrolladores y agentes de IA",
-    "title": "MCP y CLI",
-    "description": "Utilice supdance desde su terminal, su IDE o cualquier asistente compatible con MCP. Genere imágenes cinematográficas, vídeos y audio en más de 100 modelos, sin abandonar su flujo de trabajo."
+    "title": "Herramientas MCP y CLI",
+    "description": "Usa supdance desde tu terminal, tu IDE o cualquier asistente compatible con MCP. Genera imágenes, videos y audios cinematográficos en más de 100 modelos — sin salir de tu flujo de trabajo."
   },
   "quickStart": {
     "sectionLabel": "Inicio rápido",
     "steps": {
-      "installCli": "Instale la CLI",
+      "installCli": "Instalar la CLI",
       "signIn": "Iniciar sesión",
-      "addSkills": "Añade las habilidades"
+      "addSkills": "Añadir las habilidades"
     }
   },
   "features": {
     "cli": {
-      "description": "Genere imágenes, vídeos y audio desde el terminal en más de 14 modelos de IA. Interfaz dual: salida humana en color más JSON para agentes (--output-json, --jq filtrado). Flujos de trabajo asíncronos, carga de archivos, seguimiento de crédito."
+      "description": "Genera imágenes, videos y audio desde el terminal en más de 14 modelos de IA. Interfaz dual: salida legible con colores para humanos y JSON para agentes (--output-json, filtrado con --jq). Flujos de trabajo asíncronos, subida de archivos y seguimiento de créditos."
     },
     "mcp": {
-      "description": "Conecte Claude, Cursor, Windsurf y cualquier asistente compatible con MCP a más de 100 modelos generativos. Punto final alojado: sin instalación. 19 herramientas estructuradas con esquemas de entrada/salida, sondeos asíncronos y gestión de cuentas."
+      "description": "Conecta Claude, Cursor, Windsurf y cualquier asistente compatible con MCP a más de 100 modelos generativos. Endpoint alojado — sin instalación. 19 herramientas estructuradas con esquemas de entrada/salida, sondeo asíncrono y gestión de cuentas."
     },
     "skills": {
-      "description": "Kit de herramientas multimodal para Claude Code, Cursor y Gemini CLI. Ajustes preestablecidos de director de cine, Nano-Banana, diseñador de interfaz de usuario, creador de logotipos, Seedance 2, recorte de IA y cortos de YouTube. Agente nativo con salidas JSON y códigos de salida semánticos."
+      "description": "Kit de herramientas multimodal para Claude Code, Cursor y Gemini CLI. Ajustes preestablecidos para Director de Cine, Nano-Banana, Diseñador de UI, Creador de Logos, Seedance 2, Recorte IA y YouTube Shorts. Nativo para agentes con salidas JSON y códigos de salida semánticos."
     }
   },
   "viewOnGithub": "Ver en GitHub",
   "examples": {
     "sectionLabel": "Ejemplos",
     "imageGeneration": "Generación de imágenes",
-    "textToVideo": "Texto a vídeo",
-    "audioCreation": "creación de audio",
-    "runSkill": "ejecutar una habilidad"
+    "textToVideo": "Texto a video",
+    "audioCreation": "Creación de audio",
+    "runSkill": "Ejecutar una habilidad"
   },
   "footer": "Código abierto · Licencia MIT · Funciona con Claude, Cursor, Windsurf y Gemini CLI"
 }

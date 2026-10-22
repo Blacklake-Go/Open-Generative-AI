@@ -120,6 +120,15 @@ import zhTw from "../messages/zh-TW/marketingStudio.json";
 import es from "../messages/es-ES/marketingStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
+const MARKETING_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 const SCROLLBAR_STYLE = `
   .custom-scrollbar-thin::-webkit-scrollbar {
     height: 4px;
@@ -420,7 +429,7 @@ export default function MarketingStudio({
   historyItems,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, MARKETING_MESSAGES, locale);
   const relayCopy = resolveCopy(MARKETING_RELAY_COPY_EN, MARKETING_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_marketing_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

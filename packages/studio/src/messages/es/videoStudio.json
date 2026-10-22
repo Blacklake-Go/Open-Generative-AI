@@ -192,7 +192,8 @@
         "description": "Mayor contraste y movimiento dinámico."
       },
       "mini_spicy": {
-        "label": "Mini Picante"
+        "label": "Mini Picante",
+        "description": ""
       },
       "legacy": {
         "label": "API Seedance 2.0",
@@ -320,10 +321,12 @@
         "description": ""
       },
       "prime": {
-        "label": "Edición Prime"
+        "label": "Edición Prime",
+        "description": ""
       },
       "spicy": {
-        "label": "Modo Spicy (Picante)"
+        "label": "Modo Spicy (Picante)",
+        "description": ""
       }
     },
     "durationLabels": {

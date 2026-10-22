@@ -16,13 +16,20 @@ import {
 import ModelBrandLogo from '@/components/models/ModelBrandLogo';
 import BrandLogo from '@/components/site/BrandLogo';
 import { useBranding } from '@/lib/hooks/useBranding';
+import { normalizeLocale, localizeStudioPath } from '@/lib/locales';
 
-// 核心大模型矩阵导航定义 (按模态分类，涵盖官方品牌 ID 与直达路由)
+// 核心大模型矩阵导航定义 (按模态分类，涵盖官方品牌 ID 与直达路由，支持 6 种语言)
 const FOOTER_MODEL_GROUPS = [
   {
     id: 'image',
-    title: 'Text-to-Image Models',
-    titleZh: '图像生成 · 视觉大模型',
+    title: {
+      en: 'Text-to-Image Models',
+      'zh-CN': '图像生成 · 视觉大模型',
+      'zh-TW': '圖像生成 · 視覺大模型',
+      'ja-JP': '画像生成 · ビジュアルモデル',
+      'ko-KR': '이미지 생성 · 비주얼 모델',
+      es: 'Modelos de Texto a Imagen',
+    },
     icon: Layers,
     accentColor: '#00f5d4',
     models: [
@@ -31,42 +38,83 @@ const FOOTER_MODEL_GROUPS = [
         name: 'FLUX.1 [dev]',
         providerId: 'bfl',
         provider: 'Black Forest Labs',
-        tag: '12B · 4K 排印',
+        tag: {
+          en: '12B · 4K Typography',
+          'zh-CN': '12B · 4K 排印',
+          'zh-TW': '12B · 4K 排版',
+          'ja-JP': '12B · 4K タイポグラフィ',
+          'ko-KR': '12B · 4K 타이포그래피',
+          es: '12B · Tipografía 4K',
+        },
       },
       {
         id: 'seedream-5.0',
-        name: 'Seedream 5.0 (即梦)',
+        name: 'Seedream 5.0',
         providerId: 'bytedance',
-        provider: '字节跳动 (ByteDance)',
-        tag: '电影超清',
+        provider: 'ByteDance',
+        tag: {
+          en: 'Ultra HD Cinema',
+          'zh-CN': '电影超清',
+          'zh-TW': '電影超清',
+          'ja-JP': '映画級超高精細',
+          'ko-KR': '시네마틱 초고화질',
+          es: 'Cine Ultra HD',
+        },
       },
       {
         id: 'wan2.1-text-to-image',
-        name: '通义万相 2.1 (Wan)',
+        name: 'Wan 2.1 (通义万相)',
         providerId: 'alibaba',
-        provider: '阿里巴巴 (Alibaba)',
-        tag: '真实流体',
+        provider: 'Alibaba',
+        tag: {
+          en: 'Realistic Fluid',
+          'zh-CN': '真实流体',
+          'zh-TW': '真實流體',
+          'ja-JP': 'リアル流体',
+          'ko-KR': '실제 유체',
+          es: 'Fluidos Reales',
+        },
       },
       {
         id: 'midjourney-v7',
         name: 'Midjourney V7',
         providerId: 'midjourney',
         provider: 'Midjourney',
-        tag: '概念美学',
+        tag: {
+          en: 'Concept Aesthetics',
+          'zh-CN': '概念美学',
+          'zh-TW': '概念美學',
+          'ja-JP': 'コンセプト美学',
+          'ko-KR': '컨셉 미학',
+          es: 'Estética Conceptual',
+        },
       },
       {
         id: 'gpt-image-2.5-flash',
         name: 'GPT-Image 2.5 Flash',
         providerId: 'openai',
         provider: 'OpenAI',
-        tag: '毫秒极速',
+        tag: {
+          en: 'Sub-second Speed',
+          'zh-CN': '毫秒极速',
+          'zh-TW': '毫秒極速',
+          'ja-JP': 'ミリ秒超高速',
+          'ko-KR': '밀리초 초고속',
+          es: 'Velocidad Milisegundo',
+        },
       },
     ],
   },
   {
     id: 'video',
-    title: 'Text-to-Video Models',
-    titleZh: '视频生成 · 运镜大模型',
+    title: {
+      en: 'Text-to-Video Models',
+      'zh-CN': '视频生成 · 运镜大模型',
+      'zh-TW': '視頻生成 · 運鏡大模型',
+      'ja-JP': '動画生成 · カメラワークモデル',
+      'ko-KR': '비디오 생성 · 카메라 무빙 모델',
+      es: 'Modelos de Texto a Video',
+    },
     icon: Activity,
     accentColor: '#e11d74',
     models: [
@@ -74,43 +122,84 @@ const FOOTER_MODEL_GROUPS = [
         id: 'kling-v2.6-pro-t2v',
         name: 'Kling 2.6 Pro (可灵)',
         providerId: 'kuaishou',
-        provider: '快手 (Kuaishou)',
-        tag: '60 FPS 运镜',
+        provider: 'Kuaishou',
+        tag: {
+          en: '60 FPS Motion',
+          'zh-CN': '60 FPS 运镜',
+          'zh-TW': '60 FPS 運鏡',
+          'ja-JP': '60 FPS カメラワーク',
+          'ko-KR': '60 FPS 카메라 무빙',
+          es: '60 FPS Cámara',
+        },
       },
       {
         id: 'minimax-hailuo-2.3-standard-t2v',
         name: 'Hailuo 2.3 (海螺视频)',
         providerId: 'minimax',
         provider: 'MiniMax',
-        tag: '长镜头连贯',
+        tag: {
+          en: 'Continuous Shot',
+          'zh-CN': '长镜头连贯',
+          'zh-TW': '長鏡頭連貫',
+          'ja-JP': '長回し一貫性',
+          'ko-KR': '원테이크 일관성',
+          es: 'Plano Continuo',
+        },
       },
       {
         id: 'veo3-text-to-video',
         name: 'Google Veo 3',
         providerId: 'google',
         provider: 'Google DeepMind',
-        tag: '物理光影',
+        tag: {
+          en: 'Physical Lighting',
+          'zh-CN': '物理光影',
+          'zh-TW': '物理光影',
+          'ja-JP': '物理ライティング',
+          'ko-KR': '물리적 광원',
+          es: 'Iluminación Física',
+        },
       },
       {
         id: 'wan2.1-t2v',
         name: 'Wan 2.1 Video',
         providerId: 'alibaba',
-        provider: '阿里巴巴 (Alibaba)',
-        tag: '14B 骨干网',
+        provider: 'Alibaba',
+        tag: {
+          en: '14B Backbone',
+          'zh-CN': '14B 骨干网',
+          'zh-TW': '14B 骨幹網',
+          'ja-JP': '14B バックボーン',
+          'ko-KR': '14B 백본',
+          es: 'Backbone 14B',
+        },
       },
       {
         id: 'runway-gen3',
         name: 'Runway Gen-3 Alpha',
         providerId: 'runway',
         provider: 'Runway',
-        tag: '电影工业级',
+        tag: {
+          en: 'Cinema Industry Grade',
+          'zh-CN': '电影工业级',
+          'zh-TW': '電影工業級',
+          'ja-JP': '映画産業グレード',
+          'ko-KR': '영화 산업용 등급',
+          es: 'Grado Cine Industrial',
+        },
       },
     ],
   },
   {
     id: 'audio',
-    title: 'Audio & Music Models',
-    titleZh: '音频音乐 · 声音大模型',
+    title: {
+      en: 'Audio & Music Models',
+      'zh-CN': '音频音乐 · 声音大模型',
+      'zh-TW': '音頻音樂 · 聲音大模型',
+      'ja-JP': '音声・音楽モデル',
+      'ko-KR': '오디오 및 음악 모델',
+      es: 'Modelos de Audio y Música',
+    },
     icon: Sparkles,
     accentColor: '#3772FF',
     models: [
@@ -119,35 +208,69 @@ const FOOTER_MODEL_GROUPS = [
         name: 'Suno V3.5 Music',
         providerId: 'suno',
         provider: 'Suno AI',
-        tag: '全轨编曲人声',
+        tag: {
+          en: 'Full Track & Vocals',
+          'zh-CN': '全轨编曲人声',
+          'zh-TW': '全軌編曲人聲',
+          'ja-JP': 'フルパート・ボーカル',
+          'ko-KR': '풀 트랙 편곡 및 보컬',
+          es: 'Pistas y Voces',
+        },
       },
       {
         id: 'minimax-music-3.0',
         name: 'MiniMax Music 3.0',
         providerId: 'minimax',
         provider: 'MiniMax',
-        tag: '高保真乐器',
+        tag: {
+          en: 'Hi-Fi Instruments',
+          'zh-CN': '高保真乐器',
+          'zh-TW': '高保真樂器',
+          'ja-JP': '高忠実度楽器',
+          'ko-KR': '고음질 악기',
+          es: 'Instrumentos Hi-Fi',
+        },
       },
       {
         id: 'minimax-speech-2.6-hd',
         name: 'MiniMax Speech 2.6 HD',
         providerId: 'minimax',
         provider: 'MiniMax',
-        tag: '情感语音合成',
+        tag: {
+          en: 'Expressive TTS',
+          'zh-CN': '情感语音合成',
+          'zh-TW': '情感語音合成',
+          'ja-JP': '感情表現TTS',
+          'ko-KR': '감정 음성 합성',
+          es: 'Síntesis Emocional',
+        },
       },
       {
         id: 'elevenlabs-turbo-v2',
         name: 'ElevenLabs Turbo v2',
         providerId: 'elevenlabs',
         provider: 'ElevenLabs',
-        tag: 'AI 配音',
+        tag: {
+          en: 'AI Voiceover',
+          'zh-CN': 'AI 配音',
+          'zh-TW': 'AI 配音',
+          'ja-JP': 'AI 音声吹替',
+          'ko-KR': 'AI 더빙',
+          es: 'Doblaje IA',
+        },
       },
     ],
   },
   {
     id: 'llm',
-    title: 'LLM & Reasoning',
-    titleZh: '大语言 · 逻辑推理模型',
+    title: {
+      en: 'LLM & Reasoning',
+      'zh-CN': '大语言 · 逻辑推理模型',
+      'zh-TW': '大語言 · 邏輯推理模型',
+      'ja-JP': '大規模言語 · 推論モデル',
+      'ko-KR': '대규모 언어 · 논리 추론 모델',
+      es: 'LLM y Razonamiento',
+    },
     icon: Cpu,
     accentColor: '#fbbf24',
     models: [
@@ -155,48 +278,307 @@ const FOOTER_MODEL_GROUPS = [
         id: 'deepseek-v3',
         name: 'DeepSeek-V3 671B',
         providerId: 'deepseek',
-        provider: '深度求索 (DeepSeek)',
-        tag: 'SOTA 推理',
+        provider: 'DeepSeek',
+        tag: {
+          en: 'SOTA Reasoning',
+          'zh-CN': 'SOTA 推理',
+          'zh-TW': 'SOTA 推理',
+          'ja-JP': 'SOTA 推論',
+          'ko-KR': 'SOTA 추론',
+          es: 'Razonamiento SOTA',
+        },
       },
       {
         id: 'gpt-4o',
         name: 'GPT-4o Omni',
         providerId: 'openai',
         provider: 'OpenAI',
-        tag: '全模态中枢',
+        tag: {
+          en: 'Omni Central Hub',
+          'zh-CN': '全模态中枢',
+          'zh-TW': '全模態中樞',
+          'ja-JP': '全モーダルハブ',
+          'ko-KR': '옴니 멀티모달 허브',
+          es: 'Centro Omnimodal',
+        },
       },
       {
         id: 'claude-3.5-sonnet',
         name: 'Claude 3.5 Sonnet',
         providerId: 'anthropic',
         provider: 'Anthropic',
-        tag: '代码架构旗舰',
+        tag: {
+          en: 'Code & Arch Flagship',
+          'zh-CN': '代码架构旗舰',
+          'zh-TW': '代碼架構旗艦',
+          'ja-JP': 'コード・アーキテクチャ旗艦',
+          'ko-KR': '코드·아키텍처 플래그십',
+          es: 'Buque Insignia Código',
+        },
       },
       {
         id: 'qwen-2.5-max',
         name: 'Qwen 2.5 Max (千问)',
         providerId: 'alibaba',
-        provider: '阿里巴巴 (Alibaba)',
-        tag: '复杂长文本',
+        provider: 'Alibaba',
+        tag: {
+          en: 'Complex Long Context',
+          'zh-CN': '复杂长文本',
+          'zh-TW': '複雜長文本',
+          'ja-JP': '複雑長文コンテキスト',
+          'ko-KR': '복잡한 긴 문맥',
+          es: 'Contexto Extenso',
+        },
       },
     ],
   },
 ];
 
+const FOOTER_COPY = {
+  en: {
+    modelDirectoryAvailable: 'Model directory available',
+    actualUsage24h: 'Actual usage · 24h',
+    heroBannerTitle: 'Foundation Models & Creative Workspace',
+    heroBannerDesc: 'Deterministic multi-model routing, sub-second failover, and high-performance telemetry for next-generation creative pipelines.',
+    launchStudio: 'Launch Studio Workspace',
+    viewModelDirectory: 'View Model Directory',
+    coreDirectoryHeading: 'CORE FOUNDATION MODEL DIRECTORY',
+    allModelProfiles: 'All Model Profiles',
+    brandSloganDefault: 'Generative AI Workspace',
+    brandVision: 'A generative AI workspace and model access layer for creators, independent studios, and teams.',
+    colWorkspaces: 'WORKSPACES',
+    linkImageStudio: 'Image Studio',
+    linkVideoCinema: 'Video Cinema',
+    linkAudioMusic: 'Audio & Music',
+    linkWorkflow: 'Workflow Canvas',
+    linkPricing: 'Pricing & Plans',
+    colDeveloper: 'DEVELOPER & API',
+    linkApiPlatform: 'API Platform (Coming Soon)',
+    linkModelDirectory: 'Model Directory',
+    linkCommunity: 'Community Gallery',
+    linkCreatorBenefits: 'Creator Benefits',
+    colNewsletter: 'NEWSLETTER & UPDATES',
+    newsletterDesc: (brand) => `Subscribe to receive ${brand} foundation model updates and technical release notes.`,
+    newsletterComingSoon: 'Email newsletter coming soon',
+    newsletterComingSoonDesc: 'Email subscriptions are not available yet. Join the community for model and product updates.',
+    visitCommunity: 'Visit community',
+    privacyPolicy: 'Privacy Policy',
+    termsOfService: 'Terms of Service',
+    refundPolicy: 'Refund Policy',
+    contentPolicy: 'Content Policy',
+    allRightsReserved: 'All Rights Reserved.',
+    icpNumber: '备案编号：沪ICP备2026050086号',
+    operatingSystem: 'Next-Gen Creative AI Operating System',
+    canvasCore: 'High-Precision Canvas Core',
+    modelGateway: 'Model Gateway',
+  },
+  'zh-CN': {
+    modelDirectoryAvailable: '模型目录已开放',
+    actualUsage24h: '真实调用统计 · 24h',
+    heroBannerTitle: '面向全球创作者与影视团队的 AI 模型与创作工作台',
+    heroBannerDesc: '一站式无缝聚合 FLUX、可灵、Suno、DeepSeek 等核心旗舰模型。毫秒级自愈漂移与确定性交付，开启工业化生成时代。',
+    launchStudio: '进入 Studio 创意工坊',
+    viewModelDirectory: '查看模型目录',
+    coreDirectoryHeading: '核心前沿模型全矩阵导航',
+    allModelProfiles: '全部模型专题档案',
+    brandSloganDefault: 'AI 创意工作室',
+    brandVision: '面向创作者、独立工作室与团队的专业生成式 AI 创作工作台与模型接入层，支持模型发现、生成与工作流协作。',
+    colWorkspaces: '创意工作台',
+    linkImageStudio: '图像生图工坊',
+    linkVideoCinema: '视频运镜导演台',
+    linkAudioMusic: '音频音乐工作台',
+    linkWorkflow: '节点式工作流',
+    linkPricing: '会员订阅方案',
+    colDeveloper: '开发者与遥测',
+    linkApiPlatform: '开放平台（筹备中）',
+    linkModelDirectory: '模型目录与真实调用',
+    linkCommunity: '创作者案例广场',
+    linkCreatorBenefits: '创作者算力权益',
+    colNewsletter: '模型技术周刊与通知',
+    newsletterDesc: (brand) => `订阅 ${brand} 技术周报，第一时间获取模型与产品更新公告。`,
+    newsletterComingSoon: '邮件订阅即将开放',
+    newsletterComingSoonDesc: '目前还没有可用的邮件订阅服务。欢迎先加入社区获取模型与产品更新。',
+    visitCommunity: '前往社区',
+    privacyPolicy: '隐私政策',
+    termsOfService: '服务条款',
+    refundPolicy: '退款准则',
+    contentPolicy: '内容安全',
+    allRightsReserved: '保留所有权利。',
+    icpNumber: '备案编号：沪ICP备2026050086号',
+    operatingSystem: '新一代生成式 AI 创意工作系统',
+    canvasCore: '高精创作画布内核',
+    modelGateway: '模型网关中枢',
+  },
+  'zh-TW': {
+    modelDirectoryAvailable: '模型目錄已開放',
+    actualUsage24h: '真實調用統計 · 24h',
+    heroBannerTitle: '面向全球創作者與影視團隊的 AI 模型與創作工作台',
+    heroBannerDesc: '一站式無縫聚合 FLUX、可靈、Suno、DeepSeek 等核心旗艦模型。毫秒級自愈漂移與確定性交付，開啟工業化生成時代。',
+    launchStudio: '進入 Studio 創意工坊',
+    viewModelDirectory: '查看模型目錄',
+    coreDirectoryHeading: '核心前沿模型全矩陣導航',
+    allModelProfiles: '全部模型專題檔案',
+    brandSloganDefault: 'AI 創意工作室',
+    brandVision: '面向創作者、獨立工作室與團隊的專業生成式 AI 創作工作台與模型接入層，支持模型發現、生成與工作流協作。',
+    colWorkspaces: '創意工作台',
+    linkImageStudio: '圖像生圖工坊',
+    linkVideoCinema: '視頻運鏡導演台',
+    linkAudioMusic: '音頻音樂工作台',
+    linkWorkflow: '節點式工作流',
+    linkPricing: '會員訂閱方案',
+    colDeveloper: '開發者與遙測',
+    linkApiPlatform: '開放平台（籌備中）',
+    linkModelDirectory: '模型目錄與真實調用',
+    linkCommunity: '創作者案例廣場',
+    linkCreatorBenefits: '創作者算力權益',
+    colNewsletter: '模型技術周刊與通知',
+    newsletterDesc: (brand) => `訂閱 ${brand} 技術週報，第一時間獲取模型與產品更新公告。`,
+    newsletterComingSoon: '郵件訂閱即將開放',
+    newsletterComingSoonDesc: '目前還沒有可用的郵件訂閱服務。歡迎先加入社區獲取模型與產品更新。',
+    visitCommunity: '前往社區',
+    privacyPolicy: '隱私政策',
+    termsOfService: '服務條款',
+    refundPolicy: '退款準則',
+    contentPolicy: '內容安全',
+    allRightsReserved: '保留所有權利。',
+    icpNumber: '備案編號：滬ICP備2026050086號',
+    operatingSystem: '新一代生成式 AI 創意工作系統',
+    canvasCore: '高精創作畫布內核',
+    modelGateway: '模型網關中樞',
+  },
+  'ja-JP': {
+    modelDirectoryAvailable: 'モデルディレクトリ公開中',
+    actualUsage24h: '実利用統計 · 24h',
+    heroBannerTitle: 'クリエイターと映像チームのための AI モデル＆制作ワークスペース',
+    heroBannerDesc: 'FLUX、Kling、Suno、DeepSeek などの基盤モデルをシームレスに統合。次世代パイプライン向けの高速フェイルオーバーと高品質な生成を提供します。',
+    launchStudio: 'Studio ワークスペースを開く',
+    viewModelDirectory: 'モデルディレクトリを見る',
+    coreDirectoryHeading: '主要基盤モデルディレクトリ',
+    allModelProfiles: 'すべてのモデルプロファイル',
+    brandSloganDefault: '生成AIクリエイティブスタジオ',
+    brandVision: 'クリエイター、インディペンデントスタジオ、チームのための生成AIワークスペースおよびモデルアクセスレイヤー。',
+    colWorkspaces: 'ワークスペース',
+    linkImageStudio: '画像スタジオ',
+    linkVideoCinema: 'ビデオシネマ',
+    linkAudioMusic: 'オーディオ＆音楽',
+    linkWorkflow: 'ワークフローキャンバス',
+    linkPricing: '料金プラン',
+    colDeveloper: '開発者＆API',
+    linkApiPlatform: 'APIプラットフォーム（近日公開）',
+    linkModelDirectory: 'モデルディレクトリ',
+    linkCommunity: 'コミュニティギャラリー',
+    linkCreatorBenefits: 'クリエイター特典',
+    colNewsletter: 'ニュースレター＆更新情報',
+    newsletterDesc: (brand) => `${brand} の技術ニュースレターを購読し、モデルと製品の最新アップデートを受け取る。`,
+    newsletterComingSoon: 'メール配信は近日開始',
+    newsletterComingSoonDesc: '現在メール配信は準備中です。モデルや製品の更新情報はコミュニティをご覧ください。',
+    visitCommunity: 'コミュニティへ',
+    privacyPolicy: 'プライバシーポリシー',
+    termsOfService: '利用規約',
+    refundPolicy: '返金ポリシー',
+    contentPolicy: 'コンテンツポリシー',
+    allRightsReserved: '全著作権所有。',
+    icpNumber: '届出番号：滬ICP備2026050086号',
+    operatingSystem: '次世代クリエイティブAIオペレーティングシステム',
+    canvasCore: '高精度キャンバスコア',
+    modelGateway: 'モデルゲートウェイ',
+  },
+  'ko-KR': {
+    modelDirectoryAvailable: '모델 디렉터리 사용 가능',
+    actualUsage24h: '실제 사용 통계 · 24h',
+    heroBannerTitle: '글로벌 크리에이터와 영상 팀을 위한 AI 모델 및 창작 워크스페이스',
+    heroBannerDesc: 'FLUX, Kling, Suno, DeepSeek 등 핵심 플래그십 모델을 원스톱으로 통합합니다. 차세대 파이프라인을 위한 밀리초 페일오버와 결정론적 생성을 제공합니다.',
+    launchStudio: 'Studio 워크스페이스 시작',
+    viewModelDirectory: '모델 디렉터리 보기',
+    coreDirectoryHeading: '핵심 파운데이션 모델 디렉터리',
+    allModelProfiles: '전체 모델 프로필',
+    brandSloganDefault: '생성형 AI 크리에이티브 스튜디오',
+    brandVision: '크리에이터, 독립 스튜디오 및 팀을 위한 생성형 AI 창작 워크스페이스 및 모델 액세스 레이어입니다.',
+    colWorkspaces: '워크스페이스',
+    linkImageStudio: '이미지 스튜디오',
+    linkVideoCinema: '비디오 시네마',
+    linkAudioMusic: '오디오 & 음악',
+    linkWorkflow: '워크플로 캔버스',
+    linkPricing: '요금제 안내',
+    colDeveloper: '개발자 및 API',
+    linkApiPlatform: 'API 플랫폼 (준비 중)',
+    linkModelDirectory: '모델 디렉터리',
+    linkCommunity: '커뮤니티 갤러리',
+    linkCreatorBenefits: '크리에이터 혜택',
+    colNewsletter: '뉴스레터 및 업데이트',
+    newsletterDesc: (brand) => `${brand} 기술 소식을 구독하고 최신 모델 및 제품 업데이트를 가장 먼저 받아보세요.`,
+    newsletterComingSoon: '이메일 뉴스레터 곧 오픈',
+    newsletterComingSoonDesc: '현재 이메일 구독은 준비 중입니다. 커뮤니티에 참여하여 모델 및 제품 업데이트를 확인하세요.',
+    visitCommunity: '커뮤니티 바로가기',
+    privacyPolicy: '개인정보 처리방침',
+    termsOfService: '이용약관',
+    refundPolicy: '환불 규정',
+    contentPolicy: '콘텐츠 정책',
+    allRightsReserved: 'All Rights Reserved.',
+    icpNumber: '등록번호: 沪ICP备2026050086호',
+    operatingSystem: '차세대 크리에이티브 AI 운영 체제',
+    canvasCore: '고정밀 캔버스 코어',
+    modelGateway: '모델 게이트웨이',
+  },
+  es: {
+    modelDirectoryAvailable: 'Directorio de modelos disponible',
+    actualUsage24h: 'Uso real · 24h',
+    heroBannerTitle: 'Modelos Fundacionales y Espacio de Trabajo Creativo',
+    heroBannerDesc: 'Enrutamiento multimodelos determinista, tolerancia a fallos en milisegundos y telemetría de alto rendimiento para pipelines creativos.',
+    launchStudio: 'Abrir Espacio de Trabajo Studio',
+    viewModelDirectory: 'Ver Directorio de Modelos',
+    coreDirectoryHeading: 'DIRECTORIO DE MODELOS FUNDACIONALES',
+    allModelProfiles: 'Todos los Perfiles de Modelos',
+    brandSloganDefault: 'Espacio Creativo de IA Generativa',
+    brandVision: 'Un espacio de trabajo de IA generativa y capa de acceso a modelos para creadores, estudios independientes y equipos.',
+    colWorkspaces: 'ESPACIOS DE TRABAJO',
+    linkImageStudio: 'Estudio de Imagen',
+    linkVideoCinema: 'Cine de Video',
+    linkAudioMusic: 'Audio y Música',
+    linkWorkflow: 'Lienzo de Flujos',
+    linkPricing: 'Precios y Planes',
+    colDeveloper: 'DESARROLLADORES Y API',
+    linkApiPlatform: 'Plataforma API (Próximamente)',
+    linkModelDirectory: 'Directorio de Modelos',
+    linkCommunity: 'Galería de la Comunidad',
+    linkCreatorBenefits: 'Beneficios para Creadores',
+    colNewsletter: 'BOLETÍN Y ACTUALIZACIONES',
+    newsletterDesc: (brand) => `Suscríbete para recibir actualizaciones de modelos y notas técnicas de lanzamiento de ${brand}.`,
+    newsletterComingSoon: 'Boletín por correo próximamente',
+    newsletterComingSoonDesc: 'Las suscripciones por correo aún no están disponibles. Únete a la comunidad para recibir actualizaciones.',
+    visitCommunity: 'Visitar comunidad',
+    privacyPolicy: 'Política de Privacidad',
+    termsOfService: 'Términos de Servicio',
+    refundPolicy: 'Política de Reembolso',
+    contentPolicy: 'Política de Contenido',
+    allRightsReserved: 'Todos los derechos reservados.',
+    icpNumber: 'Registro: 沪ICP备2026050086号',
+    operatingSystem: 'Sistema Operativo de IA Creativa de Próxima Generación',
+    canvasCore: 'Núcleo de Lienzo de Alta Precisión',
+    modelGateway: 'Pasarela de Modelos',
+  },
+};
+
 export default function AboutFooter({ locale = 'en' }) {
-  const isChinese = Boolean(locale?.includes('zh'));
+  const activeLocale = normalizeLocale(locale);
+  const copy = FOOTER_COPY[activeLocale] || FOOTER_COPY.en;
   const { brand } = useBranding();
   const brandName = brand?.brandName || 'SupDance';
-  const logoHref = brand?.logoHref || (isChinese ? '/zh' : '/');
+  const logoHref = brand?.logoHref || localizeStudioPath('/', activeLocale);
   const logoTarget = brand?.logoTarget || '_self';
 
   const getModelUrl = (modelId) => {
-    return isChinese ? `/zh/models/${modelId}` : `/models/${modelId}`;
+    return localizeStudioPath(`/models/${modelId}`, activeLocale);
   };
 
   const getStudioUrl = (tab = 'image') => {
-    const root = isChinese ? '/zh/studio' : '/studio';
-    return `${root}?tab=${tab}`;
+    return localizeStudioPath(`/studio?tab=${tab}`, activeLocale);
+  };
+
+  const getLocalizedText = (dict) => {
+    if (!dict) return '';
+    if (typeof dict === 'string') return dict;
+    return dict[activeLocale] || dict.en || Object.values(dict)[0] || '';
   };
 
   return (
@@ -218,41 +600,35 @@ export default function AboutFooter({ locale = 'en' }) {
               <div className="flex flex-wrap items-center gap-2.5 mb-3">
                 <span className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-mono text-[#00f5d4] flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00f5d4] animate-pulse" />
-                  <span>{isChinese ? '模型目录已开放' : 'Model directory available'}</span>
+                  <span>{copy.modelDirectoryAvailable}</span>
                 </span>
                 <span className="text-xs text-white/40 font-mono">
-                  {isChinese ? '真实调用统计 · 24h' : 'Actual usage · 24h'}
+                  {copy.actualUsage24h}
                 </span>
               </div>
 
               <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
-                {isChinese ? (
-                  <>面向全球创作者与影视团队的 AI 模型与创作工作台</>
-                ) : (
-                  <>Foundation Models & Creative Workspace</>
-                )}
+                {copy.heroBannerTitle}
               </h3>
               <p className="text-xs sm:text-sm text-white/60 mt-2 leading-relaxed max-w-xl">
-                {isChinese
-                  ? '一站式无缝聚合 FLUX、可灵、Suno、DeepSeek 等核心旗舰模型。毫秒级自愈漂移与确定性交付，开启工业化生成时代。'
-                  : 'Deterministic multi-model routing, sub-second failover, and high-performance telemetry for next-generation creative pipelines.'}
+                {copy.heroBannerDesc}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <Link
-                href={isChinese ? '/zh/studio' : '/studio'}
+                href={localizeStudioPath('/studio', activeLocale)}
                 className="px-6 py-3 rounded-full bg-[#e11d74] hover:bg-[#c0175f] text-white font-bold text-xs tracking-wide shadow-[0_4px_20px_rgba(225,29,116,0.4)] hover:shadow-[0_6px_25px_rgba(225,29,116,0.6)] transition-all hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer shrink-0"
               >
                 <Zap className="w-3.5 h-3.5 fill-current" />
-                <span>{isChinese ? '进入 Studio 创意工坊' : 'Launch Studio Workspace'}</span>
+                <span>{copy.launchStudio}</span>
               </Link>
               <Link
-                href={isChinese ? '/zh/about#models' : '/about#models'}
+                href={localizeStudioPath('/about#models', activeLocale)}
                 className="px-5 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold text-xs border border-white/10 transition-all hover:-translate-y-0.5 flex items-center gap-1.5 cursor-pointer shrink-0"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-[#00f5d4]" />
-                <span>{isChinese ? '查看模型目录' : 'View Model Directory'}</span>
+                <span>{copy.viewModelDirectory}</span>
               </Link>
             </div>
           </div>
@@ -266,14 +642,14 @@ export default function AboutFooter({ locale = 'en' }) {
             <div className="flex items-center gap-2">
               <Cpu className="w-4 h-4 text-[#00f5d4]" />
               <h4 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                {isChinese ? '核心前沿模型全矩阵导航' : 'CORE FOUNDATION MODEL DIRECTORY'}
+                {copy.coreDirectoryHeading}
               </h4>
             </div>
             <Link
-              href={isChinese ? '/zh/models' : '/models'}
+              href={localizeStudioPath('/models', activeLocale)}
               className="text-xs text-[#3772FF] hover:text-white transition-colors flex items-center gap-1 font-mono font-medium"
             >
-              <span>{isChinese ? '全部模型专题档案' : 'All Model Profiles'}</span>
+              <span>{copy.allModelProfiles}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -300,7 +676,7 @@ export default function AboutFooter({ locale = 'en' }) {
                       </div>
                       <div>
                         <div className="text-xs font-bold text-white">
-                          {isChinese ? group.titleZh : group.title}
+                          {getLocalizedText(group.title)}
                         </div>
                       </div>
                     </div>
@@ -333,7 +709,7 @@ export default function AboutFooter({ locale = 'en' }) {
                           </div>
 
                           <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-white/[0.05] text-white/50 border border-white/5 shrink-0 ml-2">
-                            {m.tag}
+                            {getLocalizedText(m.tag)}
                           </span>
                         </Link>
                       ))}
@@ -369,14 +745,12 @@ export default function AboutFooter({ locale = 'en' }) {
                 nameClassName="text-lg font-black tracking-tight text-white group-hover:text-[#00f5d4] transition-colors"
               />
               <span className="text-[10px] font-mono text-white/40 tracking-wider uppercase">
-                {brand?.brandSlogan || (isChinese ? 'AI 创意工作室' : 'Generative AI Workspace')}
+                {brand?.brandSlogan || copy.brandSloganDefault}
               </span>
             </Link>
 
             <p className="text-xs text-white/60 leading-relaxed max-w-sm">
-              {isChinese
-                ? '面向创作者、独立工作室与团队的专业生成式 AI 创作工作台与模型接入层，支持模型发现、生成与工作流协作。'
-                : 'A generative AI workspace and model access layer for creators, independent studios, and teams.'}
+              {copy.brandVision}
             </p>
 
             <div className="pt-2 text-xs font-mono text-white/50 space-y-1">
@@ -387,32 +761,32 @@ export default function AboutFooter({ locale = 'en' }) {
           {/* 第 2 列：核心工作台 (2 列) */}
           <div className="lg:col-span-2 space-y-3">
             <div className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              {isChinese ? '创意工作台' : 'WORKSPACES'}
+              {copy.colWorkspaces}
             </div>
             <ul className="space-y-2 text-xs text-white/60">
               <li>
                 <Link href={getStudioUrl('image')} className="hover:text-white transition-colors">
-                  {isChinese ? '图像生图工坊' : 'Image Studio'}
+                  {copy.linkImageStudio}
                 </Link>
               </li>
               <li>
                 <Link href={getStudioUrl('video')} className="hover:text-white transition-colors">
-                  {isChinese ? '视频运镜导演台' : 'Video Cinema'}
+                  {copy.linkVideoCinema}
                 </Link>
               </li>
               <li>
                 <Link href={getStudioUrl('audio')} className="hover:text-white transition-colors">
-                  {isChinese ? '音频音乐工作台' : 'Audio & Music'}
+                  {copy.linkAudioMusic}
                 </Link>
               </li>
               <li>
-                <Link href={isChinese ? '/zh/workflow' : '/workflow'} className="hover:text-white transition-colors">
-                  {isChinese ? '节点式工作流' : 'Workflow Canvas'}
+                <Link href={localizeStudioPath('/workflow', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkWorkflow}
                 </Link>
               </li>
               <li>
-                <Link href={isChinese ? '/zh/pricing' : '/pricing'} className="hover:text-white transition-colors">
-                  {isChinese ? '会员订阅方案' : 'Pricing & Plans'}
+                <Link href={localizeStudioPath('/pricing', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkPricing}
                 </Link>
               </li>
             </ul>
@@ -421,27 +795,27 @@ export default function AboutFooter({ locale = 'en' }) {
           {/* 第 3 列：开发者与遥测 (2 列) */}
           <div className="lg:col-span-2 space-y-3">
             <div className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              {isChinese ? '开发者与遥测' : 'DEVELOPER & API'}
+              {copy.colDeveloper}
             </div>
             <ul className="space-y-2 text-xs text-white/60">
               <li>
-                <Link href={isChinese ? '/zh/call-api' : '/call-api'} className="hover:text-white transition-colors">
-                  {isChinese ? '开放平台（筹备中）' : 'API Platform (Coming Soon)'}
+                <Link href={localizeStudioPath('/call-api', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkApiPlatform}
                 </Link>
               </li>
               <li>
-                <Link href={isChinese ? '/zh/about#models' : '/about#models'} className="hover:text-white transition-colors">
-                  {isChinese ? '模型目录与真实调用' : 'Model Directory'}
+                <Link href={localizeStudioPath('/about#models', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkModelDirectory}
                 </Link>
               </li>
               <li>
-                <Link href={isChinese ? '/zh/community' : '/community'} className="hover:text-white transition-colors">
-                  {isChinese ? '创作者案例广场' : 'Community Gallery'}
+                <Link href={localizeStudioPath('/community', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkCommunity}
                 </Link>
               </li>
               <li>
-                <Link href={isChinese ? '/zh/benefits' : '/benefits'} className="hover:text-white transition-colors">
-                  {isChinese ? '创作者算力权益' : 'Creator Benefits'}
+                <Link href={localizeStudioPath('/benefits', activeLocale)} className="hover:text-white transition-colors">
+                  {copy.linkCreatorBenefits}
                 </Link>
               </li>
             </ul>
@@ -450,50 +824,46 @@ export default function AboutFooter({ locale = 'en' }) {
           {/* 第 4 列：技术动态订阅与合规 (4 列) */}
           <div className="lg:col-span-4 space-y-3">
             <div className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              {isChinese ? '模型技术周刊与通知' : 'NEWSLETTER & UPDATES'}
+              {copy.colNewsletter}
             </div>
             <p className="text-xs text-white/50 leading-relaxed">
-              {isChinese
-                ? `订阅 ${brandName} 技术周报，第一时间获取模型与产品更新公告。`
-                : `Subscribe to receive ${brandName} foundation model updates and technical release notes.`}
+              {typeof copy.newsletterDesc === 'function' ? copy.newsletterDesc(brandName) : copy.newsletterDesc}
             </p>
 
             <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-[#12141c] p-3 text-xs text-white/60">
               <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#00f5d4]" />
               <div>
                 <p className="font-semibold text-white">
-                  {isChinese ? '邮件订阅即将开放' : 'Email newsletter coming soon'}
+                  {copy.newsletterComingSoon}
                 </p>
                 <p className="mt-1 leading-relaxed">
-                  {isChinese
-                    ? '目前还没有可用的邮件订阅服务。欢迎先加入社区获取模型与产品更新。'
-                    : 'Email subscriptions are not available yet. Join the community for model and product updates.'}
+                  {copy.newsletterComingSoonDesc}
                 </p>
                 <Link
-                  href={isChinese ? '/zh/community' : '/community'}
+                  href={localizeStudioPath('/community', activeLocale)}
                   className="mt-2 inline-flex items-center gap-1 font-semibold text-[#00f5d4] hover:text-white transition-colors"
                 >
-                  {isChinese ? '前往社区' : 'Visit community'}
+                  {copy.visitCommunity}
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-3 text-[11px] text-white/40">
-              <Link href={isChinese ? '/zh/privacy' : '/privacy'} className="hover:text-white transition-colors">
-                {isChinese ? '隐私政策' : 'Privacy Policy'}
+              <Link href={localizeStudioPath('/privacy', activeLocale)} className="hover:text-white transition-colors">
+                {copy.privacyPolicy}
               </Link>
               <span>·</span>
-              <Link href={isChinese ? '/zh/terms' : '/terms'} className="hover:text-white transition-colors">
-                {isChinese ? '服务条款' : 'Terms of Service'}
+              <Link href={localizeStudioPath('/terms', activeLocale)} className="hover:text-white transition-colors">
+                {copy.termsOfService}
               </Link>
               <span>·</span>
-              <Link href={isChinese ? '/zh/refund' : '/refund'} className="hover:text-white transition-colors">
-                {isChinese ? '退款准则' : 'Refund Policy'}
+              <Link href={localizeStudioPath('/refund', activeLocale)} className="hover:text-white transition-colors">
+                {copy.refundPolicy}
               </Link>
               <span>·</span>
-              <Link href={isChinese ? '/zh/content-policy' : '/content-policy'} className="hover:text-white transition-colors">
-                {isChinese ? '内容安全' : 'Content Policy'}
+              <Link href={localizeStudioPath('/content-policy', activeLocale)} className="hover:text-white transition-colors">
+                {copy.contentPolicy}
               </Link>
             </div>
           </div>
@@ -504,7 +874,7 @@ export default function AboutFooter({ locale = 'en' }) {
         {/* ========================================================= */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-white/40">
           <div className="flex flex-wrap items-center gap-2">
-            <span>© 2026 {brandName} ({brandName.toLowerCase()}.com). All Rights Reserved.</span>
+            <span>© 2026 {brandName} ({brandName.toLowerCase()}.com). {copy.allRightsReserved}</span>
             <span className="hidden sm:inline">·</span>
             <a
               href="https://beian.miit.gov.cn/"
@@ -512,19 +882,19 @@ export default function AboutFooter({ locale = 'en' }) {
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"
             >
-              备案编号：沪ICP备2026050086号
+              {copy.icpNumber}
             </a>
             <span className="hidden sm:inline">·</span>
-            <span className="text-white/30 hidden sm:inline">Next-Gen Creative AI Operating System</span>
+            <span className="text-white/30 hidden sm:inline">{copy.operatingSystem}</span>
           </div>
 
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 text-white/50">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>High-Precision Canvas Core</span>
+              <span>{copy.canvasCore}</span>
             </span>
             <span>·</span>
-            <span>Model Gateway</span>
+            <span>{copy.modelGateway}</span>
           </div>
         </div>
       </div>

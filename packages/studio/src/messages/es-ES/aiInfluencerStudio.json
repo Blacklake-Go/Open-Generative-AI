@@ -1,70 +1,70 @@
 {
   "builder": {
-    "title": "Diseñador de Personajes",
-    "reset": "Reiniciar"
+    "title": "Constructor",
+    "reset": "Restablecer"
   },
   "categoryTabs": {
     "face": "Rostro",
     "body": "Cuerpo",
-    "style": "Estilo y Encuadre"
+    "style": "Estilo"
   },
   "subcategories": {
-    "character_type": "Tipo de personaje",
+    "character_type": "Tipo de Personaje",
     "gender": "Género",
     "ethnicity_origin_base": "Etnia / Origen",
-    "eye_color": "Color de ojos",
-    "eyes_type": "Tipo de ojo",
-    "eyes_details": "Características de los ojos",
-    "mouth": "Boca y dientes",
+    "eye_color": "Color de Ojos",
+    "eyes_type": "Tipo de Ojos",
+    "eyes_details": "Detalles de Ojos",
+    "mouth": "Boca y Dientes",
     "ears": "Orejas",
     "horns": "Cuernos",
-    "skin_conditions": "Condiciones de la piel",
-    "face_skin_material": "Material de la piel de la cara",
-    "face_surface_pattern": "Patrón de piel",
-    "body_type": "Tipo de cuerpo",
-    "left_arm": "Brazo izquierdo",
-    "right_arm": "Brazo derecho",
-    "left_leg": "Pierna izquierda",
-    "right_leg": "Pierna derecha",
+    "skin_conditions": "Condición de la Piel",
+    "face_skin_material": "Material de la Piel Facial",
+    "face_surface_pattern": "Patrón de la Piel",
+    "body_type": "Tipo de Cuerpo",
+    "left_arm": "Brazo Izquierdo",
+    "right_arm": "Brazo Derecho",
+    "left_leg": "Pierna Izquierda",
+    "right_leg": "Pierna Derecha",
     "hair": "Cabello / Crecimiento",
-    "accessories": "Accesorios y marcas",
-    "rendering_style": "Estilo de renderizado",
-    "framing": "Encuadre y ángulo",
-    "outfit_preset": "Traje y equipo",
-    "backdrop": "Ambiente y fondo"
+    "accessories": "Accesorios y Marcas",
+    "rendering_style": "Estilo de Renderizado",
+    "framing": "Encuadre y Ángulo",
+    "outfit_preset": "Atuendo y Equipo",
+    "backdrop": "Atmósfera y Fondo"
   },
   "toolbar": {
-    "shuffle": "Barajar",
-    "generate": "Generar personaje",
-    "generating": "Diseñando…",
+    "shuffle": "Aleatorio",
+    "generate": "Generar Personaje",
+    "generating": "Generando…",
     "model": "Modelo",
     "credits": "Créditos"
   },
   "preview": {
-    "generating": "Generando tu personaje original…",
-    "emptyTitle": "Tu personaje original vive aquí.",
-    "emptySubtitleLine1": "Diseña y construye tu personaje único",
+    "generating": "Generando tu influencer IA…",
+    "emptyTitle": "Tu influencer IA vive aquí.",
+    "emptySubtitleLine1": "Diseña y construye tu influencer IA",
     "emptySubtitleLine2": "desde cero",
     "save": "Guardar",
-    "altGenerated": "Personaje original generado"
+    "altGenerated": "Personaje IA Generado"
   },
   "tags": {
     "showMore": "mostrar más",
     "hide": "ocultar"
   },
   "customPrompt": {
-    "placeholder": "Agregue detalles adicionales... p. ej. armadura cyberpunk, luz de borde épica, render UE5"
+    "placeholder": "Añade detalles adicionales… ej. iluminación cyberpunk neón, sombras dramáticas"
   },
   "gallery": {
-    "title": "Personajes Diseñados",
+    "title": "Generados",
     "countSuffix": "personajes",
-    "emptyText": "Los personajes generados\naparecerán aquí",
+    "emptyText": "Los personajes generados\naparecen aquí",
     "altPrefix": "Personaje",
     "download": "Descargar"
   },
   "errors": {
-    "generationFailed": "La generación fracasó. Por favor inténtalo de nuevo.",
-    "noActiveModels": "No hay modelos de imagen activos disponibles en este momento.",
+    "generationFailed": "Error en la generación. Por favor, inténtalo de nuevo.",
+    "noActiveModels": "No hay modelos de imagen activos disponibles. Por favor, inténtalo más tarde.",
     "loginRequired": "Inicia sesión para generar personajes."
   }
 }

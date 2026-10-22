@@ -48,11 +48,11 @@ export default function AdminShell({ user, children }) {
           </span>
 
           <Link
-            href="/studio"
+            href="/"
             prefetch={false}
-            className="inline-flex h-8 items-center justify-center rounded-md border border-line-subtle bg-white/[0.03] px-3 text-xs font-medium text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand/10 hover:text-brand select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-line-subtle bg-white/[0.03] px-3 text-xs font-medium text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand/10 hover:text-brand select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
-            返回 Studio
+            返回主页
           </Link>
 
           <Link

@@ -21,6 +21,184 @@ import ModelBrandLogo from './ModelBrandLogo';
 import { useModelDirectory } from '@/lib/hooks/useModelDirectory';
 import { inferStudioTabFromModel } from '@/lib/studio-routes';
 import { getModelById } from '@/lib/modelCenter/modelScreenerData';
+import { normalizeLocale, localizeStudioPath } from '@/lib/locales';
+
+const I18N_STRINGS = {
+  'zh-CN': {
+    models: '模型目录',
+    modelNotFound: '未找到该模型',
+    modelNotFoundDesc: (id) => `模型标识 "${id}" 不存在或已下线。`,
+    backToModels: '返回模型目录',
+    retry: '重试',
+    available: '可创作',
+    unavailable: '暂不可用',
+    price: '参考价格',
+    free: '免费',
+    creditsFrom: (p) => `${p} 算力点起`,
+    usageBased: '按量计费',
+    createNow: '立即创作',
+    browseOther: '查看其他模型',
+    maintenance: '该模型尚未上架或通道正在维护，当前无法发起生成任务。',
+    kpiCalls: '24h 调用',
+    kpiSuccess: '成功率',
+    kpiAvgLatency: '平均耗时',
+    kpiP90Latency: 'P90 耗时',
+    scopeNote: '统计范围：过去 24 小时的真实生成任务；无调用时显示 “—”。',
+    modelId: '模型 ID',
+    provider: '厂商',
+    category: '类别',
+    listingStatus: '上架状态',
+    listed: '已上架',
+    notListed: '未上架 / 维护中',
+    relatedModels: '同类模型',
+    noDesc: '该模型暂无补充说明。',
+  },
+  'zh-TW': {
+    models: '模型目錄',
+    modelNotFound: '未找到該模型',
+    modelNotFoundDesc: (id) => `模型標識 "${id}" 不存在或已下線。`,
+    backToModels: '返回模型目錄',
+    retry: '重試',
+    available: '可創作',
+    unavailable: '暫不可用',
+    price: '參考價格',
+    free: '免費',
+    creditsFrom: (p) => `${p} 算力點起`,
+    usageBased: '按量計費',
+    createNow: '立即創作',
+    browseOther: '查看其他模型',
+    maintenance: '該模型尚未上架或通道正在維護，當前無法發起生成任務。',
+    kpiCalls: '24h 調用',
+    kpiSuccess: '成功率',
+    kpiAvgLatency: '平均耗時',
+    kpiP90Latency: 'P90 耗時',
+    scopeNote: '統計範圍：過去 24 小時的真實生成任務；無調用時顯示 “—”。',
+    modelId: '模型 ID',
+    provider: '廠商',
+    category: '類別',
+    listingStatus: '上架狀態',
+    listed: '已上架',
+    notListed: '未上架 / 維護中',
+    relatedModels: '同類模型',
+    noDesc: '該模型暫無補充說明。',
+  },
+  'ja-JP': {
+    models: 'モデル一覧',
+    modelNotFound: 'モデルが見つかりません',
+    modelNotFoundDesc: (id) => `モデル「${id}」は存在しないか削除されました。`,
+    backToModels: 'モデル一覧に戻る',
+    retry: '再試行',
+    available: '作成可能',
+    unavailable: '利用不可',
+    price: '参考価格',
+    free: '無料',
+    creditsFrom: (p) => `${p} クレジット〜`,
+    usageBased: '従量課金',
+    createNow: '今すぐ作成',
+    browseOther: '他のモデルを見る',
+    maintenance: 'このモデルはまだ掲載されていないかメンテナンス中のため、現在生成できません。',
+    kpiCalls: '24h 呼出',
+    kpiSuccess: '成功率',
+    kpiAvgLatency: '平均所要時間',
+    kpiP90Latency: 'P90 レイテンシ',
+    scopeNote: '統計範囲：過去24時間の実際の生成タスク；呼び出しがない場合は「—」を表示。',
+    modelId: 'モデル ID',
+    provider: 'プロバイダー',
+    category: 'カテゴリ',
+    listingStatus: '掲載ステータス',
+    listed: '掲載中',
+    notListed: '未掲載 / メンテナンス中',
+    relatedModels: '関連モデル',
+    noDesc: 'このモデルの追加説明はありません。',
+  },
+  'ko-KR': {
+    models: '모델 디렉토리',
+    modelNotFound: '모델을 찾을 수 없습니다',
+    modelNotFoundDesc: (id) => `모델 "${id}"이(가) 존재하지 않거나 제거되었습니다.`,
+    backToModels: '모델 목록으로 돌아가기',
+    retry: '다시 시도',
+    available: '창작 가능',
+    unavailable: '사용 불가',
+    price: '예상 가격',
+    free: '무료',
+    creditsFrom: (p) => `${p} 크레딧부터`,
+    usageBased: '종량 과금',
+    createNow: '지금 생성',
+    browseOther: '다른 모델 보기',
+    maintenance: '이 모델은 아직 등록되지 않았거나 유지보수 중이므로 현재 생성할 수 없습니다.',
+    kpiCalls: '24h 호출',
+    kpiSuccess: '성공률',
+    kpiAvgLatency: '평균 지연 시간',
+    kpiP90Latency: 'P90 지연 시간',
+    scopeNote: '통계 범위: 지난 24시간 동안의 실제 생성 작업, 호출이 없으면 "—"로 표시됩니다.',
+    modelId: '모델 ID',
+    provider: '제공자',
+    category: '카테고리',
+    listingStatus: '등록 상태',
+    listed: '등록됨',
+    notListed: '미등록 / 유지보수 중',
+    relatedModels: '관련 모델',
+    noDesc: '이 모델에 대한 추가 설명이 없습니다.',
+  },
+  es: {
+    models: 'Modelos',
+    modelNotFound: 'Modelo no encontrado',
+    modelNotFoundDesc: (id) => `El modelo "${id}" no existe o fue retirado.`,
+    backToModels: 'Volver a modelos',
+    retry: 'Reintentar',
+    available: 'Disponible',
+    unavailable: 'No disponible',
+    price: 'Precio ref.',
+    free: 'Gratis',
+    creditsFrom: (p) => `desde ${p} créditos`,
+    usageBased: 'Pago por uso',
+    createNow: 'Crear ahora',
+    browseOther: 'Explorar otros modelos',
+    maintenance: 'Este modelo no está listado aún o está en mantenimiento temporal.',
+    kpiCalls: 'Llamadas 24h',
+    kpiSuccess: 'Tasa de éxito',
+    kpiAvgLatency: 'Latencia prom.',
+    kpiP90Latency: 'Latencia P90',
+    scopeNote: 'Alcance: tareas reales en las últimas 24h; “—” indica sin llamadas.',
+    modelId: 'ID del modelo',
+    provider: 'Proveedor',
+    category: 'Categoría',
+    listingStatus: 'Estado',
+    listed: 'Listado',
+    notListed: 'No listado / mantenimiento',
+    relatedModels: 'Modelos relacionados',
+    noDesc: 'No hay descripción adicional disponible para este modelo.',
+  },
+  en: {
+    models: 'Models',
+    modelNotFound: 'Model Not Found',
+    modelNotFoundDesc: (id) => `Model "${id}" does not exist or has been removed.`,
+    backToModels: 'Back to models',
+    retry: 'Retry',
+    available: 'Available',
+    unavailable: 'Unavailable',
+    price: 'Price',
+    free: 'Free',
+    creditsFrom: (p) => `${p} credits from`,
+    usageBased: 'Usage-based',
+    createNow: 'Create now',
+    browseOther: 'Browse other models',
+    maintenance: 'This model is not listed yet or its channel is under maintenance, so generation is unavailable.',
+    kpiCalls: '24h calls',
+    kpiSuccess: 'Success rate',
+    kpiAvgLatency: 'Avg latency',
+    kpiP90Latency: 'P90 latency',
+    scopeNote: 'Scope: actual generation tasks in the last 24 hours; “—” means no calls.',
+    modelId: 'Model ID',
+    provider: 'Provider',
+    category: 'Category',
+    listingStatus: 'Listing status',
+    listed: 'Listed',
+    notListed: 'Not listed / maintenance',
+    relatedModels: 'Related models',
+    noDesc: 'No additional description is available for this model.',
+  },
+};
 
 function formatCalls(value) {
   const count = Number(value);
@@ -44,16 +222,17 @@ function categoryTab(model) {
   return 'image';
 }
 
-function formatPrice(model, isChinese) {
+function formatPrice(model, t) {
   if (!model) return '—';
-  if (model.pricingType === 'free') return isChinese ? '免费' : 'Free';
+  if (model.pricingType === 'free') return t.free;
   const price = Number(model.creditsPrice);
-  if (Number.isFinite(price) && price > 0) return isChinese ? `${price} 算力点起` : `${price} credits from`;
-  return isChinese ? '按量计费' : 'Usage-based';
+  if (Number.isFinite(price) && price > 0) return t.creditsFrom(price);
+  return t.usageBased;
 }
 
 export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
-  const isChinese = Boolean(locale?.includes('zh'));
+  const normLocale = normalizeLocale(locale);
+  const t = I18N_STRINGS[normLocale] || I18N_STRINGS.en;
   const { models, telemetryById, loading, error, reload } = useModelDirectory({ range: '24h' });
   const [copied, setCopied] = useState(false);
 
@@ -80,11 +259,9 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
     }
   };
 
-  const screenerUrl = isChinese ? '/zh/models' : '/models';
+  const screenerUrl = localizeStudioPath('/models', locale);
   const targetTab = inferStudioTabFromModel(active?.id || meta?.id || modelId, categoryTab(active || meta));
-  const studioUrl = isChinese
-    ? `/zh/studio?tab=${targetTab}&model=${encodeURIComponent(modelId)}`
-    : `/studio?tab=${targetTab}&model=${encodeURIComponent(modelId)}`;
+  const studioUrl = localizeStudioPath(`/studio?tab=${targetTab}&model=${encodeURIComponent(modelId)}`, locale);
 
   if (loading) {
     return (
@@ -104,17 +281,15 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
         <StudioHeader locale={locale} activeTab="models" />
         <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
           <Cpu className="h-8 w-8 text-ink-muted" />
-          <h1 className="mt-4 text-2xl font-bold">{isChinese ? '未找到该模型' : 'Model Not Found'}</h1>
+          <h1 className="mt-4 text-2xl font-bold">{t.modelNotFound}</h1>
           <p className="mt-2 max-w-md text-sm text-ink-muted">
-            {isChinese
-              ? `模型标识 "${modelId}" 不存在或已下线。`
-              : `Model "${modelId}" does not exist or has been removed.`}
+            {t.modelNotFoundDesc(modelId)}
           </p>
           <Link
             href={screenerUrl}
             className="mt-6 rounded-xl bg-brand px-5 py-2.5 text-xs font-bold text-ink-on-accent"
           >
-            {isChinese ? '返回模型目录' : 'Back to models'}
+            {t.backToModels}
           </Link>
         </div>
       </div>
@@ -123,8 +298,8 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
 
   const name = active?.displayName || meta?.name || String(modelId);
   const description = active?.description
-    || (isChinese ? meta?.description : meta?.descriptionEn)
-    || (isChinese ? '该模型暂无补充说明。' : 'No additional description is available for this model.');
+    || (normLocale.startsWith('zh') ? meta?.description : meta?.descriptionEn)
+    || t.noDesc;
   const provider = active?.provider || meta?.provider || 'SupDance';
   const category = active?.category || meta?.category || 'image';
 
@@ -140,7 +315,7 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
         <div className="mb-6 flex items-center gap-2 font-mono text-xs text-ink-muted">
           <Link href={screenerUrl} className="flex items-center gap-1.5 transition hover:text-ink">
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>{isChinese ? '模型目录' : 'Models'}</span>
+            <span>{t.models}</span>
           </Link>
           <ChevronRight className="h-3 w-3" />
           <span>{provider}</span>
@@ -157,7 +332,7 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 font-bold text-ink-on-accent"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              {isChinese ? '重试' : 'Retry'}
+              {t.retry}
             </button>
           </div>
         ) : null}
@@ -180,7 +355,7 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
                         ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600'
                         : 'border-amber-500/30 bg-amber-500/10 text-amber-600'
                     }`}>
-                      {available ? (isChinese ? '可创作' : 'Available') : (isChinese ? '暂不可用' : 'Unavailable')}
+                      {available ? t.available : t.unavailable}
                     </span>
                   </div>
                   <p className="mt-1 font-mono text-xs text-ink-muted">
@@ -192,15 +367,15 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
 
               <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
                 <div className="rounded-2xl border border-line bg-canvas px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-wider text-ink-muted">{isChinese ? '参考价格' : 'Price'}</p>
-                  <p className="mt-1 font-mono text-lg font-black text-ink">{formatPrice(active, isChinese)}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ink-muted">{t.price}</p>
+                  <p className="mt-1 font-mono text-lg font-black text-ink">{formatPrice(active, t)}</p>
                 </div>
                 {available ? (
                   <Link
                     href={studioUrl}
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-xs font-bold text-ink-on-accent shadow-sm"
                   >
-                    {isChinese ? '立即创作' : 'Create now'}
+                    {t.createNow}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 ) : (
@@ -208,7 +383,7 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
                     href={screenerUrl}
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-line px-5 py-3 text-xs font-bold text-ink-muted"
                   >
-                    {isChinese ? '查看其他模型' : 'Browse other models'}
+                    {t.browseOther}
                   </Link>
                 )}
               </div>
@@ -218,19 +393,17 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
               <div className="mt-6 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-700">
                 <Shield className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>
-                  {isChinese
-                    ? '该模型尚未上架或通道正在维护，当前无法发起生成任务。'
-                    : 'This model is not listed yet or its channel is under maintenance, so generation is unavailable.'}
+                  {t.maintenance}
                 </span>
               </div>
             ) : null}
 
             <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
-                { label: isChinese ? '24h 调用' : '24h calls', value: stats ? formatCalls(stats.totalCalls) : '—', icon: Activity },
-                { label: isChinese ? '成功率' : 'Success rate', value: stats && Number(stats.totalCalls) > 0 ? `${Number(stats.successRate).toFixed(1)}%` : '—', icon: Shield },
-                { label: isChinese ? '平均耗时' : 'Avg latency', value: stats ? formatLatency(stats.avgDurationMs) : '—', icon: Clock },
-                { label: isChinese ? 'P90 耗时' : 'P90 latency', value: stats ? formatLatency(stats.p90DurationMs) : '—', icon: Zap },
+                { label: t.kpiCalls, value: stats ? formatCalls(stats.totalCalls) : '—', icon: Activity },
+                { label: t.kpiSuccess, value: stats && Number(stats.totalCalls) > 0 ? `${Number(stats.successRate).toFixed(1)}%` : '—', icon: Shield },
+                { label: t.kpiAvgLatency, value: stats ? formatLatency(stats.avgDurationMs) : '—', icon: Clock },
+                { label: t.kpiP90Latency, value: stats ? formatLatency(stats.p90DurationMs) : '—', icon: Zap },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -245,16 +418,14 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
               })}
             </div>
             <p className="mt-3 text-[11px] text-ink-muted">
-              {isChinese
-                ? '统计范围：过去 24 小时的真实生成任务；无调用时显示 “—”。'
-                : 'Scope: actual generation tasks in the last 24 hours; “—” means no calls.'}
+              {t.scopeNote}
             </p>
           </div>
 
           <div className="border-t border-line bg-canvas/60 px-6 py-4 sm:px-8">
             <dl className="grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <dt className="text-ink-muted">{isChinese ? '模型 ID' : 'Model ID'}</dt>
+                <dt className="text-ink-muted">{t.modelId}</dt>
                 <dd className="mt-1 flex items-center gap-2 font-mono text-ink">
                   <span className="truncate">{String(modelId)}</span>
                   <button type="button" onClick={handleCopyId} className="text-ink-muted transition hover:text-ink" aria-label="Copy model ID">
@@ -263,17 +434,17 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
                 </dd>
               </div>
               <div>
-                <dt className="text-ink-muted">{isChinese ? '厂商' : 'Provider'}</dt>
+                <dt className="text-ink-muted">{t.provider}</dt>
                 <dd className="mt-1 text-ink">{provider}</dd>
               </div>
               <div>
-                <dt className="text-ink-muted">{isChinese ? '类别' : 'Category'}</dt>
+                <dt className="text-ink-muted">{t.category}</dt>
                 <dd className="mt-1 text-ink">{category}</dd>
               </div>
               <div>
-                <dt className="text-ink-muted">{isChinese ? '上架状态' : 'Listing status'}</dt>
+                <dt className="text-ink-muted">{t.listingStatus}</dt>
                 <dd className={`mt-1 font-semibold ${available ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  {available ? (isChinese ? '已上架' : 'Listed') : (isChinese ? '未上架 / 维护中' : 'Not listed / maintenance')}
+                  {available ? t.listed : t.notListed}
                 </dd>
               </div>
             </dl>
@@ -284,13 +455,11 @@ export default function ModelDetailPageClient({ modelId, locale = 'en' }) {
           <section className="mt-10">
             <div className="mb-4 flex items-center gap-2">
               <Layers className="h-4 w-4 text-brand" />
-              <h2 className="text-lg font-bold text-ink">{isChinese ? '同类模型' : 'Related models'}</h2>
+              <h2 className="text-lg font-bold text-ink">{t.relatedModels}</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {relatedModels.map((item) => {
-                const url = isChinese
-                  ? `/zh/models/${encodeURIComponent(item.id)}`
-                  : `/models/${encodeURIComponent(item.id)}`;
+                const url = localizeStudioPath(`/models/${encodeURIComponent(item.id)}`, locale);
                 return (
                   <Link
                     key={item.id}

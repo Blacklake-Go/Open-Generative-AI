@@ -822,6 +822,22 @@ export const MEGA_NAV_CATEGORIES = [
     ],
   },
   {
+    id: 'short-drama-workshop',
+    tabId: null,
+    label: {
+      en: 'Drama Workshop',
+      'zh-CN': '短剧工作坊',
+      'zh-TW': '短劇工作坊',
+      'ja-JP': 'ショートドラマ工房',
+      'ko-KR': '숏드라마 워크숍',
+      es: 'Taller de Drama Corto',
+    },
+    href: '/lab',
+    badge: 'NEW',
+    features: [],
+    models: [],
+  },
+  {
     id: 'community',
     tabId: null,
     label: {
@@ -949,6 +965,9 @@ export function getMegaNavCategories(locale = 'en') {
     }
     if (rawHref.startsWith('/community')) {
       return rawHref.replace('/community', communityBase);
+    }
+    if (rawHref === '/lab' || rawHref.startsWith('/lab/')) {
+      return isZh ? '/zh/lab' : '/lab';
     }
     return rawHref;
   };

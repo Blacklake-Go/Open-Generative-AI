@@ -72,7 +72,7 @@
     "dropHereHint": "画像、ビデオ、オーディオファイル",
     "vadooPromo": "制限なしのAI画像とビデオ → YouTube ShortsとTikTokへ自動公開、収益化 ↗",
     "dismiss": "閉じる",
-    "about": "About",
+    "about": "概要",
     "modelDirectoryUnavailable": "モデルカタログは現在利用できません。一部機能が制限される場合があります。",
     "retry": "再試行"
   },
@@ -218,7 +218,7 @@
   },
   "userMenu": {
     "displayNameFallback": "クリエイター",
-    "freePlan": "FREE",
+    "freePlan": "無料プラン",
     "vipPlan": "VIP会員",
     "discountTag": "最大82%OFF",
     "notificationsTitle": "通知センター",

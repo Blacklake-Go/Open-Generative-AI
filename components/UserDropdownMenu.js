@@ -622,7 +622,7 @@ export default function UserDropdownMenu({
                   href={profileUrl}
                   onClick={() => setIsMenuOpen(false)}
                   className="flex min-w-0 items-center gap-2.5 cursor-pointer group"
-                  title={activeLocale.startsWith('zh') ? '进入个人主页' : 'Go to Profile'}
+                  title={t.goToProfile || 'Profile'}
                 >
                   <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-surface-raised flex items-center justify-center text-base font-bold text-brand shadow-elevation-1">
                     <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
@@ -719,7 +719,7 @@ export default function UserDropdownMenu({
                 >
                   <div className="flex items-center gap-2.5">
                     <Sparkles className="size-4 text-brand transition-transform group-hover:scale-110" />
-                    <span>{activeLocale.startsWith('zh') ? '个人主页' : 'Creator Profile'}</span>
+                    <span>{t.goToProfile || 'Creator Profile'}</span>
                   </div>
                   <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
                 </Link>

@@ -114,3 +114,19 @@ test('Mobile OAuth triggers perform full-page redirection instead of popup', asy
   assert.match(profileTab, /window\.location\.assign\(url\)/);
 });
 
+test('Douyin OAuth redirect URI, token error assertions, and userinfo payload handling', async () => {
+  const content = await readCode('lib/oauth.js');
+  // Canonical redirect URI on supdance.com domains
+  assert.match(content, /if \(provider === "douyin"\)/);
+  assert.match(content, /https:\/\/www\.supdance\.com\/api\/auth\/oauth\/douyin\/callback/);
+  // Authorize URL without trailing slash & scopeDelimiter
+  assert.match(content, /authorizeUrl:\s*["']https:\/\/open\.douyin\.com\/platform\/oauth\/connect["']/);
+  assert.match(content, /scopeDelimiter:\s*','/);
+  // Token error checking handles error_code and data.error_code
+  assert.match(content, /data\.data\?\.error_code/);
+  // Userinfo error_code evaluates Number(errCode) !== 0 to prevent "0" string bug
+  assert.match(content, /Number\(errCode\) !== 0/);
+  // High-res avatar preference
+  assert.match(content, /avatar_larger/);
+});
+

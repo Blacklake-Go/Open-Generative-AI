@@ -89,6 +89,15 @@ import ko from "../messages/ko-KR/imageStudio.json";
 import zhTw from "../messages/zh-TW/imageStudio.json";
 import es from "../messages/es-ES/imageStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const IMAGE_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import {
   PROVIDER_LOGOS,
   invertLogos,
@@ -1134,7 +1143,7 @@ export default function ImageStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, es, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, IMAGE_MESSAGES, locale);
   const LEGACY_PERSIST_KEY = "hg_image_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {

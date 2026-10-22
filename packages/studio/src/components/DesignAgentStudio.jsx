@@ -12,6 +12,15 @@ import zhTwCopy from '../messages/zh-TW/agentStudio.json';
 import esCopy from '../messages/es-ES/agentStudio.json';
 import { resolveCopy } from '../i18nUtils';
 
+const DESIGN_AGENT_MESSAGES = {
+  'zh-CN': zhCopy,
+  'ja-JP': jaCopy,
+  'ko-KR': koCopy,
+  'zh-TW': zhTwCopy,
+  es: esCopy,
+  'es-ES': esCopy,
+};
+
 export default function DesignAgentStudio({
   apiKey,
   locale = 'en',
@@ -25,14 +34,7 @@ export default function DesignAgentStudio({
   onGenerationError,
 }) {
   const [userData, setUserData] = useState(null);
-  const copy = resolveCopy(enCopy, {
-    'zh-CN': zhCopy,
-    'ja-JP': jaCopy,
-    'ko-KR': koCopy,
-    'zh-TW': zhTwCopy,
-    es: esCopy,
-    'es-ES': esCopy,
-  }, locale);
+  const copy = resolveCopy(enCopy, DESIGN_AGENT_MESSAGES, locale);
 
   // Written synchronously during render (not inside an effect below) so it's already in
   // localStorage before CreativeCanvas's own mount effects read it — passive effects run

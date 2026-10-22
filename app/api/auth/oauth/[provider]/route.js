@@ -109,7 +109,7 @@ export async function GET(request, { params }) {
     return new NextResponse(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   }
 
-  const redirectUri = getRedirectUri(request, provider);
+  const redirectUri = getRedirectUri(request, provider, resolved);
   const verifier = createPkceVerifier();
   const state = createOAuthState({
     provider,
