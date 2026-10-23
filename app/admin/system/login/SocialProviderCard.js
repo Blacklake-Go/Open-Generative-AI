@@ -151,7 +151,11 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
 
   const keyDefs = provider.secretKeys || KEY_FALLBACK;
   const fullRedirectUri =
-    provider.redirectUri || `${origin || 'https://www.Supdance.com'}${provider.callbackPath || ''}`;
+    provider.redirectUri || (
+      provider.id === 'douyin' || provider.id === 'google' || provider.id === 'instagram'
+        ? `https://www.supdance.com${provider.callbackPath || ''}`
+        : `${origin || 'https://www.supdance.com'}${provider.callbackPath || ''}`
+    );
   const ProviderIcon =
     ICON_MAP[provider.id] ||
     ICON_MAP[provider.id?.toLowerCase()] ||
@@ -461,6 +465,20 @@ export default function SocialProviderCard({ provider, enabled, configured, onTo
               </code>
               {provider.callbackHint && (
                 <p className="mt-1.5 text-caption leading-4 text-gray-500">{provider.callbackHint}</p>
+              )}
+              {provider.id === 'douyin' && (
+                <div className="mt-2.5 rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-xs text-amber-200/90 leading-relaxed">
+                  <div className="font-semibold text-amber-300 mb-1 flex items-center gap-1.5">
+                    <span>⚠️ 抖音开放平台“非法重定向链接”排查建议</span>
+                  </div>
+                  <p>
+                    抖音严格比对发起授权的地址与开放平台【开发配置 ➔ 授权回调地址】。抖音支持添加最多 10 条地址，强烈建议在开放平台同时添加以下两条（带与不带 www）：
+                  </p>
+                  <div className="mt-2 space-y-1 font-mono text-[11px] text-white/90">
+                    <div className="bg-black/40 px-2 py-1 rounded border border-white/10 select-all">https://www.supdance.com/api/auth/oauth/douyin/callback</div>
+                    <div className="bg-black/40 px-2 py-1 rounded border border-white/10 select-all">https://supdance.com/api/auth/oauth/douyin/callback</div>
+                  </div>
+                </div>
               )}
             </div>
 

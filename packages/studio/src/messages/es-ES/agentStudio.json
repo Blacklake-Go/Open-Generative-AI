@@ -1,32 +1,32 @@
 {
   "tabs": {
     "templates": "Plantillas",
-    "my-agents": "Mis agentes",
+    "my-agents": "Mis Agentes",
     "my-chats": "Mis Chats"
   },
   "headings": {
     "agents": "Agentes",
-    "createAgent": "Crear agente"
+    "createAgent": "Crear Agente"
   },
   "buttons": {
     "back": "Agentes",
     "create": "Crear",
-    "createAgentSubmit": "Crear agente",
+    "createAgentSubmit": "Crear Agente",
     "creating": "Creando...",
     "send": "Enviar",
-    "retry": "Rever",
-    "browseTemplates": "Explorar plantillas"
+    "retry": "Reintentar",
+    "browseTemplates": "Explorar Plantillas"
   },
   "labels": {
     "name": "Nombre",
     "description": "Descripción",
-    "systemPrompt": "Aviso del sistema",
-    "welcomeMessage": "Mensaje de bienvenida (opcional)"
+    "systemPrompt": "Prompt del Sistema",
+    "welcomeMessage": "Mensaje de Bienvenida (opcional)"
   },
   "placeholders": {
-    "name": "p.ej. Subtítulos Crafter Pro",
+    "name": "ej. Creador de Subtítulos Pro",
     "description": "¿En qué ayuda este agente?",
-    "systemPrompt": "Eres un asistente útil que...",
+    "systemPrompt": "Eres un asistente servicial que...",
     "welcomeMessage": "¡Hola! ¿Cómo puedo ayudarte hoy?",
     "chatInput": "Envía un mensaje a este agente..."
   },
@@ -35,24 +35,29 @@
     "noAgents": "No se encontraron agentes"
   },
   "errors": {
-    "loadFailed": "No se pudo cargar.",
-    "loadAgentFailed": "No se pudo cargar el agente",
-    "sendFailed": "No se pudo enviar el mensaje",
-    "createFailed": "No se pudo crear el agente"
+    "loadFailed": "Error al cargar.",
+    "loadAgentFailed": "Error al cargar el agente",
+    "sendFailed": "Error al enviar el mensaje",
+    "createFailed": "Error al crear el agente"
   },
   "card": {
-    "defaultCategory": "Asistente de IA",
+    "defaultCategory": "Asistente IA",
     "unnamedAgent": "Agente sin nombre",
     "byPrefix": "Por",
-    "unknownAgent": "Agente desconocido",
-    "newChat": "Nuevo chat",
+    "unknownAgent": "Agente Desconocido",
+    "newChat": "Nuevo Chat",
     "msgsSuffix": "mensajes"
   },
   "time": {
-    "justNow": "En este momento",
-    "minutesAgo": "Hace {n} min",
-    "hoursAgo": "Hace {n}h",
-    "daysAgo": "Hace {n}d"
+    "justNow": "hace un momento",
+    "minutesAgo": "hace {n}m",
+    "hoursAgo": "hace {n}h",
+    "daysAgo": "hace {n}d"
+  },
+  "auth": {
+    "heading": "Inicia sesión para usar los agentes",
+    "description": "Las plantillas, tus agentes y el historial de chats están vinculados a tu cuenta de SupDance. Inicia sesión.",
+    "cta": "Iniciar sesión"
   },
   "unavailable": {
     "title": "Creative Agent no está disponible temporalmente",

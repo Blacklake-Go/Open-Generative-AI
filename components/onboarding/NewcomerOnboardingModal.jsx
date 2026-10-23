@@ -23,6 +23,8 @@ import {
   Film,
 } from 'lucide-react';
 import { OCCUPATIONS, PURPOSES } from '@/lib/onboarding/schema';
+import { optionLabel, optionDesc } from '@/lib/onboarding/copy';
+import { normalizeLocale } from '@/lib/locales';
 import { cn } from '@/lib/utils';
 
 // Lucide 图标映射表
@@ -84,7 +86,7 @@ export default function NewcomerOnboardingModal({
   onComplete,
   onClose,
 }) {
-  const isZh = String(locale).toLowerCase().startsWith('zh');
+  const normLocale = normalizeLocale(locale);
 
   // 当前步骤：1 = 职业领域，2 = 创作场景
   const [step, setStep] = useState(initialStep);
@@ -103,34 +105,142 @@ export default function NewcomerOnboardingModal({
   const animatedCredits = useCountUp(rewardSuccess ? targetReward : 0, 800);
   const animatedTotal = 40 + animatedCredits;
 
-  const copy = {
-    appName: 'SupDance',
-    welcome: isZh ? '欢迎来到 SupDance' : 'Welcome to SupDance',
-    step1Title: isZh ? '你主要从事什么领域的工作？' : 'What kind of work do you do?',
-    step1Subtitle: isZh
-      ? '帮助我们了解你的专业背景，以便提供更适合你的工具与内容。'
-      : 'Help us understand you and improve our tools and content.',
-    step2Title: isZh ? '你打算用 SupDance 创作什么？' : 'What will you create with SupDance?',
-    step2Subtitle: isZh
-      ? '选择你的主要创作场景，以便我们更好地满足你的创作需求。'
-      : 'Choose your main creative use so we can better understand your needs.',
-    footerHint: isZh ? '选择最符合你当前需求的一项' : 'Choose the one that fits best',
-    next: isZh ? '下一步' : 'Next',
-    back: isZh ? '上一步' : 'Back',
-    finish: isZh ? '完成并开始创作' : 'Finish and continue',
-    skip: isZh ? '跳过并直接体验' : 'Skip for now',
-    otherPlaceholder: isZh ? '请用简短文字描述你的领域或方向（选填）' : 'Describe it in your own words (optional)',
-    rewardTitle: isZh ? '新手创作算力已激活' : 'Creator Credits Activated',
-    rewardSubtitle: isZh
-      ? '专属创作者空间已就绪，50 算力已注入您的账户'
-      : 'Your creative workspace is ready, 50 credits have been added to your account',
-    rewardBase: isZh ? '基础注册 40' : 'Sign-up 40',
-    rewardBonus: isZh ? '入驻礼遇' : 'Onboarding',
-    rewardTotal: isZh ? '总额度' : 'Total',
-    rewardBenefit1: isZh ? '可免费生成 1 条高清视频' : 'Generate 1 high-res AI video',
-    rewardBenefit2: isZh ? '或 9 张 Flux 高清原画' : 'Or 9 Flux master-quality images',
-    startCreation: isZh ? '即刻开启 AI 创作' : 'Start Creating Now',
+  const ONBOARDING_MODAL_STRINGS = {
+    en: {
+      appName: 'SupDance',
+      welcome: 'Welcome to SupDance',
+      step1Title: 'What kind of work do you do?',
+      step1Subtitle: 'Help us understand your background to provide tools and content tailored for you.',
+      step2Title: 'What will you create with SupDance?',
+      step2Subtitle: 'Choose your primary creative scenario so we can best meet your creative needs.',
+      footerHint: 'Choose the option that best fits your needs',
+      next: 'Next',
+      back: 'Back',
+      finish: 'Finish & Start Creating',
+      skip: 'Skip for now',
+      otherPlaceholder: 'Describe your field or focus in a few words (optional)',
+      rewardTitle: 'Creator Credits Activated',
+      rewardSubtitle: 'Your creative workspace is ready, 50 credits have been added to your account',
+      rewardBase: 'Sign-up 40',
+      rewardBonus: 'Onboarding',
+      rewardTotal: 'Total',
+      rewardBenefit1: 'Generate 1 high-res AI video for free',
+      rewardBenefit2: 'Or 9 Flux master-quality images',
+      startCreation: 'Start Creating Now',
+    },
+    'zh-CN': {
+      appName: 'SupDance',
+      welcome: '欢迎来到 SupDance',
+      step1Title: '你主要从事什么领域的工作？',
+      step1Subtitle: '帮助我们了解你的专业背景，以便提供更适合你的工具与内容。',
+      step2Title: '你打算用 SupDance 创作什么？',
+      step2Subtitle: '选择你的主要创作场景，以便我们更好地满足你的创作需求。',
+      footerHint: '选择最符合你当前需求的一项',
+      next: '下一步',
+      back: '上一步',
+      finish: '完成并开始创作',
+      skip: '跳过并直接体验',
+      otherPlaceholder: '请用简短文字描述你的领域或方向（选填）',
+      rewardTitle: '新手创作算力已激活',
+      rewardSubtitle: '专属创作者空间已就绪，50 算力已注入您的账户',
+      rewardBase: '基础注册 40',
+      rewardBonus: '入驻礼遇',
+      rewardTotal: '总额度',
+      rewardBenefit1: '可免费生成 1 条高清视频',
+      rewardBenefit2: '或 9 张 Flux 高清原画',
+      startCreation: '即刻开启 AI 创作',
+    },
+    'zh-TW': {
+      appName: 'SupDance',
+      welcome: '歡迎來到 SupDance',
+      step1Title: '你主要從事什麼領域的工作？',
+      step1Subtitle: '幫助我們了解你的專業背景，以便提供更適合你的工具與內容。',
+      step2Title: '你打算用 SupDance 創作什麼？',
+      step2Subtitle: '選擇你的主要創作場景，以便我們更好地滿足你的創作需求。',
+      footerHint: '選擇最符合你目前需求的一項',
+      next: '下一步',
+      back: '上一步',
+      finish: '完成並開始創作',
+      skip: '略過並直接體驗',
+      otherPlaceholder: '請用簡短文字描述你的領域或方向（選填）',
+      rewardTitle: '新手創作算力已啟動',
+      rewardSubtitle: '專屬創作者空間已就緒，50 算力已注入您的帳戶',
+      rewardBase: '基礎註冊 40',
+      rewardBonus: '入駐禮遇',
+      rewardTotal: '總額度',
+      rewardBenefit1: '可免費生成 1 條高清影片',
+      rewardBenefit2: '或 9 張 Flux 高清原畫',
+      startCreation: '即刻開啟 AI 創作',
+    },
+    'ja-JP': {
+      appName: 'SupDance',
+      welcome: 'SupDance へようこそ',
+      step1Title: '主にどのような分野でお仕事をされていますか？',
+      step1Subtitle: '最適なツールやコンテンツをご案内するため、ご専門をお聞かせください。',
+      step2Title: 'SupDance で何を創作したいですか？',
+      step2Subtitle: '主な創作目的をお選びいただくことで、最適な機能をご提案します。',
+      footerHint: '最も当てはまるものを1つ選択してください',
+      next: '次へ',
+      back: '戻る',
+      finish: '完了して創作を開始',
+      skip: 'スキップして体験',
+      otherPlaceholder: '専門分野や創作内容を簡単にご記入ください（任意）',
+      rewardTitle: 'スターター創作クレジットが付与されました',
+      rewardSubtitle: '専用ワークスペースの準備が整いました。50 クレジットが追加されました',
+      rewardBase: '新規登録 40',
+      rewardBonus: 'オンボーディング特典',
+      rewardTotal: '合計',
+      rewardBenefit1: '高画質 AI 動画 1 本を無料生成可能',
+      rewardBenefit2: 'または Flux 高精細画像 9 枚',
+      startCreation: '今すぐ AI 創作を開始',
+    },
+    'ko-KR': {
+      appName: 'SupDance',
+      welcome: 'SupDance에 오신 것을 환영합니다',
+      step1Title: '주로 어떤 분야에서 일하시나요?',
+      step1Subtitle: '전문 분야를 파악하여 더 적합한 도구와 콘텐츠를 제공해 드릴 수 있습니다.',
+      step2Title: 'SupDance로 무엇을 만들고 싶으신가요?',
+      step2Subtitle: '창작 요구에 맞춤형 지원을 위해 주요 창작 목적을 선택해 주세요.',
+      footerHint: '가장 적합한 항목 하나를 선택하세요',
+      next: '다음',
+      back: '이전',
+      finish: '완료하고 창작 시작',
+      skip: '건너뛰고 바로 체험',
+      otherPlaceholder: '귀하의 분야나 방향을 간단히 설명해 주세요 (선택 사항)',
+      rewardTitle: '신규 크리에이터 크레딧이 활성화되었습니다',
+      rewardSubtitle: '크리에이터 작업 공간이 준비되었습니다. 50 크레딧이 지급되었습니다',
+      rewardBase: '기본 가입 40',
+      rewardBonus: '온보딩 보너스',
+      rewardTotal: '총합',
+      rewardBenefit1: '고화질 AI 비디오 1개 무료 생성 가능',
+      rewardBenefit2: '또는 Flux 고화질 이미지 9장',
+      startCreation: '지금 AI 창작 시작하기',
+    },
+    es: {
+      appName: 'SupDance',
+      welcome: 'Bienvenido a SupDance',
+      step1Title: '¿En qué área trabajas principalmente?',
+      step1Subtitle: 'Ayúdanos a conocer tu perfil profesional para ofrecerte mejores herramientas y contenidos.',
+      step2Title: '¿Qué te gustaría crear con SupDance?',
+      step2Subtitle: 'Selecciona tus objetivos principales para que podamos adaptarnos a tus necesidades.',
+      footerHint: 'Selecciona la opción que mejor se adapte',
+      next: 'Siguiente',
+      back: 'Atrás',
+      finish: 'Finalizar y empezar a crear',
+      skip: 'Omitir y explorar',
+      otherPlaceholder: 'Describe brevemente tu área o enfoque (opcional)',
+      rewardTitle: 'Créditos de creación activados',
+      rewardSubtitle: 'Tu espacio creativo está listo, se han añadido 50 créditos a tu cuenta',
+      rewardBase: 'Registro 40',
+      rewardBonus: 'Bienvenida',
+      rewardTotal: 'Total',
+      rewardBenefit1: 'Genera 1 video de alta definición gratis',
+      rewardBenefit2: 'O 9 imágenes de alta calidad con Flux',
+      startCreation: 'Comenzar a crear ahora',
+    },
   };
+
+  const copy = ONBOARDING_MODAL_STRINGS[normLocale] || ONBOARDING_MODAL_STRINGS.en;
 
   const handleSkip = async () => {
     if (busy) return;
@@ -379,8 +489,8 @@ export default function NewcomerOnboardingModal({
             ? selectedOccupation === item.code
             : selectedPurpose === item.code;
 
-          const title = isZh ? item.label : (item.labelEn || item.label);
-          const desc = isZh ? item.desc : (item.descEn || item.desc);
+          const title = optionLabel(item, normLocale);
+          const desc = optionDesc(item, normLocale);
 
           return (
             <button

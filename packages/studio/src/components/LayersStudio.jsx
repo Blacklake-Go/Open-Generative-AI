@@ -19,6 +19,15 @@ import ko from "../messages/ko-KR/layersStudio.json";
 import zhTw from "../messages/zh-TW/layersStudio.json";
 import es from "../messages/es-ES/layersStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const LAYERS_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import { isModelActive } from "../models.js";
 
 // Upscale Models Definition from schema_data.json
@@ -94,7 +103,7 @@ export default function LayersStudio({
   onGenerationError,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, LAYERS_MESSAGES, locale);
   const availableUpscaleModels = UPSCALE_MODELS.filter((model) => isModelActive(model.id));
 
   // Main canvas & image state

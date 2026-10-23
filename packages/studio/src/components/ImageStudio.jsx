@@ -89,6 +89,15 @@ import ko from "../messages/ko-KR/imageStudio.json";
 import zhTw from "../messages/zh-TW/imageStudio.json";
 import es from "../messages/es-ES/imageStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const IMAGE_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import {
   PROVIDER_LOGOS,
   invertLogos,
@@ -1134,7 +1143,7 @@ export default function ImageStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, es, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, IMAGE_MESSAGES, locale);
   const LEGACY_PERSIST_KEY = "hg_image_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {
@@ -1510,6 +1519,7 @@ export default function ImageStudio({
     ? getModelMediaCapabilities(referenceVariant.model).image.maxItems
     : 1;
   const activeI2IModelInfo = imageMode ? getI2IModelById(selectedModelId) : null;
+  const serverModelReady = modelDirectoryRevision > 0 && Boolean(selectedModelMeta);
   const missingSwapFace = Boolean(
     imageMode && activeI2IModelInfo?.swapField && !swapImageUrl,
   );
@@ -1518,7 +1528,7 @@ export default function ImageStudio({
     ? uploadedImageUrls.length > 0
     : Boolean(prompt.trim());
   const canGenerate =
-    !generating && hasRequiredInput && !missingSwapFace && !missingCapability;
+    serverModelReady && !generating && hasRequiredInput && !missingSwapFace && !missingCapability;
   const generateDisabledReason = generating
     ? undefined
     : !hasRequiredInput
@@ -1527,7 +1537,7 @@ export default function ImageStudio({
         : copy.errors.enterPromptFirst
       : missingSwapFace
         ? copy.errors.uploadSwapFaceFirst
-        : missingCapability
+        : !serverModelReady || missingCapability
           ? copy.errors.generationCapabilityUnavailable
           : undefined;
 
@@ -2977,7 +2987,7 @@ export default function ImageStudio({
 
             {/* Right actions: Cost in credits + Generate button */}
             <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-              {(() => {
+              {serverModelReady && (() => {
                 const isZh = String(locale || "").startsWith("zh");
                 return (
                   <div className="flex items-center gap-1.5 px-2 py-1 select-none whitespace-nowrap">

@@ -8,16 +8,16 @@
   "steps": {
     "stepLabel": "Paso",
     "deploy": {
-      "title": "Implementar en minutos",
-      "body": "Bifurque la plantilla de código abierto, agregue su clave muapi y envíela a Vercel. No se necesita configuración de backend."
+      "title": "Despliega en Minutos",
+      "body": "Haz un fork de la plantilla de código abierto, añade tu clave muapi y sube a Vercel. No se necesita configuración de backend."
     },
     "collect": {
-      "title": "Cobrar pagos",
-      "body": "Stripe está precableado. Establezca sus propios precios: créditos únicos, suscripciones o pago por uso."
+      "title": "Cobra Pagos",
+      "body": "Stripe viene preconfigurado. Establece tus propios precios: créditos únicos, suscripciones o pago por uso."
     },
     "keep": {
-      "title": "Mantenga los ingresos",
-      "body": "Los pagos van directamente a su cuenta Stripe. Eres dueño del producto, la marca y las ganancias."
+      "title": "Conserva los Ingresos",
+      "body": "Los pagos van directamente a tu cuenta de Stripe. Eres dueño del producto, la marca y los beneficios."
     }
   },
   "card": {

@@ -1,90 +1,90 @@
 {
   "labels": {
-    "referenceVideo": "Vídeo de referencia",
-    "characterImages": "Imágenes de intérprete/personaje",
-    "addImage": "Agregar imagen",
+    "referenceVideo": "Video de Referencia",
+    "characterImages": "Imágenes del Intérprete / Personaje",
+    "addImage": "Añadir Imagen",
     "library": "Biblioteca",
     "mode": "Modo",
-    "motionTransfer": "Transferencia de movimiento",
-    "objectsSwap": "Intercambio de objetos",
+    "motionTransfer": "Transferencia de Movimiento",
+    "objectsSwap": "Cambio de Objetos",
     "duration": "Duración",
-    "durationSeconds": "{count}s",
+    "durationSeconds": "{count} s",
     "quality": "Calidad",
-    "highBitrate": "Alta tasa de bits",
-    "generateAudio": "Generar audio",
+    "highBitrate": "Tasa de Bits Alta",
+    "generateAudio": "Generar Audio",
     "seed": "Semilla",
-    "randomSeed": "Aleatorio (-1)"
+    "randomSeed": "Aleatoria (-1)"
   },
   "buttons": {
     "use": "Usar",
-    "useAsVideo": "Usar como vídeo",
-    "useAsImage": "Agregar como imagen",
+    "useAsVideo": "Usar como Video",
+    "useAsImage": "Añadir como Imagen",
     "download": "Descargar",
-    "delete": "Borrar",
-    "generate": "Generar movimiento",
+    "delete": "Eliminar",
+    "generate": "Generar Movimiento",
     "generating": "Generando..."
   },
   "titles": {
-    "clickToClear": "{fileName} — haga clic para borrar",
-    "uploadVideo": "Cargue un vídeo de referencia (MP4/WebM/MOV) o arrástrelo y suéltelo",
-    "uploadImage": "Cargar imágenes de personajes o artistas intérpretes o ejecutantes (PNG/JPEG/WebP)",
+    "clickToClear": "{fileName} — clic para limpiar",
+    "uploadVideo": "Sube el video de referencia (MP4/WebM/MOV) o arrastra y suelta",
+    "uploadImage": "Sube imágenes del personaje o intérprete (PNG/JPEG/WebP)",
     "enlargePreview": "Ampliar vista previa",
-    "deleteFromLibrary": "Eliminar de la biblioteca",
-    "removeImage": "Quitar imagen"
+    "deleteFromLibrary": "Eliminar de la Biblioteca",
+    "removeImage": "Eliminar imagen"
   },
   "assetLibrary": {
-    "header": "Biblioteca de recursos",
+    "header": "Biblioteca de Recursos",
     "tabs": {
       "videos": "Vídeos",
       "images": "Imágenes",
       "results": "Resultados"
     },
-    "empty": "No se encontraron activos"
+    "empty": "No se encontraron recursos"
   },
   "dropdowns": {
     "model": "Modelo",
     "selectModel": "Seleccionar modelo",
-    "aspectRatio": "Relación de aspecto",
-    "qualityBasic": "Básico",
-    "qualityHigh": "Alto",
+    "aspectRatio": "Relación de Aspecto",
+    "qualityBasic": "Básica",
+    "qualityHigh": "Alta",
     "qualityBasicDesc": "Generación más rápida, resolución estándar",
-    "qualityHighDesc": "Máximo detalle cinematográfico y consistencia de movimiento."
+    "qualityHighDesc": "Máximo detalle cinematográfico y consistencia de movimiento"
   },
   "modes": {
-    "motionTransfer": "Transferencia de movimiento",
-    "motionTransferDesc": "Extrae movimiento y coreografía del vídeo y reconstruye la escena con tu personaje.",
-    "objectsSwap": "Intercambio de objetos",
-    "objectsSwapDesc": "Mantenga la escena del video sin cambios, intercambie atuendos, personajes o productos"
+    "motionTransfer": "Transferencia de Movimiento",
+    "motionTransferDesc": "Extrae el movimiento y la coreografía del video y reconstruye la escena con tu personaje",
+    "objectsSwap": "Cambio de Objetos",
+    "objectsSwapDesc": "Mantén la escena del video sin cambios, cambia trajes, personajes o productos"
   },
   "empty": {
-    "titleLine1": "COMIENCE A CREAR CON",
+    "titleLine1": "COMIENZA A CREAR CON",
     "titleLine2": "ESTUDIO DE CONTROL DE MOVIMIENTO",
-    "description": "Impulse imágenes de personajes con movimiento de video de referencia, coreografía y movimientos de cámara utilizando Seedance Motion Control."
+    "description": "Impulsa imágenes de personajes con el movimiento, coreografía y movimientos de cámara de un video de referencia usando Seedance Motion Control."
   },
   "placeholders": {
-    "prompt": "Opcional: describe detalles adicionales de la escena, iluminación o matices de movimiento..."
+    "prompt": "Opcional — describe detalles adicionales de la escena, iluminación o matices de movimiento..."
   },
   "badges": {
-    "motionControl": "Control de movimiento",
-    "motionTransfer": "Transferencia de movimiento",
-    "objectsSwap": "Intercambio de objetos"
+    "motionControl": "Control de Movimiento",
+    "motionTransfer": "Transferencia de Movimiento",
+    "objectsSwap": "Cambio de Objetos"
   },
   "confirm": {
-    "deleteGenerated": "¿Está seguro de que desea eliminar este elemento generado?"
+    "deleteGenerated": "¿Estás seguro de que deseas eliminar este elemento generado?"
   },
   "errors": {
-    "videoTooLarge": "El vídeo supera el límite de 100 MB.",
-    "imageTooLarge": "La imagen supera el límite de 20 MB.",
-    "missingVideo": "Primero cargue o seleccione un video de referencia.",
-    "missingImages": "Sube o selecciona al menos una imagen de personaje/artista.",
-    "maxImagesExceeded": "Imágenes máximas {max} permitidas para este modelo.",
-    "videoUploadFailed": "Error al subir el vídeo: {message}",
-    "imageUploadFailed": "Error al cargar la imagen: {message}",
-    "generationFailed": "Falló la generación de video de control de movimiento"
+    "videoTooLarge": "El video supera el límite de 100MB.",
+    "imageTooLarge": "La imagen supera el límite de 20MB.",
+    "missingVideo": "Por favor, sube o selecciona un video de referencia primero.",
+    "missingImages": "Por favor, sube o selecciona al menos una imagen de personaje/intérprete.",
+    "maxImagesExceeded": "Se permite un máximo de {max} imágenes para este modelo.",
+    "videoUploadFailed": "Error al subir el video: {message}",
+    "imageUploadFailed": "Error al subir la imagen: {message}",
+    "generationFailed": "Error al generar video con control de movimiento"
   },
   "defaults": {
-    "selectedVideo": "Vídeo de referencia",
-    "selectedImage": "Imagen del personaje",
-    "resultVideo": "Vídeo de control de movimiento"
+    "selectedVideo": "Video de Referencia",
+    "selectedImage": "Imagen del Personaje",
+    "resultVideo": "Video con Control de Movimiento"
   }
 }

@@ -263,7 +263,7 @@ export default function ProfileTab({
       window.location.assign(url);
       return;
     }
-    const popup = window.open(url, 'supdance-oauth', 'popup,width=520,height=720');
+    const popup = window.open(url, 'supdance-oauth', 'popup,width=580,height=720');
     if (!popup) {
       window.location.assign(url);
     }

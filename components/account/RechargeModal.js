@@ -20,6 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import QRCodeSvg from '@/components/ui/QRCodeSvg';
+import { getRechargeStrings, useRechargeLocale } from './rechargeI18n';
 
 // 微信支付与支付宝官方 SVG 徽标
 function WeChatPayIcon({ className = 'size-5' }) {
@@ -99,7 +100,11 @@ export default function RechargeModal({
   initialBillingCycle = 'monthly',
   autoCheckout = false,
   onPaySuccess,
+  locale = null,
 }) {
+  const activeLocale = useRechargeLocale(locale);
+  const strings = useMemo(() => getRechargeStrings(activeLocale), [activeLocale]);
+
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab === 'exclusive' ? 'universal' : initialTab); // 'sub' | 'universal' | 'coupon'
   const [subscriptionPlans, setSubscriptionPlans] = useState(FALLBACK_MEMBERSHIP_TIERS);
@@ -111,6 +116,7 @@ export default function RechargeModal({
   const [availableProviders, setAvailableProviders] = useState({
     alipay: { enabled: true, configured: true },
   });
+  const [pilotPackId, setPilotPackId] = useState(null);
   const [payMethod, setPayMethod] = useState('alipay');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -198,11 +204,17 @@ export default function RechargeModal({
       fetch('/api/billing/credit-packs', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
     ]).then(([plansPayload, packsPayload]) => {
       if (cancelled) return;
+      const eligiblePilotPack = packsPayload?.pilotPackId === 'credit_490' ? 'credit_490' : null;
+      setPilotPackId(eligiblePilotPack);
+      if (eligiblePilotPack) {
+        setSelectedPackId((current) => current || eligiblePilotPack);
+      }
       const provs = plansPayload?.providers || packsPayload?.providers;
       if (provs) {
         setAvailableProviders(provs);
         setPayMethod((curr) => {
           if (provs[curr]?.enabled) return curr;
+          if (eligiblePilotPack) return 'alipay';
           return Object.keys(provs).find((p) => provs[p]?.enabled) || '';
         });
       }
@@ -329,7 +341,8 @@ export default function RechargeModal({
       setError('请先选择充值方案');
       return;
     }
-    if (availableProviders && availableProviders[activeProvider]?.enabled === false) {
+    const pilotAllowed = activeProvider === 'alipay' && pilotPackId === activePlanId;
+    if (availableProviders && availableProviders[activeProvider]?.enabled === false && !pilotAllowed) {
       setError('当前支付渠道暂不可用');
       return;
     }
@@ -486,15 +499,15 @@ export default function RechargeModal({
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="管理账户收银台"
+        aria-label={strings.modalAria}
       >
         {/* 右上角关闭按钮 */}
         <button
           type="button"
           onClick={handleClose}
           className="absolute top-4 right-4 z-raised p-2.5 rounded-full text-ink-muted hover:text-ink hover:bg-wash active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
-          title="关闭 (Esc)"
-          aria-label="关闭收银台"
+          title={strings.closeAria}
+          aria-label={strings.closeAria}
         >
           <X className="size-4" />
         </button>
@@ -504,37 +517,37 @@ export default function RechargeModal({
           <div>
             {checkoutData ? (
               <div>
-                <h2 className="text-card-title font-semibold text-ink">订单明细</h2>
+                <h2 className="text-card-title font-semibold text-ink">{strings.orderDetails}</h2>
                 <div className="mt-4 rounded-xl border border-line-subtle bg-surface-raised p-4 space-y-3.5 shadow-elevation-1">
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-body font-semibold text-ink">{checkoutData.planName}</p>
                       {checkoutData.creditAmount > 0 && (
                         <p className="mt-1 text-caption text-ink-muted">
-                          包含 {Number(checkoutData.creditAmount).toLocaleString()} 创作算力
+                          {strings.includesCredits(checkoutData.creditAmount)}
                         </p>
                       )}
                     </div>
                     <span className="shrink-0 rounded-full border border-line-subtle bg-wash px-2.5 py-0.5 text-micro text-ink-muted">
                       {checkoutData.billingCycle === 'yearly'
-                        ? '年付'
+                        ? strings.cycleYearly
                         : checkoutData.billingCycle === 'quarterly'
-                        ? '季付'
+                        ? strings.cycleQuarterly
                         : checkoutData.billingCycle === 'one_time'
-                        ? '单次'
-                        : '月付'}
+                        ? strings.cycleOneTime
+                        : strings.cycleMonthly}
                     </span>
                   </div>
 
                   <div className="border-t border-line-subtle pt-3 flex items-baseline justify-between">
-                    <span className="text-body-sm text-ink-muted">实付金额</span>
+                    <span className="text-body-sm text-ink-muted">{strings.amountToPay}</span>
                     <span className="text-page-title font-bold font-mono text-brand">￥{checkoutData.amountYuan}</span>
                   </div>
                 </div>
               </div>
             ) : (
               <div>
-                <h2 className="text-card-title font-semibold text-ink">充值与兑换中心</h2>
+                <h2 className="text-card-title font-semibold text-ink">{strings.centerTitle}</h2>
                 <div className="mt-4 space-y-1.5">
                   <button
                     type="button"
@@ -546,7 +559,7 @@ export default function RechargeModal({
                       activeTab === 'sub' ? 'bg-wash-strong text-ink font-semibold' : 'text-ink-muted hover:bg-wash'
                     }`}
                   >
-                    商业会员订阅
+                    {strings.tabSub}
                   </button>
                   <button
                     type="button"
@@ -559,7 +572,7 @@ export default function RechargeModal({
                       activeTab === 'universal' ? 'bg-wash-strong text-ink font-semibold' : 'text-ink-muted hover:bg-wash'
                     }`}
                   >
-                    通用算力包 (永久有效)
+                    {strings.tabUniversal}
                   </button>
                   <button
                     type="button"
@@ -571,7 +584,7 @@ export default function RechargeModal({
                       activeTab === 'coupon' ? 'bg-wash-strong text-ink font-semibold' : 'text-ink-muted hover:bg-wash'
                     }`}
                   >
-                    卡密 / 兑换码
+                    {strings.tabCoupon}
                   </button>
                 </div>
               </div>
@@ -585,13 +598,13 @@ export default function RechargeModal({
             <div className="flex flex-col items-center justify-center text-center my-auto py-4">
               {pollStatus === 'paid' ? (
                 <div className="py-8 flex flex-col items-center animate-scale-in">
-                  <CheckCircle2 className="size-16 text-success animate-bounce" />
-                  <h3 className="mt-4 text-page-title font-bold text-ink">支付成功！</h3>
+                  <CheckCircle2 className="size-16 text-success" />
+                  <h3 className="mt-4 text-page-title font-bold text-ink">{strings.paySuccess}</h3>
                   <p className="mt-2 text-body-sm text-ink-muted">
-                    已成功到账 <span className="font-semibold text-brand">{checkoutData.creditAmount}</span> 创作算力
+                    {strings.paySuccessCredits(checkoutData.creditAmount)}
                   </p>
                   <Button variant="primary" className="mt-6 px-8 font-bold" onClick={handleClose}>
-                    完成并返回工作台
+                    {strings.doneReturn}
                   </Button>
                 </div>
               ) : pollStatus === 'expired' ? (
@@ -599,8 +612,8 @@ export default function RechargeModal({
                   <div className="size-16 rounded-full bg-warning-soft flex items-center justify-center text-warning mb-2">
                     <X className="size-8" />
                   </div>
-                  <h3 className="mt-2 text-section-title font-bold text-ink">订单已过期</h3>
-                  <p className="mt-2 text-caption text-ink-muted max-w-sm">当前支付链接已超时，请重新发起下单。</p>
+                  <h3 className="mt-2 text-section-title font-bold text-ink">{strings.orderExpired}</h3>
+                  <p className="mt-2 text-caption text-ink-muted max-w-sm">{strings.orderExpiredDesc}</p>
                   <Button
                     variant="primary"
                     className="mt-6"
@@ -610,14 +623,14 @@ export default function RechargeModal({
                       setPollStatus('waiting');
                     }}
                   >
-                    重新下单
+                    {strings.reorder}
                   </Button>
                 </div>
               ) : (
                 <>
-                  <h3 className="text-section-title font-semibold text-ink">请扫码完成支付</h3>
+                  <h3 className="text-section-title font-semibold text-ink">{strings.scanToPay}</h3>
                   <p className="mt-1 text-body-sm text-ink-muted">
-                    使用手机 <span className="font-medium text-ink">{checkoutData.provider === 'alipay' ? '支付宝' : '微信'}</span> 扫一扫完成付款
+                    {strings.scanWithProvider(checkoutData.provider === 'alipay' ? strings.alipay : strings.wechat)}
                   </p>
 
                   <div className="mt-6 rounded-xl border border-line-subtle bg-white p-3 shadow-elevation-2 flex items-center justify-center w-[214px] h-[214px] mx-auto overflow-hidden relative">
@@ -626,7 +639,7 @@ export default function RechargeModal({
                     ) : checkoutData.qrImgUrl ? (
                       <img
                         src={checkoutData.qrImgUrl}
-                        alt="支付二维码"
+                        alt={strings.scanToPay}
                         className="size-[174px] object-contain"
                       />
                     ) : checkoutData.isPagePay && checkoutData.checkoutUrl ? (
@@ -634,10 +647,10 @@ export default function RechargeModal({
                         src={checkoutData.checkoutUrl}
                         className="w-[174px] h-[178px] border-0 overflow-hidden bg-white"
                         scrolling="no"
-                        title="支付宝收银台"
+                        title={strings.alipay}
                       />
                     ) : (
-                      <div className="size-[190px] flex items-center justify-center text-ink-disabled text-caption">正在加载支付二维码...</div>
+                      <div className="size-[190px] flex items-center justify-center text-ink-disabled text-caption">{strings.loadingQr}</div>
                     )}
                   </div>
 
@@ -649,14 +662,14 @@ export default function RechargeModal({
                         className="inline-flex items-center gap-1.5 text-caption font-semibold text-brand hover:text-brand-hover transition-colors cursor-pointer"
                       >
                         <ExternalLink className="size-3.5" />
-                        <span>在新标签页打开支付宝付款</span>
+                        <span>{strings.openInNewTab}</span>
                       </button>
                     </div>
                   )}
 
                   <div className="mt-4 flex items-center justify-center gap-1.5 text-caption text-ink-muted">
                     <Loader2 className="size-3.5 animate-spin text-brand" />
-                    <span>等待手机扫码确认 · 有效时间 </span>
+                    <span>{strings.waitingScan}</span>
                     <span className="font-mono text-brand font-semibold">{formatCountdown(countdown)}</span>
                   </div>
 
@@ -672,7 +685,7 @@ export default function RechargeModal({
                       }}
                     >
                       <ArrowLeft className="size-3.5" />
-                      <span>更换支付方式</span>
+                      <span>{strings.changeMethod}</span>
                     </Button>
                   </div>
                 </>
@@ -681,15 +694,15 @@ export default function RechargeModal({
           ) : loading ? (
             <div className="flex flex-col items-center justify-center text-center my-auto py-12">
               <Loader2 className="size-10 animate-spin text-brand mb-4" />
-              <h3 className="text-section-title font-semibold text-ink">正在创建订单与连接收银台...</h3>
-              <p className="mt-2 text-caption text-ink-muted max-w-sm">正在连接官方支付通道，请稍候...</p>
+              <h3 className="text-section-title font-semibold text-ink">{strings.connectingChannel}</h3>
+              <p className="mt-2 text-caption text-ink-muted max-w-sm">{strings.connectingGateway}</p>
             </div>
           ) : error && (autoCheckout || initialPlanId) ? (
             <div className="flex flex-col items-center justify-center text-center my-auto py-8">
               <div className="size-12 rounded-full bg-danger/10 flex items-center justify-center text-danger mb-3">
                 <X className="size-6" />
               </div>
-              <h3 className="text-section-title font-semibold text-ink">支付通道响应异常</h3>
+              <h3 className="text-section-title font-semibold text-ink">{strings.channelError}</h3>
               <p className="mt-2 text-caption text-danger max-w-md">{error}</p>
               <div className="mt-6 flex items-center gap-3">
                 <Button
@@ -700,7 +713,7 @@ export default function RechargeModal({
                     handleCreateOrder(initialPlanId || currentSelectionInfo.id, payMethod);
                   }}
                 >
-                  重试支付
+                  {strings.retryPay}
                 </Button>
                 <Button
                   variant="ghost"
@@ -711,7 +724,7 @@ export default function RechargeModal({
                     setPlanId(null);
                   }}
                 >
-                  手动选择其他方案
+                  {strings.manualChoose}
                 </Button>
               </div>
             </div>
@@ -720,8 +733,8 @@ export default function RechargeModal({
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-line-subtle">
                   <div>
-                    <h3 className="text-card-title font-semibold text-ink">选择会员套餐</h3>
-                    <p className="text-caption text-ink-muted mt-0.5">畅享高并发 GPU 算力，支持商业授权与高清导出</p>
+                    <h3 className="text-card-title font-semibold text-ink">{strings.selectPlanTitle}</h3>
+                    <p className="text-caption text-ink-muted mt-0.5">{strings.selectPlanSubtitle}</p>
                   </div>
 
                   {/* 周期切换按钮 */}
@@ -733,7 +746,7 @@ export default function RechargeModal({
                         billingCycle === 'monthly' ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
-                      月付
+                      {strings.cycleMonthly}
                     </button>
                     <button
                       type="button"
@@ -742,8 +755,8 @@ export default function RechargeModal({
                         billingCycle === 'quarterly' ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
-                      <span>季付</span>
-                      <span className="rounded-full bg-brand-soft text-brand px-1 py-0.2 text-[9px] font-bold">最高9折</span>
+                      <span>{strings.cycleQuarterly}</span>
+                      <span className="rounded-full bg-brand-soft text-brand px-1 py-0.2 text-[9px] font-bold">{strings.tagQuarterly}</span>
                     </button>
                     <button
                       type="button"
@@ -752,8 +765,8 @@ export default function RechargeModal({
                         billingCycle === 'yearly' ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
-                      <span>年付</span>
-                      <span className="rounded-full bg-brand-soft text-brand px-1 py-0.2 text-[9px] font-bold">最高省2月</span>
+                      <span>{strings.cycleYearly}</span>
+                      <span className="rounded-full bg-brand-soft text-brand px-1 py-0.2 text-[9px] font-bold">{strings.tagYearly}</span>
                     </button>
                   </div>
                 </div>
@@ -782,7 +795,7 @@ export default function RechargeModal({
                             <span className="text-micro text-ink-subtle line-through">￥{originPrice}</span>
                           ) : null}
                           <span className="text-micro text-ink-muted font-normal">
-                            {billingCycle === 'yearly' ? '/年' : billingCycle === 'quarterly' ? '/季' : '/月'}
+                            {billingCycle === 'yearly' ? strings.perYear : billingCycle === 'quarterly' ? strings.perQuarter : strings.perMonth}
                           </span>
                         </div>
                         <ul className="mt-2.5 flex flex-col gap-1 border-t border-line-subtle pt-2.5 text-caption text-ink-muted">
@@ -805,7 +818,7 @@ export default function RechargeModal({
               {/* 底部结算按钮行 */}
               <div className="mt-5 flex items-center justify-between border-t border-line-subtle pt-3.5">
                 <div>
-                  <p className="text-caption text-ink-muted">实付应结金额</p>
+                  <p className="text-caption text-ink-muted">{strings.amountToPay}</p>
                   <p className="text-2xl font-bold font-mono text-brand">￥{currentSelectionInfo.priceYuan.toFixed(2)}</p>
                 </div>
                 <Button
@@ -815,7 +828,7 @@ export default function RechargeModal({
                   onClick={() => handleCreateOrder(planId, payMethod, billingCycle)}
                   disabled={loading || !availableProviders[payMethod]?.enabled}
                 >
-                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : payMethod === 'paypal' ? '前往 PayPal 收银台' : '立即支付'}
+                  {loading ? (strings.paying || '处理中...') : payMethod === 'stripe' ? (strings.goToStripe || '前往 Stripe 收银台') : payMethod === 'paypal' ? (strings.goToPaypal || '前往 PayPal 收银台') : (strings.payNow || '立即支付')}
                 </Button>
               </div>
             </div>
@@ -824,13 +837,13 @@ export default function RechargeModal({
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-line-subtle">
                   <div>
-                    <h3 className="text-card-title font-semibold text-ink">通用算力包 · 永久有效</h3>
+                    <h3 className="text-card-title font-semibold text-ink">{strings.universalPacksTitle}</h3>
                     <p className="text-caption text-ink-muted mt-0.5">
-                      ¥1 = 10 积分（¥0.10/分），无有效期限制，全站 200+ 顶尖 AI 模型通用
+                      {strings.universalPacksSubtitle}
                     </p>
                   </div>
                   <span className="rounded-full bg-brand-soft border border-brand-line px-2.5 py-1 text-label font-semibold text-brand">
-                    长期结余兜底
+                    {strings.neverExpire}
                   </span>
                 </div>
 
@@ -851,14 +864,14 @@ export default function RechargeModal({
                       >
                         <div className="flex items-center justify-between">
                           <p className="text-body-sm font-semibold text-ink truncate">{pack.name}</p>
-                          <span className="text-micro text-ink-muted font-mono">¥0.10/分</span>
+                          <span className="text-micro text-ink-muted font-mono">{strings.unitPriceDesc('0.10')}</span>
                         </div>
                         <div className="mt-2 flex items-baseline gap-1">
                           <span className="text-xl font-bold font-mono text-brand">￥{pack.priceCny}</span>
                         </div>
                         <div className="mt-2.5 flex items-center justify-between border-t border-line-subtle pt-2 text-caption">
-                          <span className="font-semibold text-ink font-mono">{pack.credits.toLocaleString()} 积分</span>
-                          <span className="text-micro text-success">永久有效</span>
+                          <span className="font-semibold text-ink font-mono">{strings.creditsCount(pack.credits)}</span>
+                          <span className="text-micro text-success">{strings.neverExpire}</span>
                         </div>
                       </button>
                     );
@@ -872,7 +885,7 @@ export default function RechargeModal({
               {/* 底部结算按钮行 */}
               <div className="mt-5 flex items-center justify-between border-t border-line-subtle pt-3.5">
                 <div>
-                  <p className="text-caption text-ink-muted">实付应结金额</p>
+                  <p className="text-caption text-ink-muted">{strings.amountToPay}</p>
                   <p className="text-2xl font-bold font-mono text-brand">￥{currentSelectionInfo.priceYuan.toFixed(2)}</p>
                 </div>
                 <Button
@@ -880,9 +893,9 @@ export default function RechargeModal({
                   size="lg"
                   className="font-semibold shadow-elevation-1 cursor-pointer"
                   onClick={() => handleCreateOrder(selectedPackId || 'credit_140', payMethod, 'one_time')}
-                  disabled={loading || !availableProviders[payMethod]?.enabled}
+                  disabled={loading || !(availableProviders[payMethod]?.enabled || (payMethod === 'alipay' && pilotPackId === currentSelectionInfo.id))}
                 >
-                  {loading ? '处理中...' : payMethod === 'stripe' ? '前往 Stripe 收银台' : payMethod === 'paypal' ? '前往 PayPal 收银台' : '立即支付'}
+                  {loading ? (strings.paying || '处理中...') : payMethod === 'stripe' ? (strings.goToStripe || '前往 Stripe 收银台') : payMethod === 'paypal' ? (strings.goToPaypal || '前往 PayPal 收银台') : (strings.payNow || '立即支付')}
                 </Button>
               </div>
             </div>
@@ -891,7 +904,7 @@ export default function RechargeModal({
               <form onSubmit={handleInitiateRedeem} className="space-y-4 rounded-xl border border-line-subtle bg-surface-raised p-6 shadow-elevation-1">
                 <div>
                   <label className="block text-label font-semibold text-ink">
-                    输入您的 16 位算力卡密或活动兑换码
+                    {strings.couponTitle}
                   </label>
                   <input
                     type="text"
@@ -900,11 +913,11 @@ export default function RechargeModal({
                       setCouponCode(e.target.value.toUpperCase());
                       if (error) setError(null);
                     }}
-                    placeholder="例如：SUP-8888-AAAA-9999"
+                    placeholder={strings.couponPlaceholder}
                     className="mt-2 w-full rounded-xl border border-line bg-well px-4 py-2.5 font-mono text-sm uppercase tracking-wider text-ink placeholder:text-ink-subtle focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring"
                   />
                   <p className="mt-1.5 text-caption text-ink-subtle">
-                    支持通用算力卡密、活动礼品卡密及商业会员激活码
+                    {strings.couponSubtitle}
                   </p>
                 </div>
 
@@ -918,10 +931,10 @@ export default function RechargeModal({
                   {couponLoading ? (
                     <>
                       <Loader2 className="size-4 animate-spin mr-1.5" />
-                      <span>正在核验卡密...</span>
+                      <span>{strings.verifyingCoupon}</span>
                     </>
                   ) : (
-                    '立即兑换到账'
+                    strings.redeemNow || '立即兑换到账'
                   )}
                 </Button>
 
@@ -1055,11 +1068,13 @@ export default function RechargeModal({
   );
 
   function renderPaymentProviders() {
+    const pilotAlipaySelected = activeTab === 'universal' && pilotPackId === currentSelectionInfo.id;
+    const alipayEnabled = availableProviders?.alipay?.enabled === true || pilotAlipaySelected;
     return (
       <div className="mt-5 border-t border-line-subtle pt-3.5">
-        <p className="mb-2 text-label font-semibold text-ink-muted">选择支付方式</p>
+        <p className="mb-2 text-label font-semibold text-ink-muted">{strings.selectPayMethod}</p>
         <div className="flex flex-wrap gap-2.5">
-          {availableProviders?.alipay?.enabled === true && (
+          {alipayEnabled && (
             <button
               type="button"
               onClick={() => setPayMethod('alipay')}
@@ -1070,7 +1085,7 @@ export default function RechargeModal({
               }`}
             >
               <AlipayIcon className="size-4" />
-              <span>支付宝</span>
+              <span>{strings.alipay}</span>
             </button>
           )}
 
@@ -1085,7 +1100,7 @@ export default function RechargeModal({
               }`}
             >
               <WeChatPayIcon className="size-4" />
-              <span>微信支付</span>
+              <span>{strings.wechat}</span>
             </button>
           )}
 
@@ -1115,11 +1130,11 @@ export default function RechargeModal({
               }`}
             >
               <CreditCard className="size-4" />
-              <span>国际信用卡</span>
+              <span>{strings.intlCard}</span>
             </button>
           )}
-          {!Object.values(availableProviders || {}).some((provider) => provider?.enabled) && (
-            <p className="text-body-sm text-ink-muted">暂未配置并启用支付渠道</p>
+          {!Object.values(availableProviders || {}).some((provider) => provider?.enabled) && !pilotAlipaySelected && (
+            <p className="text-body-sm text-ink-muted">{strings.noPayChannels}</p>
           )}
         </div>
       </div>

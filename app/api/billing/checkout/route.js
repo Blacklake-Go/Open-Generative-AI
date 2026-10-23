@@ -2,7 +2,7 @@ import { getUserFromRequest, json } from '@/lib/services/auth';
 import { createPaymentCheckout } from '@/lib/services/paymentService';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
 import { publicErrorMessage } from '@/lib/security/publicError';
-import { assertPaymentChannelUsable } from '@/lib/payments/providerCredentials';
+import { assertCheckoutAdmitted } from '@/lib/payments/checkoutAdmission';
 
 export const runtime = 'nodejs';
 
@@ -17,8 +17,6 @@ export async function POST(request) {
     const body = await request.json();
     const provider = String(body.provider || '').toLowerCase();
     if (!['stripe', 'wechat', 'alipay', 'paypal'].includes(provider)) return json({ error: '不支持的支付渠道' }, { status: 400 });
-    const availability = await assertPaymentChannelUsable(provider);
-    if (!availability.ok) return json({ error: availability.error }, { status: availability.status });
     const planId = String(body.planId || '');
     const productType = body.productType || (
       planId.startsWith('credit_')
@@ -27,6 +25,8 @@ export async function POST(request) {
         ? 'exclusive_pack'
         : 'subscription'
     );
+    const availability = await assertCheckoutAdmitted({ userId: user.id, provider, productType, planId });
+    if (!availability.ok) return json({ error: availability.error }, { status: availability.status });
     const billingCycle = productType === 'subscription'
       ? (['yearly', 'quarterly', 'monthly'].includes(String(body.billingCycle || '').toLowerCase())
           ? String(body.billingCycle).toLowerCase()

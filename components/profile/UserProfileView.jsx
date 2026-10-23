@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, EyeOff, Loader2 } from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
 import CommunityDetailModal from '@/components/community/CommunityDetailModal';
 import AuthModal from '@/components/AuthModal';
+import { localizeStudioPath } from '@/lib/locales';
 import UserProfileHeaderCard from './UserProfileHeaderCard';
 import UserProfileCreations from './UserProfileCreations';
 import UserProfileActivity from './UserProfileActivity';
+import { getProfileStrings, useProfileLocale } from './profileI18n';
 
 export default function UserProfileView({
   creator: initialCreator = null,
@@ -20,7 +22,10 @@ export default function UserProfileView({
   compact = false,
   onClose = null,
   className = '',
+  locale = null,
 }) {
+  const activeLocale = useProfileLocale(locale);
+  const strings = useMemo(() => getProfileStrings(activeLocale), [activeLocale]);
   const [creator, setCreator] = useState(initialCreator);
   const [loadingCreator, setLoadingCreator] = useState(!initialCreator && Boolean(userId));
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -62,7 +67,7 @@ export default function UserProfileView({
             const c = {
               id: u.id,
               userNumber: canonicalNumber,
-              displayName: u.displayName || u.display_name || `创作者#${canonicalNumber}`,
+              displayName: u.displayName || u.display_name || strings.creatorFallback(canonicalNumber),
               avatarUrl: u.avatar_url || u.avatarUrl || null,
               bio: u.bio || '',
               followersCount: u.followers_count || u.followersCount || 0,
@@ -84,7 +89,7 @@ export default function UserProfileView({
     return () => {
       mounted = false;
     };
-  }, [initialCreator, userId]);
+  }, [initialCreator, userId, strings]);
 
   // 2. 获取当前登录用户与关注状态
   useEffect(() => {
@@ -142,9 +147,9 @@ export default function UserProfileView({
     if (!val) return;
     navigator.clipboard?.writeText?.(String(val));
     setCopiedUid(true);
-    showToast('已复制用户 ID');
+    showToast(strings.copiedUid);
     window.setTimeout(() => setCopiedUid(false), 2000);
-  }, [creator?.userNumber, creator?.id]);
+  }, [creator?.userNumber, creator?.id, strings.copiedUid]);
 
   // 5. 处理关注/取消关注
   const handleToggleFollow = async () => {
@@ -153,7 +158,7 @@ export default function UserProfileView({
       return;
     }
     if (currentUser.id === creator.id) {
-      showToast('无法关注自己');
+      showToast(strings.cannotFollowSelf);
       return;
     }
     setFollowBusy(true);
@@ -167,12 +172,12 @@ export default function UserProfileView({
       if (res.ok) {
         setIsFollowing(data.following);
         setFollowersCount((prev) => (data.following ? prev + 1 : Math.max(0, prev - 1)));
-        showToast(data.following ? '已成功关注该创作者' : '已取消关注');
+        showToast(data.following ? strings.followedSuccess : strings.unfollowedSuccess);
       } else {
-        showToast(data.error || '操作失败');
+        showToast(data.error || strings.actionFailed);
       }
     } catch {
-      showToast('网络连接异常');
+      showToast(strings.networkError);
     } finally {
       setFollowBusy(false);
     }
@@ -182,7 +187,7 @@ export default function UserProfileView({
     return (
       <div className="flex flex-col items-center justify-center p-16 text-ink-muted">
         <Loader2 className="size-8 animate-spin text-brand mb-3" />
-        <p className="text-caption">正在加载创作者资料…</p>
+        <p className="text-caption">{strings.loadingCreator}</p>
       </div>
     );
   }
@@ -190,8 +195,8 @@ export default function UserProfileView({
   if (!creator) {
     return (
       <div className="flex flex-col items-center justify-center p-16 text-center text-ink-muted">
-        <p className="text-body-sm font-medium text-ink">未找到该创作者资料</p>
-        <p className="mt-1 text-caption">用户可能已注销或编号不存在</p>
+        <p className="text-body-sm font-medium text-ink">{strings.creatorNotFound}</p>
+        <p className="mt-1 text-caption">{strings.creatorNotFoundSub}</p>
       </div>
     );
   }
@@ -205,11 +210,11 @@ export default function UserProfileView({
       {showBackLink && (
         <div className="mb-6 sm:mb-8">
           <Link
-            href="/community"
+            href={localizeStudioPath('/community', activeLocale)}
             className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink transition-colors"
           >
             <ArrowLeft className="size-3.5" />
-            <span>返回社区大厅</span>
+            <span>{strings.backToCommunity}</span>
           </Link>
         </div>
       )}
@@ -225,6 +230,8 @@ export default function UserProfileView({
         onCopyUid={handleCopyUid}
         copiedUid={copiedUid}
         compact={compact}
+        locale={activeLocale}
+        strings={strings}
         className="mb-8 sm:mb-10"
       />
 
@@ -239,7 +246,7 @@ export default function UserProfileView({
               : 'text-ink-muted hover:text-ink'
           }`}
         >
-          <span>作品展 ({posts.length})</span>
+          <span>{strings.tabCreations(posts.length)}</span>
           {activeTab === 'creations' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full" />
           )}
@@ -254,9 +261,9 @@ export default function UserProfileView({
               : 'text-ink-muted hover:text-ink'
           }`}
         >
-          <span>创作活跃度</span>
+          <span>{strings.tabActivity}</span>
           {isActivityHiddenForViewer && (
-            <EyeOff className="size-3 text-amber-400" title="该创作者已对外隐藏活跃度" />
+            <EyeOff className="size-3 text-amber-400" title={strings.activityHiddenHint} />
           )}
           {activeTab === 'activity' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full" />
@@ -271,6 +278,8 @@ export default function UserProfileView({
           loading={loadingPosts}
           onSelectPost={setSelectedPost}
           columns={compact ? 2 : 4}
+          locale={activeLocale}
+          strings={strings}
         />
       )}
 
@@ -280,6 +289,8 @@ export default function UserProfileView({
           creator={creator}
           currentUser={currentUser}
           onSwitchToCreations={() => setActiveTab('creations')}
+          locale={activeLocale}
+          strings={strings}
         />
       )}
 

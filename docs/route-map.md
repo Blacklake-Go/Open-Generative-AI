@@ -27,7 +27,7 @@
 | 语言码 | 前缀 | 有独立路由树 | 服务它的目录 | 树内路由数 | 会造出重复 URL 的别名 |
 | --- | --- | --- | --- | --- | --- |
 | `en` | `（无前缀）` | 否 | `app/[locale]/**` | 6 | — |
-| `zh-CN` | `/zh` | 是 | `app/zh/**` | 22 | `/zh-cn` `/zh-CN` |
+| `zh-CN` | `/zh` | 是 | `app/zh/**` | 25 | `/zh-cn` `/zh-CN` |
 | `ja-JP` | `/ja-JP` | 否 | `app/[locale]/**` | 6 | `/ja` |
 | `ko-KR` | `/ko-KR` | 否 | `app/[locale]/**` | 6 | `/ko` |
 | `zh-TW` | `/zh-TW` | 否 | `app/[locale]/**` | 6 | `/zh-tw` |
@@ -38,10 +38,10 @@
 `app/[locale]/[...slug]/page.js` 按这个顺序判定，闸门拿同一批表求差：
 1. 别名/非规范码（`ja`、`zh-CN`、`es-ES`…）→ **308** 到规范前缀（正常由中间件先做掉，页面层留一条给 matcher 之外的入口）；
 2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`assets` `login` `studio`）→ 就地渲染，永不走到这里；
-3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `forgot-password` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
+3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `feedback` `forgot-password` `lab` `login` `models` `onboarding` `preview-image-studio-dev` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
 4. 都不满足 → **404**（品牌化 404 页，按 `x-locale` 出文案）。
 
-已本地化的前缀与子路径：`/zh` → `about` `assets` `assistant` `benefits` `call-api` `change-password` `coins` `community` `credits` `forgot-password` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
+已本地化的前缀与子路径：`/zh` → `about` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `credits` `forgot-password` `lab` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
 
 ## 页面路由
 
@@ -71,6 +71,7 @@
 | `/admin/credits` | `app/admin/credits/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/email` | `app/admin/email/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/feedback` | `app/admin/feedback/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/feedback/{*}` | `app/admin/feedback/[id]/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/forbidden` | `app/admin/forbidden/page.js` | **public** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations` | `app/admin/generations/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations/failures` | `app/admin/generations/failures/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -99,7 +100,7 @@
 | `/admin/providers/ai` | `app/admin/providers/ai/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/providers/email` | `app/admin/providers/email/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/providers/models` | `app/admin/providers/models/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/providers/payments` | `app/admin/providers/payments/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/providers/payments` | `app/admin/providers/payments/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/providers/sms` | `app/admin/providers/sms/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/providers/social` | `app/admin/providers/social/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/routing` | `app/admin/routing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -125,6 +126,8 @@
 | `/assistant` | `app/assistant/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/studio` |
 | `/benefits` | `app/benefits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/call-api` | `app/call-api/page.jsx` | **public** | noindex | — | 1 | `（根）` | 有 | — |
+| `/canvas-tools` | `app/canvas-tools/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/zh/canvas-tools` |
+| `/canvas-tools/{*}` | `app/canvas-tools/[...slug]/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/zh/canvas-tools${suffix}${preset}` |
 | `/change-password` | `app/change-password/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/coins` | `app/coins/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/community` | `app/community/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
@@ -133,11 +136,14 @@
 | `/creations` | `app/creations/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/credits` | `app/credits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/design-system` | `app/design-system/page.js` | **public** | noindex | — | 2 | `（根）` | 有 | — |
+| `/feedback` | `app/feedback/page.js` | **client** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/forgot-password` | `app/forgot-password/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
+| `/lab` | `app/lab/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/zh/lab` |
 | `/login` | `app/login/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/models` | `app/models/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/models/{*}` | `app/models/[id]/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/onboarding` | `app/onboarding/page.js` | **session** | noindex | force-dynamic | 1 | `（根）` | 有 | `/` |
+| `/preview-image-studio-dev` | `app/preview-image-studio-dev/page.jsx` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | — |
 | `/pricing` | `app/pricing/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | `/studio?subscription=open` |
 | `/privacy` | `app/privacy/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/profile` | `app/profile/page.js` | **session** | noindex | force-dynamic | 1 | `（根）` | 有 | `/login?redirect=/profile` `/login?redirect=/profile` |
@@ -157,12 +163,15 @@
 | `/:loc/assistant` | `app/zh/assistant/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/zh/studio` |
 | `/:loc/benefits` | `app/zh/benefits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/call-api` | `app/zh/call-api/page.jsx` | **public** | noindex | — | 1 | `（根）` | 有 | — |
+| `/:loc/canvas-tools` | `app/zh/canvas-tools/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | — |
+| `/:loc/canvas-tools/{*}` | `app/zh/canvas-tools/[...slug]/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/change-password` | `app/zh/change-password/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/coins` | `app/zh/coins/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/community` | `app/zh/community/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/community/{*}` | `app/zh/community/[id]/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/credits` | `app/zh/credits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/forgot-password` | `app/zh/forgot-password/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
+| `/:loc/lab` | `app/zh/lab/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | — |
 | `/:loc/login` | `app/zh/login/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/models` | `app/zh/models/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/models/{*}` | `app/zh/models/[id]/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
@@ -209,6 +218,7 @@
 | `/refund` | public | index | 仅简体中文文案 |
 | `/content-policy` | public | index | 仅简体中文文案，被三份法务页链入 |
 | `/about` | public | index | 关于页：app/about 与 app/[locale]/about 共用同一份按路径语言出文案的正文 |
+| `/feedback` | client | index | 建议与需求：服务端只读支持邮箱，表单匿名可看，提交与「我的提交」由客户端查会话并调用 /api/feedback |
 | `/models/**` | public | index | AI 模型总揽看板与专用模型详情页：公开索引，支持时调用量、生图数与性能折线图 |
 | `/**` | redirect | none | 语言前缀兜底：别名 308 规范化，前缀下没有的路径 307 回无前缀，都不存在则 notFound |
 
@@ -225,11 +235,11 @@
 
 ## API 路由
 
-- 处理器总数：217（其中 `/api/**` 213，`/api/admin/**` 101 个全部经 `requirePermission`）
+- 处理器总数：227（其中 `/api/**` 223，`/api/admin/**` 104 个全部经 `requirePermission`）
 - 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
-- 变更型但缺 `guardMutation`：无
+- 变更型但缺 `guardMutation`：`app/api/auth/oauth/[provider]/callback/route.js` `app/api/auth/oauth/[provider]/webhook/route.js` `app/api/billing/webhooks/paypal/route.js` `app/api/webhooks/douyin/route.js`
 
 ## 存量债务（棘轮，只许降不许升）
 
@@ -242,11 +252,11 @@
 | `noindex-required-missing` | 0 | 0 |
 | `missing-root-not-found` | 0 | 0 |
 | `stale-declared-path` | 2 | 2 |
-| `api-mutation-without-guard` | 0 | 0 |
-| `api-mutation-without-rate-limit` | 11 | 11 |
+| `api-mutation-without-guard` | 4 | 4 |
+| `api-mutation-without-rate-limit` | 15 | 15 |
 | `api-spoofed-client-user-id` | 0 | 0 |
-| `raw-unprefixed-href` | 90 | 90 |
-| `locale-zh-branch-outside-onboarding` | 12 | 12 |
+| `raw-unprefixed-href` | 86 | 86 |
+| `locale-zh-branch-outside-onboarding` | 10 | 10 |
 
 ## 服务器 A 边缘层
 

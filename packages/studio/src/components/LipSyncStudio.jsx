@@ -41,6 +41,15 @@ import ko from "../messages/ko-KR/lipSyncStudio.json";
 import zhTw from "../messages/zh-TW/lipSyncStudio.json";
 import es from "../messages/es-ES/lipSyncStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const LIPSYNC_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import VideoRelayMenu from "./VideoRelayMenu.jsx";
 
 const LIPSYNC_RELAY_COPY_EN = {
@@ -462,7 +471,7 @@ export default function LipSyncStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, LIPSYNC_MESSAGES, locale);
   const relayCopy = resolveCopy(LIPSYNC_RELAY_COPY_EN, LIPSYNC_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_lipsync_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

@@ -227,7 +227,9 @@ export default function AuthModal({
   // Mobile OAuth trigger redirection helper
   const handleSocialOAuth = (providerId) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-    const url = `/api/auth/oauth/${providerId}?action=login`;
+    const currentPath = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '/studio';
+    const returnTo = currentPath.includes('/login') || currentPath.includes('/register') ? '/studio' : currentPath;
+    const url = `/api/auth/oauth/${providerId}?action=login&returnTo=${encodeURIComponent(returnTo)}&redirect=${encodeURIComponent(returnTo)}`;
     if (isMobile) {
       window.location.assign(url);
       return;

@@ -51,12 +51,38 @@ const requiredBase = Object.fromEntries(Object.entries(base).filter(([, value]) 
 const strict = process.argv.includes('--strict');
 const issues = [];
 
+const INVARIANT_TRANSLATION_KEYS = new Set([
+  'common.authModal.emailPlaceholder',
+  'common.authModal.providerGoogle',
+  'common.authModal.providerTikTok',
+  'common.authModal.providerX',
+  'common.authModal.providerQQ',
+  'common.authModal.providerWeChat',
+  'common.authModal.providerDouyin',
+  'common.homePortal.cliTitle',
+  'common.billing.alipay',
+  'common.billing.wechat',
+  'common.financial.kcoin',
+  'common.account.avatar',
+  'common.onboarding.avatarLabel',
+  'common.assetLibrary.audio',
+  'studio.imageStudio.mediaMenu.audio',
+  'studio.videoStudio.minimax.profiles.lora.label',
+  'studio.videoStudio.seedance.profiles.vip.label',
+  'studio.videoStudio.seedance.toolVariants.vip',
+  'studio.imageStudio.negativePrompt.separator',
+  'studio.audioStudio.fields.sound_tempo.title',
+  'studio.audioStudio.models.elevenlabs-tts-turbo-2-5.name',
+  'studio.audioStudio.models.gemini-2-5-pro-tts.name',
+  'studio.audioStudio.models.gemini-3-1-flash-tts.name',
+]);
+
 for (const locale of locales) {
   const catalog = catalogs[locale];
   const missing = Object.keys(requiredBase).filter((key) => typeof catalog[key] !== 'string' || !catalog[key].trim());
   const extra = Object.keys(catalog).filter((key) => !Object.prototype.hasOwnProperty.call(base, key));
   const formatErrors = Object.keys(requiredBase).filter((key) => typeof catalog[key] === 'string' && !same(placeholders(requiredBase[key]), placeholders(catalog[key])));
-  const fallback = locale === 'en' ? [] : Object.keys(requiredBase).filter((key) => catalog[key]?.trim() && catalog[key].trim() === requiredBase[key].trim());
+  const fallback = locale === 'en' ? [] : Object.keys(requiredBase).filter((key) => catalog[key]?.trim() && catalog[key].trim() === requiredBase[key].trim() && !INVARIANT_TRANSLATION_KEYS.has(key));
   const total = Object.keys(requiredBase).length;
   const completed = locale === 'en' ? total : Object.keys(requiredBase).filter((key) => catalog[key]?.trim() && !fallback.includes(key) && !formatErrors.includes(key)).length;
   const coverage = total ? Number(((completed / total) * 100).toFixed(2)) : 100;

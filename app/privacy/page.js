@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <div className="border-b border-white/[0.08] pb-6 mb-8">
             <div className="flex items-center gap-2 mb-3">
               <PageEyebrow>Privacy & Security</PageEyebrow>
-              <span className="text-xs text-gray-500 font-mono">v2.5 · 2026-10-17</span>
+              <span className="text-xs text-gray-500 font-mono">v2.6 · 2026-10-24</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               <span className="font-jost font-medium">supdance</span> 平台隐私保护政策
@@ -78,6 +78,42 @@ export default function PrivacyPage() {
                 </p>
                 <p lang="en">
                   When you use the SupDance Canvas Codex plugin, its local Agent processes canvas titles, node content, selected content, prompts, reference media, and Agent runtime data as needed to connect to, read, or edit the canvas and to run workflows you request. When you request content generation, the prompt, reference media, and task parameters needed for that request are sent to the model or compute provider selected for that task. SupDance retains plugin-related canvas content, prompts, and Agent runtime data received by SupDance for 3 days, then automatically deletes them. This server-side period does not apply to Codex or local Agent session records, task history, configuration, or debug logs stored on your device; local data remains until you or your local software settings delete it. You can stop using the plugin and delete online canvas content through the canvas and asset controls available in your SupDance account.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-base/60 p-5">
+              <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-cyan-400" />
+                6. 第三方账号快捷登录与数据删除 (Social Login & Data Deletion)
+              </h2>
+              <div className="space-y-3 text-gray-400">
+                <p>
+                  <strong>Instagram 登录与资料：</strong>
+                  Instagram 登录目前支持 Instagram Business 或 Creator（专业）账号。经您同意后，SupDance 仅请求 <code>instagram_business_basic</code>，读取 Instagram 账号标识与用户名，用于登录、创建 SupDance 账户或绑定登录方式；我们不请求发布内容、私信、评论或洞察相关权限，也不会持久化 Instagram 访问令牌。
+                </p>
+                <p>
+                  <strong>Instagram 数据删除：</strong>
+                  您可以在 SupDance 个人中心的资料页「社交账号」列表中解绑 Instagram；解绑会删除该登录凭据，但不会注销您的 SupDance 账户。若要删除 SupDance 账户及关联数据，请在个人中心选择「注销账户」；账户会先进入 3 天可撤销期，期满未撤销后系统会自动永久清除账户数据。也可联系 <code className="text-cyan-400">privacy@supdance.com</code> 请求协助。
+                </p>
+                <p lang="en">
+                  <strong>Instagram login and profile data:</strong>
+                  Instagram sign-in currently supports Instagram Business and Creator (professional) accounts. After you authorize it, SupDance requests only <code>instagram_business_basic</code> to read your Instagram account identifier and username for sign-in, SupDance account creation, or account linking. We do not request permissions for publishing, messaging, comments, or insights, and we do not persist Instagram access tokens.
+                </p>
+                <p lang="en">
+                  <strong>Instagram data deletion:</strong>
+                  You can unlink Instagram from the Social Accounts list on your SupDance profile page. Unlinking removes that login credential but does not close your SupDance account. To delete your SupDance account and its associated data, submit an account deletion request from your profile; the account has a 3-day cancellation period and is permanently deleted after that period if you do not cancel. For help, contact <code>privacy@supdance.com</code>.
+                </p>
+                <p>
+                  <strong>TikTok 登录与资料：</strong>
+                  当您选择使用 TikTok 快捷登录（Login Kit）时，SupDance 仅在您明确授权的前提下申请基础身份凭据（<code>user.info.basic</code>，包括公开头像、昵称及应用唯一标识 open_id），仅用于完成创作者身份识别、账户创建及工作区个性化展示，我们绝不会私自读取或发布您的非公开视频或隐私内容。
+                </p>
+                <p>
+                  <strong>用户数据删除指引 (Data Deletion Request Instructions)：</strong>
+                  创作者可随时在 SupDance「账户中心 - 社交账号绑定」中一键解除 TikTok 授权，亦可通过发送邮件至 <code className="text-cyan-400">privacy@supdance.com</code> 或 <code className="text-cyan-400">support@supdance.com</code> 提交数据清除申请（邮件主题请注明：TikTok Data Deletion Request）。我们在核实用户身份后，将在 30 个自然日内彻底物理清除您名下所有由 TikTok 接口同步的用户元数据及对应凭证。
+                </p>
+                <p lang="en">
+                  When you sign in using TikTok Login Kit, SupDance only requests minimal basic profile information (<code>user.info.basic</code>: avatar, display name, and unique open_id) upon your explicit authorization to facilitate account sign-in and personalized workspace setup. We do not access or post any unauthorized personal content. To request deletion of data obtained via TikTok, you can unlink your TikTok account anytime in Account Settings or email us at <code>privacy@supdance.com</code>. All TikTok user data will be permanently removed from our active databases within 30 days of verification.
                 </p>
               </div>
             </div>

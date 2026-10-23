@@ -24,7 +24,7 @@
   "mediaMenu": {
     "image": "Imagen",
     "imageDesc": "Genera imágenes realistas y estilizadas",
-    "video": "Video",
+    "video": "Vídeo",
     "videoDesc": "Genera videos cinematográficos",
     "script": "Guión",
     "scriptDesc": "Genera guiones y diálogos creativos",
@@ -49,7 +49,7 @@
     "modeImageToImage": "Imagen a Imagen",
     "creditPerImage": "✦ {cost}/imagen",
     "creditPerImageOriginal": "11/imagen",
-    "batchCountUnit": "{count} img"
+    "batchCountUnit": "{count} imág."
   },
   "modelDropdown": {
     "categoryAll": "Todos",

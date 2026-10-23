@@ -1,49 +1,49 @@
 {
   "empty": {
-    "titleLine1": "COMIENCE A CREAR CON",
+    "titleLine1": "COMIENZA A CREAR CON",
     "titleLine2": "ESTUDIO DE MARKETING",
-    "subtitle": "Describe tu escena, sube tu producto y observa cómo cobran vida los anuncios de vídeo de IA de alta conversión."
+    "subtitle": "Describe tu escena, sube tu producto y observa cómo cobran vida anuncios de video de alta conversión con IA."
   },
   "uploadSlots": {
     "product": "Producto",
-    "avatar": "Avatar",
+    "avatar": "Foto de perfil (Avatar)",
     "references": "Referencias",
     "uploadPrefix": "Subir"
   },
   "prompt": {
-    "placeholder": "Describe el script de tu anuncio... Usa @image1 para el producto, @image2 para el avatar."
+    "placeholder": "Describe el guion de tu anuncio... Usa @image1 para el producto, @image2 para el avatar."
   },
   "dropdowns": {
-    "videoFormatPresets": "Ajustes preestablecidos de formato de vídeo",
-    "avatarPresets": "Ajustes preestablecidos de avatar",
-    "aspectRatio": "Relación de aspecto",
+    "videoFormatPresets": "Ajustes Preestablecidos de Formato de Video",
+    "avatarPresets": "Ajustes Preestablecidos de Avatar",
+    "aspectRatio": "Relación de Aspecto",
     "resolution": "Resolución",
     "duration": "Duración",
     "selectAvatarFallback": "Seleccionar Avatar"
   },
   "buttons": {
     "generating": "Generando...",
-    "launch": "Lanzamiento",
+    "launch": "Lanzar",
     "enlargePreview": "Ampliar vista previa",
     "enlargeSelectedAvatar": "Ampliar avatar seleccionado",
     "selectAvatar": "Seleccionar Avatar",
     "download": "Descargar",
-    "delete": "Borrar"
+    "delete": "Eliminar"
   },
   "history": {
-    "badge": "Estudio de marketing"
+    "badge": "Estudio de Marketing"
   },
   "alt": {
-    "creativeAsset": "Activo creativo {index}",
-    "previousAvatar": "Avatar anterior",
-    "nextAvatar": "Siguiente avatar"
+    "creativeAsset": "Recurso creativo {index}",
+    "previousAvatar": "Avatar Anterior",
+    "nextAvatar": "Avatar Siguiente"
   },
   "errors": {
-    "missingScript": "Introduzca un guión publicitario.",
-    "missingProductImage": "Por favor cargue una imagen del producto.",
-    "generationFailed": "La generación de marketing falló"
+    "missingScript": "Por favor, introduce un guion publicitario.",
+    "missingProductImage": "Por favor, sube una imagen del producto.",
+    "generationFailed": "Error al generar contenido de marketing"
   },
   "confirm": {
-    "deleteItem": "¿Está seguro de que desea eliminar este elemento generado?"
+    "deleteItem": "¿Estás seguro de que deseas eliminar este elemento generado?"
   }
 }

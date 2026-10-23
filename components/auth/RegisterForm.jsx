@@ -52,6 +52,7 @@ export default function RegisterForm({ locale = 'en' }) {
   const [socialRegion, setSocialRegion] = useState(null);
 
   const timerRef = useRef(null);
+  const handledAuthRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -96,8 +97,10 @@ export default function RegisterForm({ locale = 'en' }) {
       if (!data || (data.type !== 'supdance-auth-complete' && data.type !== 'koyosim-auth-complete')) return;
       if (data.action === 'bind') return;
       if (data.ok) {
-        router.push(redirectUrl);
-        router.refresh();
+        if (handledAuthRef.current) return;
+        handledAuthRef.current = true;
+        const target = data.targetUrl || redirectUrl;
+        window.location.replace(target);
       } else if (data.message) {
         setErrorMsg(data.message);
       }
@@ -222,9 +225,8 @@ export default function RegisterForm({ locale = 'en' }) {
 
       setInfoMsg(copy.msgRegisterSuccess);
       setTimeout(() => {
-        router.push(redirectUrl);
-        router.refresh();
-      }, 800);
+        window.location.replace(redirectUrl);
+      }, 500);
     } catch (err) {
       setErrorMsg(err.message || 'Registration failed');
     } finally {

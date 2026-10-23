@@ -1,10 +1,24 @@
 import { getUserFromRequest, json } from '@/lib/services/auth';
 import { submitFeedback, listMyFeedback } from '@/lib/services/feedback';
+import { FEEDBACK_ATTACHMENT_MAX_TOTAL_BYTES } from '@/lib/feedback/attachments';
 import { guardMutation, consumeRateLimit, rateLimitResponse } from '@/lib/security/requestGuard';
 import { publicErrorMessage } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+const MULTIPART_OVERHEAD_BYTES = 2 * 1024 * 1024;
+
+function collectFiles(formData) {
+  const candidates = [
+    ...formData.getAll('attachments'),
+    ...formData.getAll('files'),
+    formData.get('file'),
+  ];
+  return candidates.filter(
+    (item) => item && typeof item === 'object' && typeof item.arrayBuffer === 'function' && Number(item.size) > 0,
+  );
+}
 
 export async function GET(request) {
   const user = await getUserFromRequest(request);
@@ -22,7 +36,10 @@ export async function POST(request) {
   const user = await getUserFromRequest(request);
   if (!user) return json({ error: '请先登录后再提交' }, { status: 401 });
 
-  const guarded = guardMutation(request, { maxBytes: 64 * 1024 });
+  const isMultipart = String(request.headers.get('content-type') || '').includes('multipart/form-data');
+  const guarded = guardMutation(request, {
+    maxBytes: isMultipart ? FEEDBACK_ATTACHMENT_MAX_TOTAL_BYTES + MULTIPART_OVERHEAD_BYTES : 64 * 1024,
+  });
   if (guarded) return guarded;
 
   try {
@@ -34,16 +51,37 @@ export async function POST(request) {
     });
     if (!limited.allowed) return rateLimitResponse(limited);
 
-    const body = await request.json();
-    const result = await submitFeedback({
-      userId: user.id,
-      kind: body.kind,
-      title: body.title,
-      pageUrl: body.pageUrl,
-      detail: body.detail,
-    });
+    let input;
+    let files = [];
 
-    if (result.error) return json({ error: result.error }, { status: 400 });
+    if (isMultipart) {
+      const formData = await request.formData();
+      input = {
+        kind: formData.get('kind'),
+        title: formData.get('title'),
+        pageUrl: formData.get('pageUrl') || formData.get('page_url'),
+        githubUrl: formData.get('githubUrl') || formData.get('github_url'),
+        detail: formData.get('detail'),
+      };
+      files = collectFiles(formData);
+    } else {
+      const body = await request.json();
+      input = {
+        kind: body.kind,
+        title: body.title,
+        pageUrl: body.pageUrl,
+        githubUrl: body.githubUrl,
+        detail: body.detail,
+      };
+    }
+
+    const result = await submitFeedback({ userId: user.id, ...input, files });
+    if (result.error) {
+      return json(
+        { error: result.error, code: result.code || 'FEEDBACK_INVALID' },
+        { status: result.status || 400 },
+      );
+    }
 
     return json({
       ...result,

@@ -37,6 +37,15 @@ import ko from "../messages/ko-KR/recastStudio.json";
 import zhTw from "../messages/zh-TW/recastStudio.json";
 import es from "../messages/es-ES/recastStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const RECAST_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import VideoRelayMenu from "./VideoRelayMenu.jsx";
 
 const RECAST_RELAY_COPY_EN = {
@@ -570,7 +579,7 @@ export default function RecastStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, RECAST_MESSAGES, locale);
   const relayCopy = resolveCopy(RECAST_RELAY_COPY_EN, RECAST_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_recast_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

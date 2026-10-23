@@ -19,8 +19,6 @@ import {
   Wand2,
   ChevronDown,
   Layers,
-  Image as ImageIcon,
-  Clapperboard,
   AudioLines,
   X,
   Play,
@@ -28,42 +26,518 @@ import {
   Loader2,
   Scan,
 } from 'lucide-react';
-import { localizeStudioPath } from '@/lib/locales';
+import { normalizeLocale, localizeStudioPath } from '@/lib/locales';
 import { useUserSession } from '@/lib/hooks/useUserSession';
 import BrandLogo from '@/components/site/BrandLogo';
 import UserDropdownMenu from '@/components/UserDropdownMenu';
 import AuthModal from '@/components/AuthModal';
 import { useBranding } from '@/lib/hooks/useBranding';
 
-// 动态日期分组算法 (基于真实 ISO 8601 时间戳转换)
-function formatTimelineDate(dateStr, isZh) {
-  if (!dateStr) return isZh ? '其他时间' : 'Other';
+// 动态日期分组算法 (基于真实 ISO 8601 时间戳转换，支持 6 种语言)
+function formatTimelineDate(dateStr, locale = 'en') {
+  const norm = normalizeLocale(locale);
+  const otherMap = {
+    en: 'Other',
+    'zh-CN': '其他时间',
+    'zh-TW': '其他時間',
+    'ja-JP': 'その他',
+    'ko-KR': '기타',
+    es: 'Otro',
+  };
+  const todayMap = {
+    en: 'Today',
+    'zh-CN': '今天',
+    'zh-TW': '今天',
+    'ja-JP': '今日',
+    'ko-KR': '오늘',
+    es: 'Hoy',
+  };
+  const yesterdayMap = {
+    en: 'Yesterday',
+    'zh-CN': '昨天',
+    'zh-TW': '昨天',
+    'ja-JP': '昨日',
+    'ko-KR': '어제',
+    es: 'Ayer',
+  };
+  const daysAgoMap = {
+    en: (n) => `${n} days ago`,
+    'zh-CN': () => '前天',
+    'zh-TW': () => '前天',
+    'ja-JP': (n) => `${n}日前`,
+    'ko-KR': (n) => `${n}일 전`,
+    es: (n) => `Hace ${n} días`,
+  };
+
+  if (!dateStr) return otherMap[norm] || otherMap.en;
   const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return isZh ? '其他时间' : 'Other';
+  if (isNaN(d.getTime())) return otherMap[norm] || otherMap.en;
 
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const targetDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const diffDays = Math.round((today - targetDay) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return isZh ? '今天' : 'Today';
-  if (diffDays === 1) return isZh ? '昨天' : 'Yesterday';
-  if (diffDays === 2) return isZh ? '前天' : '2 days ago';
+  if (diffDays === 0) return todayMap[norm] || todayMap.en;
+  if (diffDays === 1) return yesterdayMap[norm] || yesterdayMap.en;
+  if (diffDays === 2) {
+    const fn = daysAgoMap[norm] || daysAgoMap.en;
+    return fn(2);
+  }
+
+  const intlLocales = {
+    en: 'en-US',
+    'zh-CN': 'zh-CN',
+    'zh-TW': 'zh-TW',
+    'ja-JP': 'ja-JP',
+    'ko-KR': 'ko-KR',
+    es: 'es-ES',
+  };
+  const targetIntl = intlLocales[norm] || 'en-US';
 
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
   const day = d.getDate();
 
   if (year === now.getFullYear()) {
-    return isZh ? `${month}月${day}日` : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (norm === 'zh-CN' || norm === 'zh-TW') return `${month}月${day}日`;
+    return d.toLocaleDateString(targetIntl, { month: 'short', day: 'numeric' });
   }
-  return isZh ? `${year}年${month}月${day}日` : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  if (norm === 'zh-CN' || norm === 'zh-TW') return `${year}年${month}月${day}日`;
+  return d.toLocaleDateString(targetIntl, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-export default function JimengAssetCenter({ locale = 'zh', initialUser = null }) {
+const ASSET_CENTER_COPY = {
+  en: {
+    signInTitle: 'Sign in to Access Assets',
+    signInDesc: 'Asset Center securely archives all your generated AI creations. Please sign in to continue.',
+    signInBtn: 'Sign In / Register',
+    goToLoginPage: 'Go to Login Page',
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar',
+    navStudio: 'Studio',
+    navAssets: 'Assets',
+    navSubjects: 'Subjects',
+    recentChats: 'Recent Chats',
+    noRecentChats: 'No recent chats',
+    canvases: 'Canvases',
+    canvasStudio: 'Canvas Studio',
+    tabHistory: 'History',
+    tabCanvas: 'Canvases',
+    searchPlaceholder: 'Search assets...',
+    gridView: 'Grid View',
+    listView: 'List View',
+    mediaAll: 'All',
+    mediaImage: 'Image',
+    mediaVideo: 'Video',
+    mediaAudio: 'Audio',
+    mediaWorkflow: 'Workflow',
+    filterStarred: 'Starred',
+    timeAll: 'All Time',
+    time7Days: '7 Days',
+    timeLast7Days: 'Last 7 Days',
+    time30Days: '30 Days',
+    timeLast30Days: 'Last 30 Days',
+    sortNewest: 'Newest',
+    sortNewestFirst: 'Newest First',
+    sortOldest: 'Oldest',
+    sortOldestFirst: 'Oldest First',
+    noMatchingAssets: 'No matching assets found',
+    noAssetsYet: 'No generated assets yet',
+    resetFilters: 'Reset Filters',
+    startCreating: 'Start Creating',
+    viewDetail: 'View Detail',
+    star: 'Star',
+    unstar: 'Unstar',
+    starredDone: 'Starred',
+    remix: 'Remix',
+    remixTooltip: 'Remix with prompt',
+    copyPrompt: 'Copy prompt',
+    deleteAsset: 'Delete asset',
+    untitledAsset: 'Untitled Asset',
+    creditsLabel: 'credits',
+    close: 'Close',
+    badgeVideo: 'AI Video',
+    badgeAudio: 'AI Audio',
+    badgeImage: 'AI Image',
+    promptLabel: 'Prompt',
+    copyLabel: 'Copy',
+    modelLabel: 'Model',
+    ratioLabel: 'Ratio',
+    creditsCostLabel: 'Credits',
+    remixInStudio: 'Remix in Studio',
+    downloadOriginal: 'Download Original',
+    deleteLabel: 'Delete',
+    addedToFavorites: 'Added to favorites',
+    removedFromFavorites: 'Removed from favorites',
+    failedToUpdateFavorite: 'Failed to update favorite',
+    confirmDelete: 'Are you sure you want to delete this asset?',
+    assetDeleted: 'Asset deleted',
+    deleteFailed: 'Delete failed',
+    promptCopied: 'Prompt copied to clipboard',
+    audioArtwork: 'AI Audio Track',
+    noPromptRecorded: 'No prompt recorded',
+  },
+  'zh-CN': {
+    signInTitle: '登录访问个人资产中心',
+    signInDesc: '资产中心集中归档您所有的 AI 生图、生视频与音频作品，请先登录您的创作者账号。',
+    signInBtn: '立即登录 / 注册',
+    goToLoginPage: '跳转完整登录页',
+    collapseSidebar: '折叠侧边栏',
+    expandSidebar: '展开侧边栏',
+    navStudio: '创作',
+    navAssets: '资产',
+    navSubjects: '主体',
+    recentChats: '历史创作会话',
+    noRecentChats: '暂无历史记录',
+    canvases: '设计画布',
+    canvasStudio: '自由设计画布',
+    tabHistory: '生成历史',
+    tabCanvas: '画布',
+    searchPlaceholder: '搜索提示词或标题...',
+    gridView: '网格视图',
+    listView: '列表视图',
+    mediaAll: '全部',
+    mediaImage: '图片',
+    mediaVideo: '视频',
+    mediaAudio: '音频',
+    mediaWorkflow: '工作流',
+    filterStarred: '收藏',
+    timeAll: '全部时间',
+    time7Days: '近7天',
+    timeLast7Days: '近7天',
+    time30Days: '近30天',
+    timeLast30Days: '近30天',
+    sortNewest: '最新生成',
+    sortNewestFirst: '最新生成',
+    sortOldest: '最早生成',
+    sortOldestFirst: '最早生成',
+    noMatchingAssets: '暂无匹配的资产作品',
+    noAssetsYet: '暂无生成历史资产',
+    resetFilters: '重置筛选',
+    startCreating: '前往创作',
+    viewDetail: '查看详情大图',
+    star: '收藏',
+    unstar: '取消收藏',
+    starredDone: '已收藏',
+    remix: '图生同款',
+    remixTooltip: '使用相同提示词与参数进行二次创作',
+    copyPrompt: '复制提示词',
+    deleteAsset: '删除资产',
+    untitledAsset: '无文字提示词',
+    creditsLabel: '积分',
+    close: '关闭',
+    badgeVideo: 'AI 视频',
+    badgeAudio: 'AI 音频',
+    badgeImage: 'AI 图像',
+    promptLabel: '提示词',
+    copyLabel: '复制',
+    modelLabel: '模型',
+    ratioLabel: '画质比例',
+    creditsCostLabel: '消耗积分',
+    remixInStudio: '立即做同款',
+    downloadOriginal: '下载原文件',
+    deleteLabel: '删除',
+    addedToFavorites: '已加入收藏',
+    removedFromFavorites: '已取消收藏',
+    failedToUpdateFavorite: '收藏状态同步失败',
+    confirmDelete: '确定要删除该生成资产吗？删除后将无法恢复。',
+    assetDeleted: '资产已删除',
+    deleteFailed: '删除失败，请稍后重试',
+    promptCopied: '提示词已复制到剪贴板',
+    audioArtwork: 'AI 音频作品',
+    noPromptRecorded: '无文字提示词',
+  },
+  'zh-TW': {
+    signInTitle: '登入訪問個人資產中心',
+    signInDesc: '資產中心集中歸檔您所有的 AI 生圖、生視頻與音頻作品，請先登入您的創作者帳號。',
+    signInBtn: '立即登入 / 註冊',
+    goToLoginPage: '跳轉完整登入頁',
+    collapseSidebar: '折疊側邊欄',
+    expandSidebar: '展開側邊欄',
+    navStudio: '創作',
+    navAssets: '資產',
+    navSubjects: '主體',
+    recentChats: '歷史創作會話',
+    noRecentChats: '暫無歷史記錄',
+    canvases: '設計畫布',
+    canvasStudio: '自由設計畫布',
+    tabHistory: '生成歷史',
+    tabCanvas: '畫布',
+    searchPlaceholder: '搜尋提示詞或標題...',
+    gridView: '網格視圖',
+    listView: '列表視圖',
+    mediaAll: '全部',
+    mediaImage: '圖片',
+    mediaVideo: '視頻',
+    mediaAudio: '音頻',
+    mediaWorkflow: '工作流',
+    filterStarred: '收藏',
+    timeAll: '全部時間',
+    time7Days: '近7天',
+    timeLast7Days: '近7天',
+    time30Days: '近30天',
+    timeLast30Days: '近30天',
+    sortNewest: '最新生成',
+    sortNewestFirst: '最新生成',
+    sortOldest: '最早生成',
+    sortOldestFirst: '最早生成',
+    noMatchingAssets: '暫無匹配的資產作品',
+    noAssetsYet: '暫無生成歷史資產',
+    resetFilters: '重置篩選',
+    startCreating: '前往創作',
+    viewDetail: '查看詳情大圖',
+    star: '收藏',
+    unstar: '取消收藏',
+    starredDone: '已收藏',
+    remix: '圖生同款',
+    remixTooltip: '使用相同提示詞與參數進行二次創作',
+    copyPrompt: '複製提示詞',
+    deleteAsset: '刪除資產',
+    untitledAsset: '無文字提示詞',
+    creditsLabel: '積分',
+    close: '關閉',
+    badgeVideo: 'AI 視頻',
+    badgeAudio: 'AI 音頻',
+    badgeImage: 'AI 圖像',
+    promptLabel: '提示詞',
+    copyLabel: '複製',
+    modelLabel: '模型',
+    ratioLabel: '畫質比例',
+    creditsCostLabel: '消耗積分',
+    remixInStudio: '立即做同款',
+    downloadOriginal: '下載原文件',
+    deleteLabel: '刪除',
+    addedToFavorites: '已加入收藏',
+    removedFromFavorites: '已取消收藏',
+    failedToUpdateFavorite: '收藏狀態同步失敗',
+    confirmDelete: '確定要刪除該生成資產嗎？刪除後將無法恢復。',
+    assetDeleted: '資產已刪除',
+    deleteFailed: '刪除失敗，請稍後重試',
+    promptCopied: '提示詞已複製到剪貼板',
+    audioArtwork: 'AI 音頻作品',
+    noPromptRecorded: '無文字提示詞',
+  },
+  'ja-JP': {
+    signInTitle: 'アセットセンターへログイン',
+    signInDesc: 'アセットセンターには生成した画像、動画、音楽などの全作品がアーカイブされます。クリエイターアカウントでログインしてください。',
+    signInBtn: 'ログイン / 新規登録',
+    goToLoginPage: 'ログインページへ',
+    collapseSidebar: 'サイドバーを閉じる',
+    expandSidebar: 'サイドバーを開く',
+    navStudio: '制作',
+    navAssets: 'アセット',
+    navSubjects: '被写体',
+    recentChats: '最近のセッション',
+    noRecentChats: '履歴がありません',
+    canvases: 'デザインキャンバス',
+    canvasStudio: 'フリーデザインキャンバス',
+    tabHistory: '生成履歴',
+    tabCanvas: 'キャンバス',
+    searchPlaceholder: 'プロンプトまたはタイトルを検索...',
+    gridView: 'グリッド表示',
+    listView: 'リスト表示',
+    mediaAll: 'すべて',
+    mediaImage: '画像',
+    mediaVideo: '動画',
+    mediaAudio: '音声',
+    mediaWorkflow: 'ワークフロー',
+    filterStarred: 'お気に入り',
+    timeAll: '全期間',
+    time7Days: '過去7日間',
+    timeLast7Days: '過去7日間',
+    time30Days: '過去30日間',
+    timeLast30Days: '過去30日間',
+    sortNewest: '新しい順',
+    sortNewestFirst: '新しい順',
+    sortOldest: '古い順',
+    sortOldestFirst: '古い順',
+    noMatchingAssets: '該当するアセットが見つかりません',
+    noAssetsYet: '生成されたアセットはまだありません',
+    resetFilters: 'フィルターをリセット',
+    startCreating: '制作を始める',
+    viewDetail: '詳細を表示',
+    star: 'お気に入り',
+    unstar: 'お気に入り解除',
+    starredDone: 'お気に入り済み',
+    remix: 'リミックス',
+    remixTooltip: '同じプロンプトと設定で再生成',
+    copyPrompt: 'プロンプトをコピー',
+    deleteAsset: 'アセットを削除',
+    untitledAsset: '名称未設定のアセット',
+    creditsLabel: 'クレジット',
+    close: '閉じる',
+    badgeVideo: 'AI 動画',
+    badgeAudio: 'AI 音声',
+    badgeImage: 'AI 画像',
+    promptLabel: 'プロンプト',
+    copyLabel: 'コピー',
+    modelLabel: 'モデル',
+    ratioLabel: '解像度・比率',
+    creditsCostLabel: '消費クレジット',
+    remixInStudio: 'Studioで同スタイル作成',
+    downloadOriginal: '元ファイルをダウンロード',
+    deleteLabel: '削除',
+    addedToFavorites: 'お気に入りに追加しました',
+    removedFromFavorites: 'お気に入りを解除しました',
+    failedToUpdateFavorite: 'お気に入りの更新に失敗しました',
+    confirmDelete: 'このアセットを削除してもよろしいですか？削除後は復元できません。',
+    assetDeleted: 'アセットを削除しました',
+    deleteFailed: '削除に失敗しました',
+    promptCopied: 'プロンプトをクリップボードにコピーしました',
+    audioArtwork: 'AI 楽曲作品',
+    noPromptRecorded: 'プロンプト記録なし',
+  },
+  'ko-KR': {
+    signInTitle: '개인 에셋 센터 로그인',
+    signInDesc: '에셋 센터는 생성된 모든 AI 이미지, 비디오 및 오디오 작품을 안전하게 보관합니다. 크리에이터 계정으로 로그인해 주세요.',
+    signInBtn: '로그인 / 회원가입',
+    goToLoginPage: '로그인 페이지로 이동',
+    collapseSidebar: '사이드바 접기',
+    expandSidebar: '사이드바 펼치기',
+    navStudio: '제작',
+    navAssets: '에셋',
+    navSubjects: '피사체',
+    recentChats: '최근 대화',
+    noRecentChats: '최근 기록이 없습니다',
+    canvases: '디자인 캔버스',
+    canvasStudio: '자유 디자인 캔버스',
+    tabHistory: '생성 기록',
+    tabCanvas: '캔버스',
+    searchPlaceholder: '프롬프트 또는 제목 검색...',
+    gridView: '그리드 뷰',
+    listView: '리스트 뷰',
+    mediaAll: '전체',
+    mediaImage: '이미지',
+    mediaVideo: '비디오',
+    mediaAudio: '오디오',
+    mediaWorkflow: '워크플로',
+    filterStarred: '즐겨찾기',
+    timeAll: '전체 기간',
+    time7Days: '최근 7일',
+    timeLast7Days: '최근 7일',
+    time30Days: '최근 30일',
+    timeLast30Days: '최근 30일',
+    sortNewest: '최신순',
+    sortNewestFirst: '최신순',
+    sortOldest: '오래된순',
+    sortOldestFirst: '오래된순',
+    noMatchingAssets: '일치하는 에셋이 없습니다',
+    noAssetsYet: '생성된 에셋이 없습니다',
+    resetFilters: '필터 초기화',
+    startCreating: '제작 시작하기',
+    viewDetail: '상세 보기',
+    star: '즐겨찾기',
+    unstar: '즐겨찾기 해제',
+    starredDone: '즐겨찾기됨',
+    remix: '동일 스타일 제작',
+    remixTooltip: '동일한 프롬프트 및 설정으로 재창작',
+    copyPrompt: '프롬프트 복사',
+    deleteAsset: '에셋 삭제',
+    untitledAsset: '제목 없는 에셋',
+    creditsLabel: '크레딧',
+    close: '닫기',
+    badgeVideo: 'AI 비디오',
+    badgeAudio: 'AI 오디오',
+    badgeImage: 'AI 이미지',
+    promptLabel: '프롬프트',
+    copyLabel: '복사',
+    modelLabel: '모델',
+    ratioLabel: '화질 비율',
+    creditsCostLabel: '소모 크레딧',
+    remixInStudio: '스튜디오에서 동스타일 제작',
+    downloadOriginal: '원본 다운로드',
+    deleteLabel: '삭제',
+    addedToFavorites: '즐겨찾기에 추가되었습니다',
+    removedFromFavorites: '즐겨찾기에서 제거되었습니다',
+    failedToUpdateFavorite: '즐겨찾기 업데이트 실패',
+    confirmDelete: '이 생성 에셋을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.',
+    assetDeleted: '에셋이 삭제되었습니다',
+    deleteFailed: '삭제 실패, 나중에 다시 시도해 주세요',
+    promptCopied: '프롬프트가 클립보드에 복사되었습니다',
+    audioArtwork: 'AI 오디오 작품',
+    noPromptRecorded: '기록된 프롬프트 없음',
+  },
+  es: {
+    signInTitle: 'Inicia sesión para acceder a Activos',
+    signInDesc: 'El Centro de Activos archiva de forma segura todas tus creaciones de IA. Inicia sesión para continuar.',
+    signInBtn: 'Iniciar Sesión / Registrarse',
+    goToLoginPage: 'Ir a Página de Inicio de Sesión',
+    collapseSidebar: 'Contraer barra lateral',
+    expandSidebar: 'Expandir barra lateral',
+    navStudio: 'Estudio',
+    navAssets: 'Activos',
+    navSubjects: 'Sujetos',
+    recentChats: 'Chats Recientes',
+    noRecentChats: 'Sin chats recientes',
+    canvases: 'Lienzos',
+    canvasStudio: 'Lienzo de Diseño',
+    tabHistory: 'Historial',
+    tabCanvas: 'Lienzos',
+    searchPlaceholder: 'Buscar por prompt o título...',
+    gridView: 'Vista de cuadrícula',
+    listView: 'Vista de lista',
+    mediaAll: 'Todos',
+    mediaImage: 'Imagen',
+    mediaVideo: 'Video',
+    mediaAudio: 'Audio',
+    mediaWorkflow: 'Flujo',
+    filterStarred: 'Favoritos',
+    timeAll: 'Todo el tiempo',
+    time7Days: '7 Días',
+    timeLast7Days: 'Últimos 7 Días',
+    time30Days: '30 Días',
+    timeLast30Days: 'Últimos 30 Días',
+    sortNewest: 'Más recientes',
+    sortNewestFirst: 'Más recientes primero',
+    sortOldest: 'Más antiguos',
+    sortOldestFirst: 'Más antiguos primero',
+    noMatchingAssets: 'No se encontraron activos coincidentes',
+    noAssetsYet: 'Aún no hay activos generados',
+    resetFilters: 'Restablecer filtros',
+    startCreating: 'Comenzar a Crear',
+    viewDetail: 'Ver Detalle',
+    star: 'Favorito',
+    unstar: 'Quitar de favoritos',
+    starredDone: 'En favoritos',
+    remix: 'Recrear',
+    remixTooltip: 'Recrear con mismo prompt y ajustes',
+    copyPrompt: 'Copiar prompt',
+    deleteAsset: 'Eliminar activo',
+    untitledAsset: 'Activo sin título',
+    creditsLabel: 'créditos',
+    close: 'Cerrar',
+    badgeVideo: 'Video IA',
+    badgeAudio: 'Audio IA',
+    badgeImage: 'Imagen IA',
+    promptLabel: 'Prompt',
+    copyLabel: 'Copiar',
+    modelLabel: 'Modelo',
+    ratioLabel: 'Proporción',
+    creditsCostLabel: 'Créditos gastados',
+    remixInStudio: 'Recrear en Studio',
+    downloadOriginal: 'Descargar Original',
+    deleteLabel: 'Eliminar',
+    addedToFavorites: 'Añadido a favoritos',
+    removedFromFavorites: 'Eliminado de favoritos',
+    failedToUpdateFavorite: 'Error al actualizar favorito',
+    confirmDelete: '¿Estás seguro de eliminar este activo? No se podrá recuperar.',
+    assetDeleted: 'Activo eliminado',
+    deleteFailed: 'Error al eliminar',
+    promptCopied: 'Prompt copiado al portapapeles',
+    audioArtwork: 'Pista de Audio IA',
+    noPromptRecorded: 'Sin prompt registrado',
+  },
+};
+
+export default function JimengAssetCenter({ locale = 'en', initialUser = null }) {
   const router = useRouter();
   const { brand } = useBranding();
   const { user, credits, entitlements, refresh: refreshSession } = useUserSession(initialUser);
+
+  const activeLocale = normalizeLocale(locale);
+  const copy = ASSET_CENTER_COPY[activeLocale] || ASSET_CENTER_COPY.en;
+  const studioBase = localizeStudioPath(activeLocale);
 
   // 认证与弹窗状态
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -101,45 +575,39 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
   const [isDetailClosing, setIsDetailClosing] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // 模态框退出平滑缩放动效控制器 (200ms)
+  // 弹窗关闭动效处理
   const handleCloseDetail = useCallback(() => {
-    if (isDetailClosing) return;
     setIsDetailClosing(true);
     setTimeout(() => {
       setSelectedAsset(null);
       setIsDetailClosing(false);
     }, 200);
-  }, [isDetailClosing]);
+  }, []);
 
-  // 点击外部收起筛选下拉与 Esc 关闭浮层/模态框
+  // ESC 键监听关闭详情弹窗
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (timeDropdownRef.current && !timeDropdownRef.current.contains(e.target)) {
-        setIsTimeDropdownOpen(false);
-      }
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
-        setIsSortDropdownOpen(false);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && selectedAsset) {
+        handleCloseDetail();
       }
     };
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedAsset, handleCloseDetail]);
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (timeDropdownRef.current && !timeDropdownRef.current.contains(event.target)) {
         setIsTimeDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
         setIsSortDropdownOpen(false);
-        if (selectedAsset) {
-          handleCloseDetail();
-        }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [selectedAsset, handleCloseDetail]);
-
-  const isZh = String(locale).startsWith('zh');
-  const studioBase = localizeStudioPath(locale);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -154,53 +622,52 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
       return;
     }
 
-    setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (selectedMediaType !== 'all') {
-        params.set('type', selectedMediaType);
-      }
-      if (onlyStarred) {
-        params.set('favorite', 'true');
-      }
-      if (debouncedSearch.trim()) {
-        params.set('search', debouncedSearch.trim());
-      }
-      if (sortOrder) {
-        params.set('sort', sortOrder);
-      }
-      params.set('limit', '100');
-
-      const res = await fetch(`/api/assets?${params.toString()}`, { cache: 'no-store' });
-      if (res.status === 401) {
-        setShowAuthModal(true);
-        setIsLoading(false);
-        return;
-      }
-
-      if (res.ok) {
-        const data = await res.json();
-        setAssets(Array.isArray(data.assets) ? data.assets : []);
-      } else {
-        console.error('[JimengAssetCenter] fetchAssets returned status:', res.status);
-      }
+      setIsLoading(true);
+      const res = await fetch('/api/assets');
+      if (!res.ok) throw new Error('Failed to fetch assets');
+      const data = await res.json();
+      setAssets(Array.isArray(data.assets) ? data.assets : []);
     } catch (err) {
-      console.error('[JimengAssetCenter] fetchAssets failed:', err);
+      setAssets([]);
     } finally {
       setIsLoading(false);
     }
-  }, [user, selectedMediaType, onlyStarred, debouncedSearch, sortOrder]);
+  }, [user]);
 
   useEffect(() => {
     fetchAssets();
   }, [fetchAssets]);
 
-  // 切换收藏状态并即时落库
+  // 从真实资产流中派生侧边栏「历史创作会话」
+  const dynamicSessions = useMemo(() => {
+    const sessions = [];
+    const seenPrompts = new Set();
+
+    for (const item of assets) {
+      const p = item.prompt ? item.prompt.trim() : '';
+      if (p && !seenPrompts.has(p)) {
+        seenPrompts.add(p);
+        sessions.push({
+          id: item.id,
+          title: p.length > 16 ? `${p.slice(0, 16)}...` : p,
+          fullTitle: p,
+          tab: item.type === 'video' ? 'video' : item.type === 'audio' ? 'audio' : 'image',
+          prompt: p,
+          model: item.model,
+        });
+      }
+      if (sessions.length >= 8) break;
+    }
+    return sessions;
+  }, [assets]);
+
+  // 收藏 / 取消收藏 (乐观更新 + 真实落库)
   const handleToggleStar = async (e, asset) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     const nextStarred = !asset.starred;
 
-    // 乐观更新
+    // 乐观更新本地资产列表状态
     setAssets((prev) =>
       prev.map((item) => (item.id === asset.id ? { ...item, starred: nextStarred } : item))
     );
@@ -209,17 +676,13 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
     }
 
     try {
-      const res = await fetch(`/api/assets/${asset.id}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/assets/${asset.id}/favorite`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isFavorite: nextStarred }),
       });
       if (!res.ok) throw new Error('更新失败');
-      showToast(
-        nextStarred
-          ? (isZh ? '已加入收藏' : 'Added to favorites')
-          : (isZh ? '已取消收藏' : 'Removed from favorites')
-      );
+      showToast(nextStarred ? copy.addedToFavorites : copy.removedFromFavorites);
     } catch (err) {
       // 失败回滚
       setAssets((prev) =>
@@ -228,18 +691,14 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
       if (selectedAsset?.id === asset.id) {
         setSelectedAsset((prev) => (prev ? { ...prev, starred: !nextStarred } : prev));
       }
-      showToast(isZh ? '收藏状态同步失败' : 'Failed to update favorite');
+      showToast(copy.failedToUpdateFavorite);
     }
   };
 
   // 删除单条真实资产
   const handleDeleteAsset = async (e, asset) => {
     if (e) e.stopPropagation();
-    if (
-      !window.confirm(
-        isZh ? '确定要删除该生成资产吗？删除后将无法恢复。' : 'Are you sure you want to delete this asset?'
-      )
-    ) {
+    if (!window.confirm(copy.confirmDelete)) {
       return;
     }
 
@@ -250,9 +709,9 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
       if (!res.ok) throw new Error('删除失败');
       setAssets((prev) => prev.filter((item) => item.id !== asset.id));
       if (selectedAsset?.id === asset.id) setSelectedAsset(null);
-      showToast(isZh ? '资产已删除' : 'Asset deleted');
+      showToast(copy.assetDeleted);
     } catch (err) {
-      showToast(isZh ? '删除失败，请稍后重试' : 'Delete failed');
+      showToast(copy.deleteFailed);
     }
   };
 
@@ -274,7 +733,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
     if (e) e.stopPropagation();
     if (prompt) {
       navigator.clipboard.writeText(prompt);
-      showToast(isZh ? '提示词已复制到剪贴板' : 'Prompt copied to clipboard');
+      showToast(copy.promptCopied);
     }
   };
 
@@ -284,50 +743,58 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
     const now = Date.now();
     const maxAgeMs = timeFilter === '7days' ? 7 * 86400 * 1000 : 30 * 86400 * 1000;
     return assets.filter((item) => {
-      const ts = new Date(item.createdAt || 0).getTime();
-      return now - ts <= maxAgeMs;
+      const created = new Date(item.createdAt || 0).getTime();
+      return now - created <= maxAgeMs;
     });
   }, [assets, timeFilter]);
 
-  // 按真实日期聚合时间轴
+  // 时间轴分组算法核心 (对过滤和排序后的资产进行日期流聚类)
   const groupedTimeline = useMemo(() => {
-    const groups = {};
-    const groupOrder = [];
-    timeFilteredAssets.forEach((item) => {
-      const key = formatTimelineDate(item.createdAt, isZh);
-      if (!groups[key]) {
-        groups[key] = [];
-        groupOrder.push(key);
-      }
-      groups[key].push(item);
-    });
-    return groupOrder.map((key) => [key, groups[key]]);
-  }, [timeFilteredAssets, isZh]);
-
-  // 侧边栏动态历史对话会话 (从用户真实最新任务的 Prompt 提炼，杜绝静态假数据)
-  const dynamicSessions = useMemo(() => {
-    const seen = new Set();
-    const result = [];
-    for (const a of assets) {
-      const raw = (a.prompt || a.title || '').trim();
-      if (raw && !seen.has(raw)) {
-        seen.add(raw);
-        result.push({
-          id: a.id,
-          title: raw.length > 20 ? raw.slice(0, 18) + '...' : raw,
-          fullTitle: raw,
-          tab: a.type === 'video' ? 'video' : a.type === 'audio' ? 'audio' : 'image',
-          prompt: a.prompt,
-          model: a.model,
-        });
-      }
-      if (result.length >= 5) break;
+    // 1. 媒体类型过滤
+    let filtered = timeFilteredAssets;
+    if (selectedMediaType !== 'all') {
+      filtered = filtered.filter((item) => item.type === selectedMediaType);
     }
-    return result;
-  }, [assets]);
 
-  // 若客户端检测到未登录（如退出登录或会话失效），渲染优雅登录提示卡片
+    // 2. 收藏筛选
+    if (onlyStarred) {
+      filtered = filtered.filter((item) => item.starred);
+    }
+
+    // 3. 搜索过滤 (匹配 prompt 或 title 或 model)
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase().trim();
+      filtered = filtered.filter(
+        (item) =>
+          (item.prompt && item.prompt.toLowerCase().includes(q)) ||
+          (item.title && item.title.toLowerCase().includes(q)) ||
+          (item.model && item.model.toLowerCase().includes(q))
+      );
+    }
+
+    // 4. 排序 (newest vs oldest)
+    filtered = [...filtered].sort((a, b) => {
+      const timeA = new Date(a.createdAt || 0).getTime();
+      const timeB = new Date(b.createdAt || 0).getTime();
+      return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+    });
+
+    // 5. 按日期标题聚类分组
+    const groups = new Map();
+    for (const item of filtered) {
+      const key = formatTimelineDate(item.createdAt, activeLocale);
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key).push(item);
+    }
+
+    return Array.from(groups.entries());
+  }, [timeFilteredAssets, selectedMediaType, onlyStarred, debouncedSearch, sortOrder, activeLocale]);
+
+  // 未登录提示守卫视图
   if (!user && !isLoading) {
+    const loginTarget = localizeStudioPath(`/login?redirect=${encodeURIComponent(localizeStudioPath('/assets', activeLocale))}`, activeLocale);
     return (
       <div className="min-h-screen bg-[#0d0e12] text-ink flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-2xl border border-white/10 bg-[#14161b] p-8 text-center shadow-elevation-3">
@@ -335,12 +802,10 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
             <Folder className="w-7 h-7" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">
-            {isZh ? '登录访问个人资产中心' : 'Sign in to Access Assets'}
+            {copy.signInTitle}
           </h2>
           <p className="text-xs text-ink-muted leading-relaxed mb-6">
-            {isZh
-              ? '资产中心集中归档您所有的 AI 生图、生视频与音频作品，请先登录您的创作者账号。'
-              : 'Asset Center securely archives all your generated AI creations. Please sign in to continue.'}
+            {copy.signInDesc}
           </p>
           <div className="flex flex-col gap-3">
             <button
@@ -348,13 +813,13 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               onClick={() => setShowAuthModal(true)}
               className="w-full h-10 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1 cursor-pointer"
             >
-              {isZh ? '立即登录 / 注册' : 'Sign In / Register'}
+              {copy.signInBtn}
             </button>
             <Link
-              href={isZh ? '/zh/login?redirect=/zh/assets' : '/login?redirect=/assets'}
+              href={loginTarget}
               className="w-full h-10 rounded-full bg-surface hover:bg-surface-raised border border-line text-ink-muted hover:text-ink text-xs font-medium flex items-center justify-center transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
-              {isZh ? '跳转完整登录页' : 'Go to Login Page'}
+              {copy.goToLoginPage}
             </Link>
           </div>
         </div>
@@ -385,14 +850,14 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
       >
         {/* 顶部 Logo & 折叠切换按钮 */}
         <div className="h-14 px-4 flex items-center justify-between border-b border-white/[0.06]">
-          <Link href="/" className="flex items-center gap-2 overflow-hidden">
+          <Link href={localizeStudioPath('/', activeLocale)} className="flex items-center gap-2 overflow-hidden">
             <BrandLogo brand={brand} />
           </Link>
           <button
             type="button"
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
             className="w-7 h-7 rounded-lg text-ink-subtle hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
-            title={isSidebarExpanded ? '折叠侧边栏' : '展开侧边栏'}
+            title={isSidebarExpanded ? copy.collapseSidebar : copy.expandSidebar}
           >
             {isSidebarExpanded ? (
               <PanelLeftClose className="w-4 h-4" />
@@ -408,29 +873,29 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
           <Link
             href={studioBase}
             className="flex items-center gap-3 px-3 py-2 rounded-xl text-ink-muted hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-            title="创作"
+            title={copy.navStudio}
           >
             <Sparkles className="w-5 h-5 shrink-0 text-white/70" />
-            {isSidebarExpanded && <span className="text-sm font-medium">{isZh ? '创作' : 'Studio'}</span>}
+            {isSidebarExpanded && <span className="text-sm font-medium">{copy.navStudio}</span>}
           </Link>
 
           {/* 资产 (当前激活项) */}
           <div
             className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/10 text-white font-semibold transition-colors cursor-default shadow-sm"
-            title="资产"
+            title={copy.navAssets}
           >
             <Folder className="w-5 h-5 shrink-0 text-brand" />
-            {isSidebarExpanded && <span className="text-sm">{isZh ? '资产' : 'Assets'}</span>}
+            {isSidebarExpanded && <span className="text-sm">{copy.navAssets}</span>}
           </div>
 
           {/* 主体 */}
           <Link
             href={`${studioBase}?tab=headshot`}
             className="flex items-center gap-3 px-3 py-2 rounded-xl text-ink-muted hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-            title="主体"
+            title={copy.navSubjects}
           >
             <User className="w-5 h-5 shrink-0 text-white/70" />
-            {isSidebarExpanded && <span className="text-sm font-medium">{isZh ? '主体' : 'Subjects'}</span>}
+            {isSidebarExpanded && <span className="text-sm font-medium">{copy.navSubjects}</span>}
           </Link>
         </nav>
 
@@ -440,12 +905,12 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
             {/* 对话列表：真实历史提示词直达入口 */}
             <div>
               <div className="px-3 pb-1 text-xs font-semibold text-ink-subtle uppercase tracking-wider">
-                {isZh ? '历史创作会话' : 'Recent Chats'}
+                {copy.recentChats}
               </div>
               <div className="space-y-0.5 mt-1">
                 {dynamicSessions.length === 0 ? (
                   <div className="px-3 py-1.5 text-xs text-ink-subtle/50 italic">
-                    {isZh ? '暂无历史记录' : 'No recent chats'}
+                    {copy.noRecentChats}
                   </div>
                 ) : (
                   dynamicSessions.map((sess) => (
@@ -473,17 +938,17 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
             {/* 画布功能快捷入口 */}
             <div>
               <div className="px-3 pb-1 text-xs font-semibold text-ink-subtle uppercase tracking-wider">
-                {isZh ? '设计画布' : 'Canvases'}
+                {copy.canvases}
               </div>
               <div className="space-y-0.5 mt-1">
                 <button
                   type="button"
                   onClick={() => router.push(`${studioBase}?tab=layers`)}
                   className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-white/70 hover:text-white hover:bg-white/5 truncate transition-colors flex items-center gap-2 cursor-pointer"
-                  title={isZh ? '自由设计画布' : 'Canvas Studio'}
+                  title={copy.canvasStudio}
                 >
                   <Layers className="w-3.5 h-3.5 text-white/40 shrink-0" />
-                  <span className="truncate">{isZh ? '自由设计画布' : 'Canvas Studio'}</span>
+                  <span className="truncate">{copy.canvasStudio}</span>
                 </button>
               </div>
             </div>
@@ -506,7 +971,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 topTab === 'history' ? 'text-white' : 'text-ink-muted hover:text-white'
               }`}
             >
-              <span>{isZh ? '生成历史' : 'History'}</span>
+              <span>{copy.tabHistory}</span>
               {topTab === 'history' && (
                 <span className="absolute bottom-[-15px] left-0 right-0 h-0.5 bg-brand rounded-full shadow-elevation-1" />
               )}
@@ -521,7 +986,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 topTab === 'canvas' ? 'text-white' : 'text-ink-muted hover:text-white'
               }`}
             >
-              <span>{isZh ? '画布' : 'Canvases'}</span>
+              <span>{copy.tabCanvas}</span>
               {topTab === 'canvas' && (
                 <span className="absolute bottom-[-15px] left-0 right-0 h-0.5 bg-brand rounded-full shadow-elevation-1" />
               )}
@@ -537,7 +1002,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isZh ? '搜索提示词或标题...' : 'Search assets...'}
+                placeholder={copy.searchPlaceholder}
                 className="w-full h-8 pl-8 pr-3 rounded-full bg-white/5 border border-white/10 text-xs text-white placeholder:text-ink-subtle focus:outline-none focus:border-brand-line transition-colors"
               />
             </div>
@@ -550,7 +1015,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                   viewMode === 'grid' ? 'bg-white/15 text-white' : 'text-ink-subtle hover:text-white'
                 }`}
-                title="网格视图"
+                title={copy.gridView}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
               </button>
@@ -560,7 +1025,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                   viewMode === 'list' ? 'bg-white/15 text-white' : 'text-ink-subtle hover:text-white'
                 }`}
-                title="列表视图"
+                title={copy.listView}
               >
                 <List className="w-3.5 h-3.5" />
               </button>
@@ -571,7 +1036,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               user={user}
               credits={credits ?? user?.credits ?? 0}
               entitlements={entitlements}
-              locale={locale}
+              locale={activeLocale}
               onOpenAuth={() => setShowAuthModal(true)}
             />
           </div>
@@ -582,11 +1047,11 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
           {/* 左侧多媒体分类胶囊 (允许在窄屏独立横向滚动，不干扰右侧浮层) */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1 min-w-0">
             {[
-              { id: 'all', label: isZh ? '全部' : 'All' },
-              { id: 'image', label: isZh ? '图片' : 'Image' },
-              { id: 'video', label: isZh ? '视频' : 'Video' },
-              { id: 'audio', label: isZh ? '音频' : 'Audio' },
-              { id: 'workflow', label: isZh ? '工作流' : 'Workflow' },
+              { id: 'all', label: copy.mediaAll },
+              { id: 'image', label: copy.mediaImage },
+              { id: 'video', label: copy.mediaVideo },
+              { id: 'audio', label: copy.mediaAudio },
+              { id: 'workflow', label: copy.mediaWorkflow },
             ].map((cat) => (
               <button
                 key={cat.id}
@@ -616,7 +1081,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               }`}
             >
               <Star className={`w-3 h-3 ${onlyStarred ? 'fill-amber-400 text-amber-400' : ''}`} />
-              <span>{isZh ? '收藏' : 'Starred'}</span>
+              <span>{copy.filterStarred}</span>
             </button>
 
             {/* 时间范围下拉框 */}
@@ -635,10 +1100,10 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               >
                 <span>
                   {timeFilter === 'all'
-                    ? isZh ? '全部时间' : 'All Time'
+                    ? copy.timeAll
                     : timeFilter === '7days'
-                    ? isZh ? '近7天' : '7 Days'
-                    : isZh ? '近30天' : '30 Days'}
+                    ? copy.time7Days
+                    : copy.time30Days}
                 </span>
                 <ChevronDown className={`w-3 h-3 text-white/50 transition-transform ${isTimeDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -656,7 +1121,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         : 'text-ink-muted hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span>{isZh ? '全部时间' : 'All Time'}</span>
+                    <span>{copy.timeAll}</span>
                     {timeFilter === 'all' && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                   </button>
                   <button
@@ -671,7 +1136,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         : 'text-ink-muted hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span>{isZh ? '近7天' : 'Last 7 Days'}</span>
+                    <span>{copy.timeLast7Days}</span>
                     {timeFilter === '7days' && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                   </button>
                   <button
@@ -686,7 +1151,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         : 'text-ink-muted hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span>{isZh ? '近30天' : 'Last 30 Days'}</span>
+                    <span>{copy.timeLast30Days}</span>
                     {timeFilter === '30days' && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                   </button>
                 </div>
@@ -707,7 +1172,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                     : 'border-white/10 bg-white/5 text-ink-muted hover:text-white'
                 }`}
               >
-                <span>{sortOrder === 'newest' ? (isZh ? '最新生成' : 'Newest') : isZh ? '最早生成' : 'Oldest'}</span>
+                <span>{sortOrder === 'newest' ? copy.sortNewest : copy.sortOldest}</span>
                 <ChevronDown className={`w-3 h-3 text-white/50 transition-transform ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isSortDropdownOpen && (
@@ -724,7 +1189,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         : 'text-ink-muted hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span>{isZh ? '最新生成' : 'Newest First'}</span>
+                    <span>{copy.sortNewestFirst}</span>
                     {sortOrder === 'newest' && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                   </button>
                   <button
@@ -739,7 +1204,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         : 'text-ink-muted hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span>{isZh ? '最早生成' : 'Oldest First'}</span>
+                    <span>{copy.sortOldestFirst}</span>
                     {sortOrder === 'oldest' && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                   </button>
                 </div>
@@ -769,8 +1234,8 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               <Folder className="w-12 h-12 text-ink-subtle/30" />
               <div className="text-sm text-ink-muted">
                 {searchQuery || onlyStarred || selectedMediaType !== 'all' || timeFilter !== 'all'
-                  ? isZh ? '暂无匹配的资产作品' : 'No matching assets found'
-                  : isZh ? '暂无生成历史资产' : 'No generated assets yet'}
+                  ? copy.noMatchingAssets
+                  : copy.noAssetsYet}
               </div>
               <div className="flex items-center gap-2 mt-2">
                 {(searchQuery || onlyStarred || selectedMediaType !== 'all' || timeFilter !== 'all') && (
@@ -784,7 +1249,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                     }}
                     className="h-8 px-4 rounded-full border border-white/15 bg-white/5 text-white/80 text-xs font-medium hover:bg-white/10 transition-colors cursor-pointer"
                   >
-                    {isZh ? '重置筛选' : 'Reset Filters'}
+                    {copy.resetFilters}
                   </button>
                 )}
                 <button
@@ -792,7 +1257,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                   onClick={() => router.push(studioBase)}
                   className="h-8 px-4 rounded-full bg-brand text-white text-xs font-medium hover:bg-brand-hover transition-colors cursor-pointer shadow-elevation-1"
                 >
-                  {isZh ? '前往创作' : 'Start Creating'}
+                  {copy.startCreating}
                 </button>
               </div>
             </div>
@@ -843,7 +1308,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         {/* 悬停暗色渐变蒙层 */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
 
-                        {/* 左上角扫瞄/检视图标 (对应图2左上角，悬停展示) */}
+                        {/* 左上角扫瞄/检视图标 (悬停展示) */}
                         <div className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
@@ -852,7 +1317,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                               setSelectedAsset(asset);
                             }}
                             className="w-6 h-6 rounded-lg bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/10 text-amber-400 hover:text-amber-300 flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer shadow-sm active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
-                            title={isZh ? '查看详情大图' : 'View Detail'}
+                            title={copy.viewDetail}
                           >
                             <Scan className="w-3 h-3" />
                           </button>
@@ -877,7 +1342,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                                 ? 'border-amber-400/40 bg-black/70 text-amber-400 opacity-100'
                                 : 'border-white/10 bg-black/50 text-white/70 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-black/80'
                             }`}
-                            title={asset.starred ? (isZh ? '取消收藏' : 'Unstar') : (isZh ? '收藏' : 'Star')}
+                            title={asset.starred ? copy.unstar : copy.star}
                           >
                             <Star className={`w-3 h-3 ${asset.starred ? 'fill-amber-400' : ''}`} />
                           </button>
@@ -889,10 +1354,10 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                             type="button"
                             onClick={(e) => handleDoSame(e, asset)}
                             className="h-6 px-2.5 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/10 hover:border-white/20 text-white text-[10px] font-medium transition-[background-color,color,border-color,transform] duration-fast ease-standard shadow-sm flex items-center gap-1 cursor-pointer active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shrink-0"
-                            title={isZh ? '使用相同提示词与参数进行二次创作' : 'Remix with prompt'}
+                            title={copy.remixTooltip}
                           >
                             <Wand2 className="w-2.5 h-2.5 text-brand" />
-                            <span>{isZh ? '图生同款' : 'Remix'}</span>
+                            <span>{copy.remix}</span>
                           </button>
 
                           <div className="flex items-center gap-1 shrink-0">
@@ -900,7 +1365,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                               type="button"
                               onClick={(e) => handleCopyPrompt(e, asset.prompt)}
                               className="w-6 h-6 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
-                              title={isZh ? '复制提示词' : 'Copy prompt'}
+                              title={copy.copyPrompt}
                             >
                               <Copy className="w-3 h-3" />
                             </button>
@@ -908,7 +1373,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                               type="button"
                               onClick={(e) => handleDeleteAsset(e, asset)}
                               className="w-6 h-6 rounded-full bg-black/60 hover:bg-red-500/80 backdrop-blur-md border border-white/10 text-white/80 hover:text-white flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer active:scale-95 active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
-                              title={isZh ? '删除资产' : 'Delete asset'}
+                              title={copy.deleteAsset}
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -949,7 +1414,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                         {/* 中间信息区 */}
                         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 gap-1.5">
                           <p className="text-xs font-semibold text-white/90 line-clamp-2 select-text group-hover:text-white">
-                            {asset.prompt || asset.title || (isZh ? '无文字提示词' : 'Untitled Asset')}
+                            {asset.prompt || asset.title || copy.untitledAsset}
                           </p>
 
                           <div className="flex flex-wrap items-center gap-2 text-[11px] text-ink-subtle">
@@ -958,11 +1423,11 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                             </span>
                             <span>{asset.quality || '2K'} · {asset.aspectRatio || 'auto'}</span>
                             <span>·</span>
-                            <span>{formatTimelineDate(asset.createdAt, isZh)}</span>
+                            <span>{formatTimelineDate(asset.createdAt, activeLocale)}</span>
                             {asset.creditCost > 0 && (
                               <>
                                 <span>·</span>
-                                <span className="text-brand font-mono">{asset.creditCost} {isZh ? '积分' : 'credits'}</span>
+                                <span className="text-brand font-mono">{asset.creditCost} {copy.creditsLabel}</span>
                               </>
                             )}
                           </div>
@@ -974,17 +1439,17 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                             type="button"
                             onClick={(e) => handleDoSame(e, asset)}
                             className="h-7 px-3 rounded-full bg-brand hover:bg-brand-hover text-white text-xs font-medium flex items-center gap-1 cursor-pointer shadow-elevation-1 transition-colors"
-                            title="做同款"
+                            title={copy.remix}
                           >
                             <Wand2 className="w-3 h-3" />
-                            <span className="hidden sm:inline">{isZh ? '做同款' : 'Remix'}</span>
+                            <span className="hidden sm:inline">{copy.remix}</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={(e) => handleCopyPrompt(e, asset.prompt)}
                             className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                            title="复制提示词"
+                            title={copy.copyPrompt}
                           >
                             <Copy className="w-3.5 h-3.5" />
                           </button>
@@ -997,7 +1462,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                                 ? 'border-amber-400/40 bg-amber-400/10 text-amber-300'
                                 : 'border-white/10 bg-white/5 text-ink-muted hover:text-white'
                             }`}
-                            title={asset.starred ? '取消收藏' : '收藏'}
+                            title={asset.starred ? copy.unstar : copy.star}
                           >
                             <Star className={`w-3.5 h-3.5 ${asset.starred ? 'fill-amber-400 text-amber-400' : ''}`} />
                           </button>
@@ -1006,7 +1471,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                             type="button"
                             onClick={(e) => handleDeleteAsset(e, asset)}
                             className="w-7 h-7 rounded-full bg-white/5 hover:bg-red-500/20 text-ink-subtle hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer"
-                            title="删除资产"
+                            title={copy.deleteAsset}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1043,7 +1508,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
               type="button"
               onClick={handleCloseDetail}
               className="absolute top-4 right-4 z-40 size-8 rounded-full bg-overlay-glass backdrop-blur-md border border-line-subtle text-ink-muted hover:text-ink hover:bg-well active:scale-95 active:duration-instant flex items-center justify-center transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1"
-              title={isZh ? '关闭' : 'Close'}
+              title={copy.close}
               aria-label="Close"
             >
               <X className="size-4" />
@@ -1065,7 +1530,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                   <div className="w-20 h-20 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center mb-4 text-brand">
                     <AudioLines className="w-10 h-10" />
                   </div>
-                  <h4 className="text-sm font-semibold text-white mb-2">{selectedAsset.title || 'AI 音频作品'}</h4>
+                  <h4 className="text-sm font-semibold text-white mb-2">{selectedAsset.title || copy.audioArtwork}</h4>
                   <audio src={selectedAsset.url} controls className="w-full mt-4" />
                 </div>
               ) : (
@@ -1089,51 +1554,51 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                 <div className="flex items-center justify-between pr-8">
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-brand-soft border border-brand-line text-brand font-medium">
                     {selectedAsset.type === 'video'
-                      ? 'AI 视频'
+                      ? copy.badgeVideo
                       : selectedAsset.type === 'audio'
-                      ? 'AI 音频'
-                      : 'AI 图像'}
+                      ? copy.badgeAudio
+                      : copy.badgeImage}
                   </span>
                   <span className="text-xs text-ink-muted font-mono">
-                    {formatTimelineDate(selectedAsset.createdAt, isZh)}
+                    {formatTimelineDate(selectedAsset.createdAt, activeLocale)}
                   </span>
                 </div>
 
                 {/* 提示词 */}
                 <div>
                   <div className="text-xs text-ink-muted mb-1.5 flex items-center justify-between">
-                    <span>{isZh ? '提示词' : 'Prompt'}</span>
+                    <span>{copy.promptLabel}</span>
                     <button
                       type="button"
                       onClick={(e) => handleCopyPrompt(e, selectedAsset.prompt)}
                       className="text-xs text-brand hover:text-brand-hover active:scale-95 active:duration-instant flex items-center gap-1 cursor-pointer transition-[color,transform] duration-fast ease-standard"
                     >
                       <Copy className="w-3 h-3" />
-                      <span>{isZh ? '复制' : 'Copy'}</span>
+                      <span>{copy.copyLabel}</span>
                     </button>
                   </div>
                   <p className="text-xs text-ink leading-relaxed bg-well p-3.5 rounded-xl border border-line select-text max-h-40 overflow-y-auto scrollbar-rail">
-                    {selectedAsset.prompt ? `“${selectedAsset.prompt}”` : isZh ? '无文字提示词' : 'No prompt recorded'}
+                    {selectedAsset.prompt ? `“${selectedAsset.prompt}”` : copy.noPromptRecorded}
                   </p>
                 </div>
 
                 {/* 真实参数细节 */}
                 <div className="space-y-2 pt-2 border-t border-line">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-ink-muted">{isZh ? '模型' : 'Model'}</span>
+                    <span className="text-ink-muted">{copy.modelLabel}</span>
                     <span className="text-ink font-mono truncate max-w-[180px] text-right" title={selectedAsset.model || 'AI Model'}>
                       {selectedAsset.model || 'AI Model'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-ink-muted">{isZh ? '画质比例' : 'Ratio'}</span>
+                    <span className="text-ink-muted">{copy.ratioLabel}</span>
                     <span className="text-ink font-mono">
                       {selectedAsset.quality || '2K'} · {selectedAsset.aspectRatio || 'auto'}
                     </span>
                   </div>
                   {selectedAsset.creditCost > 0 && (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-ink-muted">{isZh ? '消耗积分' : 'Credits'}</span>
+                      <span className="text-ink-muted">{copy.creditsCostLabel}</span>
                       <span className="text-brand font-mono font-semibold">{selectedAsset.creditCost}</span>
                     </div>
                   )}
@@ -1148,7 +1613,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                   className="w-full h-9 rounded-xl bg-brand hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant text-ink-on-accent text-xs font-semibold flex items-center justify-center gap-2 shadow-elevation-1 cursor-pointer transition-[background-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
-                  <span>{isZh ? '立即做同款' : 'Remix in Studio'}</span>
+                  <span>{copy.remixInStudio}</span>
                 </button>
 
                 {selectedAsset.url && (
@@ -1160,7 +1625,7 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                     className="w-full h-8 rounded-xl bg-well hover:bg-raised active:scale-[0.98] active:duration-instant border border-line text-ink-muted hover:text-ink text-xs font-medium flex items-center justify-center gap-2 transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>{isZh ? '下载原文件' : 'Download Original'}</span>
+                    <span>{copy.downloadOriginal}</span>
                   </a>
                 )}
 
@@ -1175,17 +1640,17 @@ export default function JimengAssetCenter({ locale = 'zh', initialUser = null })
                     }`}
                   >
                     <Star className={`w-3.5 h-3.5 ${selectedAsset.starred ? 'fill-amber-400' : ''}`} />
-                    <span>{selectedAsset.starred ? (isZh ? '已收藏' : 'Starred') : (isZh ? '收藏' : 'Star')}</span>
+                    <span>{selectedAsset.starred ? copy.starredDone : copy.star}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={(e) => handleDeleteAsset(e, selectedAsset)}
                     className="h-8 px-3.5 rounded-xl border border-danger-line bg-danger-soft text-danger hover:bg-danger hover:text-ink-on-accent active:scale-[0.98] active:duration-instant text-xs font-medium flex items-center justify-center gap-1 transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
-                    title="删除此资产"
+                    title={copy.deleteAsset}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>{isZh ? '删除' : 'Delete'}</span>
+                    <span>{copy.deleteLabel}</span>
                   </button>
                 </div>
               </div>

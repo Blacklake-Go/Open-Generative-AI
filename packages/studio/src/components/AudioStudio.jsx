@@ -19,6 +19,22 @@ import es from "../messages/es/audioStudio.json";
 import esEs from "../messages/es-ES/audioStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
+const AUDIO_MESSAGES = {
+  zh,
+  'zh-CN': zh,
+  'zh-TW': zhTw,
+  'zh-HK': zhTw,
+  'zh-Hant': zhTw,
+  'zh-Hans': zh,
+  ja,
+  'ja-JP': ja,
+  ko,
+  'ko-KR': ko,
+  es,
+  'es-ES': esEs,
+  en,
+};
+
 // ---------------------------------------------------------------------------
 // Upload button states
 // ---------------------------------------------------------------------------
@@ -550,25 +566,7 @@ export default function AudioStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(
-    en,
-    {
-      zh,
-      'zh-CN': zh,
-      'zh-TW': zhTw,
-      'zh-HK': zhTw,
-      'zh-Hant': zhTw,
-      'zh-Hans': zh,
-      ja,
-      'ja-JP': ja,
-      ko,
-      'ko-KR': ko,
-      es,
-      'es-ES': esEs,
-      en,
-    },
-    locale
-  );
+  const copy = resolveCopy(en, AUDIO_MESSAGES, locale);
   const LEGACY_PERSIST_KEY = "hg_audio_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);
   useEffect(() => {

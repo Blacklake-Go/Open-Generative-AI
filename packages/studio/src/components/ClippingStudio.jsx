@@ -33,6 +33,15 @@ import ko from "../messages/ko-KR/clippingStudio.json";
 import zhTw from "../messages/zh-TW/clippingStudio.json";
 import es from "../messages/es-ES/clippingStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const CLIPPING_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import { isModelActive } from "../models.js";
 import VideoRelayMenu from "./VideoRelayMenu.jsx";
 
@@ -290,7 +299,7 @@ export default function ClippingStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, CLIPPING_MESSAGES, locale);
   const relayCopy = resolveCopy(CLIPPING_RELAY_COPY_EN, CLIPPING_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_clipping_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

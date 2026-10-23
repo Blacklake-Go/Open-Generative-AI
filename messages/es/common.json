@@ -29,6 +29,7 @@
     "home": "Inicio",
     "assets": "Recursos",
     "infiniteCanvas": "Lienzo Infinito",
+    "feedback": "Sugerencias",
     "about": "Acerca de"
   },
   "homePortal": {
@@ -74,7 +75,7 @@
     "modelDirectoryUnavailable": "El listado de modelos no está disponible temporalmente. Algunas funciones pueden verse limitadas.",
     "retry": "Reintentar",
     "vadooPromo": "Imágenes y vídeos de IA sin restricciones → Publicación automática como cortos de YouTube y TikToks, gane ↗",
-    "about": "About"
+    "about": "Acerca de"
   },
   "settingsModal": {
     "title": "Configuración",
@@ -293,7 +294,7 @@
     "folderNamePlaceholder": "Introduzca el nombre de la carpeta...",
     "allCategories": "Todos los tipos",
     "images": "Imágenes",
-    "video": "Video",
+    "video": "Vídeo",
     "audio": "Audio",
     "workflows": "Flujos de trabajo y agentes",
     "searchPlaceholder": "Mensajes de búsqueda, modelos o títulos...",

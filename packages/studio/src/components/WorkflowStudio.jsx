@@ -24,6 +24,15 @@ import esCopy from "../messages/es-ES/workflowStudio.json";
 import { resolveCopy } from "../i18nUtils";
 import { PromptInputField } from "./prompt/PromptInputField.jsx";
 
+const WORKFLOW_MESSAGES = {
+  "zh-CN": zhCopy,
+  "ja-JP": jaCopy,
+  "ko-KR": koCopy,
+  "zh-TW": zhTwCopy,
+  es: esCopy,
+  "es-ES": esCopy,
+};
+
 const WorkflowUI = dynamic(() => import("./WorkflowUI"), {
   ssr: false,
   loading: () => (
@@ -144,14 +153,7 @@ export default function WorkflowStudio({
   onGenerationError,
 }) {
   const workflowFeatureAvailable = false;
-  const copy = resolveCopy(enCopy, {
-    "zh-CN": zhCopy,
-    "ja-JP": jaCopy,
-    "ko-KR": koCopy,
-    "zh-TW": zhTwCopy,
-    es: esCopy,
-    "es-ES": esCopy,
-  }, locale);
+  const copy = resolveCopy(enCopy, WORKFLOW_MESSAGES, locale);
   const params = useParams();
   const router = useRouter();
   const idFromParams = params?.id;     // exists on /workflow/[id]/[tab] route

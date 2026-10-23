@@ -17,6 +17,15 @@ import zhTw from "../messages/zh-TW/aiInfluencerStudio.json";
 import es from "../messages/es-ES/aiInfluencerStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
+const AI_INFLUENCER_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 const CDN = "https://cdn.muapi.ai/influencer";
 
 const TABS_CONFIG = {
@@ -392,7 +401,7 @@ export default function AiInfluencerStudio({
   onRequireAuth,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, AI_INFLUENCER_MESSAGES, locale);
   const [activeTab, setActiveTab] = useState("face");
 
   // Dynamic active models state

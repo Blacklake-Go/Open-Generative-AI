@@ -39,6 +39,15 @@ import ko from "../messages/ko-KR/motionControlStudio.json";
 import zhTw from "../messages/zh-TW/motionControlStudio.json";
 import es from "../messages/es-ES/motionControlStudio.json";
 import { resolveCopy } from "../i18nUtils";
+
+const MOTION_CONTROL_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
 import VideoRelayMenu from "./VideoRelayMenu.jsx";
 
 const MOTION_RELAY_COPY_EN = {
@@ -642,7 +651,7 @@ export default function MotionControlStudio({
   onFilesHandled,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, MOTION_CONTROL_MESSAGES, locale);
   const relayCopy = resolveCopy(MOTION_RELAY_COPY_EN, MOTION_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_motion_control_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

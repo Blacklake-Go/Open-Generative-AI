@@ -160,6 +160,15 @@ import zhTw from "../messages/zh-TW/vibeMotionStudio.json";
 import es from "../messages/es-ES/vibeMotionStudio.json";
 import { resolveCopy } from "../i18nUtils";
 
+const VIBE_MOTION_MESSAGES = {
+  'zh-CN': zh,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'zh-TW': zhTw,
+  es: es,
+  'es-ES': es,
+};
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 async function downloadFile(url, filename) {
   try {
@@ -213,7 +222,7 @@ export default function VibeMotionStudio({
   onGenerationError,
   locale = "en",
 }) {
-  const copy = resolveCopy(en, { 'zh-CN': zh, 'ja-JP': ja, 'ko-KR': ko, 'zh-TW': zhTw, 'es-ES': es }, locale);
+  const copy = resolveCopy(en, VIBE_MOTION_MESSAGES, locale);
   const relayCopy = resolveCopy(VIBEMOTION_RELAY_COPY_EN, VIBEMOTION_RELAY_COPY_LOCALES, locale);
   const LEGACY_PERSIST_KEY = "hg_vibe_motion_studio_persistent";
   const PERSIST_KEY = scopedPersistKey(LEGACY_PERSIST_KEY, apiKey);

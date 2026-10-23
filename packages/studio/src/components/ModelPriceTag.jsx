@@ -9,6 +9,15 @@ import ko from "../messages/ko-KR/modelPrice.json";
 import zhTw from "../messages/zh-TW/modelPrice.json";
 import es from "../messages/es-ES/modelPrice.json";
 
+const MODEL_PRICE_MESSAGES = {
+  "zh-CN": zh,
+  "ja-JP": ja,
+  "ko-KR": ko,
+  "zh-TW": zhTw,
+  es: es,
+  "es-ES": es,
+};
+
 /**
  * Renders the published shelf price for one model id, or for every variant of a
  * picker family. Automatically subscribes to pricing updates and falls back to
@@ -23,7 +32,7 @@ export default function ModelPriceTag({
   showUnavailable = true,
   compact = false,
 }) {
-  const copy = resolveCopy(en, { "zh-CN": zh, "ja-JP": ja, "ko-KR": ko, "zh-TW": zhTw, "es-ES": es }, locale).price;
+  const copy = resolveCopy(en, MODEL_PRICE_MESSAGES, locale).price;
   const [, setVersion] = useState(0);
   const [liveQuote, setLiveQuote] = useState(null);
 
