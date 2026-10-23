@@ -20,6 +20,15 @@ import AuthModal from '@/components/AuthModal';
 import { EXCLUSIVE_BENEFITS } from '@/lib/pricing/exclusiveBenefits';
 import { getSubscriptionStrings, useSubscriptionLocale } from './subscriptionI18n';
 
+const RESTRICTED_COPY = {
+  en: { title: 'Limited experience', detail: 'Only the verified models below are available. New purchases are closed.', open: 'Open image studio', empty: 'No model is available right now.', credits: 'credits' },
+  'zh-CN': { title: '受限体验版', detail: '目前仅开放下列已验收模型；新购暂时关闭。', open: '进入图像工作室', empty: '当前暂无可用模型。', credits: '积分' },
+  'zh-TW': { title: '受限體驗版', detail: '目前僅開放下列已驗收模型；新購暫時關閉。', open: '進入圖像工作室', empty: '目前沒有可用模型。', credits: '積分' },
+  'ja-JP': { title: '限定体験版', detail: '検証済みのモデルのみ利用できます。新規購入は一時停止中です。', open: '画像スタジオを開く', empty: '現在利用できるモデルはありません。', credits: 'クレジット' },
+  'ko-KR': { title: '제한 체험판', detail: '검증된 모델만 사용할 수 있습니다. 신규 구매는 일시 중단되었습니다.', open: '이미지 스튜디오 열기', empty: '현재 사용할 수 있는 모델이 없습니다.', credits: '크레딧' },
+  es: { title: 'Experiencia limitada', detail: 'Solo están disponibles los modelos verificados. Las compras nuevas están cerradas.', open: 'Abrir estudio de imagen', empty: 'No hay modelos disponibles ahora.', credits: 'créditos' },
+};
+
 // 支付方式徽标
 function WeChatPayIcon({ className = 'size-4' }) {
   return (
@@ -83,6 +92,7 @@ export default function SubscriptionModal({
 }) {
   const activeLocale = useSubscriptionLocale(locale);
   const strings = useMemo(() => getSubscriptionStrings(activeLocale), [activeLocale]);
+  const restrictedCopy = RESTRICTED_COPY[activeLocale] || RESTRICTED_COPY.en;
 
   const [mounted, setMounted] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
@@ -97,6 +107,27 @@ export default function SubscriptionModal({
   const [expandedFaqIds, setExpandedFaqIds] = useState(new Set(['faq-4', 'faq-5']));
   const [dynamicPlans, setDynamicPlans] = useState(null);
   const [expandedMoreFeatures, setExpandedMoreFeatures] = useState({});
+  const [publicLaunch, setPublicLaunch] = useState({ restricted: true, models: [] });
+
+  useEffect(() => {
+    if (!isOpen && !isInline) return undefined;
+    let cancelled = false;
+    fetch('/api/models/active', { cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error('MODEL_DIRECTORY_UNAVAILABLE');
+        return response.json();
+      })
+      .then((payload) => {
+        if (!cancelled) setPublicLaunch({
+          restricted: payload.launchScope?.restricted !== false,
+          models: Array.isArray(payload.models) ? payload.models : [],
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setPublicLaunch({ restricted: true, models: [] });
+      });
+    return () => { cancelled = true; };
+  }, [isOpen, isInline]);
 
   useEffect(() => {
     if (user) {
@@ -409,7 +440,42 @@ export default function SubscriptionModal({
 
   if ((!isOpen && !isInline) || !mounted) return null;
 
-  const contentInner = (
+  const verifiedImages = publicLaunch.models.filter((model) => model.category === 'image');
+  const restrictedContent = (
+    <div
+      className="relative w-full max-w-lg mx-auto rounded-2xl border border-line bg-overlay p-6 text-ink shadow-elevation-4"
+      role={isInline ? 'region' : 'dialog'}
+      aria-modal={isInline ? undefined : 'true'}
+      aria-label={restrictedCopy.title}
+      onClick={(event) => event.stopPropagation()}
+    >
+      {!isInline && onClose && (
+        <button type="button" onClick={onClose} aria-label={strings.closeAria}
+          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
+          <X className="size-4" />
+        </button>
+      )}
+      <h1 className="pr-10 text-2xl font-bold">{restrictedCopy.title}</h1>
+      <p className="mt-3 text-sm text-ink-muted">{restrictedCopy.detail}</p>
+      {verifiedImages.length > 0 ? (
+        <div className="mt-5 space-y-3">
+          {verifiedImages.map((model) => (
+            <div key={model.id} className="rounded-xl border border-line bg-surface p-4">
+              <div className="font-semibold">{model.displayName || model.name}</div>
+              <div className="mt-1 font-mono text-sm text-ink-muted">{model.creditsPrice} {restrictedCopy.credits}</div>
+            </div>
+          ))}
+          <a href="/studio/image" className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-semibold text-ink-on-accent hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
+            {restrictedCopy.open}
+          </a>
+        </div>
+      ) : (
+        <p className="mt-5 text-sm text-ink-muted">{restrictedCopy.empty}</p>
+      )}
+    </div>
+  );
+
+  const contentInner = publicLaunch.restricted ? restrictedContent : (
     <div
       className={`relative w-full max-w-6xl mx-auto rounded-2xl border border-line ${
         isInline ? 'bg-surface' : 'bg-overlay my-auto'

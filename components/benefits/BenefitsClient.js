@@ -757,7 +757,7 @@ export default function BenefitsClient({ locale: localeProp = null }) {
                   <MessageCircleHeart className="size-4 text-success" />
                   <span>说句真话</span>
                 </div>
-                <Link href={localizedHref('/account?action=feedback', { pathname })} prefetch={false} className="text-micro font-semibold text-brand hover:text-brand-hover flex items-center gap-0.5">
+                <Link href={localizedHref('/feedback', { pathname })} prefetch={false} className="text-micro font-semibold text-brand hover:text-brand-hover flex items-center gap-0.5">
                   去说说 <ArrowUpRight className="size-3" />
                 </Link>
               </div>

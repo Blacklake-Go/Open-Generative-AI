@@ -9,6 +9,7 @@ import {
   getAlipayProvider,
   signAlipayParams,
 } from '../../lib/payments/alipayProvider.js';
+import { validateAlipayNoticeRouting } from '../../app/api/billing/webhooks/alipay/route.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
@@ -78,6 +79,14 @@ test('signing keeps sign_type while verification excludes it', () => {
   assert.ok(!buildAlipaySignString(params, true).includes('sign_type'));
 });
 
+test('paid and closed Alipay notices require a trade status and merchant order id', () => {
+  for (const tradeStatus of ['TRADE_SUCCESS', 'TRADE_FINISHED', 'TRADE_CLOSED']) {
+    assert.equal(validateAlipayNoticeRouting({ trade_status: tradeStatus }).code, 'ALIPAY_WEBHOOK_ORDER_ID_MISSING');
+    assert.equal(validateAlipayNoticeRouting({ trade_status: tradeStatus, out_trade_no: 'order_probe' }), null);
+  }
+  assert.equal(validateAlipayNoticeRouting({ out_trade_no: 'order_probe' }).code, 'ALIPAY_WEBHOOK_TRADE_STATUS_MISSING');
+});
+
 test('webhook_events receipts use the provider-event composite key from the schema', () => {
   const repo = read('lib/repositories/webhooks.js');
   const section = repo.slice(repo.indexOf('export async function claimWebhookEvent'));
@@ -125,6 +134,7 @@ test('alipay callback route maps failures to real status codes and records every
   assert.match(route, /ALIPAY_PROVIDER_NOT_CONFIGURED/);
   assert.match(route, /status: 503/);
   assert.match(route, /recordRejectedWebhookReceipt/);
+  assert.match(route, /const routingError = validateAlipayNoticeRouting\(params\);[\s\S]*return reject\(\{ request, rawText, params, \.\.\.routingError \}\)/);
   assert.match(route, /handleProviderPaymentWebhook/);
   assert.match(route, /if \(!receipt\.success\) \{[\s\S]*?status: 500/);
   assert.match(route, /return new Response\('success', \{ status: 200/);

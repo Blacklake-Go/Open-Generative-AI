@@ -50,6 +50,16 @@ function receiptHeaders(request) {
   };
 }
 
+export function validateAlipayNoticeRouting(params) {
+  if (!params?.trade_status) {
+    return { code: 'ALIPAY_WEBHOOK_TRADE_STATUS_MISSING', reason: '通知缺少 trade_status' };
+  }
+  if (!params?.out_trade_no) {
+    return { code: 'ALIPAY_WEBHOOK_ORDER_ID_MISSING', reason: '通知缺少 out_trade_no' };
+  }
+  return null;
+}
+
 async function reject({ request, rawText, params, code, reason }) {
   const digest = crypto.createHash('sha256').update(String(rawText || '')).digest('hex').slice(0, 32);
   try {
@@ -100,6 +110,11 @@ export async function POST(request) {
     return reject({ request, rawText, params, code, reason: '异步通知验签失败' });
   }
 
+  const routingError = validateAlipayNoticeRouting(params);
+  if (routingError) {
+    return reject({ request, rawText, params, ...routingError });
+  }
+
   const tradeStatus = params.trade_status;
   const outTradeNo = params.out_trade_no;
   const isPaid = tradeStatus === 'TRADE_SUCCESS' || tradeStatus === 'TRADE_FINISHED';
@@ -129,7 +144,7 @@ export async function POST(request) {
         currency: 'CNY',
         raw: notifySummary(params),
       } : null,
-      skipReason: isPaid ? '通知缺少 out_trade_no，无法定位订单' : `交易状态 ${tradeStatus || '未知'} 无需履约`,
+      skipReason: `交易状态 ${tradeStatus} 无需履约`,
       headers: receiptHeaders(request),
     });
   } catch (error) {

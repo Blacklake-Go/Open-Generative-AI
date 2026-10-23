@@ -7,7 +7,7 @@ REMOTE_USER="${DEPLOY_USER:-ubuntu}"
 REMOTE="${REMOTE_USER}@${SERVER_IP}"
 REMOTE_WEB_DIR="/home/wwwroot/AI/domain/supdance.com/web"
 
-SSH_OPTS=(-o ConnectTimeout=15 -o BatchMode=yes -o StrictHostKeyChecking=no)
+SSH_OPTS=(-o ConnectTimeout=15 -o BatchMode=yes -o StrictHostKeyChecking=no -o BindInterface=en0)
 
 echo "=================================================="
 echo "KOYO Studio / SupDance 生产部署开始"

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, Menu, X, ChevronRight, Crown, ExternalLink, Workflow } from 'lucide-react';
+import { ArrowLeft, Menu, X, ChevronRight, Crown, ExternalLink, Workflow, MessageSquarePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AuthModal from '@/components/AuthModal';
 import UserOnboardingModal from '@/components/auth/UserOnboardingModal';
@@ -395,6 +395,14 @@ export default function StudioHeader({
                 >
                   <NavIcon name="flame" className="size-4 text-amber-400" />
                   <span>{activeLocale.startsWith('zh') ? '灵感社区' : 'Community'}</span>
+                </Link>
+                <Link
+                  href="/feedback"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-body-sm font-medium text-ink hover:bg-wash transition-colors"
+                >
+                  <MessageSquarePlus className="size-4 text-brand" />
+                  <span>{copy?.topNav?.feedback || (activeLocale.startsWith('zh') ? '建议与需求' : 'Feedback')}</span>
                 </Link>
                 <Link
                   href={activeLocale.startsWith('zh') ? '/zh/about' : '/about'}

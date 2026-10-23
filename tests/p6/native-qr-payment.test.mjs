@@ -81,6 +81,29 @@ test('alipay gateway failures log safe metadata without raw response bodies', as
   assert.doesNotMatch(logText, /provider-response-signature-sentinel|Business Failed/);
 });
 
+test('alipay query distinguishes an uncreated trade from an unpaid trade', async () => {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  });
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    alipay_trade_query_response: { code: '40004', sub_code: 'ACQ.TRADE_NOT_EXIST' },
+  }), { status: 200 });
+  try {
+    const provider = getAlipayProvider({
+      appId: 'test-app-id', privateKey, publicKey, gateway: 'https://alipay.invalid/gateway.do',
+    });
+    const result = await provider.retrievePayment('test-order-not-created');
+    assert.equal(result.paid, false);
+    assert.equal(result.tradeNotFound, true);
+    assert.equal(result.orderId, 'test-order-not-created');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('alipay sign string builds sorted query string ignoring sign and empty params', () => {
   const params = {
     c: 3,

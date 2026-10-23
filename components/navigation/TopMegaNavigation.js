@@ -38,6 +38,28 @@ export default function TopMegaNavigation({
   const tNav = copy.topNav || {};
   const rootPath = getLocaleConfig(normLocale)?.rootPath || '';
   const categories = getMegaNavCategories(normLocale);
+  const [launchScope, setLaunchScope] = useState({ restricted: true, models: [] });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/models/active', { cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error('MODEL_DIRECTORY_UNAVAILABLE');
+        return response.json();
+      })
+      .then((payload) => {
+        if (!cancelled) {
+          setLaunchScope({
+            restricted: payload.launchScope?.restricted !== false,
+            models: Array.isArray(payload.models) ? payload.models : [],
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLaunchScope({ restricted: true, models: [] });
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const getNavLabel = (key, defaultLabel) => {
     if (tNav[key]) return tNav[key];
@@ -45,6 +67,7 @@ export default function TopMegaNavigation({
       home: { 'zh-CN': '首页', 'zh-TW': '首頁', 'ja-JP': 'ホーム', 'ko-KR': '홈', es: 'Inicio', en: 'Home' },
       assets: { 'zh-CN': '资产', 'zh-TW': '資產', 'ja-JP': 'アセット', 'ko-KR': '에셋', es: 'Activos', en: 'Assets' },
       infiniteCanvas: { 'zh-CN': '无限画布', 'zh-TW': '無限畫布', 'ja-JP': '無限キャンバス', 'ko-KR': '무한 캔버스', es: 'Lienzo Infinito', en: 'Infinite Canvas' },
+      feedback: { 'zh-CN': '建议与需求', 'zh-TW': '建議與需求', 'ja-JP': 'ご意見・ご要望', 'ko-KR': '건의 및 요청', es: 'Sugerencias', en: 'Feedback' },
       about: { 'zh-CN': '关于', 'zh-TW': '關於', 'ja-JP': '概要', 'ko-KR': '소개', es: 'Acerca de', en: 'About' },
     };
     return dict[key]?.[normLocale] || dict[key]?.en || defaultLabel;
@@ -167,7 +190,20 @@ export default function TopMegaNavigation({
           </NavigationMenu.Item>
 
           {/* 各主分类 Mega Menu (图像、视频、音频、智能体、短剧工作坊、社区) */}
-          {categories.map((cat) => {
+          {launchScope.restricted && launchScope.models.some((model) => model.category === 'image') && (
+            <NavigationMenu.Item>
+              <NavigationMenu.Link asChild>
+                <Link
+                  href={rootPath ? `${rootPath}/studio/image` : '/studio/image'}
+                  prefetch={false}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
+                >
+                  {categories.find((category) => category.id === 'images')?.label || getNavLabel('images', 'Image')}
+                </Link>
+              </NavigationMenu.Link>
+            </NavigationMenu.Item>
+          )}
+          {!launchScope.restricted && categories.map((cat) => {
             const label = cat.label;
             const isDirectCategory = !cat.features?.length && !cat.models?.length;
 
@@ -231,7 +267,7 @@ export default function TopMegaNavigation({
           })}
 
           {/* SupDance 的第二创作工作台使用同一账号与业务 API。 */}
-          <NavigationMenu.Item key="infinite-canvas">
+          {!launchScope.restricted && <NavigationMenu.Item key="infinite-canvas">
             <NavigationMenu.Link asChild>
               <Link
                 href="/canvas"
@@ -241,6 +277,23 @@ export default function TopMegaNavigation({
               >
                 <span>{getNavLabel('infiniteCanvas', 'Infinite Canvas')}</span>
                 <ExternalLink className="size-3.5" aria-hidden="true" />
+              </Link>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>}
+
+          {/* 建议与需求：固定排在「关于」之前，作为反馈与提需求的统一入口。 */}
+          <NavigationMenu.Item key="nav_feedback_pinned">
+            <NavigationMenu.Link asChild>
+              <Link
+                href="/feedback"
+                prefetch={false}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
+                  pathname === '/feedback'
+                    ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
+                    : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink'
+                }`}
+              >
+                <span>{getNavLabel('feedback', 'Feedback')}</span>
               </Link>
             </NavigationMenu.Link>
           </NavigationMenu.Item>
