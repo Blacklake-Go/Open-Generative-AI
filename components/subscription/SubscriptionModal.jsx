@@ -107,7 +107,7 @@ export default function SubscriptionModal({
   const [expandedFaqIds, setExpandedFaqIds] = useState(new Set(['faq-4', 'faq-5']));
   const [dynamicPlans, setDynamicPlans] = useState(null);
   const [expandedMoreFeatures, setExpandedMoreFeatures] = useState({});
-  const [publicLaunch, setPublicLaunch] = useState({ restricted: true, models: [] });
+  const [publicLaunch, setPublicLaunch] = useState({ restricted: false, models: [] });
 
   useEffect(() => {
     if (!isOpen && !isInline) return undefined;
@@ -119,12 +119,12 @@ export default function SubscriptionModal({
       })
       .then((payload) => {
         if (!cancelled) setPublicLaunch({
-          restricted: payload.launchScope?.restricted !== false,
+          restricted: payload.launchScope?.restricted === true,
           models: Array.isArray(payload.models) ? payload.models : [],
         });
       })
       .catch(() => {
-        if (!cancelled) setPublicLaunch({ restricted: true, models: [] });
+        if (!cancelled) setPublicLaunch({ restricted: false, models: [] });
       });
     return () => { cancelled = true; };
   }, [isOpen, isInline]);

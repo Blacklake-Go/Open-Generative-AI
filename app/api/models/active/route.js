@@ -31,6 +31,7 @@ export async function GET(request) {
     const models = await listActiveModels();
     cachedModelsPayload = {
       success: true,
+      launchScope: { restricted: false, categories: [] },
       models: models.filter(isSelectablePublicModel).map((m) => ({
         id: m.id,
         name: m.name,
