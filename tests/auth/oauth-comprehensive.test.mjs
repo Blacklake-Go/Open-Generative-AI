@@ -80,7 +80,7 @@ test('Bilibili buildAuthorizationUrl sets gourl and preserves response_type and 
 
 test('Instagram OAuth uses safe user fields and robust fallback', async () => {
   const content = await readCode('lib/oauth.js');
-  assert.match(content, /fields=id,username,account_type/);
+  assert.match(content, /fields=user_id,username/);
   assert.match(content, /profileTransport:\s*'instagram'/);
   assert.match(content, /context\?\.user_id/);
 });

@@ -11,6 +11,7 @@ test('Instagram OAuth configuration isolates credentials, avoids invalid extra p
   assert.ok(provider, 'Instagram provider must be registered');
   assert.equal(provider.authExtraParams?.enable_fb_login, '0', 'enable_fb_login must be 0 to bypass Facebook redirect loop');
   assert.equal(provider.authExtraParams?.force_authentication, undefined, 'force_authentication is invalid in Meta OAuth and must not be set');
+  assert.equal(provider.userInfoUrl, 'https://graph.instagram.com/me?fields=user_id,username');
 
   // Verify buildAuthorizationUrl produces comma-separated scopes for Instagram
   const authUrl = await buildAuthorizationUrl(

@@ -12,8 +12,8 @@ of those configured origins; unlisted hosts fall back to `PUBLIC_APP_URL`.
 For example, to support the primary and backup domains together:
 
 ```text
-PUBLIC_APP_URL=https://www.koyosim.com
-OAUTH_ALLOWED_ORIGINS=https://www.koyosim.com,https://www.supdance.com
+PUBLIC_APP_URL=https://www.supdance.com
+OAUTH_ALLOWED_ORIGINS=https://www.supdance.com,https://supdance.com
 ```
 
 Register both redirect URIs with each provider application that uses the same client
@@ -22,7 +22,7 @@ complete OAuth.
 
 ```text
 <PUBLIC_APP_URL>/api/auth/oauth/wechat/callback
-<PUBLIC_APP_URL>/api/auth/oauth/qq/callback
+<PUBLIC_APP_URL>/api/auth/qq/callback
 <PUBLIC_APP_URL>/api/auth/oauth/douyin/callback
 ```
 
@@ -35,6 +35,27 @@ The exact full callback URL is also shown on each channel card under **Admin →
 | WeChat | [Approved website application](https://developers.weixin.qq.com/doc/oplatform/Website_App/WeChat_Login/Wechat_Login.html); website login scope `snsapi_login` | AppID → `wechat_oauth:app_id`; AppSecret → `wechat_oauth:app_secret` | Register the callback hostname in WeChat Open Platform. This credential namespace is intentionally separate from WeChat Pay's `wechat` secrets. |
 | QQ | [Approved QQ Connect website application](https://wiki.connect.qq.com/%E4%BD%BF%E7%94%A8authorization_code%E8%8E%B7%E5%8F%96access_token); `get_user_info` | App ID → `qq:app_id`; App Key → `qq:app_key` | Register the callback URL/domain with QQ Connect. |
 | Douyin | [Approved Douyin website application](https://developer.open-douyin.com/docs/resource/zh-CN/dop/develop/sdk/web-app/web/permission); `user_info` | Client Key → `douyin:client_key`; Client Secret → `douyin:client_secret` | Register the complete HTTPS callback URL in the Douyin developer console. Do not add query parameters to the callback URL. |
+
+## International social login setup
+
+International providers share the same OAuth callback handler except where a provider has a separately registered route. Keep every provider's client credentials and scope set isolated; TikTok review status does not affect the other providers.
+
+| Provider | OAuth protocol / requested scope | Callback URL | Notes |
+| --- | --- | --- | --- |
+| Google | OAuth 2.0 + PKCE; `openid email profile` | `https://www.supdance.com/api/auth/oauth/google/callback` | Google sign-in is enabled and verified in production. |
+| X | OAuth 2.0 + PKCE; `users.read` | `https://www.supdance.com/api/auth/oauth/x/callback` | The X app must enable OAuth 2.0 user authentication with read access and register this exact redirect URI. |
+| Instagram | Instagram Login; `instagram_business_basic` only | `https://www.supdance.com/api/auth/oauth/instagram/callback` | Uses the Instagram-specific App ID/Secret. Only Business and Creator accounts are supported. Standard access is limited to app-role/test accounts until Meta approves Advanced Access. No Instagram access token is persisted by SupDance. |
+| TikTok | Login Kit; `user.info.basic` | `https://www.supdance.com/auth/tiktok/callback` | TikTok remains under provider review; this is independent of Douyin Login. |
+
+The Instagram OAuth redirect URI is registered in the Meta app's **Instagram Login** product settings. The public privacy policy and data-deletion instructions are [https://www.supdance.com/privacy](https://www.supdance.com/privacy). The production user interface must not present Instagram as generally available until Meta grants the access level needed for non-role users.
+
+The QQ website app uses its approved callback route directly:
+
+```text
+https://www.supdance.com/api/auth/qq/callback
+```
+
+Do not substitute the generic `/api/auth/oauth/qq/callback` path in the QQ console; both paths are served, but the current approved QQ configuration and token exchange use `/api/auth/qq/callback` consistently.
 
 Enter credentials through each channel card's encrypted credential form. The database stores them using the existing AES-256-GCM provider-secret vault. Optional environment fallbacks are documented in `.env.example`; do not commit populated values or send secrets through chat.
 
