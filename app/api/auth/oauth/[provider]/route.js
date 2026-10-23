@@ -62,11 +62,9 @@ export async function GET(request, { params }) {
       </head><body><div class="card"><h2>${name} 登录尚未配置</h2><p>${msg}。请在管理运营后台「模型与集成 -> 社交登录渠道」中配置相应密钥凭据，或使用手机号/邮箱直接登录体验。</p><button class="btn" onclick="closeOrBack()">确定并返回</button></div>
       <script>
         const message = { type: "supdance-auth-complete", ok: false, message: ${JSON.stringify(msg)} };
-        const isPopup = Boolean(
-          (window.name && (window.name === 'supdance-oauth' || window.name.includes('oauth'))) ||
-          (window.opener && window.opener !== window) ||
-          (typeof window !== 'undefined' && window.menubar && !window.menubar.visible && window.innerWidth <= 600)
-        );
+        const hasOpener = Boolean(window.opener && window.opener !== window);
+        const hasOAuthName = Boolean(window.name && (window.name === 'supdance-oauth' || window.name.includes('oauth')));
+        const isPopup = Boolean(hasOpener || hasOAuthName);
 
         try {
           if (typeof BroadcastChannel !== 'undefined') {
@@ -97,12 +95,18 @@ export async function GET(request, { params }) {
         }
 
         function closeOrBack() {
-          if (isPopup) {
-            window.close();
+          const dest = ${JSON.stringify(returnTo)};
+          const delim = dest.includes("?") ? "&" : "?";
+          const fallbackUrl = dest + delim + "auth_error=" + encodeURIComponent(${JSON.stringify(msg)});
+          if (hasOpener) {
+            try { window.close(); } catch(e) {}
+            setTimeout(() => {
+              if (!window.closed) {
+                window.location.replace(fallbackUrl);
+              }
+            }, 150);
           } else {
-            const dest = ${JSON.stringify(returnTo)};
-            const delim = dest.includes("?") ? "&" : "?";
-            window.location.href = dest + delim + "auth_error=" + encodeURIComponent(${JSON.stringify(msg)});
+            window.location.replace(fallbackUrl);
           }
         }
       </script></body></html>`;

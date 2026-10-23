@@ -59,6 +59,7 @@ export default function LoginForm({ locale = 'en' }) {
   const [code, setCode] = useState('');
   const [countdown, setCountdown] = useState(0);
   const timerRef = useRef(null);
+  const handledAuthRef = useRef(false);
 
   // Status state
   const [busy, setBusy] = useState(false);
@@ -178,9 +179,8 @@ export default function LoginForm({ locale = 'en' }) {
         if (!res.ok) throw new Error(data.error || copy.errLoginFailed);
       }
 
-      // Success: redirect
-      router.push(redirectUrl);
-      router.refresh();
+      // Success: redirect cleanly using location.replace
+      window.location.replace(redirectUrl);
     } catch (err) {
       setErrorMsg(err.message || copy.errLoginFailed);
     } finally {
@@ -203,8 +203,10 @@ export default function LoginForm({ locale = 'en' }) {
       if (!data || (data.type !== 'supdance-auth-complete' && data.type !== 'koyosim-auth-complete')) return;
       if (data.action === 'bind') return;
       if (data.ok) {
-        router.push(redirectUrl);
-        router.refresh();
+        if (handledAuthRef.current) return;
+        handledAuthRef.current = true;
+        const target = data.targetUrl || redirectUrl;
+        window.location.replace(target);
       } else if (data.message) {
         setErrorMsg(data.message);
       }
