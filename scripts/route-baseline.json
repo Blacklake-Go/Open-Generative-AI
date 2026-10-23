@@ -5,10 +5,10 @@
     "noindex-required-missing": 0,
     "missing-root-not-found": 0,
     "stale-declared-path": 2,
-    "api-mutation-without-guard": 4,
-    "api-mutation-without-rate-limit": 15,
+    "api-mutation-without-guard": 5,
+    "api-mutation-without-rate-limit": 16,
     "api-spoofed-client-user-id": 0,
-    "raw-unprefixed-href": 86,
+    "raw-unprefixed-href": 87,
     "locale-zh-branch-outside-onboarding": 10
   }
 }

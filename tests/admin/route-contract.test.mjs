@@ -135,6 +135,7 @@ test('不存在未登记的孤立后台页面（页面文件 ↔ 菜单/重定�
     ...Object.keys(ADMIN_NONAV_ROUTES),
     '/admin/users/[id]', // 动态详情层，由 users 菜单项承载 active 与面包屑
     '/admin/routing/[modelId]', // 动态详情层，由 model-routing 菜单项承载 active 与面包屑
+    '/admin/feedback/[id]', // 动态详情层，由 feedback 菜单项承载 active 与面包屑
   ]);
 
   for (const route of discovered) {

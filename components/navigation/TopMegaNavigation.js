@@ -38,7 +38,7 @@ export default function TopMegaNavigation({
   const tNav = copy.topNav || {};
   const rootPath = getLocaleConfig(normLocale)?.rootPath || '';
   const categories = getMegaNavCategories(normLocale);
-  const [launchScope, setLaunchScope] = useState({ restricted: true, models: [] });
+  const [launchScope, setLaunchScope] = useState({ restricted: false, models: [] });
 
   useEffect(() => {
     let cancelled = false;
@@ -50,13 +50,13 @@ export default function TopMegaNavigation({
       .then((payload) => {
         if (!cancelled) {
           setLaunchScope({
-            restricted: payload.launchScope?.restricted !== false,
+            restricted: payload.launchScope?.restricted === true,
             models: Array.isArray(payload.models) ? payload.models : [],
           });
         }
       })
       .catch(() => {
-        if (!cancelled) setLaunchScope({ restricted: true, models: [] });
+        if (!cancelled) setLaunchScope({ restricted: false, models: [] });
       });
     return () => { cancelled = true; };
   }, []);
