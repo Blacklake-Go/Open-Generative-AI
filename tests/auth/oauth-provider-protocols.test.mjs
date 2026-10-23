@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   exchangeOAuthCode,
   getOAuthProvider,
+  getRedirectUri,
 } from '../../lib/oauth.js';
 
 test('X OAuth authorization uses the current x.com endpoint', () => {
@@ -12,9 +13,30 @@ test('X OAuth authorization uses the current x.com endpoint', () => {
   );
 });
 
+test('QQ uses the callback path registered on its approved website app', () => {
+  const previousRedirectUri = process.env.QQ_REDIRECT_URI;
+  delete process.env.QQ_REDIRECT_URI;
+
+  try {
+    const request = {
+      headers: new Headers({
+        host: 'www.supdance.com',
+        'x-forwarded-proto': 'https',
+      }),
+    };
+    assert.equal(
+      getRedirectUri(request, 'qq'),
+      'https://www.supdance.com/api/auth/qq/callback'
+    );
+  } finally {
+    if (previousRedirectUri === undefined) delete process.env.QQ_REDIRECT_URI;
+    else process.env.QQ_REDIRECT_URI = previousRedirectUri;
+  }
+});
+
 test('QQ exchanges its code with GET and the same registered redirect URI', async () => {
   const originalFetch = globalThis.fetch;
-  const redirectUri = 'https://www.supdance.com/api/auth/oauth/qq/callback';
+  const redirectUri = 'https://www.supdance.com/api/auth/qq/callback';
   let requestUrl;
   let requestOptions;
 
