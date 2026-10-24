@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
-import { Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle, Trash2 } from 'lucide-react';
+import { Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle, Trash2, Wand2 } from 'lucide-react';
 import { EXCLUSIVE_BENEFITS, getDefaultExclusiveFeatures } from '@/lib/pricing/exclusiveBenefits';
 
 const ICON_MAP = {
@@ -12,6 +12,7 @@ const ICON_MAP = {
   Flame,
   ShieldCheck,
   HelpCircle,
+  Wand2,
 };
 
 export default function PlanCardEditor({ plan }) {

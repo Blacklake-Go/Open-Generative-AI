@@ -34,6 +34,8 @@ export async function GET(request) {
         planId: entitlements?.planId || 'free',
         planName: entitlements?.planName || 'Free',
         isPaid: Boolean(entitlements?.isPaidSubscription),
+        exclusiveFeatures: Array.isArray(entitlements?.exclusiveFeatures) ? entitlements.exclusiveFeatures : [],
+        hasCanvasPremiumTools: Boolean(entitlements?.hasCanvasPremiumTools),
       },
     });
   } catch (error) {

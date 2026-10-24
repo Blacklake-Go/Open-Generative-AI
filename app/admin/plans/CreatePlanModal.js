@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle } from 'lucide-react';
+import { X, Plus, Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle, Wand2 } from 'lucide-react';
 import { EXCLUSIVE_BENEFITS } from '@/lib/pricing/exclusiveBenefits';
 
 const ICON_MAP = {
@@ -11,6 +11,7 @@ const ICON_MAP = {
   Flame,
   ShieldCheck,
   HelpCircle,
+  Wand2,
 };
 
 export default function CreatePlanModal({ isOpen, onClose, onCreated }) {

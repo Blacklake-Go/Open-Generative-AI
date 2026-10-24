@@ -1,6 +1,8 @@
 import { getUserFromRequest } from '@/lib/services/auth';
 import { createGenerationQuote } from '@/lib/services/pricingEngine';
 import { getActiveSubscription } from '@/lib/application/dataAccess.js';
+import { getEntitlements } from '@/lib/services/billing';
+import { EXCLUSIVE_BENEFIT_KEYS } from '@/lib/pricing/exclusiveBenefits';
 import { listActiveModels } from '@/lib/services/models';
 import { getCanvasAllowedModelIds } from '@/lib/services/canvasModelConfig';
 import { isCanvasServerCapabilityEnabled } from '@/lib/canvas/capabilityPolicy';
@@ -55,6 +57,31 @@ export async function POST(request) {
     }
     // A failed entitlement lookup must not silently quote this user at the Free tier.
     const subscription = await getActiveSubscription(user.id);
+    const premiumFeature = typeof body.premiumFeature === 'string' ? body.premiumFeature.trim() : '';
+    if (premiumFeature) {
+      if (!EXCLUSIVE_BENEFIT_KEYS.includes(premiumFeature)) {
+        return canvasJson(request, { error: '未知的高级功能标识', code: 'UNKNOWN_PREMIUM_FEATURE' }, { status: 422 });
+      }
+      let entitlements;
+      try {
+        entitlements = await getEntitlements(user.id);
+      } catch (error) {
+        return canvasJson(request, {
+          error: publicErrorMessage(error, '暂时无法确认会员权益，请稍后重试'),
+          code: 'ENTITLEMENT_LOOKUP_FAILED',
+        }, { status: 503 });
+      }
+      const granted = Boolean(entitlements?.isPaidSubscription)
+        && Array.isArray(entitlements?.exclusiveFeatures)
+        && entitlements.exclusiveFeatures.includes(premiumFeature);
+      if (!granted) {
+        return canvasJson(request, {
+          error: '该高级功能为订阅会员专属，请先开通会员',
+          code: 'MEMBERSHIP_REQUIRED',
+          requiredFeature: premiumFeature,
+        }, { status: 403 });
+      }
+    }
     const quote = await createGenerationQuote({
       userId: user.id,
       modelId,
