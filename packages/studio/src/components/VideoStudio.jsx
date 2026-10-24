@@ -58,6 +58,7 @@ import {
   shouldDisableVideoPrompt,
 } from "../modelCapabilities.js";
 import { getServerModelMeta } from "../modelDescriptions.js";
+import { formatModelDisplayName } from "../modelDisplayFormat.js";
 import {
   buildPublicVideoParameters,
   filterPublicVideoProviderParameters,
@@ -1314,6 +1315,10 @@ export default function VideoStudio({
     ? seedanceToolLabel(selectedTool, copy, true)
     : selectedVeoTool ? (copy.veo?.toolNames?.[selectedVeoTool.key] || selectedVeoTool.key)
     : selectedPickerEntry?.name || selectedFamily?.name || defaultFamily?.name || selectedModel || "Video";
+  const selectedPickerDisplayLabel = formatModelDisplayName(selectedPickerLabel, {
+    provider: selectedFamily?.provider || selectedPickerEntry?.family?.provider,
+    modelId: selectedFamily?.id || selectedModel,
+  });
   const getSelectionPlan = useCallback((options = {}) => planGroupedVideoSelection({
     familyId: selectedFamilyId,
     workflowId: selectedWorkflowId,
@@ -3428,15 +3433,18 @@ export default function VideoStudio({
                       );
                     })()}
                 </div>
-                <span className={PROMPT_CONTROL_LABEL_CLASS}>
-                    {selectedPickerLabel}
+                <span
+                  title={selectedPickerDisplayLabel}
+                  className={`${PROMPT_CONTROL_LABEL_CLASS} min-w-0 max-w-[148px] truncate whitespace-nowrap sm:max-w-[220px]`}
+                >
+                    {selectedPickerDisplayLabel}
                   </span>
                   <PromptChevronIcon />
                 </button>
                 {openDropdown === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
+                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-xl bg-overlay-glass"
                     fitViewport={Boolean(groupedConfiguration)}
                     solid={Boolean(groupedConfiguration)}
                   >

@@ -46,6 +46,7 @@ import {
   getModelDisplayName,
   getServerModelMeta,
 } from "../modelDescriptions.js";
+import { formatModelDisplayName } from "../modelDisplayFormat.js";
 import FrontendModelPicker from "./FrontendModelPicker.jsx";
 import {
   buildReferenceParams,
@@ -1502,9 +1503,15 @@ export default function ImageStudio({
   const showEffectBtn = currentEffects.length > 0;
   const selectedFamily = imageModelCatalog.familyById.get(selectedFamilyId) || initialFamily;
   const selectedPickerEntry = imageModelPickerEntryByVariantId.get(selectedModelId);
-  const selectedModelDisplayName = getModelDisplayName(
-    selectedFamily.id,
-    selectedPickerEntry?.name || selectedFamily.name
+  const selectedModelDisplayName = formatModelDisplayName(
+    getModelDisplayName(
+      selectedFamily.id,
+      selectedPickerEntry?.name || selectedFamily.name
+    ),
+    {
+      provider: selectedFamily.provider,
+      modelId: selectedFamily.id || selectedModelId,
+    },
   );
   const selectedVariant = imageModelCatalog.variantById.get(selectedModelId);
   const supplementalInputs = getSupplementalModelInputs(selectedVariant?.model).filter(({ key }) =>
@@ -2729,11 +2736,14 @@ export default function ImageStudio({
                       );
                     })()}
                   </div>
-                  <span className={PROMPT_CONTROL_LABEL_CLASS}>
+                  <span
+                    title={selectedModelDisplayName}
+                    className={`${PROMPT_CONTROL_LABEL_CLASS} min-w-0 max-w-[148px] truncate whitespace-nowrap sm:max-w-[220px]`}
+                  >
                     {selectedModelDisplayName}
                   </span>
                   {getModelBadge(selectedModelId) === '✦' && (
-                    <span className="text-[#38bdf8] font-bold text-xs select-none ml-1 leading-none">✦</span>
+                    <span className="ml-1 select-none text-xs font-bold leading-none text-brand">✦</span>
                   )}
                   <PromptChevronIcon />
                 </button>
@@ -2741,7 +2751,7 @@ export default function ImageStudio({
                 {dropdownOpen === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[410px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-white/[0.08] shadow-elevation-3 rounded-2xl bg-[#1c1c1e]"
+                    className="w-[calc(100vw-2rem)] sm:w-[410px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-xl bg-overlay-glass"
                   >
                     <FrontendModelPicker
                       studioType="image"

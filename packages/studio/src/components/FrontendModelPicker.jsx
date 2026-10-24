@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Pin, Check } from "lucide-react";
 import {
   imageModelPickerEntries,
   videoModelPickerEntries,
@@ -20,7 +19,8 @@ import {
   audioModels,
   lipsyncModels,
 } from "../models.js";
-import { getProviderLogo, invertLogos } from "../providerLogos.js";
+import { formatModelDisplayName } from "../modelDisplayFormat.js";
+import ModelDisplayRow from "./ModelDisplayRow.jsx";
 
 /**
  * Clean Dropdown Model Picker (Figure 2 Style)
@@ -230,7 +230,12 @@ export default function FrontendModelPicker({
       return selectedModel === entry.id || vIds.has(selectedModel) || entry.id?.split(':').includes(selectedModel);
     });
     if (!found) return "";
-    return getModelDisplayName(found.family?.id || found.id, found.name);
+    const modelKey = found.family?.id || found.id;
+    const serverMeta = getServerModelMeta(modelKey);
+    return formatModelDisplayName(getModelDisplayName(modelKey, found.name), {
+      provider: found.family?.provider || serverMeta?.provider,
+      modelId: modelKey,
+    });
   }, [modelList, selectedModel]);
 
   // Scroll active item into view on open
@@ -253,21 +258,21 @@ export default function FrontendModelPicker({
   );
 
   return (
-    <div className="flex flex-col w-full select-none overflow-hidden bg-[#1c1c1e] rounded-2xl">
+    <div className="flex w-full select-none flex-col overflow-hidden rounded-xl bg-overlay-glass">
       {/* ─── Top Header (Matching user screenshot: "选择模型:  Seedream 5.0 Pro") ─── */}
-      <div className="px-4 pt-3.5 pb-2.5 shrink-0 select-none flex items-center gap-2 text-[13px]">
-        <span className="font-normal text-[#8e8e93]">
+      <div className="flex shrink-0 select-none items-center gap-2 px-4 pt-3.5 pb-2.5 text-body-sm">
+        <span className="shrink-0 font-normal text-ink-subtle">
           {locale?.startsWith("zh") ? "选择模型:" : "Select Model:"}
         </span>
-        <span className="font-medium text-[#e5e5ea] truncate">
+        <span className="min-w-0 flex-1 truncate whitespace-nowrap font-medium text-ink">
           {currentSelectedName || (locale?.startsWith("zh") ? "未选择" : "None")}
         </span>
       </div>
 
       {/* ─── Model Cards List (1:1 Screenshot Reference: Clean Vertical Stack) ─── */}
-      <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar p-2 max-h-[420px]">
+      <div className="flex max-h-[420px] flex-col gap-1 overflow-y-auto scrollbar-rail p-2">
         {modelList.length === 0 ? (
-          <div className="py-8 text-center text-[#8e8e93] text-[13px]">
+          <div className="py-8 text-center text-body-sm text-ink-subtle">
             {directoryError
               ? (locale?.startsWith("zh") ? "模型目录暂不可用" : "Model directory unavailable")
               : (locale?.startsWith("zh") ? "暂无可用模型" : "No models available")}
@@ -287,7 +292,7 @@ export default function FrontendModelPicker({
             const displayName = getModelDisplayName(modelKey, entry.name);
             const badge = getModelBadge(modelKey);
             const desc = getModelDescription(modelKey, locale);
-            const providerLogo = getProviderLogo(family?.provider || serverMeta?.provider, modelKey || entry.id);
+            const provider = family?.provider || serverMeta?.provider;
 
             return (
               <button
@@ -296,65 +301,20 @@ export default function FrontendModelPicker({
                 ref={isSelected ? activeItemRef : null}
                 onClick={() => handleItemClick(entry)}
                 aria-pressed={Boolean(isSelected)}
-                className={`group flex w-full items-center gap-3.5 px-3.5 py-3 text-left rounded-xl transition-all cursor-pointer select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500 ${
+                className={`group w-full rounded-lg text-left transition-colors duration-fast ease-standard cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring ${
                   isSelected
-                    ? "bg-white/[0.08]"
-                    : "bg-transparent hover:bg-white/[0.04]"
+                    ? "bg-wash-strong"
+                    : "bg-transparent hover:bg-wash-strong"
                 }`}
               >
-                {/* Left: Emblem Logo Container (size-11, rounded-xl, #2c2c2e) */}
-                <div className="size-11 rounded-xl bg-[#2c2c2e] border border-white/[0.04] flex items-center justify-center p-2.5 shrink-0 overflow-hidden shadow-sm">
-                  {providerLogo ? (
-                    <img
-                      src={providerLogo}
-                      alt=""
-                      className={`w-full h-full object-contain ${
-                        invertLogos.includes(family?.provider) ? "invert" : ""
-                      }`}
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <span className="text-body font-bold text-white/70 uppercase">
-                      {displayName.charAt(0) || "M"}
-                    </span>
-                  )}
-                </div>
-
-                {/* Middle: Title Line + Description Line */}
-                <div className="flex-1 min-w-0 pr-1">
-                  {/* Title Line (Model Name + ✦ Badge) */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[15px] font-medium text-white tracking-tight leading-snug">
-                      {displayName}
-                    </span>
-
-                    {/* ✦ Sparkle Badge in Sky Blue */}
-                    {badge === "✦" && (
-                      <span className="text-[#38bdf8] text-[13px] font-bold select-none leading-none ml-1">✦</span>
-                    )}
-                    {badge && badge !== "✦" && (
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-[#3b82f6]/20 text-[#60a5fa] border border-[#3b82f6]/30 shrink-0 leading-none ml-1">
-                        {badge}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Subtitle Line (Exact screenshot matching) */}
-                  {desc && (
-                    <p className="text-[12px] text-[#8e8e93] leading-relaxed line-clamp-1 mt-0.5">
-                      {desc}
-                    </p>
-                  )}
-                </div>
-
-                {/* Right: Selected checkmark matching screenshot */}
-                {isSelected && (
-                  <div className="shrink-0 size-6 flex items-center justify-center text-white pr-0.5">
-                    <Check className="size-5 stroke-[2.5]" />
-                  </div>
-                )}
+                <ModelDisplayRow
+                  name={displayName}
+                  modelId={modelKey || entry.id}
+                  provider={provider}
+                  badge={badge}
+                  description={desc}
+                  selected={isSelected}
+                />
               </button>
             );
           })

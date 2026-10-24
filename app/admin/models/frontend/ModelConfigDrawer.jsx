@@ -9,6 +9,8 @@ import {
 import { Button } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
 import { resolveBrand } from '@/lib/modelCenter/brandDictionary.js';
+import ModelDisplayRow from '@/packages/studio/src/components/ModelDisplayRow.jsx';
+import { getStaticModelDisplayMeta } from '@/packages/studio/src/modelDisplayFormat.js';
 
 const PRESET_BADGES = ['最新', '经济', '旗舰', '极速', 'New', 'Best', 'Hot', 'Pro', 'Fast', '4.5 旗舰', '3.0', '置顶'];
 const PRESET_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4', '21:9', '3:2', '2:3'];
@@ -422,10 +424,12 @@ export default function ModelConfigDrawer({
 
   if (!isOpen) return null;
 
-  const previewName = formData.display_name || '模型展示名称';
-  const previewBadge = formData.badge || '';
-  const previewDesc = formData.description || '超高质感写实，精准理解提示词，极速出图。';
-  const previewCredits = formData.credits || 10;
+  const previewModelId = formData.model_id || model?.id || '';
+  const previewFallback = getStaticModelDisplayMeta(previewModelId, 'zh');
+  const previewName = formData.display_name || model?.name || previewModelId || '模型展示名称';
+  const previewBadge = formData.badge || previewFallback.badge || '';
+  const previewDesc = formData.description || previewFallback.description;
+  const previewProvider = formData.primary_provider || model?.provider || model?.default_provider || brandInfo?.id;
   const activeHealthyCount = channelRoutes.length > 0
     ? channelRoutes.filter((r) => r.enabled && (r.review_status === 'approved' || !r.review_status) && (r.health_status === 'healthy' || !r.health_status)).length
     : Number(formData.healthy_routes || 0);
@@ -1322,66 +1326,27 @@ export default function ModelConfigDrawer({
               {/* ─── 右栏：常驻实时看板 (340px-360px Sticky Inspector) ─── */}
               <div className="w-full lg:w-[340px] xl:w-[360px] shrink-0 lg:sticky lg:top-0 space-y-4">
                 
-                {/* 1:1 C 端下拉卡片实时预览 */}
-                <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-3 shadow-elevation-2">
-                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                {/* 前台模型下拉项实时预览 */}
+                <div className="space-y-3 rounded-2xl border border-line bg-surface p-4 shadow-elevation-2">
+                  <div className="flex items-center justify-between border-b border-line-subtle pb-2">
                     <span className="text-micro font-semibold text-ink-subtle uppercase tracking-wider flex items-center gap-1.5">
                       <Eye className="size-3 text-brand" />
-                      1:1 前台卡片实时预览
+                      前台模型项实时预览
                     </span>
-                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.2 text-[9px] text-ink-muted shrink-0">
+                    <span className="shrink-0 rounded-full border border-line bg-wash px-2 py-0.5 text-micro text-ink-muted">
                       实时联动
                     </span>
                   </div>
 
-                  <div className="rounded-xl border border-white/10 bg-[#16181d] p-3.5 shadow-elevation-1 transition-all hover:border-brand/40">
-                    <div className="flex items-start gap-3">
-                      <div className="size-9 rounded-xl border border-white/10 flex items-center justify-center bg-brand/10 text-brand font-black text-sm shrink-0">
-                        {previewName.charAt(0) || 'M'}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-body-sm font-bold text-ink truncate max-w-[170px]" title={previewName}>
-                            {previewName}
-                          </span>
-                          {previewBadge && (
-                            <span className="rounded-full bg-brand/20 text-brand px-1.5 py-0.2 text-[9px] font-bold border border-brand/30 shrink-0">
-                              {previewBadge}
-                            </span>
-                          )}
-                          {formData.is_pinned && (
-                            <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.2 text-[9px] font-bold border border-amber-500/30 flex items-center gap-0.5 shrink-0">
-                              <Pin className="size-2 fill-amber-300" /> 置顶
-                            </span>
-                          )}
-                          {formData.is_featured && (
-                            <span className="rounded-full bg-yellow-500/20 text-yellow-300 px-1.5 py-0.2 text-[9px] font-bold border border-yellow-500/30 flex items-center gap-0.5 shrink-0">
-                              <Star className="size-2 fill-yellow-300" /> 推荐
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          <span className="text-caption text-ink-subtle font-mono text-[10px] shrink-0">
-                            {formData.sub_type ? formData.sub_type.toUpperCase() : 'AI MODEL'}
-                          </span>
-                          <span className="text-ink-subtle shrink-0">·</span>
-                          <span className="text-caption text-brand font-semibold font-mono text-xs truncate max-w-[170px]" title={formData.pricing_hint || `${previewCredits} 积分 / 次`}>
-                            {formData.pricing_hint ? formData.pricing_hint : `${previewCredits} 积分 / 次`}
-                          </span>
-                          {marginMetrics.hasData && (
-                            <span className="text-[10px] text-ink-muted shrink-0 font-mono">
-                              (≈ ¥{marginMetrics.userPriceCny})
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1.5 text-caption text-ink-muted leading-relaxed line-clamp-2 text-xs">
-                          {previewDesc}
-                        </p>
-                      </div>
-                      <div className="size-5 rounded-full bg-brand flex items-center justify-center text-white shrink-0 shadow-elevation-1">
-                        <Check className="size-3 stroke-[3]" />
-                      </div>
-                    </div>
+                  <div className="rounded-lg bg-wash-strong">
+                    <ModelDisplayRow
+                      name={previewName}
+                      modelId={previewModelId}
+                      provider={previewProvider}
+                      badge={previewBadge}
+                      description={previewDesc}
+                      selected
+                    />
                   </div>
                 </div>
 

@@ -9,6 +9,9 @@ import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import { audioModels, getAudioModelById } from "../models.js";
 import { getProviderLogo } from "../providerLogos.js";
+import { formatModelDisplayName } from "../modelDisplayFormat.js";
+import { getModelBadge } from "../modelDescriptions.js";
+import ModelDisplayRow from "./ModelDisplayRow.jsx";
 import ModelPriceTag from "./ModelPriceTag.jsx";
 import en from "../messages/en/audioStudio.json";
 import zh from "../messages/zh/audioStudio.json";
@@ -663,6 +666,12 @@ export default function AudioStudio({
   const [activeHistoryIdx, setActiveHistoryIdx] = useState(0);
 
   const selectedModel = getAudioModelById(selectedModelId);
+  const selectedModelDisplayName = selectedModel
+    ? formatModelDisplayName(
+      copy.models?.[selectedModel.id]?.name || selectedModel.name,
+      { provider: selectedModel.family || selectedModel.provider, modelId: selectedModel.id },
+    )
+    : copy.sidebar.selectModel;
 
   // ── Initialize params when model changes ──────────────────────────────
   useEffect(() => {
@@ -878,23 +887,28 @@ export default function AudioStudio({
               ref={modelBtnRef}
               type="button"
               onClick={() => setOpenDropdown(!openDropdown)}
-              className="w-full bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] active:duration-instant border border-white/10 hover:border-brand-line/50 rounded-xl px-4 py-3.5 text-xs text-left font-bold text-white flex items-center justify-between transition-[background-color,border-color,transform] duration-fast ease-standard backdrop-blur-md cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
+              className="flex w-full items-center justify-between gap-2 rounded-xl border border-line bg-wash px-4 py-3.5 text-label font-medium text-ink transition-[background-color,border-color,transform] duration-fast ease-standard hover:border-brand-line/50 hover:bg-wash-strong active:scale-[0.98] active:duration-instant cursor-pointer backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
             >
-              <span className="flex items-center gap-2 truncate">
+              <span className="flex min-w-0 flex-1 items-center gap-2">
                 {(() => {
                   const logo = getProviderLogo(selectedModel?.family || selectedModel?.id);
                   return logo ? (
                     <img
                       src={logo}
                       alt=""
-                      className="size-4 object-contain rounded shrink-0"
+                      className="size-4 shrink-0 rounded-md object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
                     />
                   ) : null;
                 })()}
-                <span className="truncate">{selectedModel ? (copy.models?.[selectedModel.id]?.name || selectedModel.name) : copy.sidebar.selectModel}</span>
+                <span
+                  title={selectedModelDisplayName}
+                  className="min-w-0 truncate whitespace-nowrap"
+                >
+                  {selectedModelDisplayName}
+                </span>
               </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform duration-200 ${openDropdown ? 'rotate-180' : ''}`}>
                 <polyline points="6 9 12 15 18 9" />
@@ -902,44 +916,33 @@ export default function AudioStudio({
             </button>
 
             {openDropdown && (
-              <div className="absolute left-0 right-0 mt-2 z-50 bg-[#161618]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-elevation-3 max-h-60 overflow-y-auto custom-scrollbar p-1.5">
+              <div className="absolute left-0 right-0 z-popover mt-2 max-h-60 overflow-y-auto rounded-xl border border-line-strong bg-overlay-glass p-1.5 shadow-elevation-3 scrollbar-rail backdrop-blur-2xl">
                 {audioModels.map((model) => {
                   const localizedModelName = copy.models?.[model.id]?.name || model.name;
                   const localizedModelDesc = copy.models?.[model.id]?.description || model.description;
-                  const itemLogo = getProviderLogo(model.family || model.id);
+                  const provider = model.family || model.provider;
                   return (
                     <button
                       key={model.id}
                       type="button"
+                      aria-pressed={model.id === selectedModelId}
                       onClick={() => {
                         setSelectedModelId(model.id);
                         setOpenDropdown(false);
                       }}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs font-bold transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant flex flex-col gap-1.5 border cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring ${
-                        model.id === selectedModelId ? "text-brand bg-brand-soft border-brand-line" : "text-zinc-200 border-transparent hover:bg-white/[0.06] hover:text-white"
+                      className={`w-full cursor-pointer rounded-lg border text-left transition-colors duration-fast ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring ${
+                        model.id === selectedModelId ? "border-line bg-wash-strong" : "border-transparent bg-transparent hover:bg-wash-strong"
                       }`}
                     >
-                      <span className="flex items-center justify-between gap-3">
-                        <span className="flex items-center gap-2 truncate">
-                          {itemLogo && (
-                            <img
-                              src={itemLogo}
-                              alt=""
-                              className="size-4 object-contain rounded shrink-0"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          )}
-                          <span className="truncate">{localizedModelName}</span>
-                        </span>
-                        <ModelPriceTag ids={model.id} locale={locale} className="flex-shrink-0" />
-                      </span>
-                      {localizedModelDesc && (
-                        <span className="text-[10px] text-zinc-400 truncate max-w-[320px] font-normal">
-                          {localizedModelDesc}
-                        </span>
-                      )}
+                      <ModelDisplayRow
+                        name={localizedModelName}
+                        modelId={model.id}
+                        provider={provider}
+                        badge={model.badge || model.version || getModelBadge(model.id)}
+                        description={localizedModelDesc}
+                        trailing={<ModelPriceTag ids={model.id} locale={locale} className="flex-shrink-0" />}
+                        selected={model.id === selectedModelId}
+                      />
                     </button>
                   );
                 })}
