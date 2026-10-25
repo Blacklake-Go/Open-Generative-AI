@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                 </p>
                 <p>
                   <strong>Instagram 数据删除：</strong>
-                  您可以在 SupDance 个人中心的资料页「社交账号」列表中解绑 Instagram；解绑会删除该登录凭据，但不会注销您的 SupDance 账户。若要删除 SupDance 账户及关联数据，请在个人中心选择「注销账户」；账户会先进入 3 天可撤销期，期满未撤销后系统会自动永久清除账户数据。也可联系 <code className="text-cyan-400">privacy@supdance.com</code> 请求协助。
+                  您可以在 SupDance 个人中心的资料页「社交账号」列表中解绑 Instagram；解绑会删除该登录凭据，但不会注销您的 SupDance 账户。通过 Meta 发起 Instagram 数据删除请求时，SupDance 会删除对应的 Instagram 登录凭据及从该账号复制的资料，并提供完成状态查询；不会删除 SupDance 账户及与 Instagram 无关的数据。若要删除 SupDance 账户及关联数据，请在个人中心选择「注销账户」；账户会先进入 3 天可撤销期，期满未撤销后系统会自动永久清除账户数据。也可联系 <code className="text-cyan-400">privacy@supdance.com</code> 请求协助。
                 </p>
                 <p lang="en">
                   <strong>Instagram login and profile data:</strong>
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
                 </p>
                 <p lang="en">
                   <strong>Instagram data deletion:</strong>
-                  You can unlink Instagram from the Social Accounts list on your SupDance profile page. Unlinking removes that login credential but does not close your SupDance account. To delete your SupDance account and its associated data, submit an account deletion request from your profile; the account has a 3-day cancellation period and is permanently deleted after that period if you do not cancel. For help, contact <code>privacy@supdance.com</code>.
+                  You can unlink Instagram from the Social Accounts list on your SupDance profile page. Unlinking removes that login credential but does not close your SupDance account. When Meta sends an Instagram data deletion request, SupDance removes the matching Instagram login credential and profile data copied from it, and returns a status URL; unrelated SupDance account data remains. To delete your SupDance account and its associated data, submit an account deletion request from your profile; the account has a 3-day cancellation period and is permanently deleted after that period if you do not cancel. For help, contact <code>privacy@supdance.com</code>.
                 </p>
                 <p>
                   <strong>TikTok 登录与资料：</strong>
