@@ -15,8 +15,69 @@ import {
 } from 'lucide-react';
 import ModelBrandLogo from '@/components/models/ModelBrandLogo';
 import BrandLogo from '@/components/site/BrandLogo';
+import {
+  XIcon,
+  YouTubeIcon,
+  InstagramVectorIcon,
+  XiaohongshuIcon,
+  QQVectorIcon,
+} from '@/components/SocialIcons';
 import { useBranding } from '@/lib/hooks/useBranding';
 import { normalizeLocale, localizeStudioPath } from '@/lib/locales';
+
+// 官方社交媒体与社区矩阵定义 (Official Brand Social & Community Links)
+const OFFICIAL_SOCIAL_LINKS = [
+  {
+    id: 'x',
+    name: 'X (Twitter)',
+    handle: '@supdance_ai',
+    href: 'https://x.com/supdance_ai',
+    icon: XIcon,
+    hoverBorder: 'hover:border-white/40',
+    hoverBg: 'hover:bg-white/10',
+    hoverText: 'group-hover/social:text-white',
+  },
+  {
+    id: 'youtube',
+    name: 'YouTube',
+    handle: 'SupDance AI',
+    href: 'https://www.youtube.com/channel/UCOoro6d-vr6M-1UIpP5POew',
+    icon: YouTubeIcon,
+    hoverBorder: 'hover:border-red-500/40',
+    hoverBg: 'hover:bg-red-500/10',
+    hoverText: 'group-hover/social:text-[#FF0000]',
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram',
+    handle: '@supdance_com',
+    href: 'https://www.instagram.com/supdance_com/',
+    icon: InstagramVectorIcon,
+    hoverBorder: 'hover:border-pink-500/40',
+    hoverBg: 'hover:bg-pink-500/10',
+    hoverText: 'group-hover/social:text-[#E4405F]',
+  },
+  {
+    id: 'xiaohongshu',
+    name: '小红书 (RED)',
+    handle: 'SupDance',
+    href: 'https://www.xiaohongshu.com/search_result?keyword=SupDance',
+    icon: XiaohongshuIcon,
+    hoverBorder: 'hover:border-rose-500/40',
+    hoverBg: 'hover:bg-rose-500/10',
+    hoverText: 'group-hover/social:text-[#FF2442]',
+  },
+  {
+    id: 'qq',
+    name: 'QQ 交流群',
+    handle: 'SupDance 官方群',
+    href: 'https://qm.qq.com/q/e8alJlLDuE',
+    icon: QQVectorIcon,
+    hoverBorder: 'hover:border-sky-400/40',
+    hoverBg: 'hover:bg-sky-400/10',
+    hoverText: 'group-hover/social:text-[#12B7F5]',
+  },
+];
 
 // 核心大模型矩阵导航定义 (按模态分类，涵盖官方品牌 ID 与直达路由，支持 6 种语言)
 const FOOTER_MODEL_GROUPS = [
@@ -358,6 +419,7 @@ const FOOTER_COPY = {
     linkCommunity: 'Community Gallery',
     linkCreatorBenefits: 'Creator Benefits',
     colNewsletter: 'NEWSLETTER & UPDATES',
+    officialChannels: 'Official Social & Communities',
     newsletterDesc: (brand) => `Subscribe to receive ${brand} foundation model updates and technical release notes.`,
     newsletterComingSoon: 'Email newsletter coming soon',
     newsletterComingSoonDesc: 'Email subscriptions are not available yet. Join the community for model and product updates.',
@@ -395,6 +457,7 @@ const FOOTER_COPY = {
     linkCommunity: '创作者案例广场',
     linkCreatorBenefits: '创作者算力权益',
     colNewsletter: '模型技术周刊与通知',
+    officialChannels: '官方社交媒体与社区',
     newsletterDesc: (brand) => `订阅 ${brand} 技术周报，第一时间获取模型与产品更新公告。`,
     newsletterComingSoon: '邮件订阅即将开放',
     newsletterComingSoonDesc: '目前还没有可用的邮件订阅服务。欢迎先加入社区获取模型与产品更新。',
@@ -432,6 +495,7 @@ const FOOTER_COPY = {
     linkCommunity: '創作者案例廣場',
     linkCreatorBenefits: '創作者算力權益',
     colNewsletter: '模型技術周刊與通知',
+    officialChannels: '官方社交媒體與社區',
     newsletterDesc: (brand) => `訂閱 ${brand} 技術週報，第一時間獲取模型與產品更新公告。`,
     newsletterComingSoon: '郵件訂閱即將開放',
     newsletterComingSoonDesc: '目前還沒有可用的郵件訂閱服務。歡迎先加入社區獲取模型與產品更新。',
@@ -469,6 +533,7 @@ const FOOTER_COPY = {
     linkCommunity: 'コミュニティギャラリー',
     linkCreatorBenefits: 'クリエイター特典',
     colNewsletter: 'ニュースレター＆更新情報',
+    officialChannels: '公式ソーシャルメディア',
     newsletterDesc: (brand) => `${brand} の技術ニュースレターを購読し、モデルと製品の最新アップデートを受け取る。`,
     newsletterComingSoon: 'メール配信は近日開始',
     newsletterComingSoonDesc: '現在メール配信は準備中です。モデルや製品の更新情報はコミュニティをご覧ください。',
@@ -506,6 +571,7 @@ const FOOTER_COPY = {
     linkCommunity: '커뮤니티 갤러리',
     linkCreatorBenefits: '크리에이터 혜택',
     colNewsletter: '뉴스레터 및 업데이트',
+    officialChannels: '공식 소셜 미디어',
     newsletterDesc: (brand) => `${brand} 기술 소식을 구독하고 최신 모델 및 제품 업데이트를 가장 먼저 받아보세요.`,
     newsletterComingSoon: '이메일 뉴스레터 곧 오픈',
     newsletterComingSoonDesc: '현재 이메일 구독은 준비 중입니다. 커뮤니티에 참여하여 모델 및 제품 업데이트를 확인하세요.',
@@ -543,6 +609,7 @@ const FOOTER_COPY = {
     linkCommunity: 'Galería de la Comunidad',
     linkCreatorBenefits: 'Beneficios para Creadores',
     colNewsletter: 'BOLETÍN Y ACTUALIZACIONES',
+    officialChannels: 'Canales Oficiales',
     newsletterDesc: (brand) => `Suscríbete para recibir actualizaciones de modelos y notas técnicas de lanzamiento de ${brand}.`,
     newsletterComingSoon: 'Boletín por correo próximamente',
     newsletterComingSoonDesc: 'Las suscripciones por correo aún no están disponibles. Únete a la comunidad para recibir actualizaciones.',
@@ -755,6 +822,34 @@ export default function AboutFooter({ locale = 'en' }) {
 
             <div className="pt-2 text-xs font-mono text-white/50 space-y-1">
               <div>support@{brandName.toLowerCase()}.com</div>
+            </div>
+
+            {/* 品牌官方社交与社区入口 (Official Social Channels) */}
+            <div className="pt-3 flex flex-col items-start gap-2.5">
+              <span className="text-[11px] font-mono text-white/45 tracking-wider uppercase">
+                {copy.officialChannels}
+              </span>
+              <div className="flex items-center flex-wrap gap-2">
+                {OFFICIAL_SOCIAL_LINKS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group/social relative flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white/60 hover:text-white transition-all duration-200 cursor-pointer ${item.hoverBorder} ${item.hoverBg} hover:scale-105 active:scale-95 shadow-elevation-1`}
+                      title={`${item.name} (${item.handle})`}
+                      aria-label={`${item.name} ${item.handle}`}
+                    >
+                      <Icon
+                        size={17}
+                        className={`transition-colors duration-200 ${item.hoverText}`}
+                      />
+                    </a>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
