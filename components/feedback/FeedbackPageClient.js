@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   AlertCircle,
   ArrowUpRight,
@@ -11,7 +12,6 @@ import {
   Coins,
   FileText,
   Film,
-  GitPullRequest,
   ImageIcon,
   Lightbulb,
   LockKeyhole,
@@ -28,14 +28,15 @@ import {
 } from 'lucide-react';
 import StudioHeader from '@/components/site/StudioHeader';
 import { SpatialBackground } from '@/components/spatial';
+import AboutFooter from '@/components/about/AboutFooter';
 import AuthModal from '@/components/AuthModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useUserSession } from '@/lib/hooks/useUserSession';
+import { normalizeLocale, matchPathLocale } from '@/lib/locales';
 import {
   DEFAULT_FEEDBACK_SUPPORT_EMAIL,
-  FEEDBACK_GITHUB_ISSUES_URL,
   FEEDBACK_KINDS,
   FEEDBACK_STATUS_LABELS,
   findFeedbackKind,
@@ -46,7 +47,6 @@ import {
   FEEDBACK_ATTACHMENT_MAX_TOTAL_BYTES,
   formatFeedbackBytes,
   getFeedbackAttachmentKind,
-  normalizeGithubUrl,
   validateFeedbackAttachments,
 } from '@/lib/feedback/attachments';
 
@@ -76,11 +76,13 @@ function AttachmentIcon({ kind }) {
 }
 
 export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUPPORT_EMAIL }) {
+  const pathname = usePathname();
   const { user, mutate } = useUserSession();
+  const activeLocale = normalizeLocale(matchPathLocale(pathname) || user?.locale || 'zh');
+
   const [kind, setKind] = useState(FEEDBACK_KINDS[0].id);
   const [title, setTitle] = useState('');
   const [pageUrl, setPageUrl] = useState('');
-  const [githubUrl, setGithubUrl] = useState('');
   const [detail, setDetail] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -176,8 +178,6 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
     const errors = {};
     if (title.trim().length < 5) errors.title = '标题不少于 5 个字，方便定位问题';
     if (detail.trim().length < 20) errors.detail = '详细说明不少于 20 个字，请写清复现步骤或改进理由';
-    const github = normalizeGithubUrl(githubUrl);
-    if (github.error) errors.githubUrl = github.error;
     const files = validateFeedbackAttachments(attachments.map((item) => item.file));
     if (files.error) errors.attachments = files.error;
     setFieldErrors(errors);
@@ -200,7 +200,6 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
       formData.append('kind', kind);
       formData.append('title', title.trim());
       formData.append('pageUrl', pageUrl.trim());
-      formData.append('githubUrl', githubUrl.trim());
       formData.append('detail', detail.trim());
       attachments.forEach((item) => formData.append('attachments', item.file, item.file.name));
 
@@ -217,7 +216,6 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
       });
       setTitle('');
       setPageUrl('');
-      setGithubUrl('');
       setDetail('');
       clearAttachments();
       setFieldErrors({});
@@ -366,42 +364,17 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
                 )}
               </div>
 
-              {/* 涉及页面与 GitHub 链接 */}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="feedback-page" className="text-label font-medium text-ink">涉及页面（选填）</label>
-                  <Input
-                    id="feedback-page"
-                    value={pageUrl}
-                    onChange={(event) => setPageUrl(event.target.value)}
-                    maxLength={500}
-                    placeholder="/studio 或具体地址"
-                    className="rounded-xl bg-well/70 font-mono text-body-sm border-line hover:border-line-strong focus:border-brand-line"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="feedback-github" className="text-label font-medium text-ink">GitHub 链接（选填）</label>
-                  <Input
-                    id="feedback-github"
-                    type="url"
-                    value={githubUrl}
-                    onChange={(event) => {
-                      setGithubUrl(event.target.value);
-                      if (fieldErrors.githubUrl) setFieldErrors((prev) => ({ ...prev, githubUrl: undefined }));
-                    }}
-                    maxLength={500}
-                    placeholder="https://github.com/..."
-                    error={Boolean(fieldErrors.githubUrl)}
-                    className="rounded-xl bg-well/70 text-body-sm border-line hover:border-line-strong focus:border-brand-line"
-                  />
-                  {fieldErrors.githubUrl && (
-                    <p id="feedback-github-error" className="text-caption text-danger flex items-center gap-1" role="alert">
-                      <AlertCircle className="size-3.5" />
-                      {fieldErrors.githubUrl}
-                    </p>
-                  )}
-                </div>
+              {/* 涉及页面 */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="feedback-page" className="text-label font-medium text-ink">涉及页面（选填）</label>
+                <Input
+                  id="feedback-page"
+                  value={pageUrl}
+                  onChange={(event) => setPageUrl(event.target.value)}
+                  maxLength={500}
+                  placeholder="/studio 或具体地址"
+                  className="rounded-xl bg-well/70 font-mono text-body-sm border-line hover:border-line-strong focus:border-brand-line"
+                />
               </div>
 
               {/* 详细说明 */}
@@ -571,27 +544,6 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
 
             <section className="rounded-2xl border border-line-subtle bg-surface/80 backdrop-blur-md p-5 shadow-elevation-1">
               <div className="flex items-center gap-2.5">
-                <span className="flex size-9 items-center justify-center rounded-xl border border-line bg-wash text-ink">
-                  <GitPullRequest className="size-4" />
-                </span>
-                <div>
-                  <h2 className="text-card-title font-semibold text-ink">更习惯 GitHub？</h2>
-                  <p className="text-caption text-ink-muted">在开源仓库开 Issue</p>
-                </div>
-              </div>
-              <a
-                href={FEEDBACK_GITHUB_ISSUES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg text-body-sm font-semibold text-brand transition-colors hover:text-brand-hover"
-              >
-                <span>前往 GitHub Issues</span>
-                <ArrowUpRight className="size-3.5" />
-              </a>
-            </section>
-
-            <section className="rounded-2xl border border-line-subtle bg-surface/80 backdrop-blur-md p-5 shadow-elevation-1">
-              <div className="flex items-center gap-2.5">
                 <span className="flex size-9 items-center justify-center rounded-xl border border-brand-line bg-brand-soft text-brand">
                   <Coins className="size-4" />
                 </span>
@@ -688,16 +640,6 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
                           · <Paperclip className="size-3" /> {item.attachmentCount} 个附件
                         </span>
                       )}
-                      {item.githubUrl && (
-                        <a
-                          href={item.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 text-brand hover:text-brand-hover"
-                        >
-                          · GitHub <ArrowUpRight className="size-3" />
-                        </a>
-                      )}
                       <span>· {formatTime(item.createdAt)}</span>
                     </p>
                     {item.reviewNote && (
@@ -712,6 +654,9 @@ export default function FeedbackPageClient({ supportEmail = DEFAULT_FEEDBACK_SUP
           )}
         </section>
       </main>
+
+      {/* 底部关于页面统一页脚 */}
+      <AboutFooter locale={activeLocale} />
 
       {/* 登录弹窗 */}
       {showAuthModal && (
