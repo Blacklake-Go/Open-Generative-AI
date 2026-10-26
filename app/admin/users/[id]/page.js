@@ -6,12 +6,7 @@ import { Card, DataTable, PageHeader, StatusBadge, CopyableId } from '@/componen
 import UserDetailTabs from './UserDetailTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
-
-function formatDate(value) {
-  return value
-    ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
-    : '—';
-}
+import { formatAdminDateTime } from '@/components/admin/formatters';
 
 export default async function UserDetailPage({ params }) {
   const actor = await requireAdminPagePermission(PERMISSIONS.usersRead);
@@ -30,7 +25,7 @@ export default async function UserDetailPage({ params }) {
       <PageHeader
         eyebrow="用户全景画像"
         title={titleDisplay}
-        description={`用户 ID: ${user.id} · 注册渠道: ${user.registration_source || 'web'} · 注册于 ${formatDate(user.created_at)}`}
+        description={`用户 ID: ${user.id} · 注册渠道: ${user.registration_source || 'web'} · 注册于 ${formatAdminDateTime(user.created_at)}`}
       >
         <Link
           href="/admin/users"

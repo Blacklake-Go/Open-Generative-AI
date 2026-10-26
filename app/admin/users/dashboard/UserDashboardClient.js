@@ -20,6 +20,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { Card, PageHeader, StatusBadge } from '@/components/admin/AdminUi';
+import { ProviderBadge } from '@/components/admin/ProviderBadges';
 
 const PERIOD_OPTIONS = [
   { id: 'day', label: '今日 (24H)' },
@@ -39,20 +40,6 @@ function formatTimeAgo(dateString) {
   const diffHour = Math.floor(diffMin / 60);
   if (diffHour < 24) return `${diffHour}小时前`;
   return `${Math.floor(diffHour / 24)}天前`;
-}
-
-function getProviderIcon(provider) {
-  switch (provider) {
-    case 'wechat': return '🟢 微信';
-    case 'phone': return '📱 手机';
-    case 'douyin': return '🎵 抖音';
-    case 'bilibili': return '📺 B站';
-    case 'google': return '🌐 Google';
-    case 'email': return '✉️ 邮箱';
-    case 'tiktok': return '🎶 TikTok';
-    case 'x': return '✖️ X';
-    default: return `🔑 ${provider}`;
-  }
 }
 
 export default function UserDashboardClient({ initialData }) {
@@ -89,6 +76,9 @@ export default function UserDashboardClient({ initialData }) {
     if (!isAutoRefresh) return;
 
     const timer = setInterval(() => {
+      // 页面隐藏时暂停轮询，避免后台标签页持续请求
+      if (document.visibilityState === 'hidden') return;
+
       setCountdown((prev) => {
         if (prev <= 1) {
           fetchData(period);
@@ -120,6 +110,8 @@ export default function UserDashboardClient({ initialData }) {
   };
 
   const { metrics = {}, trends = [], distribution = {}, stream = [] } = data || {};
+  const parsedGrowthRate = Number(metrics.growthRate ?? NaN);
+  const growthRate = Number.isFinite(parsedGrowthRate) ? parsedGrowthRate : null;
   const maxTrendVal = Math.max(
     ...(trends?.map((t) => (activeTrendMetric === 'users' ? t.newUsers : t.creations)) || [1]),
     1
@@ -244,9 +236,13 @@ export default function UserDashboardClient({ initialData }) {
           </p>
           <p className="mt-1 text-[11px] text-white/40 flex items-center gap-1">
             总用户 {metrics.totalUsers || 0} · 环比
-            <span className={metrics.growthRate >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400'}>
-              {metrics.growthRate >= 0 ? `+${metrics.growthRate}%` : `${metrics.growthRate}%`}
-            </span>
+            {growthRate === null ? (
+              <span className="text-white/40">—</span>
+            ) : (
+              <span className={growthRate >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400'}>
+                {growthRate >= 0 ? `+${growthRate}%` : `${growthRate}%`}
+              </span>
+            )}
           </p>
         </Card>
 
@@ -383,7 +379,7 @@ export default function UserDashboardClient({ initialData }) {
               distribution.channels.map((c, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/80 font-medium">{getProviderIcon(c.provider)}</span>
+                    <ProviderBadge provider={c.provider} />
                     <span className="text-white/50 font-mono">
                       {c.count} 人 ({c.percentage}%)
                     </span>

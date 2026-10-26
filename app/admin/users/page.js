@@ -1,70 +1,15 @@
 import Link from 'next/link';
-import { listUsers, getUserSummaryMetrics } from '@/lib/services/adminRead';
+import { listUsers, getUserSummaryMetrics, listUserTags } from '@/lib/services/adminRead';
 import { toSearchParams } from '@/lib/admin/pagination';
+import { LOGIN_PROVIDER_OPTIONS, USER_ROLE_OPTIONS } from '@/lib/admin/userFilters';
 import { roleLabel } from '@/lib/admin/permissions';
 import { Card, DataTable, PageHeader, Pagination, StatusBadge, CopyableId, MetricCard } from '@/components/admin/AdminUi';
 import ExportButton from '@/components/admin/ExportButton';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 
-import {
-  BilibiliIcon,
-  DouyinIcon,
-  GoogleIcon,
-  InstagramIcon,
-  QQIcon,
-  TikTokIcon,
-  WeChatIcon,
-  XIcon,
-  GithubIcon,
-  AppleIcon,
-  MailIcon,
-  PhoneIcon,
-} from '@/components/SocialIcons';
-
-function formatDate(value) {
-  return value
-    ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
-    : '—';
-}
-
-function renderProviderBadges(providers = []) {
-  if (!providers || providers.length === 0) {
-    return <span className="text-white/30 text-xs">—</span>;
-  }
-  const iconMap = {
-    phone: { label: '手机', icon: <PhoneIcon size={12} />, color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-    email: { label: '邮箱', icon: <MailIcon size={12} />, color: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
-    wechat: { label: '微信', icon: <WeChatIcon size={12} />, color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-    wechat_oauth: { label: '微信', icon: <WeChatIcon size={12} />, color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-    qq: { label: 'QQ', icon: <QQIcon size={12} />, color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
-    douyin: { label: '抖音', icon: <DouyinIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
-    bilibili: { label: 'B站', icon: <BilibiliIcon size={12} />, color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
-    google: { label: 'Google', icon: <GoogleIcon size={12} />, color: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
-    tiktok: { label: 'TikTok', icon: <TikTokIcon size={12} />, color: 'bg-brand/10 text-brand border-brand/20' },
-    instagram: { label: 'Instagram', icon: <InstagramIcon size={12} />, color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
-    x: { label: 'X', icon: <XIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
-    github: { label: 'GitHub', icon: <GithubIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
-    apple: { label: 'Apple', icon: <AppleIcon size={12} />, color: 'bg-white/10 text-white/90 border-white/20' },
-  };
-
-  return (
-    <div className="flex flex-wrap gap-1">
-      {providers.map((p) => {
-        const item = iconMap[p] || { label: p, icon: null, color: 'bg-white/10 text-white border-white/20' };
-        return (
-          <span
-            key={p}
-            className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium ${item.color}`}
-          >
-            {item.icon && <span className="shrink-0">{item.icon}</span>}
-            <span>{item.label}</span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
+import { ProviderBadgeList } from '@/components/admin/ProviderBadges';
+import { formatAdminDateTime } from '@/components/admin/formatters';
 
 function renderTagBadges(tags = [], preferredModality = null) {
   const hasTags = tags && tags.length > 0;
@@ -109,7 +54,7 @@ export default async function UsersPage({ searchParams }) {
   await requireAdminPagePermission(PERMISSIONS.usersRead);
   const params = toSearchParams(await searchParams);
   
-  const [result, summary] = await Promise.all([
+  const [result, summary, tags] = await Promise.all([
     listUsers(params),
     getUserSummaryMetrics().catch(() => ({
       totalUsers: 0,
@@ -118,6 +63,7 @@ export default async function UsersPage({ searchParams }) {
       payingUsers: 0,
       suspendedUsers: 0,
     })),
+    listUserTags().catch(() => []),
   ]);
 
   const columns = [
@@ -150,7 +96,7 @@ export default async function UsersPage({ searchParams }) {
     {
       key: 'login_providers',
       label: '绑定登录凭据',
-      render: (row) => renderProviderBadges(row.loginProviders),
+      render: (row) => <ProviderBadgeList providers={row.loginProviders} />,
     },
     {
       key: 'tags',
@@ -192,9 +138,9 @@ export default async function UsersPage({ searchParams }) {
       label: '注册 / 最近登录',
       render: (row) => (
         <div className="text-xs">
-          <p className="text-white/70">{formatDate(row.created_at)}</p>
+          <p className="text-white/70">{formatAdminDateTime(row.created_at)}</p>
           <p className="text-white/40 text-[11px] mt-0.5">
-            最近: {formatDate(row.last_login_at)}
+            最近: {formatAdminDateTime(row.last_login_at)}
           </p>
         </div>
       ),
@@ -227,7 +173,7 @@ export default async function UsersPage({ searchParams }) {
           >
             <span>📊 用户数据看板 (实时大屏) →</span>
           </Link>
-          <ExportButton type="users" label="导出用户 CSV" />
+          <ExportButton type="users" label="导出用户 CSV" requiredPermission={PERMISSIONS.exportsWrite} />
         </div>
       </PageHeader>
 
@@ -305,16 +251,11 @@ export default async function UsersPage({ searchParams }) {
             className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部登录方式</option>
-            <option value="phone">手机短信</option>
-            <option value="email">邮箱密码</option>
-            <option value="wechat">微信登录</option>
-            <option value="qq">QQ 登录</option>
-            <option value="douyin">抖音登录</option>
-            <option value="bilibili">哔哩哔哩</option>
-            <option value="google">Google</option>
-            <option value="tiktok">TikTok</option>
-            <option value="instagram">Instagram</option>
-            <option value="x">X (Twitter)</option>
+            {LOGIN_PROVIDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           {/* 运营标签筛选 */}
@@ -324,12 +265,11 @@ export default async function UsersPage({ searchParams }) {
             className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部运营标签</option>
-            <option value="tag_new">🟢 新用户</option>
-            <option value="tag_active">🔵 活跃用户</option>
-            <option value="tag_paying">🟣 付费用户</option>
-            <option value="tag_vip">🟡 高价值用户</option>
-            <option value="tag_churn">🔴 流失风险</option>
-            <option value="tag_test">⚪ 测试用户</option>
+            {tags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
           </select>
 
           {/* 角色筛选 */}
@@ -339,12 +279,11 @@ export default async function UsersPage({ searchParams }) {
             className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-xs text-white/70 outline-none focus:border-brand"
           >
             <option value="">全部角色</option>
-            <option value="user">普通用户</option>
-            <option value="super_admin">超级管理员</option>
-            <option value="operations_admin">运营管理员</option>
-            <option value="finance_admin">财务管理员</option>
-            <option value="support_admin">支持管理员</option>
-            <option value="auditor">审计只读</option>
+            {USER_ROLE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           {/* 账户状态筛选 */}

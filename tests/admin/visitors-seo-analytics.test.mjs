@@ -914,21 +914,20 @@ describe('Admin Visitors & SEO Analytics Comprehensive Test Suite', () => {
   // Admin Route & Guard Alignment Pre-check
   // --------------------------------------------------------------------------
   describe('Admin Route & Guard Contract Verification', () => {
-    it('Verifies /admin/visitors is planned under users-access group with users.read permission', async () => {
-      const { ADMIN_NAV_GROUPS } = await import('../../lib/admin/navigation.js');
-      const usersAccess = ADMIN_NAV_GROUPS.find((g) => g.id === 'users-access');
-      assert.ok(usersAccess, 'lib/admin/navigation.js 必须包含 users-access 分组');
+    it('Verifies /admin/content/visitors is grouped under content with users.read permission', async () => {
+      const { ADMIN_NAV_GROUPS, ADMIN_LEGACY_REDIRECTS } = await import('../../lib/admin/navigation.js');
+      const content = ADMIN_NAV_GROUPS.find((g) => g.id === 'content');
+      assert.ok(content, 'lib/admin/navigation.js 必须包含 content 分组');
 
       const { PERMISSIONS } = await import('../../lib/admin/permissions.js');
       assert.equal(PERMISSIONS.usersRead, 'users.read', 'PERMISSIONS.usersRead 必须为 users.read');
 
-      // Check whether M1 has already mounted /admin/visitors; if so, verify contract
-      const visitorItem = usersAccess.items.find((item) => item.id === 'visitors');
-      if (visitorItem) {
-        assert.equal(visitorItem.href, '/admin/visitors');
-        assert.equal(visitorItem.permission, 'users.read');
-        assert.equal(visitorItem.label, '访客');
-      }
+      const visitorItem = content.items.find((item) => item.id === 'visitors');
+      assert.ok(visitorItem, 'content 分组必须包含 visitors 菜单项');
+      assert.equal(visitorItem.href, '/admin/content/visitors');
+      assert.equal(visitorItem.permission, 'users.read');
+      assert.equal(visitorItem.label, '访客与 SEO');
+      assert.equal(ADMIN_LEGACY_REDIRECTS['/admin/visitors'], '/admin/content/visitors');
     });
   });
 

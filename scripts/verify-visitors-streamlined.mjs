@@ -41,8 +41,8 @@ async function main() {
     pageErrors.push(err.message);
   });
 
-  console.log('--- 1. Visiting /admin/visitors?tab=analytics ---');
-  const res1 = await page.goto('https://www.supdance.com/admin/visitors?tab=analytics', {
+  console.log('--- 1. Visiting /admin/content/visitors?tab=analytics ---');
+  const res1 = await page.goto('https://www.supdance.com/admin/content/visitors?tab=analytics', {
     waitUntil: 'networkidle',
     timeout: 30000,
   });
@@ -53,8 +53,8 @@ async function main() {
   await page.screenshot({ path: analyticsShot, fullPage: true });
   console.log('Saved:', analyticsShot);
 
-  console.log('--- 2. Visiting /admin/visitors?tab=seo ---');
-  const res2 = await page.goto('https://www.supdance.com/admin/visitors?tab=seo', {
+  console.log('--- 2. Visiting /admin/content/visitors?tab=seo ---');
+  const res2 = await page.goto('https://www.supdance.com/admin/content/visitors?tab=seo', {
     waitUntil: 'networkidle',
     timeout: 30000,
   });

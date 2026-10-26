@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { PageHeader, Card, MetricCard, StatusBadge, DataTable, Button, CopyableId } from '@/components/admin/AdminUi';
 import ExportButton from '@/components/admin/ExportButton';
+import { PermissionGate } from '@/components/admin/AdminPermissions';
+import { PERMISSIONS } from '@/lib/admin/permissions';
 
 function formatDate(value) {
   if (!value) return '—';
@@ -56,6 +58,8 @@ export default function InvitesManagerClient({
   const [statusFilter, setStatusFilter] = useState(initialQuery.status || '');
   const [searchInput, setSearchInput] = useState(initialQuery.search || '');
   const [activeSearch, setActiveSearch] = useState(initialQuery.search || '');
+  const [listError, setListError] = useState('');
+  const [actionFeedback, setActionFeedback] = useState(null); // { tone: 'good' | 'danger', text }
 
   // 3. 批量发码器状态
   const [generatorOpen, setGeneratorOpen] = useState(false);
@@ -64,6 +68,7 @@ export default function InvitesManagerClient({
   const [genNotes, setGenNotes] = useState('');
   const [genExpiresDays, setGenExpiresDays] = useState('0'); // 0 为永久
   const [genLoading, setGenLoading] = useState(false);
+  const [genError, setGenError] = useState('');
   const [genResult, setGenResult] = useState(null);
   const [copiedBatch, setCopiedBatch] = useState(false);
   const [copiedBatchLinks, setCopiedBatchLinks] = useState(false);
@@ -72,6 +77,7 @@ export default function InvitesManagerClient({
   const [selectedHabitsCode, setSelectedHabitsCode] = useState(null);
   const [habitsUsers, setHabitsUsers] = useState([]);
   const [habitsLoading, setHabitsLoading] = useState(false);
+  const [habitsError, setHabitsError] = useState('');
   const [copiedCodeId, setCopiedCodeId] = useState(null);
 
   // 切换全局强制注册开关
@@ -120,12 +126,14 @@ export default function InvitesManagerClient({
     try {
       const res = await fetch(`/api/admin/invites?${query.toString()}`);
       const data = await res.json();
-      if (res.ok && data.data) {
+      if (!res.ok) throw new Error(data?.error?.message || '邀请码列表加载失败');
+      if (data.data) {
         setListData(data.data);
         if (data.data.overview) setOverview(data.data.overview);
+        setListError('');
       }
     } catch (e) {
-      console.error('Fetch invites error:', e);
+      setListError(e.message || '邀请码列表加载失败，请稍后重试');
     }
   }, [listData.page, statusFilter, activeSearch]);
 
@@ -145,6 +153,7 @@ export default function InvitesManagerClient({
     e.preventDefault();
     setGenLoading(true);
     setGenResult(null);
+    setGenError('');
 
     try {
       const res = await fetch('/api/admin/invites', {
@@ -166,7 +175,7 @@ export default function InvitesManagerClient({
       setGenResult(data.data.codes || []);
       fetchCodes({ page: 1 });
     } catch (err) {
-      alert(`生成失败: ${err.message}`);
+      setGenError(err.message || '批量生成失败，请稍后重试');
     } finally {
       setGenLoading(false);
     }
@@ -175,17 +184,22 @@ export default function InvitesManagerClient({
   // 更改单码状态（启用/停用）
   const handleToggleCodeStatus = async (row) => {
     const nextStatus = row.status === 'active' ? 'disabled' : 'active';
+    setActionFeedback(null);
     try {
       const res = await fetch(`/api/admin/invites/${row.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': globalThis.crypto?.randomUUID?.() || `invite-${row.id}-${Date.now()}`,
+        },
         body: JSON.stringify({ status: nextStatus }),
       });
-      if (res.ok) {
-        fetchCodes();
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error?.message || '邀请码状态更新失败');
+      setActionFeedback({ tone: 'good', text: `邀请码 ${row.code} 已${nextStatus === 'active' ? '启用' : '停用'}` });
+      fetchCodes();
     } catch (e) {
-      console.error('Update invite status error:', e);
+      setActionFeedback({ tone: 'danger', text: e.message || '邀请码状态更新失败，请稍后重试' });
     }
   };
 
@@ -194,15 +208,17 @@ export default function InvitesManagerClient({
     setSelectedHabitsCode(row);
     setHabitsLoading(true);
     setHabitsUsers([]);
+    setHabitsError('');
 
     try {
       const res = await fetch(`/api/admin/invites/${row.id}/users`);
       const data = await res.json();
-      if (res.ok && data.data?.users) {
+      if (!res.ok) throw new Error(data?.error?.message || '用户习惯画像加载失败');
+      if (data.data?.users) {
         setHabitsUsers(data.data.users);
       }
     } catch (e) {
-      console.error('Load habits error:', e);
+      setHabitsError(e.message || '用户习惯画像加载失败，请稍后重试');
     } finally {
       setHabitsLoading(false);
     }
@@ -390,17 +406,19 @@ export default function InvitesManagerClient({
           >
             习惯画像
           </button>
-          <button
-            type="button"
-            onClick={() => handleToggleCodeStatus(row)}
-            className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
-              row.status === 'active'
-                ? 'border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-            }`}
-          >
-            {row.status === 'active' ? '停用' : '启用'}
-          </button>
+          <PermissionGate permission={PERMISSIONS.usersUpdate}>
+            <button
+              type="button"
+              onClick={() => handleToggleCodeStatus(row)}
+              className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                row.status === 'active'
+                  ? 'border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                  : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+              }`}
+            >
+              {row.status === 'active' ? '停用' : '启用'}
+            </button>
+          </PermissionGate>
         </div>
       ),
     },
@@ -413,7 +431,7 @@ export default function InvitesManagerClient({
         title="邀请注册码与使用习惯分析"
         description="管理内测期准入邀请码与全站强制注册开关，多维度洞察渠道拉新、创作偏好与商业化付费习惯。"
       >
-        <ExportButton type="invites" label="导出邀请码分析 CSV" />
+        <ExportButton type="invites" label="导出邀请码分析 CSV" requiredPermission={PERMISSIONS.exportsWrite} />
       </PageHeader>
 
       {/* 模块一：全局准入开关面板 */}
@@ -441,21 +459,23 @@ export default function InvitesManagerClient({
           </div>
 
           <div className="shrink-0 flex items-center gap-3">
-            <button
-              type="button"
-              disabled={isSwitchBusy}
-              onClick={handleToggleGlobalSwitch}
-              className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${
-                isInviteRequired ? 'bg-amber-500' : 'bg-emerald-500'
-              } ${isSwitchBusy ? 'opacity-60 cursor-not-allowed' : ''}`}
-              aria-label="切换全局邀请码开关"
-            >
-              <span
-                className={`pointer-events-none inline-block size-7 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  isInviteRequired ? 'translate-x-0' : 'translate-x-6'
-                }`}
-              />
-            </button>
+            <PermissionGate permission={PERMISSIONS.settingsWrite}>
+              <button
+                type="button"
+                disabled={isSwitchBusy}
+                onClick={handleToggleGlobalSwitch}
+                className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${
+                  isInviteRequired ? 'bg-amber-500' : 'bg-emerald-500'
+                } ${isSwitchBusy ? 'opacity-60 cursor-not-allowed' : ''}`}
+                aria-label="切换全局邀请码开关"
+              >
+                <span
+                  className={`pointer-events-none inline-block size-7 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    isInviteRequired ? 'translate-x-0' : 'translate-x-6'
+                  }`}
+                />
+              </button>
+            </PermissionGate>
             <span className="text-xs font-medium text-gray-300">
               {isSwitchBusy ? '切换中...' : isInviteRequired ? '要求邀请码' : '开放注册'}
             </span>
@@ -498,14 +518,16 @@ export default function InvitesManagerClient({
             <Key className="size-4 text-brand" />
             <h3 className="text-sm font-bold text-white">批量发码与渠道分发器</h3>
           </div>
-          <button
-            type="button"
-            onClick={() => setGeneratorOpen(!generatorOpen)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/20 transition-colors"
-          >
-            {generatorOpen ? <ChevronUp className="size-3.5" /> : <Plus className="size-3.5" />}
-            <span>{generatorOpen ? '收起发码器' : '创建新批次邀请码'}</span>
-          </button>
+          <PermissionGate permission={PERMISSIONS.usersUpdate}>
+            <button
+              type="button"
+              onClick={() => setGeneratorOpen(!generatorOpen)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/20 transition-colors"
+            >
+              {generatorOpen ? <ChevronUp className="size-3.5" /> : <Plus className="size-3.5" />}
+              <span>{generatorOpen ? '收起发码器' : '创建新批次邀请码'}</span>
+            </button>
+          </PermissionGate>
         </div>
 
         {generatorOpen && (
@@ -573,6 +595,12 @@ export default function InvitesManagerClient({
                 </select>
               </div>
             </div>
+
+            {genError && (
+              <p className="rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-caption text-danger">
+                {genError}
+              </p>
+            )}
 
             <div className="flex justify-end gap-3 pt-2">
               <Button
@@ -681,6 +709,19 @@ export default function InvitesManagerClient({
           </form>
         </div>
 
+        {(listError || actionFeedback) && (
+          <p
+            role={listError || actionFeedback?.tone === 'danger' ? 'alert' : 'status'}
+            className={`rounded-lg border px-3 py-2 text-caption ${
+              listError || actionFeedback?.tone === 'danger'
+                ? 'border-danger-line bg-danger-soft text-danger'
+                : 'border-success-line bg-success-soft text-success'
+            }`}
+          >
+            {listError || actionFeedback?.text}
+          </p>
+        )}
+
         {/* 邀请码与习惯主表格 */}
         <DataTable columns={columns} rows={listData.codes} emptyText="未查找到匹配的邀请码记录" />
 
@@ -749,6 +790,10 @@ export default function InvitesManagerClient({
                 <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
                   <Loader2 className="size-5 animate-spin text-brand" />
                   <span className="text-xs">加载用户使用习惯分析中...</span>
+                </div>
+              ) : habitsError ? (
+                <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-6 text-center text-caption text-danger">
+                  {habitsError}
                 </div>
               ) : habitsUsers.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 text-xs">

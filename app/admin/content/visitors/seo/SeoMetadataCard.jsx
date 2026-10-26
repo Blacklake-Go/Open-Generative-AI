@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Search, Save, CheckCircle2, Globe, Eye, Sparkles } from 'lucide-react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
+import { PermissionGate } from '@/components/admin/AdminPermissions';
+import { PERMISSIONS } from '@/lib/admin/permissions';
 
 export default function SeoMetadataCard({ config, onSave, isSaving }) {
   const [formData, setFormData] = useState({
@@ -170,14 +172,16 @@ export default function SeoMetadataCard({ config, onSave, isSaving }) {
               </span>
             )}
           </div>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
-          >
-            <Save className="size-3.5" />
-            <span>{isSaving ? '正在保存...' : '保存 TDK 配置'}</span>
-          </button>
+          <PermissionGate permission={PERMISSIONS.settingsWrite}>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              <Save className="size-3.5" />
+              <span>{isSaving ? '正在保存...' : '保存 TDK 配置'}</span>
+            </button>
+          </PermissionGate>
         </div>
       </form>
     </Card>

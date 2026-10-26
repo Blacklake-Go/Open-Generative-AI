@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useHasPermission } from './AdminPermissions';
 
 export default function AdminActionForm({
   action,
@@ -12,15 +13,19 @@ export default function AdminActionForm({
   tone = 'secondary',
   confirmMessage,
   confirmText,
+  requiredPermission,
   onSuccess,
 }) {
   const router = useRouter();
+  const canExecute = useHasPermission(requiredPermission);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
   const effectiveLabel = submitLabel || label || '提交';
   const effectiveConfirm = confirmText || confirmMessage || '确认执行此管理操作？操作会写入审计日志。';
+
+  if (!canExecute) return null;
 
   async function submit(event) {
     event.preventDefault();

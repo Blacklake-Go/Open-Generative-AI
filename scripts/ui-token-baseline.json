@@ -22,15 +22,6 @@
     "off-system-type-ramp": 13,
     "pure-white-black": 11
   },
-  "app/admin/admins/AdminRoleModifier.js": {
-    "arbitrary-geometry": 1,
-    "arbitrary-type": 1,
-    "hard-coded-hex": 2,
-    "off-system-palette": 4,
-    "off-system-type-ramp": 4,
-    "other-arbitrary-value": 1,
-    "pure-white-black": 1
-  },
   "app/admin/admins/page.js": {
     "arbitrary-type": 3,
     "hard-coded-hex": 4,

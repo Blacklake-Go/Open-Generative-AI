@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useHasPermission } from './AdminPermissions';
 
 function createKey() {
   return globalThis.crypto?.randomUUID?.() || `export-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function ExportButton({ type, label }) {
+export default function ExportButton({ type, label, requiredPermission }) {
+  const canExport = useHasPermission(requiredPermission);
   const [state, setState] = useState('idle');
   const [message, setMessage] = useState('');
 
@@ -44,6 +46,8 @@ export default function ExportButton({ type, label }) {
       setMessage(error.message || '导出失败');
     }
   }
+
+  if (!canExport) return null;
 
   return (
     <div className="flex items-center gap-2">

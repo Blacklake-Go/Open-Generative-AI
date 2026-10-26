@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { ShieldCheck, Save, CheckCircle2, ExternalLink } from 'lucide-react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
+import { PermissionGate } from '@/components/admin/AdminPermissions';
+import { PERMISSIONS } from '@/lib/admin/permissions';
 import { normalizeVerificationTag } from '@/lib/services/seoCore';
 
 const VERIFICATION_PLATFORMS = [
@@ -167,14 +169,16 @@ export default function SearchVerificationCard({ config, onSave, isSaving }) {
               </span>
             )}
           </div>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
-          >
-            <Save className="size-3.5" />
-            <span>{isSaving ? '正在保存...' : '保存验证配置'}</span>
-          </button>
+          <PermissionGate permission={PERMISSIONS.settingsWrite}>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-brand hover:bg-brand-hover text-white px-5 py-2 text-xs font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              <Save className="size-3.5" />
+              <span>{isSaving ? '正在保存...' : '保存验证配置'}</span>
+            </button>
+          </PermissionGate>
         </div>
       </form>
     </Card>

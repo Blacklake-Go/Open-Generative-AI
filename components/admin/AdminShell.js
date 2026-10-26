@@ -7,11 +7,13 @@ import AdminNav from './AdminNav';
 import { roleLabel } from '@/lib/admin/permissions';
 import { Badge } from '@/components/ui/badge';
 import { BrandMark } from '@/components/site/StudioHeader';
+import { AdminPermissionsProvider } from './AdminPermissions';
 
-export default function AdminShell({ user, children }) {
+export default function AdminShell({ user, permissions = [], children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
+    <AdminPermissionsProvider permissions={permissions}>
     <div className="min-h-screen bg-canvas text-white">
       {/* 56px 全局固定顶栏 */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.06] bg-canvas/85 px-4 backdrop-blur-md">
@@ -90,5 +92,6 @@ export default function AdminShell({ user, children }) {
         </div>
       </main>
     </div>
+    </AdminPermissionsProvider>
   );
 }

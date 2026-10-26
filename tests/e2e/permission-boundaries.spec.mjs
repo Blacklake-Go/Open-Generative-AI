@@ -138,12 +138,12 @@ test('administrator credit adjustment is auditable and idempotent', async ({ req
   const idempotencyKey = `p7-credit-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const payload = { delta: 1, reason: 'P7 E2E audit adjustment' };
 
-  const first = await request.post(`/api/admin/users/${fixture.userId}/credits/adjust`, { headers: { ...headers, 'Idempotency-Key': idempotencyKey }, data: payload });
+  const first = await request.post(`/api/admin/users/${fixture.userId}/credits`, { headers: { ...headers, 'Idempotency-Key': idempotencyKey }, data: payload });
   expect(first.status()).toBe(200);
   const firstBody = await first.json();
   expect(firstBody.data?.delta ?? firstBody.delta).toBe(1);
 
-  const replay = await request.post(`/api/admin/users/${fixture.userId}/credits/adjust`, { headers: { ...headers, 'Idempotency-Key': idempotencyKey }, data: payload });
+  const replay = await request.post(`/api/admin/users/${fixture.userId}/credits`, { headers: { ...headers, 'Idempotency-Key': idempotencyKey }, data: payload });
   expect(replay.status()).toBe(200);
   const replayBody = await replay.json();
   expect(replayBody.data?.credits ?? replayBody.credits).toBe(firstBody.data?.credits ?? firstBody.credits);

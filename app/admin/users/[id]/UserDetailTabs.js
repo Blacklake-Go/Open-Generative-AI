@@ -1,57 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, DataTable, StatusBadge, CopyableId } from '@/components/admin/AdminUi';
 import AdminActionForm from '@/components/admin/AdminActionForm';
-import { roleLabel } from '@/lib/admin/permissions';
+import { PermissionGate } from '@/components/admin/AdminPermissions';
+import { roleLabel, PERMISSIONS } from '@/lib/admin/permissions';
 import AdminScrollableTabs from '@/components/admin/AdminScrollableTabs';
 
-import {
-  BilibiliIcon,
-  DouyinIcon,
-  GoogleIcon,
-  InstagramIcon,
-  QQIcon,
-  TikTokIcon,
-  WeChatIcon,
-  XIcon,
-  GithubIcon,
-  AppleIcon,
-  MailIcon,
-  PhoneIcon,
-} from '@/components/SocialIcons';
-
-function formatDate(value) {
-  return value
-    ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
-    : '—';
-}
-
-function getProviderBadge(provider) {
-  const map = {
-    phone: { label: '手机短信', tone: 'info', icon: <PhoneIcon size={12} /> },
-    email: { label: '邮箱密码', tone: 'neutral', icon: <MailIcon size={12} /> },
-    wechat: { label: '微信', tone: 'good', icon: <WeChatIcon size={12} /> },
-    wechat_oauth: { label: '微信', tone: 'good', icon: <WeChatIcon size={12} /> },
-    qq: { label: 'QQ', tone: 'info', icon: <QQIcon size={12} /> },
-    douyin: { label: '抖音', tone: 'neutral', icon: <DouyinIcon size={12} /> },
-    bilibili: { label: '哔哩哔哩', tone: 'info', icon: <BilibiliIcon size={12} /> },
-    google: { label: 'Google', tone: 'good', icon: <GoogleIcon size={12} /> },
-    tiktok: { label: 'TikTok', tone: 'attention', icon: <TikTokIcon size={12} /> },
-    instagram: { label: 'Instagram', tone: 'attention', icon: <InstagramIcon size={12} /> },
-    x: { label: 'X (Twitter)', tone: 'neutral', icon: <XIcon size={12} /> },
-    github: { label: 'GitHub', tone: 'neutral', icon: <GithubIcon size={12} /> },
-    apple: { label: 'Apple', tone: 'neutral', icon: <AppleIcon size={12} /> },
-  };
-  const item = map[provider] || { label: provider, tone: 'neutral', icon: null };
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold bg-white/10 text-white">
-      {item.icon && <span className="shrink-0">{item.icon}</span>}
-      <span>{item.label}</span>
-    </span>
-  );
-}
+import { ProviderBadge } from '@/components/admin/ProviderBadges';
+import { formatAdminDateTime } from '@/components/admin/formatters';
 
 export default function UserDetailTabs({ detail, canManageAdmins = false }) {
   const router = useRouter();
@@ -101,7 +60,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
     {
       key: 'provider',
       label: '登录渠道',
-      render: (row) => getProviderBadge(row.provider),
+      render: (row) => <ProviderBadge provider={row.provider} />,
     },
     {
       key: 'provider_user_id',
@@ -118,12 +77,12 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
     {
       key: 'created_at',
       label: '首次绑定时间',
-      render: (row) => formatDate(row.created_at),
+      render: (row) => formatAdminDateTime(row.created_at),
     },
     {
       key: 'last_login_at',
       label: '最近通过该方式登录',
-      render: (row) => formatDate(row.last_login_at),
+      render: (row) => formatAdminDateTime(row.last_login_at),
     },
   ];
 
@@ -181,11 +140,11 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
               </div>
               <div className="flex justify-between border-b border-white/[0.05] pb-2">
                 <span className="text-white/45">注册时间</span>
-                <span className="text-white/70">{formatDate(user.created_at)}</span>
+                <span className="text-white/70">{formatAdminDateTime(user.created_at)}</span>
               </div>
               <div className="flex justify-between border-b border-white/[0.05] pb-2">
                 <span className="text-white/45">最近登录</span>
-                <span className="text-white/70">{formatDate(user.last_login_at)}</span>
+                <span className="text-white/70">{formatAdminDateTime(user.last_login_at)}</span>
               </div>
               <div className="flex justify-between pb-1">
                 <span className="text-white/45">最近登录 IP</span>
@@ -216,21 +175,24 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                     >
                       <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: t.color }} />
                       <span>{t.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleTagAction(t.id, 'remove')}
-                        disabled={tagBusy}
-                        className="ml-1 text-white/40 hover:text-white transition disabled:opacity-30"
-                        title="移除此标签"
-                      >
-                        ✕
-                      </button>
+                      <PermissionGate permission={PERMISSIONS.usersUpdate}>
+                        <button
+                          type="button"
+                          onClick={() => handleTagAction(t.id, 'remove')}
+                          disabled={tagBusy}
+                          className="ml-1 text-white/40 hover:text-white transition disabled:opacity-30"
+                          title="移除此标签"
+                        >
+                          ✕
+                        </button>
+                      </PermissionGate>
                     </span>
                   ))
                 )}
               </div>
 
               {/* 添加标签操作 */}
+              <PermissionGate permission={PERMISSIONS.usersUpdate}>
               <div className="flex items-center gap-2 border-t border-white/[0.06] pt-3">
                 <select
                   value={selectedTag}
@@ -258,6 +220,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   打标
                 </button>
               </div>
+              </PermissionGate>
 
               {tagMsg && (
                 <p className="mt-2 text-xs text-brand">{tagMsg}</p>
@@ -277,6 +240,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   <AdminActionForm
                     action={`/api/admin/users/${user.id}`}
                     method="PATCH"
+                    requiredPermission={PERMISSIONS.usersUpdate}
                     fields={[
                       {
                         name: 'status',
@@ -296,6 +260,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                     <AdminActionForm
                       action={`/api/admin/admins/${user.id}/role`}
                       method="PUT"
+                      requiredPermission={PERMISSIONS.adminsWrite}
                       fields={[
                         {
                           name: 'role',
@@ -351,10 +316,19 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
             <div>
               <h3 className="text-sm font-bold text-white">模型额度明细</h3>
               <p className="mt-1 text-xs text-white/40">当前余额：{user.credits} 点</p>
+              <PermissionGate permission={PERMISSIONS.creditsRead}>
+                <Link
+                  href={`/admin/credits?user_id=${user.id}`}
+                  className="mt-1 inline-flex text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  在额度账本中查看全部记录 →
+                </Link>
+              </PermissionGate>
             </div>
             <AdminActionForm
               action={`/api/admin/users/${user.id}/credits`}
               method="POST"
+              requiredPermission={PERMISSIONS.creditsAdjust}
               fields={[
                 { name: 'delta', label: '变动数（正数增加，负数扣减）', type: 'number', required: true },
                 { name: 'reason', label: '调额原因说明', type: 'text', required: true },
@@ -376,7 +350,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                 ),
               },
               { key: 'reason', label: '业务说明' },
-              { key: 'created_at', label: '记录时间', render: (row) => formatDate(row.created_at) },
+              { key: 'created_at', label: '记录时间', render: (row) => formatAdminDateTime(row.created_at) },
             ]}
             rows={detail.ledger}
             empty="暂无额度变动记录"
@@ -388,7 +362,17 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
       {tab === 'billing' && (
         <div className="space-y-6">
           <Card>
-            <h3 className="text-sm font-bold text-white mb-4">订阅记录</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white">订阅记录</h3>
+              <PermissionGate permission={PERMISSIONS.billingRead}>
+                <Link
+                  href={`/admin/subscriptions?q=${user.id}`}
+                  className="text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  在订阅管理中查看 →
+                </Link>
+              </PermissionGate>
+            </div>
             <DataTable
               columns={[
                 { key: 'plan_id', label: '套餐 Plan' },
@@ -398,7 +382,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   label: '状态',
                   render: (row) => <StatusBadge tone={row.status === 'active' ? 'good' : 'neutral'}>{row.status}</StatusBadge>,
                 },
-                { key: 'current_period_end', label: '当前周期止', render: (row) => formatDate(row.current_period_end) },
+                { key: 'current_period_end', label: '当前周期止', render: (row) => formatAdminDateTime(row.current_period_end) },
               ]}
               rows={detail.subscriptions}
               empty="暂无订阅记录"
@@ -406,7 +390,17 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
           </Card>
 
           <Card>
-            <h3 className="text-sm font-bold text-white mb-4">充值与消费订单</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white">充值与消费订单</h3>
+              <PermissionGate permission={PERMISSIONS.billingRead}>
+                <Link
+                  href={`/admin/orders?q=${user.id}`}
+                  className="text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  在订单与支付中查看 →
+                </Link>
+              </PermissionGate>
+            </div>
             <DataTable
               columns={[
                 { key: 'id', label: '订单号', render: (row) => <CopyableId id={row.id} /> },
@@ -420,7 +414,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   label: '状态',
                   render: (row) => <StatusBadge tone={row.status === 'succeeded' ? 'good' : 'attention'}>{row.status}</StatusBadge>,
                 },
-                { key: 'created_at', label: '创建时间', render: (row) => formatDate(row.created_at) },
+                { key: 'created_at', label: '创建时间', render: (row) => formatAdminDateTime(row.created_at) },
               ]}
               rows={detail.orders}
               empty="暂无订单记录"
@@ -432,7 +426,15 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
       {/* 5. 生成记录 */}
       {tab === 'creations' && (
         <Card>
-          <h3 className="text-sm font-bold text-white mb-4">AI 生成记录</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-white">AI 生成记录</h3>
+            <Link
+              href={`/admin/generations?user_id=${user.id}`}
+              className="text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+            >
+              在生成任务中查看 →
+            </Link>
+          </div>
           <DataTable
             columns={[
               { key: 'studio_id', label: '所属模块' },
@@ -443,7 +445,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                 label: '状态',
                 render: (row) => <StatusBadge tone={['succeeded', 'completed', 'success'].includes(row.status) ? 'good' : 'attention'}>{row.status}</StatusBadge>,
               },
-              { key: 'created_at', label: '时间', render: (row) => formatDate(row.created_at) },
+              { key: 'created_at', label: '时间', render: (row) => formatAdminDateTime(row.created_at) },
             ]}
             rows={detail.creations}
             empty="暂无生成记录"
@@ -455,10 +457,21 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
       {tab === 'sessions' && (
         <Card>
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white">活跃会话 (Sessions)</h3>
+            <div>
+              <h3 className="text-sm font-bold text-white">活跃会话 (Sessions)</h3>
+              <PermissionGate permission={PERMISSIONS.sessionsRevoke}>
+                <Link
+                  href={`/admin/security/sessions?q=${user.id}`}
+                  className="mt-1 inline-flex text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  在会话与安全中查看 →
+                </Link>
+              </PermissionGate>
+            </div>
             <AdminActionForm
               action={`/api/admin/users/${user.id}/sessions`}
               method="DELETE"
+              requiredPermission={PERMISSIONS.sessionsRevoke}
               submitLabel="强制下线所有会话"
               confirmText="将立即注销该用户所有活跃登录凭据，确定执行？"
               tone="danger"
@@ -467,8 +480,8 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
           <DataTable
             columns={[
               { key: 'id', label: '会话 Token Hash', render: (row) => <CopyableId id={row.id || row.token_hash} /> },
-              { key: 'expires_at', label: '过期时间', render: (row) => formatDate(row.expires_at) },
-              { key: 'created_at', label: '创建时间', render: (row) => formatDate(row.created_at) },
+              { key: 'expires_at', label: '过期时间', render: (row) => formatAdminDateTime(row.expires_at) },
+              { key: 'created_at', label: '创建时间', render: (row) => formatAdminDateTime(row.created_at) },
             ]}
             rows={detail.sessions}
             empty="暂无有效会话"
@@ -484,6 +497,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
             <AdminActionForm
               action={`/api/admin/users/${user.id}/notes`}
               method="POST"
+              requiredPermission={PERMISSIONS.usersNote}
               fields={[
                 { name: 'body', label: '备注内容', type: 'textarea', rows: 3, required: true, placeholder: '记录用户偏好、投诉处理或特异情况…' },
               ]}
@@ -501,7 +515,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   <div key={n.id} className="rounded-xl border border-white/5 bg-black/20 p-3 text-xs">
                     <p className="text-white">{n.body}</p>
                     <p className="mt-2 text-[11px] text-white/40">
-                      由 {n.author_email || '管理员'} 记录于 {formatDate(n.created_at)}
+                      由 {n.author_email || '管理员'} 记录于 {formatAdminDateTime(n.created_at)}
                     </p>
                   </div>
                 ))
@@ -514,7 +528,15 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
       {/* 8. 审计流水 */}
       {tab === 'audit' && (
         <Card>
-          <h3 className="text-sm font-bold text-white mb-4">安全审计日志</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-white">安全审计日志</h3>
+            <Link
+              href={`/admin/audit?q=${user.id}`}
+              className="text-caption font-medium text-brand transition-colors hover:text-brand-hover"
+            >
+              在审计日志中查看 →
+            </Link>
+          </div>
           <DataTable
             columns={[
               { key: 'action', label: '动作事件' },
@@ -528,7 +550,7 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
                   </StatusBadge>
                 ),
               },
-              { key: 'created_at', label: '时间', render: (row) => formatDate(row.created_at) },
+              { key: 'created_at', label: '时间', render: (row) => formatAdminDateTime(row.created_at) },
             ]}
             rows={detail.audit}
             empty="暂无针对该用户的管理员操作审计"

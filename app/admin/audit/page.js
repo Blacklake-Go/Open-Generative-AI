@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { queryAuditLogs } from '@/lib/admin/audit';
 import { toSearchParams } from '@/lib/admin/pagination';
 import { Card, DataTable, PageHeader, Pagination, StatusBadge, CopyableId } from '@/components/admin/AdminUi';
@@ -35,7 +36,16 @@ export default async function AuditPage({ searchParams }) {
       label: '操作管理员',
       render: (row) => (
         <div>
-          <p className="text-white/90 text-xs">{row.actor_email}</p>
+          {row.actor_id && row.actor_id !== 'system' ? (
+            <Link
+              href={`/admin/users/${row.actor_id}`}
+              className="text-caption text-ink transition-colors hover:text-brand"
+            >
+              {row.actor_email}
+            </Link>
+          ) : (
+            <p className="text-white/90 text-xs">{row.actor_email}</p>
+          )}
           <div className="mt-0.5">
             <CopyableId id={row.actor_id} />
           </div>
@@ -49,8 +59,16 @@ export default async function AuditPage({ searchParams }) {
         <div>
           <span className="text-white/40 text-[11px] uppercase tracking-wider">{row.target_type || '系统'}</span>
           {row.target_id && (
-            <div className="mt-0.5 font-mono text-xs text-white/70">
+            <div className="mt-0.5 flex items-center gap-2 font-mono text-xs text-white/70">
               <CopyableId id={row.target_id} />
+              {row.target_type === 'user' && (
+                <Link
+                  href={`/admin/users/${row.target_id}`}
+                  className="text-micro font-medium text-brand transition-colors hover:text-brand-hover"
+                >
+                  查看用户 →
+                </Link>
+              )}
             </div>
           )}
         </div>

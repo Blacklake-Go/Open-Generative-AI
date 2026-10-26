@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Save, RefreshCw, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
 import { validateVisitorAnalyticsConfig, DEFAULT_VISITOR_ANALYTICS } from '@/lib/services/visitorAnalyticsCore';
+import { useHasPermission } from '@/components/admin/AdminPermissions';
+import { PERMISSIONS } from '@/lib/admin/permissions';
 import Ga4MetricsDashboardCard from '../components/Ga4MetricsDashboardCard';
 import GoogleAnalyticsCard from '../components/GoogleAnalyticsCard';
 import BaiduTongjiCard from '../components/BaiduTongjiCard';
@@ -10,6 +12,7 @@ import MicrosoftClarityCard from '../components/MicrosoftClarityCard';
 import CustomScriptCard from '../components/CustomScriptCard';
 
 export default function AnalyticsTab() {
+  const canWrite = useHasPermission(PERMISSIONS.settingsWrite);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState(DEFAULT_VISITOR_ANALYTICS);
@@ -118,6 +121,7 @@ export default function AnalyticsTab() {
           <h2 className="text-base font-semibold text-white tracking-[-0.01em]">访客统计与分析</h2>
         </div>
 
+        {canWrite ? (
         <div className="flex items-center gap-2.5">
           {isDirty && (
             <button
@@ -150,6 +154,9 @@ export default function AnalyticsTab() {
             )}
           </button>
         </div>
+        ) : (
+          <span className="text-caption text-ink-subtle">当前角色仅可查看配置，无法保存变更</span>
+        )}
       </div>
 
       {/* 状态提示反馈条 */}
@@ -179,25 +186,25 @@ export default function AnalyticsTab() {
         <div className="grid gap-4 lg:grid-cols-2">
         <GoogleAnalyticsCard
           value={config.googleAnalytics}
-          disabled={loading || saving}
+          disabled={loading || saving || !canWrite}
           onChange={(val) => setConfig((prev) => ({ ...prev, googleAnalytics: val }))}
         />
 
         <BaiduTongjiCard
           value={config.baiduTongji}
-          disabled={loading || saving}
+          disabled={loading || saving || !canWrite}
           onChange={(val) => setConfig((prev) => ({ ...prev, baiduTongji: val }))}
         />
 
         <MicrosoftClarityCard
           value={config.microsoftClarity}
-          disabled={loading || saving}
+          disabled={loading || saving || !canWrite}
           onChange={(val) => setConfig((prev) => ({ ...prev, microsoftClarity: val }))}
         />
 
         <CustomScriptCard
           value={config.customScript}
-          disabled={loading || saving}
+          disabled={loading || saving || !canWrite}
           onChange={(val) => setConfig((prev) => ({ ...prev, customScript: val }))}
         />
       </div>

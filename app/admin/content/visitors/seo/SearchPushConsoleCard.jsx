@@ -15,6 +15,8 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
+import { PermissionGate } from '@/components/admin/AdminPermissions';
+import { PERMISSIONS } from '@/lib/admin/permissions';
 
 export default function SearchPushConsoleCard({
   pushConfig,
@@ -167,14 +169,16 @@ export default function SearchPushConsoleCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowConfigDrawer(!showConfigDrawer)}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-300 hover:bg-white/10 transition-colors"
-            >
-              <Sliders className="size-3" />
-              <span>{showConfigDrawer ? '收起引擎配置' : '配置引擎凭据'}</span>
-            </button>
+            <PermissionGate permission={PERMISSIONS.settingsWrite}>
+              <button
+                type="button"
+                onClick={() => setShowConfigDrawer(!showConfigDrawer)}
+                className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-gray-300 hover:bg-white/10 transition-colors"
+              >
+                <Sliders className="size-3" />
+                <span>{showConfigDrawer ? '收起引擎配置' : '配置引擎凭据'}</span>
+              </button>
+            </PermissionGate>
             <StatusBadge tone="good">主动链路就绪</StatusBadge>
           </div>
         </div>
@@ -315,6 +319,7 @@ export default function SearchPushConsoleCard({
         )}
 
         {/* Trigger Push Form */}
+        <PermissionGate permission={PERMISSIONS.settingsWrite}>
         <form onSubmit={handleExecutePush} className="space-y-3.5">
           <div className="rounded-xl border border-white/[0.06] bg-black/30 p-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -396,6 +401,7 @@ export default function SearchPushConsoleCard({
             </div>
           )}
         </form>
+        </PermissionGate>
 
         {/* Push History Logs Section */}
         <div className="space-y-3 pt-2">

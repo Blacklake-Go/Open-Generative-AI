@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUserBySession } from '@/lib/services/auth';
-import { hasPermission, PERMISSIONS } from '@/lib/admin/permissions';
+import { hasPermission, PERMISSIONS, ROLE_PERMISSIONS } from '@/lib/admin/permissions';
 import AdminShell from '@/components/admin/AdminShell';
 
 export const metadata = {
@@ -61,5 +61,11 @@ export default async function AdminLayout({ children }) {
     );
   }
 
-  return <AdminShell user={user}>{children}</AdminShell>;
+  const permissions = Array.from(ROLE_PERMISSIONS[user.role] || []);
+
+  return (
+    <AdminShell user={user} permissions={permissions}>
+      {children}
+    </AdminShell>
+  );
 }

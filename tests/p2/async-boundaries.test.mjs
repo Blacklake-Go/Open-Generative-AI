@@ -20,7 +20,7 @@ test('known async API boundaries explicitly await persistence calls', async () =
     ['app/layout.js', /await getSettingByKey\('maintenance_mode'\)/],
     ['app/api/admin/generations/route.js', /const clusters = await getAdminGenerationFailureClusters\(\)/],
     ['app/api/admin/generations/route.js', /const result = await listFailedAdminGenerations\(url\.searchParams\)/],
-    ['app/api/admin/users/[id]/sessions/revoke/route.js', /const result = await revokeUserSessions\(/],
+    ['app/api/admin/users/[id]/sessions/route.js', /const result = await revokeUserSessions\(/],
     ['app/api/admin/admins/[id]/role/route.js', /if \(!await verifyAdminPassword\(/],
     ['app/api/admin/providers/[id]/secret/route.js', /const res = await rotateProviderSecret\(/],
     ['app/api/admin/dashboard/route.js', /const data = await getDashboardOverview\(\)/],

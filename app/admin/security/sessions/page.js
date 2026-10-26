@@ -6,12 +6,7 @@ import { Card, DataTable, PageHeader, Pagination, StatusBadge, CopyableId } from
 import AdminActionForm from '@/components/admin/AdminActionForm';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
-
-function formatDate(value) {
-  return value
-    ? new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false })
-    : '—';
-}
+import { formatAdminDateTime } from '@/components/admin/formatters';
 
 export default async function SessionsPage({ searchParams }) {
   await requireAdminPagePermission(PERMISSIONS.sessionsRevoke);
@@ -24,9 +19,12 @@ export default async function SessionsPage({ searchParams }) {
       label: '账户主体 / 角色',
       render: (row) => (
         <div>
-          <p className="font-semibold text-white">
+          <Link
+            href={`/admin/users/${row.user_id}`}
+            className="font-semibold text-white transition-colors hover:text-brand"
+          >
             {row.display_name || row.email || (row.phone ? `用户${row.phone.slice(-4)}` : row.user_id)}
-          </p>
+          </Link>
           <div className="mt-0.5 text-xs text-white/50 space-y-0.5">
             {row.email && <div>✉️ {row.email}</div>}
             {row.phone && <div>📱 {row.phone_country_code || '+86'} {row.phone}</div>}
@@ -48,7 +46,7 @@ export default async function SessionsPage({ searchParams }) {
           <CopyableId id={row.token_hash} />
           {row.last_seen_at && (
             <p className="mt-1 text-[11px] text-white/40">
-              活跃: {formatDate(row.last_seen_at)}
+              活跃: {formatAdminDateTime(row.last_seen_at)}
             </p>
           )}
         </div>
@@ -57,13 +55,13 @@ export default async function SessionsPage({ searchParams }) {
     {
       key: 'created_at',
       label: '登录创建时间',
-      render: (row) => formatDate(row.created_at),
+      render: (row) => formatAdminDateTime(row.created_at),
     },
     {
       key: 'expires_at',
       label: '凭据有效期至',
       render: (row) => (
-        <span className="text-white/60">{formatDate(row.expires_at)}</span>
+        <span className="text-white/60">{formatAdminDateTime(row.expires_at)}</span>
       ),
     },
     {
@@ -82,7 +80,7 @@ export default async function SessionsPage({ searchParams }) {
           />
           {/* 用户全量会话注销 */}
           <AdminActionForm
-            action={`/api/admin/users/${row.user_id}/sessions/revoke`}
+            action={`/api/admin/users/${row.user_id}/sessions`}
             method="POST"
             fields={[]}
             label="强制全量下线"
