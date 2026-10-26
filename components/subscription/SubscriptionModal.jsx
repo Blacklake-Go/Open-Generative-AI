@@ -209,8 +209,8 @@ export default function SubscriptionModal({
       highlight: false,
       badge: null,
       topRoofWindow: null,
-      cardBorderClass: 'border-line hover:border-line-strong shadow-elevation-2',
-      btnBgClass: 'bg-white text-ink-inverse font-bold hover:bg-zinc-200 active:bg-zinc-300',
+      cardBorderClass: 'border-line hover:border-line-strong ',
+      btnBgClass: 'bg-surface-inverse text-ink-inverse font-semibold hover:bg-wash-strong active:bg-wash-press',
       unitCostYearly: '¥0.070',
       modelRates: {
         seedancePro: { text: '约 ¥0.30/s', highlight: false },
@@ -252,8 +252,8 @@ export default function SubscriptionModal({
       highlight: true,
       badge: '推荐',
       topRoofWindow: null,
-      cardBorderClass: 'border-brand/50 hover:border-brand shadow-elevation-2',
-      btnBgClass: 'bg-brand text-ink-on-accent font-bold hover:bg-brand-hover active:bg-brand-active',
+      cardBorderClass: 'border-brand/50 hover:border-brand ',
+      btnBgClass: 'bg-brand text-ink-on-accent font-bold hover:bg-brand-hover-solid active:bg-brand-active-solid',
       unitCostYearly: '¥0.060',
       modelRates: {
         seedancePro: { text: '约 ¥0.30/s', highlight: false },
@@ -295,8 +295,8 @@ export default function SubscriptionModal({
       highlight: false,
       badge: null,
       topRoofWindow: '超值特惠 · Seedance 2.5 720P 低至0.37元/秒',
-      cardBorderClass: 'border-line-strong hover:border-line-strong hover:bg-raised shadow-elevation-2',
-      btnBgClass: 'bg-white text-ink-inverse font-bold hover:bg-zinc-200 active:bg-zinc-300',
+      cardBorderClass: 'border-line-strong hover:border-line-strong hover:bg-raised ',
+      btnBgClass: 'bg-surface-inverse text-ink-inverse font-semibold hover:bg-wash-strong active:bg-wash-press',
       unitCostYearly: '¥0.056',
       modelRates: {
         seedancePro: { text: '约 ¥0.24/s', highlight: 'emerald' },
@@ -339,7 +339,7 @@ export default function SubscriptionModal({
       badge: '旗舰',
       topRoofWindow: '超值特惠 · Seedance 2.5 720P 低至0.36元/秒',
       cardBorderClass: 'border-2 border-brand/80 shadow-elevation-3 hover:border-brand',
-      btnBgClass: 'bg-brand text-ink-on-accent font-bold hover:bg-brand-hover active:bg-brand-active shadow-elevation-2',
+      btnBgClass: 'bg-brand text-ink-on-accent font-bold hover:bg-brand-hover-solid active:bg-brand-active-solid ',
       unitCostYearly: '¥0.054',
       modelRates: {
         seedancePro: { text: '约 ¥0.23/s', highlight: 'pink' },
@@ -401,7 +401,7 @@ export default function SubscriptionModal({
           badge,
           topRoofWindow,
           cardBorderClass: isBuiltIn?.cardBorderClass || 'border-line hover:border-line-strong',
-          btnBgClass: isBuiltIn?.btnBgClass || 'bg-white text-ink-inverse hover:bg-zinc-200',
+          btnBgClass: isBuiltIn?.btnBgClass || 'bg-surface-inverse text-ink-inverse hover:bg-wash-strong',
           modelRates: isBuiltIn?.modelRates || {
             seedancePro: { text: '约 ¥0.30/s' },
             seedance25: { text: '约 ¥0.48/s' },
@@ -451,7 +451,7 @@ export default function SubscriptionModal({
     >
       {!isInline && onClose && (
         <button type="button" onClick={onClose} aria-label={strings.closeAria}
-          className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
+          className="control-focus absolute right-4 top-4 flex size-control-md items-center justify-center rounded-lg border border-line bg-wash text-ink-muted transition-colors duration-fast hover:border-line-strong hover:bg-wash-strong hover:text-ink">
           <X className="size-4" />
         </button>
       )}
@@ -465,7 +465,7 @@ export default function SubscriptionModal({
               <div className="mt-1 font-mono text-sm text-ink-muted">{model.creditsPrice} {restrictedCopy.credits}</div>
             </div>
           ))}
-          <a href="/studio/image" className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-semibold text-ink-on-accent hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring">
+          <a href="/studio/image" className="control-focus inline-flex h-control-md items-center rounded-lg bg-brand px-4 text-label font-semibold text-ink-on-accent transition-colors duration-fast hover:bg-brand-hover-solid">
             {restrictedCopy.open}
           </a>
         </div>
@@ -491,7 +491,7 @@ export default function SubscriptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-full border border-line bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink active:scale-95 active:duration-instant transition-[background-color,color,border-color,transform] duration-fast ease-standard focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
+            className="control-focus flex size-control-md items-center justify-center rounded-lg border border-line bg-wash text-ink-muted transition-[background-color,color,border-color,transform] duration-fast ease-standard hover:border-line-strong hover:bg-wash-strong hover:text-ink active:scale-[0.96] active:duration-press cursor-pointer"
             aria-label={strings.closeAria}
           >
             <X className="size-4" />
@@ -502,7 +502,7 @@ export default function SubscriptionModal({
       {/* 顶部特惠跑马灯横幅 */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-full border border-brand-line bg-brand-soft px-4 py-2 text-xs shadow-elevation-1">
         <div className="flex items-center gap-2 truncate">
-          <Sparkles className="size-3.5 text-brand shrink-0" />
+          <Sparkles className="size-3.5 text-brand-text shrink-0" />
           <span className="font-semibold text-ink truncate">
             {strings.promoBanner}
           </span>
@@ -510,7 +510,7 @@ export default function SubscriptionModal({
         <button
           type="button"
           onClick={() => setBillingCycle('yearly')}
-          className="rounded-full bg-brand px-3.5 py-1 text-micro font-bold text-ink-on-accent hover:bg-brand-hover active:bg-brand-active active:scale-[0.98] active:duration-instant transition-[background-color,transform] duration-fast ease-standard cursor-pointer shadow-elevation-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
+          className="control-focus rounded-full bg-brand px-3.5 py-1 text-micro font-semibold text-ink-on-accent transition-[background-color,transform] duration-fast ease-standard hover:bg-brand-hover-solid active:bg-brand-active-solid active:scale-[0.98] active:duration-press cursor-pointer"
         >
           {strings.buyNow}
         </button>
@@ -537,9 +537,9 @@ export default function SubscriptionModal({
             type="button"
             data-pill-segment-item
             onClick={() => setBillingCycle('monthly')}
-            className={`flex h-8 items-center justify-center rounded-full px-4 text-xs transition-all cursor-pointer ${
+            className={`flex h-8 items-center justify-center rounded-full px-4 text-label transition-[background-color,color,box-shadow] duration-fast ease-standard cursor-pointer ${
               billingCycle === 'monthly'
-                ? 'bg-white text-ink-inverse shadow-elevation-1 font-bold'
+                ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold'
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
@@ -549,14 +549,14 @@ export default function SubscriptionModal({
             type="button"
             data-pill-segment-item
             onClick={() => setBillingCycle('quarterly')}
-            className={`relative flex h-8 items-center justify-center gap-1.5 rounded-full px-4 text-xs transition-all cursor-pointer ${
+            className={`relative flex h-8 items-center justify-center gap-1.5 rounded-full px-4 text-label transition-[background-color,color,box-shadow] duration-fast ease-standard cursor-pointer ${
               billingCycle === 'quarterly'
-                ? 'bg-white text-ink-inverse shadow-elevation-1 font-bold'
+                ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold'
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
             <span>{strings.quarterly}</span>
-            <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-bold">
+            <span className="rounded-full bg-success-soft text-ink-muted border border-success-line px-1.5 py-0.5 text-[9px] font-bold">
               {strings.tagQuarterly}
             </span>
           </button>
@@ -564,14 +564,14 @@ export default function SubscriptionModal({
             type="button"
             data-pill-segment-item
             onClick={() => setBillingCycle('yearly')}
-            className={`relative flex h-8 items-center justify-center gap-1.5 rounded-full px-4 text-xs transition-all cursor-pointer ${
+            className={`relative flex h-8 items-center justify-center gap-1.5 rounded-full px-4 text-label transition-[background-color,color,box-shadow] duration-fast ease-standard cursor-pointer ${
               billingCycle === 'yearly'
-                ? 'bg-white text-ink-inverse shadow-elevation-1 font-bold'
+                ? 'bg-surface-inverse text-ink-inverse shadow-elevation-1 font-semibold'
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
             <span>{strings.yearly}</span>
-            <span className="rounded-full bg-brand-soft text-brand border border-brand-line px-1.5 py-0.5 text-[9px] font-bold">
+            <span className="rounded-full bg-brand-soft text-brand-text border border-brand-line px-1.5 py-0.5 text-[9px] font-bold">
               {strings.tagYearly}
             </span>
           </button>
@@ -582,9 +582,9 @@ export default function SubscriptionModal({
           <button
             type="button"
             onClick={() => setIsRechargeOpen(true)}
-            className="flex h-10 items-center gap-1.5 rounded-full border border-brand-line bg-brand-soft px-4 text-xs font-bold text-brand hover:bg-brand-pressed transition-all hover:scale-105 active:scale-95 shadow-elevation-1 cursor-pointer"
+            className="control-focus flex h-control-md items-center gap-1.5 rounded-full border border-brand-line bg-brand-soft px-4 text-label font-semibold text-brand-text transition-[background-color,border-color,color,transform] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer"
           >
-            <Gift className="size-3.5 text-brand" />
+            <Gift className="size-3.5" strokeWidth={1.8} />
             <span>{strings.buyCreditsShortcut}</span>
             <span className="rounded-full bg-brand text-ink-on-accent px-1.5 py-0.5 text-[9px]">{strings.buyCreditsSub}</span>
           </button>
@@ -638,7 +638,7 @@ export default function SubscriptionModal({
               {plan.topRoofWindow ? (
                 <div className={`w-full py-1.5 px-3 rounded-t-xl text-center text-micro font-bold border-t border-x transition-colors duration-150 ${
                   plan.id === 'pro'
-                    ? 'bg-brand-soft border-brand-line text-brand'
+                    ? 'bg-brand-soft border-brand-line text-brand-text'
                     : 'bg-wash-strong border-line-strong text-ink'
                 }`}>
                   {plan.topRoofWindow}
@@ -649,7 +649,7 @@ export default function SubscriptionModal({
 
               {/* 卡片主体 */}
               <div
-                className={`relative flex flex-col justify-between h-full flex-1 border bg-surface p-5 transition-all duration-200 hover:-translate-y-1 ${
+                className={`relative flex flex-col justify-between h-full flex-1 border bg-surface p-5 transition-[background-color,border-color,box-shadow] duration-fast ease-standard hover:bg-raised ${
                   plan.topRoofWindow ? 'rounded-b-xl border-t-0' : 'rounded-xl'
                 } ${plan.cardBorderClass}`}
               >
@@ -692,10 +692,10 @@ export default function SubscriptionModal({
                   <div className="mt-4 rounded-xl border border-line bg-wash p-3 space-y-1.5 min-h-[96px] flex flex-col justify-between">
                     {/* 行 1: 每月到账算力 + 加赠 */}
                     <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
-                      <span className="text-amber-400">⚡</span>
+                      <Sparkles className="size-3.5 shrink-0 text-brand-text" strokeWidth={1.8} aria-hidden="true" />
                       <span>{strings.creditsPerMonth(plan.creditsMonthly)}</span>
                       {plan.bonusCredits > 0 && (
-                        <span className="text-emerald-400 font-normal">
+                        <span className="text-ink-muted font-normal">
                           {strings.bonusCreditsTag(plan.bonusCredits)}
                         </span>
                       )}
@@ -718,7 +718,7 @@ export default function SubscriptionModal({
                     type="button"
                     onClick={() => handleSubscribe(plan)}
                     disabled={isRechargeOpen && selectedPlanId === plan.id}
-                    className={`mt-4 w-full h-11 rounded-full text-xs font-black uppercase tracking-wider transition-[background-color,color,transform] duration-fast ease-standard hover:opacity-90 active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer shadow-elevation-1 flex items-center justify-center gap-1.5 ${plan.btnBgClass}`}
+                    className={`control-focus mt-4 flex h-control-lg w-full items-center justify-center gap-1.5 rounded-full text-label font-semibold uppercase tracking-wide transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-press cursor-pointer disabled:pointer-events-none disabled:opacity-45 ${plan.btnBgClass}`}
                   >
                     {isRechargeOpen && selectedPlanId === plan.id ? (
                       <>
@@ -744,9 +744,9 @@ export default function SubscriptionModal({
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.seedancePro.highlight === 'pink'
-                            ? 'text-brand'
+                            ? 'text-brand-text'
                             : plan.modelRates.seedancePro.highlight === 'emerald'
-                            ? 'text-emerald-400'
+                            ? 'text-ink-muted'
                             : 'text-ink'
                         }`}>
                           {plan.modelRates.seedancePro.text}
@@ -759,9 +759,9 @@ export default function SubscriptionModal({
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.seedance25.highlight === 'pink'
-                            ? 'text-brand'
+                            ? 'text-brand-text'
                             : plan.modelRates.seedance25.highlight === 'emerald'
-                            ? 'text-emerald-400'
+                            ? 'text-ink-muted'
                             : 'text-ink'
                         }`}>
                           {plan.modelRates.seedance25.text}
@@ -774,9 +774,9 @@ export default function SubscriptionModal({
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.minimaxH3.highlight === 'pink'
-                            ? 'text-brand'
+                            ? 'text-brand-text'
                             : plan.modelRates.minimaxH3.highlight === 'emerald'
-                            ? 'text-emerald-400'
+                            ? 'text-ink-muted'
                             : 'text-ink'
                         }`}>
                           {plan.modelRates.minimaxH3.text}
@@ -789,9 +789,9 @@ export default function SubscriptionModal({
                         </span>
                         <span className={`font-mono text-[11px] font-bold ${
                           plan.modelRates.fluxPro.highlight === 'pink'
-                            ? 'text-brand'
+                            ? 'text-brand-text'
                             : plan.modelRates.fluxPro.highlight === 'emerald'
-                            ? 'text-emerald-400'
+                            ? 'text-ink-muted'
                             : 'text-ink'
                         }`}>
                           {plan.modelRates.fluxPro.text}
@@ -809,21 +809,21 @@ export default function SubscriptionModal({
                     <div className="space-y-1.5 text-xs text-ink">
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.mSeedance25}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.mSeedance20}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.mSoraKling}</span>
                           <InfoTooltip text={strings.soraKlingTooltip} />
                         </span>
@@ -834,7 +834,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.mFluxMj}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
@@ -844,7 +844,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.mMiniMax}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
@@ -854,7 +854,7 @@ export default function SubscriptionModal({
 
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[11px]">
-                          <Check className="size-3 text-emerald-400 shrink-0" />
+                          <Check className="size-3 text-ink-muted shrink-0" />
                           <span>{strings.modelLabels.m4kExport}</span>
                         </span>
                         <span className="rounded-md border border-line bg-wash-press px-1.5 py-0.5 text-[9px] font-bold text-ink">
@@ -867,8 +867,8 @@ export default function SubscriptionModal({
                   {/* 专属特权标签条 */}
                   {plan.exclusiveFeatures && plan.exclusiveFeatures.length > 0 && (
                     <div className="mt-4 rounded-xl border border-brand-line bg-brand-soft p-2.5 space-y-1.5 min-h-[58px]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-brand flex items-center gap-1">
-                        <Sparkles className="size-3 text-brand" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-brand-text flex items-center gap-1">
+                        <Sparkles className="size-3 text-brand-text" />
                         <span>{strings.exclusivePrivileges}</span>
                       </span>
                       <div className="flex flex-wrap gap-1">
@@ -896,7 +896,7 @@ export default function SubscriptionModal({
                     >
                       <span>{strings.moreFeatures}</span>
                       <ChevronDown className={`size-3.5 transition-transform duration-200 ${
-                        isMoreOpen ? 'rotate-180 text-brand' : ''
+                        isMoreOpen ? 'rotate-180 text-brand-text' : ''
                       }`} />
                     </button>
 
@@ -904,7 +904,7 @@ export default function SubscriptionModal({
                       <ul className="mt-2 space-y-1.5 text-[11px] text-ink leading-relaxed animate-in fade-in duration-150">
                         {plan.moreFeatures.map((f, i) => (
                           <li key={i} className="flex items-center gap-1.5">
-                            <Check className="size-3 text-brand shrink-0" />
+                            <Check className="size-3 text-brand-text shrink-0" />
                             <span>{f}</span>
                           </li>
                         ))}
@@ -921,7 +921,7 @@ export default function SubscriptionModal({
                     <span>{strings.instantActivation}</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <ShieldCheck className="size-3 text-brand" />
+                    <ShieldCheck className="size-3 text-brand-text" />
                     <span>{strings.refundGuarantee}</span>
                   </span>
                 </div>
@@ -937,9 +937,9 @@ export default function SubscriptionModal({
           <button
             type="button"
             onClick={() => setShowFaq(!showFaq)}
-            className="inline-flex items-center gap-2 text-sm font-bold text-ink hover:text-brand transition-colors cursor-pointer group"
+            className="inline-flex items-center gap-2 text-sm font-bold text-ink hover:text-brand-text transition-colors cursor-pointer group"
           >
-            <HelpCircle className="size-4 text-brand group-hover:scale-110 transition-transform" />
+            <HelpCircle className="size-4 text-brand-text" strokeWidth={1.8} />
             <span>{strings.faqTitle(showFaq)}</span>
             {showFaq ? <ChevronUp className="size-4 text-ink-muted" /> : <ChevronDown className="size-4 text-ink-muted" />}
           </button>
@@ -959,7 +959,7 @@ export default function SubscriptionModal({
               return (
                 <div
                   key={faq.id || idx}
-                  className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+                  className={`rounded-xl border transition-[background-color,border-color] duration-fast ease-standard overflow-hidden ${
                     isExpanded
                       ? 'border-line-strong bg-raised shadow-elevation-1'
                       : 'border-line bg-well/60 hover:border-line-strong hover:bg-surface'
@@ -977,12 +977,12 @@ export default function SubscriptionModal({
                     }}
                     className="w-full flex items-center justify-between p-4 text-left cursor-pointer group"
                   >
-                    <span className="text-xs sm:text-sm font-bold text-ink group-hover:text-brand transition-colors pr-3">
+                    <span className="text-xs sm:text-sm font-bold text-ink group-hover:text-brand-text transition-colors pr-3">
                       {displayIndex}. {faq.question}
                     </span>
                     <ChevronDown
                       className={`size-4 shrink-0 transition-transform duration-200 ${
-                        isExpanded ? 'rotate-180 text-brand' : 'text-ink-subtle group-hover:text-ink-muted'
+                        isExpanded ? 'rotate-180 text-brand-text' : 'text-ink-subtle group-hover:text-ink-muted'
                       }`}
                     />
                   </button>
@@ -1001,7 +1001,7 @@ export default function SubscriptionModal({
               <span>{strings.supportContact}</span>
               <a
                 href={`mailto:${faqConfig?.supportEmail || 'support@Supdance.com'}`}
-                className="text-brand hover:underline ml-1 font-mono"
+                className="text-brand-text hover:underline ml-1 font-mono"
               >
                 {faqConfig?.supportEmail || 'support@Supdance.com'}
               </a>

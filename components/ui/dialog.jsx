@@ -55,7 +55,7 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 flex size-control-md items-center justify-center rounded-md text-ink-subtle transition-[background-color,color,opacity] duration-fast ease-standard hover:bg-wash hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base">
+      <DialogPrimitive.Close className="control-focus absolute right-4 top-4 flex size-control-md items-center justify-center rounded-lg text-ink-subtle transition-[background-color,color] duration-fast ease-standard hover:bg-wash hover:text-ink">
         <XIcon className="size-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>

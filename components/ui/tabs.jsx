@@ -18,6 +18,7 @@ function TabsList({ className, ...props }) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
+      data-pill-segmented
       className={cn(
         'inline-flex h-segment-track-md w-fit items-center justify-center gap-1 rounded-full border border-line-subtle bg-well p-1 text-ink-muted',
         withoutRadiusUtilities(className)
@@ -31,12 +32,12 @@ function TabsTrigger({ className, ...props }) {
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
+      data-pill-segment-item
       className={cn(
-        'inline-flex h-segment-item-md items-center justify-center gap-2 rounded-full px-3 text-body-sm font-semibold text-ink-muted outline-none select-none transition-[background-color,border-color,color,box-shadow] duration-fast',
+        'inline-flex h-segment-item-md items-center justify-center gap-2 rounded-full px-3 text-body-sm font-semibold text-ink-muted control-focus select-none transition-[background-color,color,box-shadow] duration-fast ease-standard pointer-events-auto',
         'hover:text-ink hover:bg-wash',
         'data-[state=active]:bg-surface-inverse data-[state=active]:text-ink-inverse data-[state=active]:shadow-elevation-1',
-        'focus-visible:ring-2 focus-visible:ring-brand-ring',
-        'disabled:pointer-events-none disabled:opacity-50',
+        'disabled:pointer-events-none disabled:opacity-45',
         withoutRadiusUtilities(className)
       )}
       {...props}

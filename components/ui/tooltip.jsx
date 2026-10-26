@@ -11,7 +11,7 @@ function withoutRadiusUtilities(className = "") {
 }
 
 function TooltipProvider({
-  delayDuration = 0,
+  delayDuration = 350,
   ...props
 }) {
   return (
@@ -47,10 +47,9 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-tooltip inline-flex w-fit max-w-xs origin-[var(--radix-tooltip-content-transform-origin)] items-center gap-1.5 select-none",
+          "tooltip-surface z-tooltip inline-flex w-fit max-w-xs origin-[var(--radix-tooltip-content-transform-origin)] items-center gap-1.5 select-none pointer-events-none",
           "rounded-md border border-line-subtle bg-overlay px-2.5 py-1 text-caption font-medium text-ink shadow-elevation-2",
-          "transition-[opacity,transform] duration-fast animate-fade-in",
-          "has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-tooltip **:data-[slot=kbd]:rounded-xs",
+          "has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:rounded-xs",
           withoutRadiusUtilities(className)
         )}
         {...props}

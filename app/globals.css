@@ -20,7 +20,7 @@
   --bg-subtle-rgb: 15 16 21;
   --text-primary-rgb: 243 244 246;
   --text-secondary-rgb: 156 163 175;
-  --text-tertiary-rgb: 107 114 128;
+  --text-tertiary-rgb: 134 139 143;
   --text-disabled-rgb: 75 85 99;
   --text-inverse-rgb: 7 8 11;
   --accent-primary-rgb: 225 29 116;
@@ -155,6 +155,17 @@
   --ease-fluid: cubic-bezier(0.15, 0.75, 0.3, 1);
   --ease-card-hover: cubic-bezier(0.4, 0.95, 0.6, 1.1);
   --ease-drawer: cubic-bezier(0.2, 0, 0.4, 1);
+
+  /* 影策双语义动效层（v3.8.0 §4.7.6）：结构动效与即时状态分开计时。 */
+  --motion-product-fast: 120ms;
+  --motion-product-state: 180ms;
+  --motion-product-enter: 360ms;
+  --motion-press: 90ms;
+  --motion-theme: 400ms;
+  --motion-stagger: 45ms;
+  --ease-product-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-theme: ease-in-out;
   --text-display: 32px;
   --text-page-title: 24px;
   --text-section-title: 18px;
@@ -199,7 +210,7 @@
 
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
-  --text-tertiary: #6b7280;
+  --text-tertiary: #868b8f;
   --text-disabled: #4b5563;
   --text-inverse: #07080b;
 
@@ -211,8 +222,13 @@
   --accent-primary: #e11d74;
   --accent-primary-hover: #f43f5e;
   --accent-primary-active: #c0175f;
+  /* Solid brand fills carrying white text: hover/active must stay >= 4.5:1 on white (v3.8.0 §2.3). */
+  --accent-primary-hover-solid: #c0175f;
+  --accent-primary-active-solid: #9f1239;
   --accent-soft: rgba(225, 29, 116, 0.10);
   --accent-border: rgba(225, 29, 116, 0.28);
+  /* 深色表面上的品牌文字专用浅玫红：对 canvas 7.79:1、对 overlay 6.55:1（v3.8.0 §2.3）。 */
+  --brand-text: #f472b6;
 
   --success: #10b981;
   --success-soft: rgba(16, 185, 129, 0.14);
@@ -284,6 +300,11 @@
   --glass-well-bg: rgba(0, 0, 0, 0.40);
   --glass-blur-deep: 40px;
   --glass-blur-control: 12px;
+  /* 大型模型选择器/多列浮层的第三档玻璃（v3.8.0 §4.17.4）。 */
+  --glass-blur-popover: 28px;
+  --glass-popover-bg: rgba(24, 26, 34, 0.94);
+  --glass-popover-border: rgba(255, 255, 255, 0.14);
+  --glass-popover-shadow: 0 20px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.055);
 
   --motion-ambient: 24s;
 
@@ -379,16 +400,17 @@
     box-shadow: var(--shadow-elevation-3);
   }
 
-  /* Jimeng / Dreamina creation mode switch: 40px track, 36px capsule options, iridescent selected state */
+  /* Creation mode switch: 40px track, 32px item, neutral inverse selected state (v3.8.0 §4.17.1). */
   .mode-switch {
     display: flex;
     align-items: center;
     gap: 2px;
     width: min(100%, 320px);
     height: 40px;
-    padding: 2px;
-    border-radius: 110px;
-    background: rgba(255, 255, 255, 0.08);
+    padding: 4px;
+    border-radius: 9999px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     box-sizing: border-box;
   }
   .mode-switch-option {
@@ -397,74 +419,47 @@
     align-items: center;
     justify-content: center;
     min-width: 0;
-    height: 36px;
-    padding: 4px 16px;
+    height: 32px;
+    padding: 0 16px;
     border: 0;
     border-radius: 9999px;
     background: transparent;
-    color: #fafafa;
-    font-size: 13px;
+    color: var(--text-secondary);
+    font-size: var(--text-label);
     font-weight: 500;
-    line-height: 22px;
+    line-height: 16px;
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: all 0.1s linear;
+    transition:
+      background-color var(--motion-product-fast) var(--ease-standard),
+      color var(--motion-product-fast) var(--ease-standard);
   }
   .mode-switch-option:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--wash-strong);
+    color: var(--text-primary);
   }
   .mode-switch-option:active {
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--wash-press);
     transition: none;
   }
   .mode-switch-option:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.55);
-    outline-offset: 2px;
+    outline: 1px solid color-mix(in srgb, currentColor 36%, transparent);
+    outline-offset: 1px;
   }
   .mode-switch-option[aria-pressed='true'] {
-    --mode-switch-edge-rgb: 250 250 250;
-    color: #1a1a1a;
-    background:
-      linear-gradient(
-        180deg,
-        rgb(var(--mode-switch-edge-rgb)) 0%,
-        rgb(var(--mode-switch-edge-rgb) / 0.78) 6%,
-        rgb(var(--mode-switch-edge-rgb) / 0.65) 13%,
-        rgb(var(--mode-switch-edge-rgb) / 0.37) 25%,
-        transparent 42%,
-        transparent 58%,
-        rgb(var(--mode-switch-edge-rgb) / 0.37) 75%,
-        rgb(var(--mode-switch-edge-rgb) / 0.65) 87%,
-        rgb(var(--mode-switch-edge-rgb) / 0.78) 94%,
-        rgb(var(--mode-switch-edge-rgb)) 100%
-      ),
-      linear-gradient(
-        90deg,
-        transparent 0%,
-        hsla(31, 57%, 93%, 0.14) 3%,
-        hsla(23, 89%, 93%, 0.73) 13%,
-        rgba(255, 226, 206, 0.85) 22%,
-        rgba(255, 221, 197, 0.85) 29%,
-        hsla(37, 63%, 89%, 0.85) 35%,
-        hsla(55, 22%, 90%, 0.85) 41%,
-        rgba(196, 237, 240, 0.85) 48%,
-        rgba(173, 238, 251, 0.85) 54%,
-        rgba(150, 239, 255, 0.85) 61%,
-        rgba(158, 235, 251, 0.84) 67%,
-        rgba(173, 238, 251, 0.85) 73%,
-        rgba(190, 243, 254, 0.85) 80%,
-        rgba(204, 245, 255, 0.78) 86%,
-        rgba(206, 243, 249, 0.4) 92%,
-        rgba(218, 247, 249, 0.11) 97%,
-        transparent 100%
-      ),
-      #fafafa;
+    background: var(--text-primary);
+    color: var(--text-inverse);
+    font-weight: 600;
+    box-shadow: var(--shadow-elevation-1);
+  }
+  .mode-switch-option[aria-pressed='true']:hover {
+    background: var(--text-primary);
+    color: var(--text-inverse);
   }
   .mode-switch-option[aria-pressed='true']:active {
-    --mode-switch-edge-rgb: 178 178 178;
-    background-color: #b2b2b2;
+    background: color-mix(in srgb, var(--text-primary) 88%, var(--text-inverse));
   }
 
   /* Spatial Prompt Composer Container */
@@ -559,6 +554,47 @@
     pointer-events: none;
     transition: opacity 1000ms ease;
   }
+
+  /* Keyboard-only focus ring (v3.8.0 §4.17.2): 1px currentColor outline, no box-shadow glow. */
+  .control-focus {
+    outline: none;
+  }
+  .control-focus:focus-visible {
+    outline: 1px solid color-mix(in srgb, currentColor 36%, transparent);
+    outline-offset: 1px;
+  }
+
+  /* Unified selector / dropdown surface (v3.8.0 §4.17.1 B). */
+  .popover-surface {
+    background-color: var(--bg-overlay);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-elevation-3);
+    transform-origin: var(--radix-popover-content-transform-origin, top left);
+  }
+  .popover-surface[data-state='open'] {
+    animation: popover-enter var(--motion-product-state) var(--ease-enter) both;
+  }
+  .popover-surface[data-state='closed'] {
+    animation: popover-exit var(--motion-product-fast) var(--ease-exit) both;
+  }
+
+  /* Large selector / command palette glass tier (v3.8.0 §4.17.4 C). */
+  .glass-popover {
+    background: var(--glass-popover-bg);
+    border: 1px solid var(--glass-popover-border);
+    box-shadow: var(--glass-popover-shadow);
+    backdrop-filter: blur(var(--glass-blur-popover)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-popover)) saturate(140%);
+    border-radius: var(--radius-xl);
+    transform-origin: var(--radix-popover-content-transform-origin, top left);
+  }
+  .glass-popover[data-state='open'] {
+    animation: popover-enter var(--motion-product-state) var(--ease-enter) both;
+  }
+  .glass-popover[data-state='closed'] {
+    animation: popover-exit var(--motion-product-fast) var(--ease-exit) both;
+  }
 }
 
 /* Minimalist Dark Scrollbars */
@@ -645,8 +681,44 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Floating-layer motion (v3.8.0 §4.17.1 B): options snap, only the shell eases. */
+@keyframes popover-enter {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes popover-exit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(4px) scale(0.99); }
+}
+@keyframes tooltip-enter-top {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tooltip-enter-bottom {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tooltip-enter-left {
+  from { opacity: 0; transform: translateX(4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes tooltip-enter-right {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tooltip-surface[data-state='delayed-open'] { animation: 120ms var(--ease-standard) both; }
+.tooltip-surface[data-side='top'][data-state='delayed-open'] { animation-name: tooltip-enter-top; }
+.tooltip-surface[data-side='bottom'][data-state='delayed-open'] { animation-name: tooltip-enter-bottom; }
+.tooltip-surface[data-side='left'][data-state='delayed-open'] { animation-name: tooltip-enter-left; }
+.tooltip-surface[data-side='right'][data-state='delayed-open'] { animation-name: tooltip-enter-right; }
+.tooltip-surface[data-state='closed'] { animation: popover-exit 80ms var(--ease-exit) both; }
+
 .animate-fade-in {
   animation: fadeIn 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-popover-in {
+  animation: popover-enter var(--motion-product-state) var(--ease-enter) both;
 }
 .animate-scale-in {
   animation: scaleIn 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -736,6 +808,16 @@
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* In-app motion kill switch (v3.8.0 §4.7.6): same hard-zero policy as the OS preference. */
+.no-motion *,
+.no-motion *::before,
+.no-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
 }
 
 /* SupDance Brand Typography - Jost Medium (中粗体 500) */

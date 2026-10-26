@@ -7,12 +7,12 @@ import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
 import { Bell, Eye, Globe, CheckCircle2, AlertCircle, ChevronDown, Check } from 'lucide-react';
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'zh-CN', label: '简体中文', flag: '🇨🇳' },
-  { code: 'ja-JP', label: '日本語', flag: '🇯🇵' },
-  { code: 'ko-KR', label: '한국어', flag: '🇰🇷' },
-  { code: 'zh-TW', label: '繁體中文', flag: '🇭🇰' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'en', label: 'English', flag: '/flags/en.svg' },
+  { code: 'zh-CN', label: '简体中文', flag: '/flags/zh-cn.svg' },
+  { code: 'ja-JP', label: '日本語', flag: '/flags/ja.svg' },
+  { code: 'ko-KR', label: '한국어', flag: '/flags/ko.svg' },
+  { code: 'zh-TW', label: '繁體中文', flag: '/flags/zh-tw.svg' },
+  { code: 'es', label: 'Español', flag: '/flags/es.svg' },
 ];
 
 export default function SystemPreferencesSection({ user = null, className = '' }) {
@@ -197,20 +197,20 @@ export default function SystemPreferencesSection({ user = null, className = '' }
       {toastMessage && (
         <div
           role="status"
-          className={`flex items-center gap-2 p-3 rounded-xl text-xs animate-in fade-in ${
+          className={`flex items-center gap-2 rounded-lg border p-3 text-caption animate-in fade-in ${
             toastType === 'success'
-              ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-              : 'bg-red-500/10 border border-red-500/20 text-red-400'
+              ? 'border-success-line bg-success-soft text-success'
+              : 'border-danger-line bg-danger-soft text-danger'
           }`}
         >
-          {toastType === 'success' ? <CheckCircle2 className="size-4 shrink-0" /> : <AlertCircle className="size-4 shrink-0" />}
+          {toastType === 'success' ? <CheckCircle2 className="size-4 shrink-0" strokeWidth={1.8} /> : <AlertCircle className="size-4 shrink-0" strokeWidth={1.8} />}
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* 偏好设置卡片 */}
-      <Card className="p-5 sm:p-6 bg-surface-raised border-line-subtle rounded-2xl shadow-elevation-1">
-        <h3 className="text-sm font-semibold text-ink mb-4 flex items-center gap-2">
+      <Card className="p-5 sm:p-6 bg-surface-raised border-line-subtle">
+        <h3 className="mb-4 flex items-center gap-2 text-card-title text-ink">
           <span>{copy.title}</span>
         </h3>
 
@@ -234,7 +234,7 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                 onChange={(e) => handleToggleNotifications(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-well peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+              <div className="peer h-6 w-11 rounded-full bg-well peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-base after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-line-strong after:bg-ink-on-accent after:transition-transform after:duration-fast after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-transparent"></div>
             </label>
           </div>
 
@@ -257,7 +257,7 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                 onChange={(e) => handleTogglePreview(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-well peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+              <div className="peer h-6 w-11 rounded-full bg-well peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-base after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-line-strong after:bg-ink-on-accent after:transition-transform after:duration-fast after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-transparent"></div>
             </label>
           </div>
 
@@ -280,16 +280,21 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                 onKeyDown={handleTriggerKeyDown}
                 aria-haspopup="listbox"
                 aria-expanded={dropdownOpen}
-                className="w-48 bg-well border border-line-subtle hover:border-line-strong text-ink text-xs font-medium rounded-xl h-9 px-3 flex items-center justify-between gap-2 cursor-pointer transition-[border-color,background-color] duration-fast outline-none focus-visible:ring-1 focus-visible:ring-brand-ring active:scale-[0.98]"
+                className="control-focus flex h-control-md w-48 select-none items-center justify-between gap-2 rounded-xl border border-line-subtle bg-well px-3 text-label font-medium text-ink transition-[border-color,background-color] duration-fast ease-standard hover:border-line cursor-pointer active:scale-[0.98] active:duration-press"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm select-none leading-none">{activeLangItem.flag}</span>
-                  <span className="truncate text-ink font-medium">{activeLangItem.label}</span>
+                <div className="flex min-w-0 items-center gap-2">
+                  <img
+                    src={activeLangItem.flag}
+                    alt=""
+                    className="h-4 w-5 shrink-0 rounded-sm object-cover ring-1 ring-line-subtle"
+                  />
+                  <span className="truncate font-medium text-ink">{activeLangItem.label}</span>
                 </div>
                 <ChevronDown
-                  className={`size-3.5 text-ink-muted shrink-0 transition-transform duration-fast ${
-                    dropdownOpen ? 'rotate-180 text-brand' : ''
+                  className={`size-3.5 shrink-0 text-ink-muted transition-transform duration-fast ease-standard ${
+                    dropdownOpen ? 'rotate-180' : ''
                   }`}
+                  strokeWidth={1.8}
                 />
               </button>
 
@@ -297,7 +302,8 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                 <div
                   role="listbox"
                   aria-label={copy.language}
-                  className="absolute right-0 top-full mt-1.5 w-52 py-1.5 rounded-xl border border-line-strong bg-overlay shadow-elevation-3 z-50 animate-fade-in"
+                  data-state="open"
+                  className="popover-surface absolute right-0 top-full z-dropdown mt-1.5 w-52 p-1.5"
                 >
                   {SUPPORTED_LANGUAGES.map((lang) => {
                     const isSelected = lang.code === normalizedLocale;
@@ -308,17 +314,21 @@ export default function SystemPreferencesSection({ user = null, className = '' }
                         role="option"
                         aria-selected={isSelected}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-colors duration-fast cursor-pointer ${
+                        className={`control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body transition-none cursor-pointer ${
                           isSelected
-                            ? 'bg-brand/15 text-brand font-semibold'
-                            : 'text-ink-muted hover:text-ink hover:bg-wash-strong'
+                            ? 'bg-wash-press font-medium text-ink'
+                            : 'text-ink-muted hover:bg-wash-strong hover:text-ink'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="text-sm select-none leading-none">{lang.flag}</span>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <img
+                            src={lang.flag}
+                            alt=""
+                            className="h-4 w-5 shrink-0 rounded-sm object-cover ring-1 ring-line-subtle"
+                          />
                           <span className="truncate">{lang.label}</span>
                         </div>
-                        {isSelected && <Check className="size-4 text-brand shrink-0" />}
+                        {isSelected && <Check className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.8} />}
                       </button>
                     );
                   })}

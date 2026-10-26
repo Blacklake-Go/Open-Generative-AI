@@ -1,25 +1,59 @@
 # KOYO Studio Design System — 主规范（Master Spec）
 
-**版本**：3.7.0 · **取代** 3.6.0（2026-10-13 深度吸收即梦 AI 全站微动效、工业级缓动曲线、按钮状态机与浮窗光学规范，保持洋红主品牌与 AI 空间光影背景 100% 边界完整性）
+**版本**：3.8.0 · **取代** 3.7.0（2026-10-26 深度吸收影策 open-ai-canvas 的双主题架构、双语义动效层、统一下拉选择器、按钮/图标状态机与阴影光学，并校正品牌洋红对比度；保持洋红主品牌与 AI 空间光影背景 100% 边界完整性）
 **地位**：本文是 KOYO Studio 全站 Web UI 开发的最高优先级视觉规范。任何新增页面、组件、工作室必须无条件遵守；禁止在业务组件中自行发明颜色、字体层级、圆角、阴影、发光或尺寸规则。
 
 > **Token 的唯一事实来源是 `app/globals.css` 的 `:root` 块。**
 > 本文引用它的值，不定义它。两者冲突时以 `app/globals.css` 为准，并立即修正本文。
 > `tailwind.config.js` 是纯 `var()` 映射层，经校验**不含任何颜色字面量**；新增颜色只能进 `globals.css`。
-> 本次 3.7.0 深度吸收即梦 AI（Jimeng AI / Dreamina）全站逆向工程精华，在完整保持 KOYO Studio 品牌洋红（`#e11d74`）唯一主色基准与 AI 空间光影背景（`docs/背景动效规范.md`）100% 边界完整性的前提下，全面升级全站微动效体系、工业级缓动曲线库、按钮交互状态机、浮窗光学覆盖层（Modal/Drawer/Popover/Tooltip）、提示词生成岛（Prompt Composer）及高精度开关滑块规范，严格遵循 `docs/UI_REPAIR_INSTRUCTION.md` 多重圆角层级与 pointer-events 安全隔离铁律。
+> 本次 3.8.0 深度吸收影策（open-ai-canvas / one.supdance.com）的双主题 token 分层、View Transitions 圆形揭示、双语义动效层（即时状态 vs 结构动效）、统一下拉选择器、按钮/图标状态机与 Glass-Popover 光学，同时完整保留 3.7.0 对即梦 AI 全站微动效、工业级缓动曲线库与浮窗光学系统的吸收成果。全站仍以 KOYO 品牌洋红（`#e11d74`）为唯一主色，AI 空间光影背景（`docs/背景动效规范.md`）保持 100% 边界完整性，并严格遵循 `docs/UI_REPAIR_INSTRUCTION.md` 的多重圆角层级与 pointer-events 安全隔离铁律。
+> **移植原则**：影策的原始数值（14px/9px 圆角、`z-2000`、13px 基准字号、600ms 装饰动效）不直接搬运；本文只吸收其结构、语义与光学配方，所有数值重新映射到 KOYO 自有的 4px 网格、12/16/20px 圆角层级、110 级 z-index 与洋红色板。
 
 ### 核心关联文档索引 (Document Index)
 
 | 文档 | 职责 | 关系说明 |
 | :--- | :--- | :--- |
-| `UI_DESIGN_SYSTEM.md`（本文） | 全站视觉原则、Token 契约、设计模式、组件光学与主规范 (v3.7.0) | **最高视觉主规范** |
+| `UI_DESIGN_SYSTEM.md`（本文） | 全站视觉原则、Token 契约、设计模式、组件光学与主规范 (v3.8.0) | **最高视觉主规范** |
 | `docs/ADMIN_UI_DESIGN_SYSTEM.md` | 管理后台专项视觉规范、侧边栏呼吸胶囊、四列设置列表与组件契约 (v1.0.0) | 后台专项设计系统 |
 | `docs/JIMENG_DESIGN_SYSTEM.md` | 即梦 AI 全站 UI/微动效逆向工程专著 (M1 伴生工业级参考) | 逆向实测参考来源 |
+| 影策 open-ai-canvas（one.supdance.com） | 双主题 token、动效语义、下拉/按钮/图标/阴影层逆向基线 | 外部源码参考，不随本仓库发布 |
 | `docs/背景动效规范.md` | AI 空间光影背景、3D 流体极光视频与交互点阵规范 | **只读底层基石，严格零修改** |
 | `docs/UI_REPAIR_INSTRUCTION.md` | 原始圆角层级、多层阴影、`pointer-events` 安全与防穿孔修复指令 | 几何与安全强制约束 |
 | `docs/UI_COMPONENTS.md` | 共享组件清单、Props 定义与 API 规范 | 代码实现契约 |
 | `docs/UI_AUDIT.md` | 缺陷台账（P0–P3）、违规扫描与量化证据 | 历史审计与回归依据 |
 | `docs/UI_MIGRATION.md` | 迁移阶段、Ratchet 基准进度与单页迁移配方 | 渐进式交付指南 |
+
+---
+
+### v3.8.0 影策深度吸收变更日志 (Changelog)
+
+- **双主题架构与主题切换动效 (§4.16)**：
+  - 吸收影策 open-ai-canvas 的三层 token 架构（Primitive → Semantic → Component）、`data-theme` 类切换、`localStorage` 持久化与 `color-scheme` 同步；主站保持 dark-first，默认深色，浅色主题为显式可选能力。
+  - 确立 **View Transitions 圆形揭示**：400ms、`ease-in-out`、以触发按钮中心为原点、`clip-path: circle()` 扩展至视口最远角；`::view-transition-old/new(root)` 关闭默认交叉淡入并固定新旧层叠顺序。
+  - 确立四条回退路径：API 不可用、`prefers-reduced-motion`、画布世界打开、过渡抛错 → `flushSync` 单帧切换 + `data-theme-switching` 抑制一帧；全局 lock 防止双击重复启动。
+  - 确立 **首帧无闪契约**：`<head>` 内阻塞脚本在 hydration 前写入主题类，`localStorage` 值必须校验，禁止 `useEffect` 首帧后才读主题。
+  - 建立明暗语义成对表：中性实心按钮、选中底、开关、危险色、浮层边框与阴影全部成对定义；深色阴影保持“黑阴影 + 白内发丝”，禁止用白色外发光模拟浮起。
+- **双语义动效层与关键帧目录 (§4.7.6–§4.7.8)**：
+  - 吸收影策 80/150/250/400/600ms 时长梯、0/30/60/100/150ms 延迟梯与 `ease-out / ease-in / ease-in-out / overshoot` 四曲线。
+  - 新增产品动效三档：`--motion-product-fast` 120ms、`--motion-product-state` 180ms、`--motion-product-enter` 360ms、`--motion-stagger` 45ms 与 `--ease-product-enter`。
+  - 确立 **即时 vs 动效分界铁律**：菜单选项的 hover/selected `transition: none`，只有浮层外壳、面板、卡片做 120–360ms 动效；禁止给选项本身加 180ms 过渡。
+  - 固化关键帧目录：`pop-in`、`popover-enter`、`results/workbench/state enter`、`card-enter` + 45ms 阶梯、`image-reveal`、面板去模糊与饱和度恢复、导航胶囊 layout 动画、无限装饰动效清单。
+  - 固化弹簧预设 `dock / surface / panel` 与 JS 时长映射（0.12s / 0.2s / 0.32s）；KOYO 保留硬归零降级，**不采用**影策 0.3 运动缩放中间态。
+- **下拉框、按钮、图标与阴影层契约 (§4.17)**：
+  - 统一下拉选择器：`soft / pill / field` 三种 trigger、选项 40px / 模型选择器 52px、选项切换即时、键盘模态焦点环（`data-input-modality`）、chevron 180° 旋转、浮层用 `shadow-elevation-3`。
+  - 按钮状态机扩展：solid / neutral-solid / soft / outline / ghost / danger；颜色 120ms + transform 90ms；按压 `.98`（按钮）/`.96`（图标按钮）/`.94`（30px 产品图标）；默认无阴影、无彩色 glow。
+  - 图标体系扩展为四档：12 inline / 14 control / 16 standard / 18 emphasis；描边 1.8（默认）与 1.7（30px 产品图标按钮），业务代码禁止传 `strokeWidth`。
+  - 阴影层明确区分 **primitive 阴影值** 与 **semantic elevation token**；深色 = 黑阴影 + 白内发丝，浅色 = 黑发丝 + 更深黑阴影；新增 28px `Glass-Popover` 第三档玻璃，仅用于大型模型选择器/多列浮层。
+- **品牌洋红对比度校正 (§2.3)**：
+  - 实测 `#e11d74` 对纯白 / 纯黑均为 **4.54–4.55:1**，不是 3.7.0 文中的 16.5:1；洋红实心按钮 + 纯白文字为 **AA（普通文字）**，不是 AAA。
+  - 新增 `--brand-text: #f472b6`：深色表面品牌文字专用（对 `#030303` 7.79:1、对 `#181a22` 6.55:1）；浅色主题使用 `#be185d`（对白 6.04:1、对 `#f4f4f5` 5.49:1）。
+  - 明确 `#f43f5e` 只作非文字描边/光晕，不得承载小号白字。
+  - 同步把 `--text-tertiary` 从 `#6b7280` 对齐为规范既定的 `#868b8f`（对 overlay 5.05:1、对 canvas 5.99:1），修复 token 与文档漂移。
+- **红线保持**：
+  - `docs/背景动效规范.md` 保持 100% 原始字节零修改；GPU 极光与点阵物理不受干扰。
+  - 洋红 `#e11d74` 仍是全站唯一饱和主色；不引入影策的单色中性主操作作为第二主色。
+  - z-index 上限仍为 `z-tooltip: 110`；影策的 `z-2000` 体系禁止照搬。
+  - 4px 网格、12/16/20px 圆角层级与 `pointer-events` 安全规则不变；影策的 14px trigger / 9px option 圆角只作参考，不进入 KOYO。
 
 ---
 
@@ -47,7 +81,7 @@
 - **三大绝对红线与边界条件严格恪守**：
   - `docs/背景动效规范.md` 保持 100% 原始字节零修改（`git diff --exit-code docs/背景动效规范.md` == 0），GPU 极光与点阵物理不受任何干扰。
   - `docs/UI_REPAIR_INSTRUCTION.md` 嵌套圆角层级（`Modal 20px → Field 16px → Control 12px → Pill full`）与 `pointer-events` 安全规则完全遵循，禁止批量一刀切替换圆角，禁止全屏透明层拦截点击。
-  - 品牌洋红（`#e11d74` 配纯白文字，对比度 16.5:1 AAA）全站唯一饱和色地位不可动摇，绝不引入双主色或霓虹杂色。
+  - 品牌洋红（`#e11d74` 配纯白文字）全站唯一饱和色地位不可动摇，绝不引入双主色或霓虹杂色。（3.8.0 实测校正：对比度为 4.54:1 / AA，非 AAA。）
 
 ---
 
@@ -95,30 +129,37 @@
 
 对比度已按 canvas→overlay 全层级实测（非估算）：
 
-| Tailwind 类 | 值 | 对比度（对 surface 全层） | WCAG |
+| Tailwind 类 | 值 | 对比度（canvas → overlay） | WCAG |
 | :--- | :--- | :--- | :--- |
-| `text-ink` | `#ededf0` | 13.4 – 16.9 : 1 | AAA |
-| `text-ink-muted` | `#a0a4ab` | 6.2 – 7.9 : 1 | AA（任意字号） |
-| `text-ink-subtle` | `#868b8f` | 4.5 – 5.7 : 1 | AA（任意字号） |
-| `text-ink-disabled` | `#4a4e55` | 1.9 – 2.4 : 1 | 豁免（1.4.3 非活动控件） |
-| `text-ink-inverse` | `#0a0b0d` | — | 浅底反色 |
-| `text-ink-on-accent` | `#ffffff` | ≥ 16.5 : 1（洋红底纯白字） | AAA |
+| `text-ink` | `#f3f4f6` | 15.77 – 18.74 : 1 | AAA |
+| `text-ink-muted` | `#9ca3af` | 6.84 – 8.12 : 1 | AA（任意字号） |
+| `text-ink-subtle` | `#868b8f` | 5.05 – 5.99 : 1 | AA（任意字号） |
+| `text-ink-disabled` | `#4b5563` | 2.30 – 2.73 : 1 | 豁免（1.4.3 非活动控件） |
+| `text-ink-inverse` | `#07080b` | — | 浅底反色 |
+| `text-ink-on-accent` | `#ffffff` | 4.54 : 1（洋红底纯白字） | AA（普通文字） |
 
-> `--text-tertiary` 原为 `#6e737b`，在 `--bg-overlay` 上只有 3.27:1，**不达标**；已上调为 `#868b8f` 而不是限制其只能用于大字号。改色前请先确认这个前提没被推翻。
+> `--text-tertiary` 现为 `#868b8f`（对 `--bg-overlay` 5.05:1、对 `--bg-canvas` 5.99:1），任意字号均达 AA；不要再退回 `#6b7280`（对 `--bg-overlay` 仅 3.54:1，不达标）。
 
 ### 2.3 Brand accent —— 全站唯一饱和色（专业洋红 #e11d74）
 
 | Tailwind 类 | 值 | 语义说明 |
 | :--- | :--- | :--- |
-| `bg-brand` / `text-brand` | `#e11d74` | 品牌主色：兼具高辨识度与高级玫红洋红质感，在黑底上文字对比度稳稳超过 WCAG AA 标准的 4.5:1 |
-| `hover:bg-brand-hover` | `#f43f5e` | 悬停态（Rose-500），通透温暖 |
+| `bg-brand` | `#e11d74` | 品牌主色**填充**：实心主按钮、选中态、品牌图形；不用于深底小字 |
+| `text-brand` | `#e11d74` | 仅限大字号（≥24px，或 ≥18.66px 粗体）或图标/描边等非文字语义；**禁止 14px 以下正文** |
+| `text-brand-text` | `#f472b6` | 深色表面品牌**文字**专用：对 `#030303` 7.79:1、对 `#181a22` 6.55:1 |
+| `hover:bg-brand-hover` | `#f43f5e` | 悬停态填充（Rose-500）；对白色仅 3.67:1，不得承载小号白字 |
 | `active:bg-brand-active` | `#c0175f` | 按压交互态（Rose-700），沉稳深邃 |
 | `bg-brand-soft` | `rgba(225,29,116,.10)` | 浅色浸润底色：极其克制的薄雾层，绝不大面积涂抹 |
 | `bg-brand-pressed` | `rgba(225,29,116,.20)` | 容器按压态暗光 |
 | `ring-brand-ring` / `border-brand-ring` | `rgba(225,29,116,.45)` | 焦点环与选中外圈 |
 | `border-brand-line` | `rgba(225,29,116,.28)` | 高光边缘与边框 |
 
-**无障碍硬契约**：在洋红主底色（`bg-brand`）上，文字一律使用 **纯白反色（`text-ink-on-accent: #ffffff`）**，对比度达到 16.5:1 (AAA)；严禁在洋红色底上使用黑字。
+**无障碍硬契约（v3.8.0 实测校正）**：`#e11d74` 对纯白 / 纯黑的对比度均为 **4.54–4.55:1**，不是 3.7.0 文中的 16.5:1。据此执行：
+- 洋红主底色（`bg-brand`）上的文字一律使用 **纯白反色（`text-ink-on-accent: #ffffff`）**，达到 **AA 普通文字**，但**不达 AAA**；主按钮只承载短标签，禁止放长句、`text-micro` 次级说明或灰色小字。
+- 深色表面上的品牌小字必须使用 `text-brand-text`（`#f472b6`）；`text-brand` 仅用于大字号或图标/描边等非文字语义。
+- `#f43f5e` 只允许作为悬停时的非文字描边、光晕或大图形，不得作为小号白字的按钮底色；需要白字按钮悬停时使用 `#c0175f`（对白 5.95:1）。
+- 浅色主题启用时，品牌文字使用 `#be185d`（对白 6.04:1、对 `#f4f4f5` 5.49:1），洋红实心按钮仍配纯白字。
+- 存量 `text-brand` 小字按 `UI_AUDIT.md` 逐步迁移，不得新增。
 **绝对禁止荧光洋红**：严禁使用高饱和度纯荧光品红（如 `#ff00ff`），防止在纯黑底色上引起色相震颤（Chromostereopsis）与视疲劳。
 **唯一保留的非 token 例外**：登录页 logo 使用其自身品牌色（业务方确认保留），不参与 UI 色板，也不得被复制到任何 UI 控件上。
 
@@ -531,6 +572,113 @@ KOYO Studio 在 3.7.0 中正式吸收即梦 AI（Dreamina / LightVelocity）全�
   }
   ```
 - 减弱模式下，所有形变、旋转、弹跳位移全部归零，仅保留瞬时切换或纯透明度微变，彻底消除前庭综合征（Vestibular Disorder）诱发风险。
+- 影策使用 0.3 运动缩放中间态；KOYO 不采用，统一硬归零（见 §4.7.6 F），避免任何非零位移仍触发前庭不适。
+
+#### 4.7.6 双语义动效层：结构动效与即时状态（影策吸收）
+
+影策最值得吸收的不是某一条曲线，而是**把“状态变化”和“结构出现”分开计时**：菜单选项、开关、选中态必须瞬时确定；只有浮层外壳、面板、卡片才允许做 120–360ms 的位移/缩放。KOYO 3.8.0 将此固化为双语义层。
+
+**A. 影策时长与 KOYO 映射**
+
+| 影策 token | 值 | KOYO 对应 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `--motion-dur-instant` | 80ms | `--motion-instant` 80ms | 按压、图标反转、即时确认 |
+| `--motion-dur-fast` | 150ms | `--motion-fast` 120ms | KOYO 更快；hover/边框/选项 |
+| `--motion-dur-base` | 250ms | `--motion-smooth` 240ms | 面板状态、弹出层 |
+| `--motion-dur-slow` | 400ms | `--motion-modal` 400ms | 大面板、主题揭示 |
+| `--motion-dur-emphasize` | 600ms | **不采用** | 影策装饰性长动效；KOYO 禁止 |
+| `--motion-product-fast` | 120ms | 新增同值 | 产品 hover/press |
+| `--motion-product-state` | 180ms | 新增同值 | 选项表面/浮层外壳 |
+| `--motion-product-enter` | 360ms | 新增同值 | 卡片/列表/工作台入场 |
+| `--motion-stagger` | 45ms | 新增同值 | 列表阶梯，最多 6 项 |
+
+**B. 曲线映射**
+
+| 影策曲线 | 值 | KOYO token | 用途 |
+| :--- | :--- | :--- | :--- |
+| ease-out | `(0.22, 1, 0.36, 1)` | `--ease-standard` `(0.16, 1, 0.3, 1)` | 通用减速；KOYO 使用更陡的工业曲线 |
+| ease-in | `(0.64, 0, 0.78, 0)` | `--ease-exit` | 退出 |
+| ease-in-out | `(0.64, 0, 0.36, 1)` | `--ease-theme` | **仅**主题圆形揭示 |
+| overshoot | `(0.34, 1.56, 0.64, 1)` | `--ease-overshoot` | **仅**徽章/开关/红点的一次性过冲 |
+| product-enter | `(0.16, 1, 0.3, 1)` | `--ease-product-enter` | 卡片/面板/工作台入场 |
+| linear | `linear` | 禁止用于功能动效 | 仅无限装饰；主题星形变体 KOYO 不采用 |
+
+**C. 三档产品动效**
+
+1. **120ms 即时层**：hover 背景、边框、图标颜色、按钮按压、chevron 颜色。
+2. **180ms 状态层**：下拉外壳、选中底、Tab 指示块、chevron 180° 旋转、面板去模糊。
+3. **360ms 结构层**：卡片、列表项、工作台、结果区入场。
+4. **45ms 阶梯**只用于结构层，最多 6 项；第 7 项起不再延迟。
+
+**D. 弹簧预设（仅 JS 动效）**
+
+| 预设 | mass | stiffness | damping | 用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| `dock` | 0.12 | 220 | 18 | 浮动 dock、图标按压回弹 |
+| `surface` | 0.32 | 280 | 26 | 卡片/面板展开 |
+| `panel` | 0.42 | 320 | 28 | 大型面板/抽屉 |
+
+JS 时长映射：instant `0.12s`、state `0.2s`、panel `0.32s`。CSS 不模拟弹簧；只有 Switch 与一次性徽章允许 `--ease-overshoot`。
+
+**E. 延迟梯**
+
+`0 / 30 / 60 / 100 / 150ms` 五档。功能反馈延迟不得超过 150ms；45ms 阶梯独立用于列表/卡片编排。禁止用 `setTimeout` 编排功能状态（选中、提交、开关），延迟只能用于视觉入场。
+
+**F. 运动缩放与降级**
+
+影策使用三级运动缩放：L0=1、L1=0.3、L2=0。KOYO 采用更严格的二级映射：**L0=1、L1=0（OS `prefers-reduced-motion`）、L2=0（应用内 `.no-motion`）**。不采用 0.3 中间态，因为任何非零位移仍可能诱发前庭不适，且主站已有全局 `0.01ms` 硬归零与视觉回归闸。无限装饰动效在 L1/L2 下必须**停止**，而不是减速。
+
+**G. 即时 vs 动效分界铁律**
+
+- 菜单选项的 hover / selected：`transition: none`；选中背景、文字、勾选状态同帧到位。
+- 浮层外壳：允许 150–180ms 的 `opacity + translateY(4–6px) + scale(0.985→1)`。
+- 按钮：颜色 120ms、transform 90ms；按压瞬态，释放回弹。
+- 卡片：入场 360ms；hover 只允许 `-1px` 抬升或 `scale(1.01–1.02)`，180ms。
+- 禁止 `transition-all`；禁止给 `width/height/top/left` 做连续补间（布局动画必须用 FLIP/layout projection 或 Grid 行列过渡）。
+
+#### 4.7.7 关键帧目录与编排（影策吸收）
+
+| 名称 | 关键帧 | 时长 / 缓动 | 用途与约束 |
+| :--- | :--- | :--- | :--- |
+| `ra-pop-in` | `opacity 0→1`，`translateY(-3px) scale(.985)→0/1` | 150ms `--ease-standard` | Tooltip / RAC 浮层；origin 按 placement 设置（top→bottom center、bottom→top center、left→right center、right→left center） |
+| `popover-enter` | `opacity 0→1`，`translateY(6px) scale(.985)→0/1` | 180ms `--ease-enter` | 下拉/气泡外壳 |
+| `results-enter` | `translateY(10px) + opacity` | 240ms `--ease-standard` | 生成结果区 |
+| `workbench-enter` | `translateY(12px) scale(.992) + opacity` | 360ms `--ease-product-enter` | Studio 工作台/大面板 |
+| `state-enter` | `translateY(6px) + opacity` | 180ms `--ease-standard` | 空状态/轻量区块 |
+| `card-enter` | `translateY(8px) + opacity` | 360ms `--ease-product-enter`；stagger 45ms | 卡片/列表；最多 6 项 |
+| `image-reveal` | `filter: blur(5px)→0 + opacity` | 520ms `--ease-standard` | 生成图/缩略图揭示；入场结束后释放 `will-change` |
+| `panel-saturate` | `filter: saturate(.92)→1` | 180ms `--ease-standard` | 面板打开时的色彩恢复 |
+| `panel-placement-blur` | `filter: blur(4px)→0` | 180ms `--ease-standard` | 面板定位/重排后去模糊 |
+| `nav-pill` | 位置/宽度投影到新目标 | 200ms `--ease-standard` 或 spring `surface` | 侧栏/顶栏激活胶囊；禁止布局抖动 |
+| `tab-thumb` | `left/width` 200ms ease-out | 200ms | 分段器指示块；必须配 roving tabindex |
+| `caret-blink` | `opacity 1↔0` | 900ms step-end infinite | 仅装饰；减弱动效下停止 |
+| `pulse / breathe / orbit / signal / timeline` | 见实现 | 1.8s / 2.8s / 5.5s / 1.25s / 2.2s | 仅加载/氛围装饰；L1/L2 停止 |
+| `theme-reveal` | `clip-path: circle(0)→circle(reach)` | 400ms `--ease-theme` | 主题切换；见 §4.16.2 |
+
+**编排规则**：
+1. 入场关键帧只动画 `transform / opacity / filter`；`height`/`max-height` 展开必须配 `overflow` 与 FLIP 或 `grid-template-rows`，不得逐帧写 `height`。
+2. 任何 `filter: blur()` 入场必须在结束后释放 `will-change`，避免长驻合成层。
+3. 同屏同时运行的入场动画不超过 6 个；列表超过 6 项时只 stagger 前 6 项。
+4. 禁止 `animation-fill-mode: forwards` 残留交互态；装饰动画不得覆盖 `transform` 造成 hover 失效。
+5. 旋转/呼吸/轨道类无限动画只允许出现在加载态与氛围层；业务界面静止时不得有循环动画。
+
+#### 4.7.8 微交互物理与图标动效（影策吸收）
+
+| 场景 | 影策实测 | KOYO 契约 |
+| :--- | :--- | :--- |
+| 按钮按压 | AntD base `active: scale(.98)`；颜色 120ms + transform 90ms | 普通按钮 `.98`，图标按钮 `.96`，30px 产品图标 `.94`；释放 120–180ms |
+| 卡片/导航 hover | 图标/卡片上移 `-1px` | 只允许卡片、导航图标、dock 项 `-1px`；列表行不位移，只换背景 |
+| Switch | thumb 200ms ease-out；颜色 120ms | 保持 §4.15.3 的 200ms 与 `--ease-bounce`；颜色 120ms |
+| Chevron | 180° 旋转 | 200ms `--ease-standard`；展开/收起同帧完成，不延迟菜单内容 |
+| Tooltip | delay 350ms；enter 120–150ms；exit 0–80ms | 保持 §4.14.4；exit 不超过 80ms |
+| Dock | whileTap `.92`（图标）/`.96`（带文字）；spring `dock` | 只用于浮动 dock；键盘 ArrowLeft/Right；coarse pointer 命中区 36–40px |
+| 删除动作 | hover 时图标轻微倾斜 | 仅限破坏性操作的图标，幅度 ≤6°、位移 ≤1px；减弱动效下取消 |
+
+**物理约束**：
+- 功能控件不做循环弹跳；`--ease-overshoot` 只用于一次性的徽章/开关/红点。
+- hover 位移不得改变布局；使用 `transform`，不改变 `margin/padding/height`。
+- 图标颜色跟随 `currentColor`；语义色只用于 danger/success 等明确状态。
+- 按压反馈必须在 `pointerdown` 同帧开始；禁止等待 200ms+ 缓动才出现下沉。
 
 ---
 
@@ -850,6 +998,7 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
    - 圆角规范：外壳严格使用 **`rounded-xl` (16px)**，内边距 `p-1.5`；
    - 最小宽度：`min-w-[176px]`，最大高度 `max-h-[45vh]`，滚动区域启用 `.custom-scrollbar`；
    - 表面与阴影：`bg-overlay-glass` (`rgba(32, 36, 41, 0.97)`)，**12px 高斯毛玻璃 (`backdrop-blur-md`)**，发丝边框 `border border-white/10`，中性阴影 **`shadow-elevation-3`**。
+   - **大浮层例外**：大型模型选择器、多列菜单或命令面板改用 §4.17.4 的 Glass-Popover（28px 模糊、`--glass-popover-*` token）；紧凑菜单仍保持本节 12px 档位。
 2. **动效与微缩放**：
    - 入场（Appearance）：耗时 **180ms (`duration-base`)**，`opacity: 0 -> 1`，`transform: scale(0.96) -> scale(1)`，曲线绑定 `--ease-enter`；
    - 退出（Dismissal）：耗时 **120ms (`duration-fast`)**，`opacity: 1 -> 0`，`transform: scale(1) -> scale(0.98)`，曲线绑定 `--ease-exit`。
@@ -951,6 +1100,335 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
 
 ---
 
+### 4.16 双主题架构与主题切换动效（影策吸收）
+
+> **范围声明**：主站当前仍是 dark-first 单主题（`html { color-scheme: dark }`）。本节是**双主题能力契约**：任何启用浅色主题的界面（主站未来浅色、Canvas、后台或嵌入式工作室）必须按本节实现；未启用的界面不得提前引入半套浅色 token，也不得在组件里写死 `dark:` 分支。
+
+#### 4.16.1 三层 token 架构与切换机制
+
+影策的 token 分三层，KOYO 直接吸收该分层：
+
+```
+Primitive（原始色值 / 尺寸）
+  └─ Semantic（surface / text / border / brand / status）
+       └─ Component（button / select / dropdown / table）
+```
+
+**硬规则**：
+1. **业务组件只消费 Semantic / Component token**；禁止直接引用 primitive 色值，禁止在组件内写 `#fff` / `rgba(...)` 作为主题色。
+2. **主题由根节点属性切换**：KOYO 统一使用 `html[data-theme="dark"|"light"]`，默认 `dark`。影策使用 `.dark` 类；KOYO 采用显式 `data-theme`，避免“无类 = 未知主题”的默认歧义。
+3. **`color-scheme` 必须同步**：`root.style.colorScheme = theme`，确保原生滚动条、表单控件与 `<select>` 弹层跟随主题。
+4. **持久化**：`localStorage` key 固定 `koyo-theme`，只接受 `dark|light`；非法值回退 `dark`。禁止把主题写进 URL 或服务端 session。
+5. **默认值**：主站默认 `dark`，不跟随 `prefers-color-scheme` 自动切换；只有用户显式选择才进入浅色，避免系统浅色用户首次访问被强制白屏与首帧闪烁。
+6. **语义 token 成对**：每个语义 token 必须在 `[data-theme="dark"]` 与 `[data-theme="light"]` 下都有值；缺失即视为主题缺陷。
+7. **`dark:` 变体是例外**：只有当同一语义无法用 token 表达时（例如品牌插画遮罩），才允许组件内 `dark:`；必须在代码注释中说明原因。
+8. **首帧无闪**：Next.js `app/layout.js` 的 `<head>` 内放置阻塞脚本，在 React hydration 前读取 `localStorage` 并写入 `data-theme` + `color-scheme`；禁止用 `useEffect` 做首次主题读取。脚本必须 `try/catch`，失败回退 `dark`。
+
+```html
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem("koyo-theme");
+      var theme = saved === "light" || saved === "dark" ? saved : "dark";
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    } catch (_) {
+      document.documentElement.dataset.theme = "dark";
+      document.documentElement.style.colorScheme = "dark";
+    }
+  })();
+</script>
+```
+
+9. **首帧验收**：硬刷新浅色主题页面，首帧不得出现深色底或白色闪屏；`document.documentElement.dataset.theme` 在 `DOMContentLoaded` 前已正确。
+
+#### 4.16.2 View Transitions 圆形揭示
+
+吸收影策的圆形 `clip-path` 主题切换。KOYO 只采用 **circle** 一种形态；square / triangle / diamond / hexagon / rectangle / star 变体因不符合“Quiet”品牌原则而不采用。
+
+**触发条件**（全部满足才启用）：
+- `typeof document.startViewTransition === "function"`；
+- 用户未开启 `prefers-reduced-motion: reduce`；
+- 画布世界未打开（`document.querySelector("[data-canvas-world-layer]") === null`）；
+- 当前没有进行中的主题切换（全局 lock）。
+
+**几何**：
+- 原点 = 触发按钮中心；`fromCenter` 时为视口中心；
+- 半径 = 原点到视口四角的最大距离：`Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y))`；
+- 起始帧 `circle(0px at ${x}px ${y}px)`，结束帧 `circle(${radius}px at ${x}px ${y}px)`。
+
+**实现骨架**：
+
+```js
+const root = document.documentElement;
+const frames = [
+  `circle(0px at ${x}px ${y}px)`,
+  `circle(${radius}px at ${x}px ${y}px)`,
+];
+root.dataset.themeTransition = "active";
+
+const transition = document.startViewTransition(() => {
+  flushSync(() => {
+    root.dataset.theme = next;
+    root.style.colorScheme = next;
+  });
+});
+
+transition.ready.then(() => {
+  root.animate(
+    { clipPath: frames },
+    {
+      duration: 400, // 必须与 --motion-theme 一致；解析失败时才用 400 兜底
+      easing: "ease-in-out",
+      fill: "forwards",
+      pseudoElement: "::view-transition-new(root)",
+    },
+  );
+});
+
+transition.finished.finally(() => {
+  delete root.dataset.themeTransition;
+  lock = false;
+});
+```
+
+**必要的全局 CSS**：
+
+```css
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+```
+
+- 新主题层必须在新层、旧层静态；禁止默认交叉淡入。
+- 动画只作用于 `clip-path`，不得同时做整页 `opacity` / `scale`。
+- `fill: "forwards"` 只用于揭示；`finished` 后清理内联变量与 `dataset`。
+
+**回退路径**（任一条件：API 不可用 / 减弱动效 / 画布打开 / 过渡抛错）：
+
+```js
+root.dataset.themeSwitching = "true";
+flushSync(() => {
+  root.dataset.theme = next;
+  root.style.colorScheme = next;
+});
+requestAnimationFrame(() => {
+  delete root.dataset.themeSwitching;
+});
+```
+
+- 回退时禁止同时播放卡片/浮层入场动画；`data-theme-switching="true"` 期间所有 `transition` / `animation` 归零一帧。
+- `startViewTransition` 抛错时：先清理 lock 与 `data-theme-transition`，再走回退。
+- **双击保护**：lock 在 `transition.finished` 或 animation cancel 时释放；未释放前忽略后续点击。
+- 画布打开时不做 View Transition（Canvas/WebGL 截图成本高且易闪），直接单帧切换。
+
+#### 4.16.3 明暗语义成对表
+
+> 深色列为现行 `:root`；浅色列为启用浅色主题时必须写入 `html[data-theme="light"]` 的值。组件不得在浅色下继续使用深色字面量。
+
+| 语义 | 深色（现行） | 浅色（启用时） |
+| :--- | :--- | :--- |
+| canvas | `#030303` | `#ffffff` |
+| base | `#070708` | `#f7f7f8` |
+| surface | `#0d0e12` | `#f4f4f5` |
+| raised | `#13151c` | `#ffffff` |
+| overlay | `#181a22` | `rgba(250, 250, 250, 1)` |
+| text primary | `#f3f4f6` | `#171717` |
+| text secondary | `#9ca3af` | `rgba(23, 23, 23, .62)` |
+| text tertiary | `#868b8f` | `rgba(23, 23, 23, .56)` |
+| border default | `rgba(255, 255, 255, .10)` | `rgba(17, 17, 17, .18)` |
+| border strong | `rgba(255, 255, 255, .18)` | `rgba(17, 17, 17, .28)` |
+| neutral solid | `#f5f5f5` / fg `#131313` | `#171717` / fg `#ffffff` |
+| neutral solid hover | `#ffffff` | `#303030` |
+| neutral solid active | `#e5e5e5` | `#404040` |
+| selected bg | `rgba(255, 255, 255, .12)` | `rgba(17, 17, 17, .09)` |
+| selected bg hover | `rgba(255, 255, 255, .16)` | `rgba(17, 17, 17, .13)` |
+| brand fill | `#e11d74` / fg `#ffffff` | `#e11d74` / fg `#ffffff` |
+| brand text | `#f472b6` | `#be185d` |
+| switch on | `#22c55e` | `#16a34a` |
+| switch on hover | `#4ade80` | `#15803d` |
+| danger | `#f87171` | `#dc2626` |
+| danger hover | `#fca5a5` | `#b91c1c` |
+| danger active | `#ef4444` | `#991b1b` |
+| info | `#60a5fa` | `#2563eb` |
+| overlay border | `rgba(255, 255, 255, .22)` | `rgba(17, 17, 17, .22)` |
+| overlay hover | `rgba(255, 255, 255, .075)` | `rgba(17, 17, 17, .065)` |
+| overlay selected | `rgba(255, 255, 255, .115)` | `rgba(17, 17, 17, .10)` |
+| overlay shadow | `0 30px 84px rgba(0,0,0,.62), 0 8px 24px rgba(0,0,0,.34)` | `0 26px 72px rgba(15,23,42,.18), 0 4px 18px rgba(15,23,42,.08)` |
+| glass popover | `rgba(24, 26, 34, .94)` + border `rgba(255,255,255,.14)` + inset `rgba(255,255,255,.055)` | `rgba(255,255,255,.78)` + border `rgba(220,225,231,.82)` + inset `rgba(255,255,255,.78)`，blur 28px saturate 140% |
+| elevation hairline | `inset 0 0 0 1px rgba(255,255,255,.085)` | `inset 0 0 0 1px rgba(17,17,17,.13)` |
+| elevation card | `0 1px 2px rgba(0,0,0,.40)` | `0 1px 2px rgba(0,0,0,.05)` |
+| elevation card hover | `0 12px 30px rgba(0,0,0,.50), 0 2px 6px rgba(0,0,0,.32)` | `0 10px 26px rgba(0,0,0,.10), 0 2px 5px rgba(0,0,0,.05)` |
+
+**明暗阴影哲学**：
+- **深色**：靠黑色多层阴影 + 1px 白内发丝模拟边缘，**禁止白色外发光**。影策 primitive 阴影在深色下会翻白，但其 elevation token 保持“黑阴影 + 白发丝”；KOYO 只采用 elevation 语义，不采用翻白的 primitive。
+- **浅色**：白面靠 1px 黑发丝 + 更深、更柔的黑阴影；同样禁止彩色 glow。
+- **品牌色不随主题翻转**：`#e11d74` 填充在明暗下都保持洋红 + 白字；只有品牌“文字”色在浅色下改为 `#be185d` 以满足对比度。
+- **状态色成对**：success / warning / danger / info 在浅色下使用更深一档（见上表），不得直接复用深色浅色调。
+- **玻璃**：浅色 popover 的 `rgba(255,255,255,.78)` 是影策实测配方；深色保持 94% 不透明，确保菜单文字不穿透。
+
+#### 4.16.4 切换期动效抑制
+
+1. 切换开始时关闭所有瞬态浮层（Tooltip、Dropdown、Popover）；Modal 可以保留并重新着色。
+2. `data-theme-switching="true"`（回退）或 `data-theme-transition="active"`（View Transition）期间：卡片入场、面板位移、骨架呼吸、无限装饰动画全部暂停；只保留主题揭示本身。
+3. 禁止整页 `opacity` 交叉淡入；禁止 `display: none` 重建 DOM；禁止重新挂载页面。
+4. 切换不得改变滚动位置、焦点、已填表单值与已打开路由。
+5. 画布世界打开时跳过 View Transition；Canvas/WebGL、视频与 iframe 不参与整页截图。
+6. 主题切换按钮必须用 `aria-label` 表达目标主题（“切换到浅色/深色”），并在切换后更新 `aria-pressed` 或文案；不得只靠图标颜色。
+
+---
+
+### 4.17 下拉框、按钮、图标与阴影层契约（影策吸收）
+
+#### 4.17.1 统一选择器与下拉浮层
+
+**A. Trigger 形态**
+
+| 形态 | 表面 | 圆角 | 高度 | 用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| `soft` | 无硬边框，表面混合 6% / 10% / 12% | `rounded-lg` 12px | 32 / 38 / 44 | 默认表单选择 |
+| `pill` | 完整药丸 | `rounded-full` | 32 / 38 | 模式/筛选 |
+| `field` | 1px 发丝边框 + 透明底 | `rounded-xl` 16px | 38 / 44 | 大型模型选择器 |
+
+- 影策 trigger 为 36 / 48px、圆角 8 / 14px；KOYO 映射到 32 / 38 / 44px 与 12 / 16px，**禁止直接写 14px**。
+- 触发器高度必须落在 `h-control-*`；不得出现 36 / 40 / 42px。
+- 左侧图标 16px，文字 `text-body-sm` 或 `text-body`，右侧 chevron 14px。
+- chevron 展开旋转 180°，200ms `--ease-standard`；菜单内容不得延迟。
+- 触发器宽度不得小于 176px（`min-w-popover`），紧凑工具条内的筛选器除外。
+
+**B. 浮层与选项**
+
+- 表面：`bg-overlay` 或 §4.17.4 的 Glass-Popover；边框 `border-line`；阴影 `shadow-elevation-3`。
+- 圆角 `rounded-xl` 16px；紧凑菜单 padding 6px，大型选择器 padding 8px。
+- 最小宽度 = trigger 宽度；最大高度 45vh；溢出 `.custom-scrollbar`。
+- 选项高度：紧凑 40px；模型选择器 52px；选项圆角 `rounded-md` 8px（影策 9px 不采用）。
+- 选项内边距 `8px 12px`；多选 chip 26px 高，`rounded-full` 或 `rounded-md`，超出显示 `+N`。
+- 选中态：背景混合 10%（`bg-wash-press` 或语义 selected token）+ 主文字色；不使用彩色描边；右侧可选 14px check。
+- hover 态：只换背景，不位移、不缩放、不加阴影。
+- **选项状态 `transition: none`**：hover / selected 同帧到位；只有浮层外壳做 180ms 入场。
+- 浮层入场 `translateY(6px) scale(.985)` → 0/1，180ms `--ease-enter`；退出 120ms `--ease-exit`。
+
+**C. 键盘与焦点**
+
+- `role="listbox"` / `role="option"`、`aria-selected`；触发器 `aria-expanded` / `aria-haspopup="listbox"`。
+- ArrowUp/Down 移动高亮，Enter 选择，Esc 关闭并归还焦点，Home/End 首尾，typeahead 按字符跳转。
+- 焦点环只在键盘模态出现：`data-input-modality="keyboard"` 时 1px outline，颜色 `currentColor` 36%，offset 1px；鼠标点击不显示焦点环。
+- 禁止彩色 glow、禁止 `box-shadow` 焦点环、禁止 `outline: none` 无替代。
+- 打开浮层时焦点进入选中项；关闭后回到触发器。
+
+**D. Portal / z-index**
+
+- 浮层必须 portal 到 `body`，避免被 `overflow: hidden` 裁切。
+- z-index 使用 `z-dropdown: 60` / `z-popover: 70`；**影策 `z-2000` 禁止照搬**。
+- 同一 trigger 只允许一个打开的浮层；切换 trigger 时先关闭旧浮层。
+
+#### 4.17.2 按钮状态机
+
+| 变体 | 表面 | 文字 | 边框 | 用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| `solid` / `primary` | `bg-brand` | `text-ink-on-accent` | 无 | 唯一主操作 |
+| `neutral-solid` | `bg-surface-inverse` | `text-ink-inverse` | 无 | 次主操作/定价普通档 |
+| `soft` | `bg-wash` / `bg-wash-strong` | `text-ink` | 无 | 工具栏/选中 |
+| `outline` | 透明 | `text-ink` | `border-line` | 次级操作 |
+| `ghost` | 透明 | `text-ink-muted` | 无 | 图标/行内 |
+| `danger` | `bg-danger` | `text-ink-on-accent` | 无 | 不可逆操作 |
+
+**尺寸**：
+
+| 尺寸 | 高度 | 水平内边距 | 图标 |
+| :--- | :--- | :--- | :--- |
+| `xs` | 28px | 10px | 14px |
+| `sm` | 32px | 12px | 14px |
+| `md` | 38px | 14px | 16px |
+| `lg` | 44px | 16px | 16px |
+
+- 圆角：标准 `rounded-lg` 12px；紧凑 `rounded-md` 8px；Pill `rounded-full`。图标按钮按尺寸使用 8 / 12px。
+- 动效：颜色/背景/边框 **120ms** `--ease-standard`；transform **90ms**；按压 `scale(.98)`（普通按钮）/.96（图标按钮）/.94（30px 产品图标）；释放回弹 120–180ms。
+- 默认**无阴影**；禁止彩色 glow；除既有 Pearlescent Pill 外禁止渐变。
+- hover 只改变背景/边框，不做位移；卡片/导航图标才允许 `-1px` 抬升。
+- 焦点：键盘模态下 1px outline `currentColor` 36%、offset 1px；禁止 `box-shadow` 焦点环。
+- 禁用：`opacity: .45`，`cursor: not-allowed`，移除 hover 与 transform。
+- Loading：16px spinner，按钮宽度保持不变，`aria-busy="true"`。
+- 一个视口只允许一个 `solid/primary`；`danger` 只出现在确认上下文。
+- 图标按钮必须有 `aria-label`；可见文字标签优先于 `aria-label`。
+- 禁止 `transition-all`；禁止在按钮上叠加 `shadow-elevation-*` 制造浮起。
+
+#### 4.17.3 图标体系
+
+| 场景 | 尺寸 | 描边 | 容器 |
+| :--- | :--- | :--- | :--- |
+| 行内文字图标 | 12px | 1.8 | 跟随字高 |
+| 控件 lead 图标 | 14px | 1.8 | 按钮/输入 |
+| 标准工具栏图标 | 16px | 1.8 | 32/38 控件 |
+| 强调/独立图标 | 18px | 1.8 | 38/44 控件 |
+| 30px 产品图标按钮 | 16px | 1.7 | 30×30 |
+| 空状态/展台 | 32–36px | 1.5–1.6 | 80px 图标底座 |
+
+**硬规则**：
+1. 只用 `lucide-react`；禁止内联 `<svg>`；禁止 emoji 充当功能图标。
+2. 描边由 recipe 固定：默认 1.8，30px 产品图标按钮 1.7；业务代码不得传 `strokeWidth`。
+3. 图标继承 `currentColor`；语义色只用于 danger / success 等明确状态。
+4. 图标按钮视觉尺寸允许 24 / 28 / 32 / 36px，但 coarse pointer 命中区必须 ≥38px（用 padding 或伪元素扩展）。
+5. 纯图标按钮必须有 `aria-label`；有可见标签的按钮不得用 `aria-label` 覆盖。
+6. `shrink-0`；16px 网格光学对齐；图标与文字间距 6–8px。
+7. hover `-1px` 只用于导航/ dock；按压 `.94–.96`；禁止图标自身循环旋转（加载态除外）。
+
+#### 4.17.4 阴影层与 Glass-Popover
+
+**A. 两层结构**
+
+1. **Primitive shadow**：原始 `rgba()` 多层值，只允许写在 `app/globals.css` 的 token 定义里。
+2. **Semantic elevation**：`--shadow-elevation-1..4`，组件只消费这一层；禁止在组件里写 `shadow-[...]`。
+3. 影策与 KOYO 的 elevation 数值不同，但语义一致；KOYO **以 §4.6 的 `--shadow-elevation-*` 为准**，不得把影策的原始 `rgba` 抄进组件。
+
+**B. 明暗阴影哲学**
+
+- **深色**：黑色多层阴影 + 1px 白内发丝（`rgba(255,255,255,.085)`）模拟边缘；禁止白色外发光。
+- **浅色**：1px 黑发丝（`rgba(17,17,17,.13)`）+ 更深、更柔的黑阴影；禁止彩色 glow。
+- 浮层必须同时有边框与阴影；只有阴影没有边框在深色下会“糊边”。
+- hover 最多上升一级 elevation；禁止从 0 直接跳到 `elevation-4`。
+- 阴影只能用 CSS `box-shadow`；禁止插入绝对定位 DOM 充当阴影层。
+- 品牌发光只允许 `shadow-elevation-brand`，且只用于品牌主动作/品牌图标块，不能替代中性 elevation。
+
+**C. Glass-Popover 28px 第三档玻璃**
+
+```css
+.glass-popover {
+  background: var(--glass-popover-bg);
+  border: 1px solid var(--glass-popover-border);
+  box-shadow: var(--glass-popover-shadow);
+  backdrop-filter: blur(var(--glass-blur-popover)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-popover)) saturate(140%);
+  border-radius: var(--radius-xl);
+}
+```
+
+- 只用于**大型模型选择器 / 多列菜单 / 命令面板**；紧凑下拉仍用 §4.14.3 的 12px 玻璃。
+- 深色 popover 背景不透明度 ≥92%，浅色 ≥78% + 28px 模糊；文字对比度按最终合成背景实测，不达标就提高不透明度。
+- 禁止玻璃套玻璃；浮层内部不得再嵌套毛玻璃卡片。
+- `backdrop-filter` 不支持时回退为 `background: var(--bg-overlay)` 实底。
+- 浅色配方见 §4.16.3（`rgba(255,255,255,.78)` + `rgba(220,225,231,.82)` 边框 + `inset 0 1px 0 rgba(255,255,255,.78)`）。
+
+**D. Scrim**
+
+- KOYO 的模态遮罩保持 `--scrim: rgba(3,4,5,.72)` + 20px 模糊（§4.14.1）。
+- 影策的 `rgba(0,0,0,.48)` + 7px 模糊只适合轻量浮层，**不用于模态**。
+- 导航/抽屉遮罩仍按 §2.5.3 动态测量 Header 底边缘，禁止硬编码 `top`。
+
+**E. 验收**
+
+```js
+getComputedStyle(el).boxShadow !== "none"          // 浮层/抬升卡片
+getComputedStyle(el).pointerEvents                  // 装饰层必须 none
+document.elementFromPoint(innerWidth / 2, innerHeight / 2) // 不得命中阴影 DOM
+```
+
+---
+
 ## 5. Z-Index 层级契约
 
 禁止 `z-[999]`、`z-[9999]`、`z-[100000]`。梯子共 11 级，`dropdown` 与 `popover` 是两个不同层，不要合并记忆：
@@ -969,26 +1447,31 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
 | `z-toast` | 100 | 通知堆栈 |
 | `z-tooltip` | 110 | 工具提示（全站最高） |
 
+**影策 `z-2000` 体系禁止照搬**：任何从影策移植的浮层、命令面板、模型选择器必须重新映射到 `z-dropdown: 60` / `z-popover: 70` / `z-modal: 90` / `z-tooltip: 110`，并在 portal 层验证 `elementFromPoint` 不被透明容器拦截。
+
 ---
 
 ## 6. 图标（PART 10）
 
 1. **单一图标体系**：`lucide-react`。禁止复制内联 `<svg>`，禁止混用第二套图标库。
 2. **禁止 emoji 充当功能图标**。`🔥 社区`、`📁 我的作品` 这类写在文案里的图标属于违规（现存于 `messages/*/common.json`，见 `UI_AUDIT.md`）。
-3. **描边统一**：1.8（控件内 lead 图标 14px、行内 12px，由 recipe 固定，业务代码不得再传 `strokeWidth`）。
-4. **图标 ≠ 点击热区**：视觉 16px 的图标必须落在 ≥32px（推荐 38–44px）的目标内。用 `IconButton`，不要手写 `<button><svg/></button>`。
+3. **描边与尺寸**：默认描边 1.8，30px 产品图标按钮 1.7；四档尺寸 12（行内）/ 14（控件 lead）/ 16（标准工具栏）/ 18（强调）；空状态 32–36、描边 1.5–1.6。全部由 recipe 固定，业务代码不得再传 `strokeWidth` 或手写任意像素（见 §4.17.3）。
+4. **图标 ≠ 点击热区**：视觉 16px 的图标必须落在 ≥38px 的 coarse pointer 目标内（视觉按钮可 24/28/32/36px，用 padding 或伪元素扩展命中区；桌面推荐 38–44px）。用 `IconButton`，不要手写 `<button><svg/></button>`。
+5. **颜色继承**：图标一律 `currentColor`；语义色只用于 danger / success 等明确状态，禁止逐个图标手写品牌色或霓虹色。
 
 ---
 
 ## 7. 无障碍（WCAG 2.2 AA）
 
-1. **焦点可见**：绝对禁止只写 `focus:outline-none` 而无 `:focus-visible` 替代。统一使用 `FOCUS_RING` recipe（`packages/studio/src/ui/tokens.js`）。
-2. **点击热区**：移动端最小 38px，见 §4.3。
-3. **对比度**：见 §2.2，已实测。
+1. **焦点可见**：绝对禁止只写 `focus:outline-none` 而无 `:focus-visible` 替代。统一使用 `FOCUS_RING` recipe（`packages/studio/src/ui/tokens.js`）。键盘模态使用 1px outline `currentColor` 36%、offset 1px；鼠标点击不显示焦点环；禁止彩色 glow 或 `box-shadow` 焦点环（§4.17.1–§4.17.2）。
+2. **点击热区**：移动端最小 38px，见 §4.3；图标按钮视觉可 24/28/32/36px，但 coarse pointer 命中区必须 ≥38px（§4.17.3）。
+3. **对比度**：见 §2.2 与 §2.3；洋红填充 + 纯白字为 4.54:1（AA 普通文字），深色表面品牌小字必须使用 `text-brand-text`（`#f472b6`）。
 4. **图标按钮必须有可访问名**：`IconButton` 缺 `label` 会在开发期告警；只有 `title` 不算。
 5. **可见文本优先于 `aria-label`**：有可见标签的按钮不要加 `aria-label` 覆盖它（WCAG 2.5.3 标签名一致）。
 6. **键盘**：模态需焦点锁定、`Esc` 关闭、点击遮罩关闭 —— 由 `Modal`/`ModalContent` 承担，业务层不要重造。
-7. **减弱动效响应**：遵循 §4.7.5，全局支持 `prefers-reduced-motion`。
+7. **减弱动效响应**：遵循 §4.7.5 与 §4.7.6；OS `prefers-reduced-motion` 与应用内 `.no-motion` 均硬归零，不采用 0.3 中间态；无限装饰动画必须停止。
+8. **主题切换**：不得造成首帧闪烁、焦点丢失或滚动跳变；View Transition 必须尊重减弱动效，并提供单帧回退（§4.16）。
+9. **下拉键盘**：`listbox`/`option` 语义、ArrowUp/Down、Enter、Esc、Home/End 与 typeahead 必须全部可用（§4.17.1）。
 
 ---
 
@@ -1014,11 +1497,11 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
 
 ---
 
-## 9. Do / Don't 速查（含 v3.7.0 动效与浮窗禁令）
+## 9. Do / Don't 速查（含 v3.8.0 影策动效、双主题与控件禁令）
 
 | 场景 | 🔴 禁止 | 🟢 必须 |
 | :--- | :--- | :--- |
-| **色彩基准** | 引入即梦蓝紫霓虹色（`#1664ff`）、琥珀橙（`#ff6f00`）形成双主色撕裂 | 严格保持全站唯一主色洋红 `#e11d74`，洋红底纯白字 AAA 16.5:1 |
+| **色彩基准** | 引入即梦蓝紫霓虹色（`#1664ff`）、琥珀橙（`#ff6f00`）形成双主色撕裂 | 严格保持全站唯一主色洋红 `#e11d74`；洋红底纯白字 4.54:1（AA），深底品牌小字用 `text-brand-text` |
 | **半透明** | `bg-primary/10`、`bg-canvas/95`、`border-line/50`（不产出任何 CSS） | `bg-brand-soft`、`bg-surface-glass`、`border-line-subtle`、`bg-wash` |
 | **字号** | `text-xs`、`text-sm`、`text-base`、`text-2xl`（会生成 CSS，但值与行高不在架上） | `text-display` / `page-title` / `section-title` / `card-title` / `body` / `body-sm` / `label` / `caption` / `micro` / `mono` |
 | **按钮** | 手写 `<button className="px-4 py-2 bg-gradient…">` | `<Button variant size>` / `<IconButton label>`，服从五态转换机 |
@@ -1030,6 +1513,17 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
 | **动效时长** | 手写随意数值如 150ms、275ms、600ms | 严格使用 7 级标尺：80ms / 120ms / 180ms / 240ms / 300ms(420ms) / 350ms / 400ms(520ms) |
 | **过渡属性** | 无节制书写 `transition-all`（引发全属性重绘与卡顿） | 显式声明目标属性：`transition-[transform,opacity]` 或 `transition-[background-color,border-color,color]` |
 | **按压交互** | 按压触发时带有 200ms+ 迟滞缓动 | 按压即时响应（`active:scale-[0.98]`，`active:transition-none`），释放平滑回弹 |
+| **动效语义分层** | 所有动效统一 300ms，或给功能状态加装饰性长动效 | 即时 120ms / 状态 180ms / 结构 360ms / 列表 stagger 45ms（§4.7.6） |
+| **菜单选项状态** | 给下拉选项 hover/selected 加 180ms 背景过渡，造成选择迟滞 | 选项 `transition: none` 同帧到位；只有浮层外壳做 180ms 入场（§4.17.1） |
+| **列表/卡片入场** | 所有卡片同时淡入，或 20 项全部阶梯延迟 | 360ms `--ease-product-enter` + 45ms stagger，最多 6 项（§4.7.7） |
+| **图片揭示** | `display` 硬切或瞬间跳图 | `blur(5px)→0 + opacity`，520ms，入场后释放 `will-change`（§4.7.7） |
+| **主题切换** | 直接切 class 造成白闪、整页重建或交叉淡化 | 首帧阻塞脚本 + View Transition 圆形揭示 400ms；回退时单帧抑制（§4.16） |
+| **主题初始绘制** | 用 `useEffect` 首帧后才读主题，出现 FOUC/白闪 | `<head>` 阻塞脚本在 hydration 前写入 `data-theme` 与 `color-scheme`（§4.16.1） |
+| **主题阴影** | 深色模式用白色外发光模拟浮起，或浅色模式用彩色 glow | 深色=黑阴影+白内发丝；浅色=黑发丝+更深黑阴影（§4.16.3/§4.17.4） |
+| **下拉几何** | 照搬影策 14px trigger、9px option、`z-2000` | 映射到 12px trigger、8px option、`z-dropdown: 60`（§4.17.1） |
+| **图标尺寸** | 30px 图标按钮塞 18px 图标，或业务代码手写 `strokeWidth` | 30px 按钮配 16px、stroke 1.7；四档尺寸由 recipe 固定（§4.17.3） |
+| **玻璃档位** | 所有浮层一律 40px 模糊，或玻璃套玻璃 | 紧凑菜单 12px / 大型选择器 28px / 面板 40px；禁止嵌套（§4.17.4） |
+| **主题双击** | 快速连点启动多次 View Transition，旧动画未清理 | 全局 lock，`transition.finished`/cancel 后释放（§4.16.2） |
 | **减弱动效** | 忽视用户操作系统减弱动效偏好 | 严格落实 `@media (prefers-reduced-motion: reduce)` 时长归零 |
 | **图标** | 内联 `<svg>`、emoji、无 `label` 的图标按钮 | `lucide-react` + `IconButton` |
 | **滑杆** | 裸 `type="range"`（`appearance:none` 后无 thumb）、`div` + `onMouseDown` 自制进度条 | `.range` + `aria-label`，或精密滑块组件（见 §4.15.4） |
@@ -1092,8 +1586,8 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
    - 关闭态的 Modal / Drawer / Popover 必须卸载或标记 `pointer-events-none`；
    - 阴影只允许使用 CSS `box-shadow`，严禁插入绝对定位 DOM 充当阴影层。
 4. **单主色品牌洋红红线 (Single Magenta Brand Accent)**：
-   - 品牌唯一饱和色为 `#e11d74`，Hover 为 `#f43f5e`，Active 为 `#c0175f`；
-   - 洋红底色上的文字严格为纯白 `#ffffff`，对比度达到 16.5:1 (AAA)；
+   - 品牌唯一饱和色为 `#e11d74`；Hover 填充 `#f43f5e` 只用于非文字描边/光晕/大图形，Active 为 `#c0175f`；
+   - 洋红底白字实测 **4.54:1（AA 普通文字）**，不是 3.7.0 所写的 16.5:1 / AAA；深色表面品牌小字必须使用 `text-brand-text`（`#f472b6`，6.55–7.79:1），浅色品牌文字使用 `#be185d`；
    - 绝对禁止引入第二套主色（如即梦蓝紫、橙黄）或荧光品红 `#ff00ff`。
 5. **深暗毛玻璃 4% 透光防灰红线 (4% Glass Opacity Ceiling)**：
    - 深暗暗底上的毛玻璃白透光度严格控制在 `bg-white/[0.03]` ~ `bg-white/[0.04]`；
@@ -1102,3 +1596,18 @@ KOYO Studio 在 3.7.0 中正式汲取即梦 AI 浮层交互精髓，为全站四
 6. **防穿孔与遮罩层动态对齐红线 (Anti-Punch-Through & Scrim Invariant)**：
    - 浮层与菜单项内部的子容器必须保持背景透明，严禁写死 `bg-overlay` 遮挡悬停微光；
    - 暗色遮罩 Scrim 必须动态测量 `header.getBoundingClientRect().bottom`，严禁硬编码 `top-14` 切入顶栏玻璃。
+7. **双主题首帧无闪红线 (Theme First-Paint Invariant)**：
+   - `<head>` 阻塞脚本必须在 React hydration 前写入 `data-theme` 与 `color-scheme`；`localStorage` 只接受 `dark|light`，非法值回退 `dark`；
+   - 首帧不得出现白闪/深色闪屏；主题切换不得改变滚动位置、焦点、表单值与已打开路由；
+   - View Transition 必须尊重 `prefers-reduced-motion`，画布世界打开时跳过，并提供单帧回退与全局 lock（§4.16）。
+8. **双语义动效红线 (Dual-Semantic Motion Invariant)**：
+   - 菜单选项 hover/selected 必须 `transition: none`；只有浮层外壳、面板、卡片允许 120–360ms 动效；
+   - 结构层入场 360ms + 45ms stagger，最多 6 项；禁止 600ms 装饰动效与 `transition-all`；
+   - OS reduce 与应用内 `.no-motion` 均硬归零，不采用 0.3 中间态；无限装饰动画必须停止（§4.7.6–§4.7.7）。
+9. **控件几何映射红线 (Control Geometry Mapping)**：
+   - 影策的 14px trigger / 9px option / 36–48px height / `z-2000` 不得直接进入 KOYO；
+   - 统一映射为 12px trigger / 8px option / 32–44px height / `z-dropdown: 60`；按钮圆角 12px，图标按钮 8/12px（§4.17.1–§4.17.2）。
+10. **浮层阴影与玻璃红线 (Overlay Shadow & Glass Invariant)**：
+   - 深色浮层 = 黑阴影 + 白内发丝；浅色 = 黑发丝 + 更深黑阴影；禁止白色外发光或彩色 glow；
+   - 大浮层只用 28px Glass-Popover，紧凑菜单 12px，面板 40px；禁止玻璃套玻璃；
+   - 浮层必须同时有 border 与 `box-shadow`；阴影只能用 CSS `box-shadow`，禁止 DOM 阴影层（§4.17.4）。

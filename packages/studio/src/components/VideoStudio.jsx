@@ -3444,9 +3444,10 @@ export default function VideoStudio({
                 {openDropdown === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-xl bg-overlay-glass"
+                    className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[78vh] flex flex-col overflow-hidden p-0"
                     fitViewport={Boolean(groupedConfiguration)}
                     solid={Boolean(groupedConfiguration)}
+                    glass
                   >
                     <FrontendModelPicker
                       studioType="video"

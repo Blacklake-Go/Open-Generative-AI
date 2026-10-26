@@ -31,18 +31,18 @@ import UserAvatar from '@/components/ui/UserAvatar';
 import { FOCUS_RING } from 'studio/ui/tokens';
 
 const LANGUAGE_FLAGS = {
-  en: '🇺🇸',
-  'zh-CN': '🇨🇳',
-  'zh-TW': '🇭🇰',
-  'ja-JP': '🇯🇵',
-  'ko-KR': '🇰🇷',
-  es: '🇪🇸',
+  en: '/flags/en.svg',
+  'zh-CN': '/flags/zh-cn.svg',
+  'zh-TW': '/flags/zh-tw.svg',
+  'ja-JP': '/flags/ja.svg',
+  'ko-KR': '/flags/ko.svg',
+  es: '/flags/es.svg',
 };
 
 const LANGUAGE_LIST = SUPPORTED_LOCALES.map((code) => ({
   code,
   label: LOCALE_CONFIGS[code]?.nativeName || code,
-  flag: LANGUAGE_FLAGS[code] || '🌐',
+  flag: LANGUAGE_FLAGS[code] || '/flags/en.svg',
   native: LOCALE_CONFIGS[code]?.nativeName || code,
 }));
 
@@ -362,17 +362,17 @@ export default function UserDropdownMenu({
               setIsNotifOpen((prev) => !prev);
               setIsMenuOpen(false);
             }}
-            className={`relative flex size-8 items-center justify-center rounded-lg border transition-colors duration-fast cursor-pointer ${FOCUS_RING} ${
+            className={`${FOCUS_RING} relative flex size-control-sm items-center justify-center rounded-lg border transition-[background-color,border-color,color] duration-fast ease-standard cursor-pointer ${
               isNotifOpen
-                ? 'border-brand-line bg-brand-soft text-brand shadow-elevation-1'
+                ? 'border-brand-line bg-brand-soft text-brand-text'
                 : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
             }`}
             aria-label={t.notificationsHeading || 'Notifications'}
             title={t.notificationsTitle || 'Notification Center'}
           >
-            <Bell className="size-3.5 transition-transform hover:scale-110" />
+            <Bell className="size-3.5" strokeWidth={1.8} />
             {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger px-1 text-[8px] font-black text-white shadow-elevation-1 animate-pulse">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full border border-danger-line bg-danger-soft px-1 text-micro font-semibold text-danger">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -380,13 +380,16 @@ export default function UserDropdownMenu({
 
           {/* 通知中心悬浮弹层 */}
           {isNotifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[310px] rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-3 text-ink shadow-elevation-3 z-popover animate-fade-in duration-fast">
+            <div
+              data-state="open"
+              className="glass-popover absolute right-0 top-full z-popover mt-2 w-[310px] overflow-hidden p-3 text-ink"
+            >
               <div className="flex items-center justify-between border-b border-line-subtle pb-2 px-1">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
-                  <Bell className="size-3.5 text-brand" />
+                  <Bell className="size-3.5 text-brand-text" strokeWidth={1.8} />
                   <span>{t.notificationsHeading || 'Notifications'}</span>
                   {unreadCount > 0 && (
-                    <span className="rounded-md bg-brand-soft px-1.5 py-0.5 text-[10px] font-mono text-brand">
+                    <span className="rounded-md border border-brand-line bg-brand-soft px-1.5 py-0.5 font-mono text-micro text-brand-text">
                       {unreadCount}
                     </span>
                   )}
@@ -395,9 +398,9 @@ export default function UserDropdownMenu({
                   <button
                     type="button"
                     onClick={handleMarkAllAsRead}
-                    className="flex items-center gap-1 text-[11px] text-ink-muted hover:text-brand transition-colors cursor-pointer"
+                    className="control-focus flex items-center gap-1 rounded-md px-1 text-caption text-ink-muted transition-colors duration-fast hover:text-ink cursor-pointer"
                   >
-                    <Check className="size-3" />
+                    <Check className="size-3.5" strokeWidth={1.8} />
                     <span>{t.markAllRead || 'Mark all read'}</span>
                   </button>
                 )}
@@ -415,10 +418,10 @@ export default function UserDropdownMenu({
                       key={n.id}
                       href={n.link_url || '#'}
                       onClick={() => setIsNotifOpen(false)}
-                      className={`block rounded-xl p-2.5 text-xs transition-colors ${
+                      className={`block rounded-lg p-2.5 text-caption transition-colors duration-fast ${
                         n.is_read
-                          ? 'bg-white/[0.02] text-ink-muted hover:bg-white/[0.06] hover:text-ink'
-                          : 'bg-brand-soft border border-brand-line/40 text-ink hover:bg-brand-soft/80'
+                          ? 'bg-wash text-ink-muted hover:bg-wash-strong hover:text-ink'
+                          : 'border border-brand-line bg-brand-soft text-ink hover:bg-brand-pressed'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-1.5">
@@ -427,7 +430,7 @@ export default function UserDropdownMenu({
                           <span className="size-1.5 shrink-0 rounded-full bg-brand mt-1" />
                         )}
                       </div>
-                      <p className="mt-1 line-clamp-2 text-[11px] text-ink-muted leading-relaxed">
+                      <p className="mt-1 line-clamp-2 text-caption text-ink-muted leading-relaxed">
                         {n.content}
                       </p>
                     </Link>
@@ -447,15 +450,15 @@ export default function UserDropdownMenu({
             <button
               type="button"
               onClick={handleOpenSubscriptionModal}
-              className={`flex items-center gap-1.5 h-8 rounded-lg border border-amber-500/25 bg-amber-500/10 hover:border-amber-500/40 hover:bg-amber-500/15 px-2 sm:px-3 text-body-sm font-semibold text-amber-300 transition-colors duration-fast cursor-pointer shadow-elevation-1 active:scale-95 group select-none ${FOCUS_RING}`}
+              className={`${FOCUS_RING} flex h-control-sm select-none items-center gap-1.5 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-semibold text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:px-3`}
               title={t.membership || 'Membership Subscription'}
             >
-              <Crown className="size-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-amber-200 font-bold text-xs">{t.vipPlan || 'VIP'}</span>
+              <Crown className="size-3.5 shrink-0" strokeWidth={1.8} />
+              <span className="font-semibold">{t.vipPlan || 'VIP'}</span>
               {!isPaidPlan && (
                 <>
-                  <span className="h-3 w-px bg-amber-500/30 mx-0.5 hidden xs:inline-block" />
-                  <span className="text-amber-400 font-bold text-[11px] tracking-tight hidden xs:inline-block">
+                  <span className="mx-0.5 hidden h-3 w-px bg-brand-line xs:inline-block" />
+                  <span className="hidden text-caption font-medium tabular-nums xs:inline-block">
                     {t.discountTag || '82% OFF'}
                   </span>
                 </>
@@ -466,12 +469,12 @@ export default function UserDropdownMenu({
             <button
               type="button"
               onClick={() => handleOpenAccountModal('membership')}
-              className={`hidden items-center gap-1.5 h-8 rounded-lg border border-line-subtle bg-wash hover:border-line hover:bg-wash-strong px-2.5 sm:flex sm:px-3 text-body-sm font-medium text-ink transition-colors duration-fast cursor-pointer active:scale-95 select-none ${FOCUS_RING}`}
+              className={`${FOCUS_RING} hidden h-control-sm select-none items-center gap-1.5 rounded-lg border border-line-subtle bg-wash px-2.5 text-label font-medium text-ink transition-[background-color,border-color,color] duration-fast ease-standard hover:border-line hover:bg-wash-strong active:scale-[0.98] active:duration-press cursor-pointer sm:flex sm:px-3`}
               title={t.membership || 'Subscription & Quota Usage'}
             >
-              <Zap className="size-3.5 text-ink-muted shrink-0" />
-              <span className="font-mono font-bold text-ink tabular-nums text-xs">{effectiveCredits}</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-wash-strong text-ink-muted border border-line-subtle">
+              <Zap className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.8} />
+              <span className="font-mono font-semibold tabular-nums text-ink">{effectiveCredits}</span>
+              <span className="rounded-sm border border-line-subtle bg-wash-strong px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-ink-muted">
                 {planBadgeText}
               </span>
             </button>
@@ -481,17 +484,17 @@ export default function UserDropdownMenu({
           <button
             type="button"
             onClick={handleOpenSubscriptionModal}
-            className={`flex items-center gap-2 h-8 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:border-amber-500/50 hover:bg-amber-500/15 px-2.5 sm:px-3 text-body-sm font-medium transition-colors duration-fast cursor-pointer shadow-elevation-1 active:scale-95 group select-none ${FOCUS_RING}`}
+            className={`${FOCUS_RING} flex h-control-sm select-none items-center gap-2 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-medium text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:px-3`}
             title={t.membership || 'Subscription & Quota Usage'}
           >
             <div className="flex items-center gap-1.5">
-              <Crown className="size-3.5 text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-amber-200 font-bold text-xs tracking-wide">{planBadgeText}</span>
+              <Crown className="size-3.5 shrink-0" strokeWidth={1.8} />
+              <span className="font-semibold tracking-wide">{planBadgeText}</span>
             </div>
-            <span className="h-3 w-px bg-amber-500/30 shrink-0" />
+            <span className="h-3 w-px shrink-0 bg-brand-line" />
             <div className="flex items-center gap-1">
-              <Zap className="size-3 text-amber-300 shrink-0" />
-              <span className="font-mono font-bold text-ink tabular-nums text-xs">{effectiveCredits}</span>
+              <Zap className="size-3 shrink-0" strokeWidth={1.8} />
+              <span className="font-mono font-semibold tabular-nums text-ink">{effectiveCredits}</span>
             </div>
           </button>
         )
@@ -508,31 +511,35 @@ export default function UserDropdownMenu({
             setIsMenuOpen(false);
             setIsNotifOpen(false);
           }}
-          className={`flex h-8 items-center gap-1.5 px-2.5 rounded-lg border transition-colors duration-fast cursor-pointer active:scale-95 text-xs font-medium select-none group ${FOCUS_RING} ${
+          className={`${FOCUS_RING} flex h-control-sm select-none items-center gap-1.5 rounded-lg border px-2.5 text-label font-medium transition-[background-color,border-color,color] duration-fast ease-standard active:scale-[0.98] active:duration-press cursor-pointer ${
             isLangOpen
-              ? 'border-brand-line bg-brand-soft text-brand shadow-elevation-1'
+              ? 'border-brand-line bg-brand-soft text-ink'
               : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
           }`}
           aria-label={t.interfaceLanguage || 'Language'}
           aria-expanded={isLangOpen}
-          aria-haspopup="true"
+          aria-haspopup="menu"
           title={t.interfaceLanguage || 'Language'}
         >
-          <Globe className="size-3.5 shrink-0 transition-transform group-hover:rotate-12 text-ink-muted group-hover:text-ink" />
-          <span className="font-medium text-ink tracking-tight">{activeLanguage.native}</span>
-          <ChevronDown className={`size-3 shrink-0 text-ink-subtle transition-transform duration-fast ${isLangOpen ? 'rotate-180 text-brand' : ''}`} />
+          <Globe className="size-3.5 shrink-0" strokeWidth={1.8} />
+          <span className="text-ink">{activeLanguage.native}</span>
+          <ChevronDown
+            className={`size-3.5 shrink-0 text-ink-subtle transition-transform duration-fast ease-standard ${isLangOpen ? 'rotate-180' : ''}`}
+            strokeWidth={1.8}
+          />
         </button>
 
         {/* 语言选择下拉浮层 */}
         {isLangOpen && (
           <div
-            className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-1.5 text-ink shadow-elevation-3 z-dropdown animate-fade-in duration-fast"
+            data-state="open"
+            className="popover-surface absolute right-0 top-full z-dropdown mt-2 w-44 p-1.5 text-ink"
             role="menu"
             aria-label={t.interfaceLanguage || 'Language'}
           >
-            <div className="px-2.5 py-1.5 text-[10px] font-semibold text-ink-subtle uppercase tracking-wider border-b border-line-subtle mb-1 flex items-center justify-between">
+            <div className="mb-1 flex items-center justify-between border-b border-line-subtle px-3 py-1.5 text-micro font-semibold uppercase tracking-wide text-ink-subtle">
               <span>{t.interfaceLanguage || 'Language'}</span>
-              <span className="text-[9px] text-brand font-mono">i18n</span>
+              <span className="font-mono text-ink-subtle">i18n</span>
             </div>
             <div className="space-y-0.5">
               {LANGUAGE_LIST.map((item) => {
@@ -541,22 +548,27 @@ export default function UserDropdownMenu({
                   <button
                     key={item.code}
                     type="button"
-                    role="menuitem"
+                    role="menuitemradio"
+                    aria-checked={isSelected}
                     onClick={() => {
                       setIsLangOpen(false);
                       toggleLanguage(item.code);
                     }}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition-colors cursor-pointer ${
+                    className={`control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body transition-none cursor-pointer ${
                       isSelected
-                        ? 'bg-brand-soft text-brand font-semibold shadow-elevation-1'
-                        : 'text-ink-muted hover:bg-wash-strong hover:text-ink font-normal'
+                        ? 'bg-wash-press font-medium text-ink'
+                        : 'font-normal text-ink-muted hover:bg-wash-strong hover:text-ink'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm select-none">{item.flag}</span>
-                      <span>{item.native}</span>
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <img
+                        src={item.flag}
+                        alt={item.native}
+                        className="h-4 w-5 shrink-0 rounded-sm object-cover ring-1 ring-line-subtle"
+                      />
+                      <span className="truncate">{item.native}</span>
                     </div>
-                    {isSelected && <Check className="size-3.5 text-brand shrink-0" />}
+                    {isSelected && <Check className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.8} />}
                   </button>
                 );
               })}
@@ -572,9 +584,9 @@ export default function UserDropdownMenu({
         // 未登录状态：直达独立全屏登录页
         <Link
           href={getAuthRoutes(activeLocale).loginUrl}
-          className={`flex items-center gap-1.5 h-8 rounded-full bg-brand hover:bg-brand-hover px-3.5 text-body-sm font-semibold text-ink-on-accent transition-colors duration-fast shadow-elevation-1 active:scale-95 cursor-pointer ${FOCUS_RING}`}
+          className={`${FOCUS_RING} flex h-control-sm items-center gap-1.5 rounded-full border border-transparent bg-brand px-3 text-label font-semibold text-ink-on-accent transition-[background-color,border-color,color] duration-fast ease-standard hover:bg-brand-hover-solid active:scale-[0.98] active:duration-press cursor-pointer`}
         >
-          <UserRound className="size-3.5" />
+          <UserRound className="size-3.5" strokeWidth={1.8} />
           <span>{t.login || 'Log in'}</span>
         </Link>
       ) : (
@@ -590,21 +602,21 @@ export default function UserDropdownMenu({
             aria-expanded={isMenuOpen}
             aria-haspopup="true"
             aria-label={t.displayNameFallback || 'User Menu'}
-            className={`group relative flex items-center gap-2 rounded-full p-0.5 transition-colors duration-fast focus:outline-none ${FOCUS_RING} ${
+            className={`${FOCUS_RING} group relative flex items-center gap-2 rounded-full p-0.5 transition-shadow duration-fast ease-standard ${
               isMenuOpen
-                ? 'ring-2 ring-brand/80 shadow-elevation-2'
-                : 'hover:ring-2 hover:ring-white/30'
+                ? 'ring-2 ring-brand-ring'
+                : 'hover:ring-2 hover:ring-line-strong'
             }`}
           >
-            <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-8 shrink-0 bg-surface-raised text-xs font-bold text-brand flex items-center justify-center">
+            <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-8 shrink-0 bg-surface-raised text-label font-semibold text-brand-text flex items-center justify-center">
               <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
                 <UserAvatar
                   src={avatarUrl}
                   name={displayName}
                   className="size-full object-cover"
-                  fallbackClassName="text-brand text-xs"
+                  fallbackClassName="text-brand-text text-label"
                 />
-                <span className="absolute bottom-0 right-0 size-2 rounded-full bg-emerald-400 ring-2 ring-[#0a0a0b]" />
+                <span className="absolute bottom-0 right-0 size-2 rounded-full bg-success ring-2 ring-bg-base" />
               </div>
             </AvatarFrame>
           </button>
@@ -612,7 +624,8 @@ export default function UserDropdownMenu({
           {/* 悬浮展开用户菜单面板 */}
           {isMenuOpen && (
             <div
-              className="absolute right-0 top-full mt-2.5 w-[292px] rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-3 text-ink shadow-elevation-3 transition-all z-popover animate-fade-in duration-fast ease-out"
+              data-state="open"
+              className="glass-popover absolute right-0 top-full z-popover mt-2.5 w-[292px] p-3 text-ink"
               role="menu"
               aria-orientation="vertical"
             >
@@ -621,26 +634,26 @@ export default function UserDropdownMenu({
                 <Link
                   href={profileUrl}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex min-w-0 items-center gap-2.5 cursor-pointer group"
+                  className="control-focus group flex min-w-0 items-center gap-2.5 rounded-lg cursor-pointer"
                   title={t.goToProfile || 'Profile'}
                 >
-                  <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-surface-raised flex items-center justify-center text-base font-bold text-brand shadow-elevation-1">
+                  <AvatarFrame frame={userEntitlements?.avatarFrame} className="size-11 shrink-0 bg-surface-raised flex items-center justify-center text-base font-semibold text-brand-text">
                     <div className="relative size-full overflow-hidden rounded-full flex items-center justify-center">
                       <UserAvatar
                         src={avatarUrl}
                         name={displayName}
-                        className="size-full object-cover group-hover:scale-105 transition-transform"
-                        fallbackClassName="text-brand text-base"
+                        className="size-full object-cover"
+                        fallbackClassName="text-brand-text text-base"
                       />
                     </div>
                   </AvatarFrame>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="truncate text-xs font-bold text-ink group-hover:text-brand transition-colors" title={displayName}>
+                      <p className="truncate text-label font-semibold text-ink transition-colors duration-fast group-hover:text-brand-text" title={displayName}>
                         {displayName}
                       </p>
                       {isAdmin && (
-                        <span className="rounded bg-brand-soft px-1.5 py-0.5 text-[9px] font-bold text-brand border border-brand-line">
+                        <span className="rounded-sm border border-brand-line bg-brand-soft px-1.5 py-0.5 text-micro font-semibold text-brand-text">
                           ADMIN
                         </span>
                       )}
@@ -653,13 +666,13 @@ export default function UserDropdownMenu({
                           e.preventDefault();
                           handleCopyUserNumber(userNumber || user?.id, e);
                         }}
-                        className="truncate text-[11px] text-ink-muted font-mono hover:text-brand transition-colors cursor-pointer"
+                        className="control-focus truncate rounded-sm font-mono text-caption text-ink-muted transition-colors duration-fast hover:text-ink cursor-pointer"
                         title={t.copyUid || 'Click to copy UID'}
                       >
                         {userNumber || user?.id ? `UID: ${userNumber || user.id}` : (user?.email || (t.displayNameFallback || 'Creator'))}
                       </button>
                       {copyFeedback && (
-                        <span className="text-[10px] text-brand font-medium animate-fade-in">
+                        <span className="text-micro font-medium text-brand-text animate-fade-in">
                           {t.copiedUid || 'Copied'}
                         </span>
                       )}
@@ -671,11 +684,11 @@ export default function UserDropdownMenu({
                 <button
                   type="button"
                   onClick={() => handleOpenAccountModal('settings')}
-                  className="group flex shrink-0 items-center gap-0.5 text-xs text-ink-muted transition-colors hover:text-brand cursor-pointer"
+                  className="control-focus flex shrink-0 items-center gap-0.5 rounded-md px-1 text-caption text-ink-muted transition-colors duration-fast hover:text-ink cursor-pointer"
                   title="修改个人用户名与头像"
                 >
-                  <span className="text-[11px]">编辑资料</span>
-                  <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  <span>编辑资料</span>
+                  <ChevronRight className="size-3.5" strokeWidth={1.8} />
                 </button>
               </div>
 
@@ -683,25 +696,25 @@ export default function UserDropdownMenu({
               <div className="mt-2.5 mb-2 flex items-center gap-2">
                 {/* 独立硬币胶囊 (仅显示硬币数量和硬币图标，与算力分离) */}
                 <div
-                  className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] text-amber-300 shadow-sm shrink-0"
+                  className="flex h-control-md shrink-0 items-center gap-1.5 rounded-lg border border-brand-line bg-brand-soft px-3 text-brand-text"
                   title="专属硬币余额"
                 >
-                  <Coins className="size-4 text-amber-400 shrink-0" />
-                  <span className="text-xs font-bold font-mono text-amber-200">{kcoins}</span>
+                  <Coins className="size-4 shrink-0" strokeWidth={1.8} />
+                  <span className="font-mono text-label font-semibold tabular-nums">{kcoins}</span>
                 </div>
 
                 {/* 算力卡片 (仅显示算力与充值/升级入口) */}
-                <div className="flex-1 flex items-center justify-between h-9 px-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all hover:border-white/15">
+                <div className="flex h-control-md flex-1 items-center justify-between rounded-lg border border-line-subtle bg-wash px-2.5 transition-colors duration-fast hover:border-line">
                   <div className="flex items-center gap-1.5">
-                    <Zap className="size-3.5 text-brand shrink-0" />
-                    <span className="text-xs font-bold font-mono text-ink">{effectiveCredits}</span>
+                    <Zap className="size-3.5 shrink-0 text-brand-text" strokeWidth={1.8} />
+                    <span className="font-mono text-label font-semibold text-ink">{effectiveCredits}</span>
                   </div>
 
                   {/* 充值/升级方案入口 -> 直达会员订阅弹窗 */}
                   <button
                     type="button"
                     onClick={handleOpenSubscriptionModal}
-                    className="flex items-center rounded-lg bg-white/10 px-2 py-1 text-[11px] font-semibold text-white transition-all hover:bg-amber-500/20 hover:text-amber-300 border border-transparent hover:border-amber-500/30 cursor-pointer active:scale-95 shadow-elevation-1"
+                    className="control-focus flex items-center rounded-md border border-line-subtle bg-wash-strong px-2 py-1 text-caption font-medium text-ink transition-[background-color,border-color,color] duration-fast ease-standard hover:border-line hover:bg-wash-press hover:text-brand-text active:scale-[0.96] active:duration-press cursor-pointer"
                     title="查看个人订阅权益、积分充值与开通"
                   >
                     <span>{t.topUpUpgrade || '充值/升级'}</span>
@@ -709,19 +722,19 @@ export default function UserDropdownMenu({
                 </div>
               </div>
 
-              {/* (3) 核心功能列表 (带丝滑 Hover 位移与图标放大动效) */}
+              {/* (3) 核心功能列表 */}
               <div className="space-y-0.5 pt-1">
                 {/* 1. 个人主页 (作品集与活跃动态) */}
                 <Link
                   href={profileUrl}
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
+                  className="control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="size-4 text-brand transition-transform group-hover:scale-110" />
+                    <Sparkles className="size-4" strokeWidth={1.8} />
                     <span>{t.goToProfile || 'Creator Profile'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
+                  <ChevronRight className="size-3.5 text-ink-subtle" strokeWidth={1.8} />
                 </Link>
 
                 {/* 2. 账号与设置 (个人资料、头像、用户名、密码安全、绑定) */}
@@ -732,13 +745,13 @@ export default function UserDropdownMenu({
                     if (onOpenSettings) onOpenSettings();
                     else handleOpenAccountModal('settings');
                   }}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
+                  className="control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <UserRound className="size-4 text-brand transition-transform group-hover:scale-110" />
+                    <UserRound className="size-4" strokeWidth={1.8} />
                     <span>{t.accountSettings || '账号与设置'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
+                  <ChevronRight className="size-3.5 text-ink-subtle" strokeWidth={1.8} />
                 </button>
 
                 {/* 3. 订阅与账单 (整合会员订阅与算力充值，直接跳转到订阅详情页) */}
@@ -748,13 +761,13 @@ export default function UserDropdownMenu({
                     setIsMenuOpen(false);
                     handleOpenAccountModal('billing');
                   }}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
+                  className="control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Crown className="size-4 text-amber-400 transition-transform group-hover:scale-110" />
+                    <Crown className="size-4" strokeWidth={1.8} />
                     <span>订阅与账单</span>
                   </div>
-                  <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-black text-black">
+                  <span className="rounded-sm border border-brand-line bg-brand-soft px-1.5 py-0.5 text-micro font-semibold text-brand-text">
                     VIP
                   </span>
                 </button>
@@ -764,13 +777,13 @@ export default function UserDropdownMenu({
                   <Link
                     href="/admin"
                     onClick={() => setIsMenuOpen(false)}
-                    className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-wash-strong hover:text-ink"
+                    className="control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink"
                   >
                     <div className="flex items-center gap-2.5">
-                      <ShieldCheck className="size-4 text-brand transition-transform group-hover:scale-110" />
+                      <ShieldCheck className="size-4" strokeWidth={1.8} />
                       <span>{t.adminConsole || 'Admin Console'}</span>
                     </div>
-                    <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
+                    <ChevronRight className="size-3.5 text-ink-subtle" strokeWidth={1.8} />
                   </Link>
                 )}
 
@@ -778,25 +791,25 @@ export default function UserDropdownMenu({
                 <Link
                   href={getAuthRoutes(activeLocale).changePasswordUrl}
                   onClick={() => setIsMenuOpen(false)}
-                  className="group flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-white/[0.06] hover:text-ink cursor-pointer"
+                  className="control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
-                    <KeyRound className="size-4 text-ink-muted transition-transform group-hover:scale-110" />
+                    <KeyRound className="size-4" strokeWidth={1.8} />
                     <span>{getAuthRoutes(activeLocale).isChinese ? '修改密码' : 'Change Password'}</span>
                   </div>
-                  <ChevronRight className="size-3.5 text-ink-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-ink-muted" />
+                  <ChevronRight className="size-3.5 text-ink-subtle" strokeWidth={1.8} />
                 </Link>
               </div>
 
               {/* (4) 底部分割线与退出登录 */}
-              <div className="my-1.5 h-px bg-white/[0.06]" />
+              <div className="my-1.5 h-px bg-line-subtle" />
 
               <button
                 type="button"
                 onClick={handleLogoutClick}
-                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs text-ink-muted transition-all hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                className="control-focus flex min-h-10 w-full items-center gap-2.5 rounded-md px-3 py-2 text-body text-ink-muted transition-none hover:bg-danger-soft hover:text-danger cursor-pointer"
               >
-                <LogOut className="size-4 text-ink-subtle transition-colors group-hover:text-red-400" />
+                <LogOut className="size-4" strokeWidth={1.8} />
                 <span>{t.signOut || 'Sign out'}</span>
               </button>
             </div>

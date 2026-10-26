@@ -19,7 +19,7 @@ export default function MegaMenuPanel({ category, locale = 'zh', onItemClick }) 
   const hasModels = Array.isArray(category.models) && category.models.length > 0;
 
   return (
-    <div className="w-screen max-w-3xl overflow-hidden rounded-2xl border border-line bg-overlay text-ink shadow-elevation-3">
+    <div className="w-screen max-w-3xl overflow-hidden rounded-xl border border-line bg-overlay text-ink shadow-elevation-3">
       <div className="flex flex-col divide-y divide-line md:flex-row md:divide-x md:divide-y-0">
         
         {/* 左栏：Features (功能与工具) */}
@@ -41,9 +41,9 @@ export default function MegaMenuPanel({ category, locale = 'zh', onItemClick }) 
                   href={feat.href}
                   prefetch={false}
                   onClick={(e) => onItemClick?.(e, feat)}
-                  className="group flex items-start gap-3 rounded-xl p-2.5 transition-colors duration-fast hover:bg-wash-strong"
+                  className="group flex min-h-10 items-start gap-3 rounded-md p-2.5 transition-none hover:bg-wash-strong"
                 >
-                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-line bg-wash text-ink-muted transition-colors duration-fast group-hover:border-line-strong group-hover:bg-wash-strong group-hover:text-ink">
+                  <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border border-line bg-wash text-ink-muted group-hover:border-line-strong group-hover:bg-wash-strong group-hover:text-ink">
                     <NavIcon name={feat.icon} className="size-4" />
                   </div>
                   
@@ -88,7 +88,7 @@ export default function MegaMenuPanel({ category, locale = 'zh', onItemClick }) 
                     href={model.href}
                     prefetch={false}
                     onClick={(e) => onItemClick?.(e, model, category)}
-                    className="group flex items-start gap-3 rounded-xl p-2.5 transition-colors duration-fast hover:bg-wash-strong"
+                    className="group flex min-h-10 items-start gap-3 rounded-md p-2.5 transition-none hover:bg-wash-strong"
                   >
                     <NavIcon isModel className="size-4" />
 

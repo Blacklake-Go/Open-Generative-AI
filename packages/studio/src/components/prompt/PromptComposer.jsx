@@ -29,22 +29,22 @@ const DEFAULT_TEXTAREA_CLASS =
   `w-full bg-transparent border-none text-ink text-body placeholder:text-ink-subtle focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none resize-none pt-1 leading-relaxed min-h-[48px] max-h-composer md:max-h-composer-lg overflow-y-auto custom-scrollbar disabled:opacity-40 rounded-xl transition-[min-height] duration-expand ease-fluid`;
 
 const CONTROL_LAYOUT_CLASS =
-  "h-control-md flex items-center gap-2 rounded-lg transition-[background-color,border-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant border group whitespace-nowrap focus:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring select-none text-label font-medium";
+  "h-control-md flex items-center gap-2 rounded-lg transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-press border group whitespace-nowrap control-focus select-none text-label font-medium";
 
 const CONTROL_IDLE_CLASS =
   "text-ink-muted bg-wash hover:bg-wash-strong hover:text-ink border-line";
 
 const CONTROL_ACTIVE_CLASS =
-  "text-brand bg-brand-soft hover:bg-brand-pressed border-brand-line";
+  "text-ink bg-brand-soft hover:bg-brand-pressed border-brand-line";
 
 const MEDIA_CONTROL_LAYOUT_CLASS =
-  "size-control-md shrink-0 rounded-lg border transition-[background-color,border-color,color,box-shadow,transform] duration-fast ease-standard active:scale-95 active:duration-instant flex items-center justify-center relative overflow-hidden group focus:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring";
+  "size-control-md shrink-0 rounded-lg border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.96] active:duration-press flex items-center justify-center relative overflow-hidden group control-focus";
 
 const DEFAULT_POPOVER_POSITION_CLASS =
   "absolute bottom-[calc(100%+10px)] left-0 z-popover";
 
 const DEFAULT_POPOVER_CLASS =
-  "rounded-xl p-2 shadow-elevation-3 border border-line-strong min-w-popover max-h-popover overflow-y-auto custom-scrollbar animate-fade-in";
+  "popover-surface p-2 min-w-popover max-h-popover overflow-y-auto custom-scrollbar animate-popover-in";
 
 function joinClasses(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -175,6 +175,7 @@ export const PromptPopover = forwardRef(function PromptPopover(
     positionClassName = DEFAULT_POPOVER_POSITION_CLASS,
     fitViewport = false,
     solid = false,
+    glass = false,
     ...props
   },
   ref,
@@ -224,7 +225,7 @@ export const PromptPopover = forwardRef(function PromptPopover(
       className={joinClasses(
         positionClassName,
         DEFAULT_POPOVER_CLASS,
-        solid ? "bg-surface-raised" : "bg-overlay-glass",
+        solid ? "bg-surface-raised" : glass ? "glass-popover" : "bg-overlay-glass backdrop-blur-md",
         withoutRadiusUtilities(className),
       )}
     >
@@ -270,11 +271,11 @@ export function PromptMenuItem({
       aria-checked={selected}
       role="menuitemradio"
       className={joinClasses(
-        "w-full min-h-control-sm flex items-center justify-between gap-3 px-3 py-1 rounded-md text-left cursor-pointer transition-[background-color,color] duration-fast group/menu-item select-none",
+        "w-full min-h-10 flex items-center justify-between gap-3 px-3 py-2 rounded-md text-left cursor-pointer transition-none group/menu-item select-none",
         selected
-          ? "bg-brand-soft text-brand font-medium"
+          ? "bg-wash-press text-ink font-medium"
           : "text-ink-muted hover:bg-wash-strong hover:text-ink focus:bg-wash-strong focus:text-ink",
-        FOCUS_RING,
+        "control-focus",
         withoutRadiusUtilities(className),
       )}
     >
@@ -298,8 +299,8 @@ export function PromptMenuItem({
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="3.5"
-          className="flex-shrink-0 text-brand"
+          strokeWidth="1.8"
+          className="flex-shrink-0 text-ink-muted"
           aria-hidden="true"
         >
           <polyline points="20 6 9 17 4 12" />

@@ -21,9 +21,9 @@ export function VideoSpecPopover({
       {/* ── 1. Aspect Ratio Section ── */}
       {aspectRatios.length > 0 && (
         <div>
-          <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-2 flex items-center justify-between">
+          <div className="text-caption font-semibold text-ink-muted uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>{arTitle}</span>
-            <span className="text-[10px] text-ink-subtle font-normal">
+            <span className="text-micro text-ink-subtle font-normal">
               {selectedAr}
             </span>
           </div>
@@ -35,16 +35,16 @@ export function VideoSpecPopover({
                   key={ratio}
                   type="button"
                   onClick={() => onSelectAr?.(ratio)}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer group ${
+                  className={`control-focus group flex flex-col items-center justify-center rounded-lg border p-2 transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-press cursor-pointer ${
                     isSelected
-                      ? "bg-brand-soft border-brand-line text-brand shadow-elevation-1"
-                      : "bg-wash/40 border-line text-ink-muted hover:border-line-strong hover:text-ink hover:bg-wash"
+                      ? "border-line bg-wash-press text-ink"
+                      : "border-line-subtle bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink"
                   }`}
                 >
                   <AspectWireframeIcon ratio={ratio} active={isSelected} />
                   <span
-                    className={`text-[11px] mt-1.5 font-medium leading-none ${
-                      isSelected ? "text-brand font-semibold" : "text-white/70"
+                    className={`mt-1.5 text-caption leading-none ${
+                      isSelected ? "font-semibold text-ink" : "text-ink-muted"
                     }`}
                   >
                     {ratio}
@@ -54,7 +54,7 @@ export function VideoSpecPopover({
             })}
           </div>
           {aspectRatioHelp && (
-            <p className="mt-2 text-[10px] text-ink-subtle leading-tight px-1">
+            <p className="mt-2 text-micro text-ink-subtle leading-tight px-1">
               {aspectRatioHelp}
             </p>
           )}
@@ -64,9 +64,9 @@ export function VideoSpecPopover({
       {/* ── 2. Resolution Section ── */}
       {resolutions.length > 0 && (
         <div>
-          <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <div className="text-caption font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
             <span>{resTitle}</span>
-            <span className="text-[10px] text-ink-subtle font-normal">
+            <span className="text-micro text-ink-subtle font-normal">
               {(() => {
                 const cur = resolutions.find(
                   (r) =>
@@ -98,9 +98,9 @@ export function VideoSpecPopover({
                   data-pill-segment-item
                   disabled={disabled}
                   onClick={() => !disabled && onSelectResolution?.(opt)}
-                  className={`py-1.5 px-2 rounded-full text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer text-center ${
+                  className={`control-focus h-control-xs rounded-full px-2 text-center text-label font-medium transition-none active:scale-[0.98] active:duration-press cursor-pointer ${
                     isSelected
-                      ? "bg-surface-raised text-ink font-semibold shadow-elevation-1"
+                      ? "bg-surface-inverse text-ink-inverse font-semibold shadow-elevation-1"
                       : disabled
                         ? "opacity-35 cursor-not-allowed text-ink-subtle"
                         : "text-ink-muted hover:text-ink hover:bg-wash-strong"

@@ -103,11 +103,9 @@ export const PILL_SEGMENT_IDLE =
  * declares an unconditional `:focus-visible` outline, so focus is replaced
  * with a stronger ring rather than removed.
  */
-export const FOCUS_RING =
-  'outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base focus-visible:border-brand';
+export const FOCUS_RING = 'control-focus';
 
-export const FOCUS_RING_DANGER =
-  'outline-none focus-visible:ring-1 focus-visible:ring-danger-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base focus-visible:border-danger';
+export const FOCUS_RING_DANGER = 'control-focus';
 
 /**
  * Shared base for anything that behaves as a control. Dimension-free and
@@ -117,26 +115,26 @@ export const FOCUS_RING_DANGER =
 export const CONTROL_BASE = [
   'inline-flex items-center justify-center gap-2 whitespace-nowrap select-none',
   'border text-ink',
-  'transition-[background-color,border-color,color,box-shadow,transform]',
+  'transition-[background-color,border-color,color,transform]',
   'duration-fast ease-standard',
-  'active:scale-[0.98] active:duration-instant',
+  'active:scale-[0.98] active:duration-press',
   FOCUS_RING,
-  'disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed',
-  'aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed',
+  'disabled:pointer-events-none disabled:opacity-45 disabled:cursor-not-allowed',
+  'aria-disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:cursor-not-allowed',
 ].join(' ');
 
 /**
- * Shared base for icon-only controls. Square hit-area with active:scale-95.
+ * Shared base for icon-only controls. Square hit-area with active:scale-.96.
  */
 export const ICON_CONTROL_BASE = [
   'inline-flex items-center justify-center whitespace-nowrap select-none',
   'border text-ink',
-  'transition-[background-color,border-color,color,box-shadow,transform]',
+  'transition-[background-color,border-color,color,transform]',
   'duration-fast ease-standard',
-  'active:scale-95 active:duration-instant',
+  'active:scale-[0.96] active:duration-press',
   FOCUS_RING,
-  'disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed',
-  'aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed',
+  'disabled:pointer-events-none disabled:opacity-45 disabled:cursor-not-allowed',
+  'aria-disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:cursor-not-allowed',
 ].join(' ');
 
 /**
@@ -159,9 +157,9 @@ export const BUTTON_WEIGHT = {
  */
 export const BUTTON_VARIANTS = {
   primary: [
-    'bg-brand text-ink-on-accent border-brand-line btn-spatial-glow',
-    'hover:bg-brand-hover hover:border-brand-hover',
-    'active:bg-brand-active active:border-brand-active',
+    'bg-brand text-ink-on-accent border-transparent',
+    'hover:bg-brand-hover-solid',
+    'active:bg-brand-active-solid',
   ].join(' '),
   secondary: [
     'bg-raised text-ink border-line',
@@ -195,17 +193,16 @@ export const BUTTON_VARIANTS = {
 export const FIELD_BASE = [
   'w-full bg-well text-ink placeholder:text-ink-subtle',
   'border border-line',
-  'transition-[background-color,border-color,box-shadow] duration-fast ease-standard',
-  FOCUS_RING,
-  'disabled:cursor-not-allowed disabled:opacity-40',
+  'transition-[background-color,border-color] duration-fast ease-standard',
+  'focus-visible:outline-none focus-visible:border-brand',
+  'disabled:cursor-not-allowed disabled:opacity-45',
   'readonly:cursor-default',
   'aria-[invalid=true]:border-danger',
 ].join(' ');
 
 /** Floating layer (dropdown, popover, command menu). */
 export const OVERLAY_PANEL = [
-  'bg-overlay-glass backdrop-blur-md border border-line-subtle rounded-xl shadow-elevation-3',
-  'text-ink overflow-hidden',
+  'popover-surface bg-overlay-glass backdrop-blur-md text-ink overflow-hidden animate-popover-in',
 ].join(' ');
 
 /**
@@ -215,13 +212,13 @@ export const OVERLAY_PANEL = [
  * Consumers compose it with MENU_ITEM_PAD or MENU_ITEM_INSET.
  */
 export const MENU_ITEM = [
-  'flex w-full items-center gap-2 rounded-md',
+  'flex min-h-10 w-full items-center gap-2 rounded-md',
   'text-body text-left text-ink-muted',
-  'transition-[background-color,color] duration-fast ease-standard',
-  'hover:bg-wash hover:text-ink',
-  'focus:bg-wash focus:text-ink outline-none',
-  'data-[state=checked]:text-brand data-[selected=true]:text-brand',
-  'data-[disabled]:pointer-events-none data-[disabled]:opacity-40',
+  'transition-none',
+  'hover:bg-wash-strong hover:text-ink',
+  'focus:bg-wash-strong focus:text-ink outline-none',
+  'data-[state=checked]:bg-wash-press data-[state=checked]:text-ink data-[selected=true]:bg-wash-press data-[selected=true]:text-ink',
+  'data-[disabled]:pointer-events-none data-[disabled]:opacity-45',
 ].join(' ');
 
 export const MENU_ITEM_PAD = 'px-2.5';
@@ -362,7 +359,7 @@ export const PROMPT_CONTROL_IDLE =
   'bg-wash text-ink border-line hover:bg-wash-strong hover:border-line-strong';
 
 export const PROMPT_CONTROL_ACTIVE =
-  'bg-brand-soft text-brand border-brand-line hover:bg-brand-pressed';
+  'bg-brand-soft text-ink border-brand-line hover:bg-brand-pressed';
 
 /** Square 38px media slot: attach button, reference thumbnail, remove chip. */
 export const PROMPT_MEDIA_SQUARE = [
@@ -379,8 +376,7 @@ export const PROMPT_MEDIA_ACTIVE = 'border-brand-line bg-brand-soft text-brand';
 
 /** Parameter popover anchored above its trigger. */
 export const PROMPT_POPOVER = [
-  'min-w-44 max-h-popover rounded-xl border border-line-strong',
-  'bg-overlay-glass backdrop-blur-md p-2.5 text-ink shadow-elevation-3 animate-fade-in overflow-y-auto',
+  'min-w-44 max-h-popover popover-surface bg-overlay-glass backdrop-blur-md p-2.5 text-ink overflow-y-auto animate-popover-in',
 ].join(' ');
 
 export const PROMPT_POPOVER_ANCHOR = 'absolute bottom-full left-0 z-popover mb-2.5';

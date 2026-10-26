@@ -893,7 +893,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
         positionClassName="relative z-20 w-full max-w-[1280px]"
         flush
         minHeightClassName="min-h-[280px] sm:min-h-[324px]"
-        panelClassName={`w-full bg-surface-glass border border-white/10 hover:border-white/20 focus-within:border-brand-line focus-within:ring-1 focus-within:ring-brand-ring/40 transition-colors duration-200 shadow-elevation-3 backdrop-blur-2xl flex flex-col justify-between group ${className} ${
+        panelClassName={`w-full bg-surface-glass border border-line-subtle hover:border-line focus-within:border-brand-line transition-colors duration-fast ease-standard shadow-elevation-2 backdrop-blur-2xl flex flex-col justify-between group ${className} ${
           isDragOver ? 'ring-2 ring-brand border-brand-line bg-brand/5' : ''
         }`}
         onDragOver={handleDragOver}
@@ -948,10 +948,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   key={m.id}
                   type="button"
                   onClick={() => updateCurrentDraft({ videoMode: m.id })}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${
+                  className={`control-focus h-control-xs shrink-0 rounded-full border px-3 text-label font-medium transition-[background-color,border-color,color] duration-fast ease-standard cursor-pointer ${
                     currentDraft.videoMode === m.id
-                      ? 'bg-brand-soft border border-brand-line text-brand font-semibold'
-                      : 'bg-white/[0.04] border border-white/10 text-ink-muted hover:text-white'
+                      ? 'border-brand-line bg-brand-soft font-semibold text-ink'
+                      : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
                   }`}
                 >
                   {m.label}
@@ -975,10 +975,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   key={m.id}
                   type="button"
                   onClick={() => updateCurrentDraft({ subMode: m.id })}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${
+                  className={`control-focus h-control-xs shrink-0 rounded-full border px-3 text-label font-medium transition-[background-color,border-color,color] duration-fast ease-standard cursor-pointer ${
                     currentDraft.subMode === m.id
-                      ? 'bg-brand-soft border border-brand-line text-brand font-semibold'
-                      : 'bg-white/[0.04] border border-white/10 text-ink-muted hover:text-white'
+                      ? 'border-brand-line bg-brand-soft font-semibold text-ink'
+                      : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
                   }`}
                 >
                   {m.label}
@@ -1293,9 +1293,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
 
               {dropdownOpen === 'model' && (
                 <PromptPopover
+                  glass
                   positionClassName="absolute top-[calc(100%+8px)] left-0 z-popover"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-[calc(100vw-2rem)] sm:w-[400px] max-h-[min(540px,calc(100vh-200px))] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-2xl"
+                  className="w-[calc(100vw-2rem)] sm:w-[400px] max-h-[min(540px,calc(100vh-200px))] flex flex-col overflow-hidden p-0"
                 >
                   <FrontendModelPicker
                     studioType={activeTab}
@@ -1343,10 +1344,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                           onSkillSelect?.(skill);
                           setDropdownOpen(null);
                         }}
-                        className="flex min-h-10 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm text-ink-muted transition-colors hover:bg-wash-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring"
+                        className="control-focus flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-body text-ink-muted transition-none hover:bg-wash-strong hover:text-ink"
                       >
                         <span className="min-w-0 truncate">{skill.label}</span>
-                        {skill.badge && <span className="shrink-0 text-[10px] text-brand">{skill.badge}</span>}
+                        {skill.badge && <span className="shrink-0 text-micro text-brand-text">{skill.badge}</span>}
                       </button>
                     ))}
                   </PromptPopover>
@@ -1491,10 +1492,10 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                             key={d}
                             type="button"
                             onClick={() => updateCurrentDraft({ duration: d })}
-                            className={`flex-1 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors text-center ${
+                            className={`control-focus h-control-xs flex-1 rounded-full text-center text-label font-medium transition-none cursor-pointer ${
                               currentDraft.duration === d
                                 ? 'bg-surface-raised text-ink font-semibold shadow-elevation-1'
-                                : 'text-ink-muted hover:text-ink'
+                                : 'text-ink-muted hover:bg-wash hover:text-ink'
                             }`}
                           >
                             {d}s
@@ -1559,15 +1560,15 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                             updateCurrentDraft({ voiceId: voice.id });
                             setDropdownOpen(null);
                           }}
-                          className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-colors ${
+                          className={`flex items-center justify-between rounded-md border p-2 transition-none cursor-pointer ${
                             isSelected
-                              ? 'bg-brand-soft border-brand-line text-white'
-                              : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.06] text-white/80'
+                              ? 'border-line bg-wash-press text-ink'
+                              : 'border-line-subtle bg-wash text-ink-muted hover:bg-wash-strong hover:text-ink'
                           }`}
                         >
                           <div>
-                            <p className="text-xs font-semibold">{voice.name}</p>
-                            <span className="text-[10px] text-white/40">{voice.tag}</span>
+                            <p className="text-label font-semibold">{voice.name}</p>
+                            <span className="text-micro text-ink-subtle">{voice.tag}</span>
                           </div>
                           <button
                             type="button"
@@ -1575,7 +1576,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                               e.stopPropagation();
                               handleToggleAudition(voice);
                             }}
-                            className="size-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer"
+                            className="control-focus flex size-control-xs items-center justify-center rounded-full bg-wash-strong text-ink transition-colors duration-fast hover:bg-wash-press cursor-pointer"
                           >
                             {isPlaying ? <Pause className="size-3" /> : <Play className="size-3 ml-0.5" />}
                           </button>
@@ -1624,7 +1625,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                           updateCurrentDraft({ driveType: option.id });
                           setDropdownOpen(null);
                         }}
-                        className={`flex min-h-10 w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${currentDraft.driveType === option.id ? 'bg-brand-soft text-brand' : 'text-ink-muted hover:bg-wash-strong hover:text-ink'}`}
+                        className={`control-focus flex min-h-10 w-full items-center justify-between rounded-md px-3 py-2 text-left text-body transition-none ${currentDraft.driveType === option.id ? 'bg-wash-press text-ink' : 'text-ink-muted hover:bg-wash-strong hover:text-ink'}`}
                       >
                         {option.label}
                         {currentDraft.driveType === option.id && <Check className="size-4" aria-hidden="true" />}
@@ -1677,7 +1678,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                           advanced: { ...prev.advanced, seed: parseInt(e.target.value, 10) || -1 },
                         }))
                       }
-                      className="w-full h-8 px-2.5 rounded-lg bg-well border border-white/10 text-xs text-white focus:outline-none focus:border-brand-line"
+                      className="control-focus h-control-sm w-full rounded-lg border border-line bg-well px-2.5 text-label text-ink"
                     />
                   </div>
 
@@ -1692,7 +1693,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                             advanced: { ...prev.advanced, cameraMotion: e.target.value },
                           }))
                         }
-                        className="w-full h-8 px-2 rounded-lg bg-well border border-white/10 text-xs text-white focus:outline-none"
+                        className="control-focus h-control-sm w-full rounded-lg border border-line bg-well px-2 text-label text-ink"
                       >
                         <option value="fixed">固定镜头 (Fixed Camera)</option>
                         <option value="zoom_in">缓慢推进 (Zoom In)</option>
@@ -1757,7 +1758,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
         <div className="w-full max-w-[960px] mt-4 rounded-2xl bg-[#16181d]/90 border border-white/10 p-4 sm:p-5 backdrop-blur-xl shadow-elevation-3 flex flex-col gap-3 animate-fade-in">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <div className="flex items-center gap-2.5">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/20 text-brand border border-brand/30">
+              <span className="rounded-full border border-brand-line bg-brand-soft px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-brand-text">
                 {activeTask.mediaType}
               </span>
               <span className="text-xs font-semibold text-white/90 truncate max-w-[280px] sm:max-w-[420px]">
@@ -1788,7 +1789,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                 </span>
                 <span className="text-white font-mono">{activeTask.progress}%</span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-wash-strong">
                 <div
                   className="h-full bg-brand transition-all duration-300"
                   style={{ width: `${activeTask.progress}%` }}
@@ -1846,7 +1847,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                     href={`/canvas?importAsset=${encodeURIComponent(activeTask.resultUrl)}&type=${activeTask.mediaType}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl bg-brand text-white font-semibold text-xs flex items-center gap-1.5 hover:bg-brand-hover shadow-elevation-1 transition-colors"
+                    className="control-focus flex h-control-sm items-center gap-1.5 rounded-lg bg-brand px-3 text-label font-semibold text-ink-on-accent transition-colors duration-fast hover:bg-brand-hover-solid"
                   >
                     <Layers className="size-3.5" />
                     <span>{isZh ? '在无限画布中打开 ↗' : 'Open in Canvas ↗'}</span>
@@ -1858,7 +1859,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                     download={`koyosim-${activeTask.mediaType}-${Date.now()}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-white text-xs font-medium flex items-center gap-1.5 transition-colors border border-white/10"
+                    className="control-focus flex h-control-sm items-center gap-1.5 rounded-lg border border-line bg-wash px-3 text-label font-medium text-ink transition-colors duration-fast hover:border-line-strong hover:bg-wash-strong"
                   >
                     <Download className="size-3.5" />
                     <span>{isZh ? '下载原文件' : 'Download'}</span>
@@ -1868,7 +1869,7 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
                   <button
                     type="button"
                     onClick={handleTriggerSubmit}
-                    className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white text-xs flex items-center gap-1 transition-colors"
+                    className="control-focus flex h-control-sm items-center gap-1.5 rounded-lg px-3 text-label text-ink-muted transition-colors duration-fast hover:bg-wash hover:text-ink"
                   >
                     <RotateCcw className="size-3.5" />
                     <span>{isZh ? '重新生成' : 'Regenerate'}</span>
@@ -1880,12 +1881,12 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
 
           {/* Failed State */}
           {activeTask.status === 'failed' && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-lg border border-danger-line bg-danger-soft p-3 text-caption text-danger">
               <span>{activeTask.error || (isZh ? '生成任务失败，请检查提示词或网络' : 'Generation failed')}</span>
               <button
                 type="button"
                 onClick={handleTriggerSubmit}
-                className="px-3 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-medium"
+                className="control-focus rounded-md border border-danger-line bg-danger-soft px-3 py-1 text-label font-medium text-danger transition-colors duration-fast hover:text-ink"
               >
                 {isZh ? '重试' : 'Retry'}
               </button>
@@ -1913,12 +1914,12 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
       {/* ── Fullscreen Image Preview Lightbox ── */}
       {fullscreenUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-scrim backdrop-blur-xl animate-fade-in"
           onClick={() => setFullscreenUrl(null)}
         >
           <button
             type="button"
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10 cursor-pointer"
+            className="control-focus absolute right-6 top-6 flex size-control-md items-center justify-center rounded-lg border border-line bg-wash text-ink-muted transition-colors duration-fast hover:border-line-strong hover:bg-wash-strong hover:text-ink cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               setFullscreenUrl(null);

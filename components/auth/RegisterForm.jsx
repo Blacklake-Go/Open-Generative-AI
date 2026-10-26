@@ -15,6 +15,7 @@ import {
 } from '@/components/SocialIcons';
 import { getAuthCopy, getAuthRoutes } from '@/lib/authCopy';
 import { openOAuthPopup } from '@/lib/auth/oauthPopup';
+import { fetchSocialOptions as fetchSocialOptionsRequest } from '@/lib/auth/socialOptionsClient';
 
 const SOCIAL_ICONS = {
   google: { label: 'Google', icon: GoogleIcon },
@@ -49,7 +50,6 @@ export default function RegisterForm({ locale = 'en' }) {
   const [infoMsg, setInfoMsg] = useState('');
   const [agreed, setAgreed] = useState(true);
   const [socialProviders, setSocialProviders] = useState([]);
-  const [socialRegion, setSocialRegion] = useState(null);
 
   const timerRef = useRef(null);
   const handledAuthRef = useRef(false);
@@ -68,21 +68,10 @@ export default function RegisterForm({ locale = 'en' }) {
     }
   }, [searchParams]);
 
-  const fetchSocialOptions = useCallback(() => {
-    return fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data) return;
-        if (Array.isArray(data.providers)) {
-          setSocialProviders(
-            data.providers.filter((p) => Boolean(p?.id && SOCIAL_ICONS[p.id]))
-          );
-        }
-        if (data.region) {
-          setSocialRegion(data.region);
-        }
-      })
-      .catch(() => {});
+  const fetchSocialOptions = useCallback(async () => {
+    const data = await fetchSocialOptionsRequest();
+    if (!data) return;
+    setSocialProviders(data.providers.filter((p) => Boolean(SOCIAL_ICONS[p.id])));
   }, []);
 
   // 获取当前区域启用的第三方社交平台列表
@@ -238,7 +227,7 @@ export default function RegisterForm({ locale = 'en' }) {
     <div className="w-full flex flex-col gap-6">
       {/* 提示信息条 */}
       {errorMsg && (
-        <div className="px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 animate-fade-in">
+        <div className="px-3.5 py-2.5 rounded-xl bg-danger-soft border border-danger-line text-danger text-label flex items-center gap-2 animate-fade-in">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -249,7 +238,7 @@ export default function RegisterForm({ locale = 'en' }) {
       )}
 
       {infoMsg && (
-        <div className="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fade-in">
+        <div className="px-3.5 py-2.5 rounded-xl bg-success-soft border border-success-line text-success text-label flex items-center gap-2 animate-fade-in">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
@@ -262,7 +251,7 @@ export default function RegisterForm({ locale = 'en' }) {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* 邮箱输入 */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/70">
+          <label className="text-label font-medium text-ink-muted">
             {copy.emailLabel}
           </label>
           <input
@@ -272,13 +261,13 @@ export default function RegisterForm({ locale = 'en' }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={copy.emailPlaceholder}
-            className="w-full h-11 px-3.5 rounded-xl bg-[#101216] border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/50 transition-all font-mono"
+            className="w-full h-control-lg px-3.5 rounded-xl bg-well border border-line-subtle text-ink placeholder-ink-disabled text-body-sm control-focus transition-[border-color,background-color] duration-fast font-mono"
           />
         </div>
 
         {/* 邮件验证码 */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/70">
+          <label className="text-label font-medium text-ink-muted">
             {copy.codeLabel}
           </label>
           <div className="flex gap-2">
@@ -289,13 +278,13 @@ export default function RegisterForm({ locale = 'en' }) {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder={copy.codePlaceholder}
-              className="flex-1 h-11 px-3.5 rounded-xl bg-[#101216] border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/50 transition-all font-mono tracking-widest"
+              className="flex-1 h-control-lg px-3.5 rounded-xl bg-well border border-line-subtle text-ink placeholder-ink-disabled text-body-sm control-focus transition-[border-color,background-color] duration-fast font-mono tracking-widest"
             />
             <button
               type="button"
               disabled={sendingCode || countdown > 0}
               onClick={handleSendCode}
-              className="h-11 px-4 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/15 disabled:opacity-40 border border-white/10 text-xs text-white font-medium transition-all cursor-pointer whitespace-nowrap"
+              className="control-focus h-control-lg rounded-lg border border-line-subtle bg-wash px-4 text-label font-medium text-ink-muted whitespace-nowrap transition-[background-color,border-color,color] duration-fast ease-standard hover:border-line hover:bg-wash-strong hover:text-ink active:scale-[0.98] active:duration-press disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {countdown > 0 ? copy.resendCode(countdown) : copy.sendCode}
             </button>
@@ -304,7 +293,7 @@ export default function RegisterForm({ locale = 'en' }) {
 
         {/* 密码输入 */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/70">
+          <label className="text-label font-medium text-ink-muted">
             {copy.passwordLabel}
           </label>
           <div className="relative">
@@ -315,12 +304,12 @@ export default function RegisterForm({ locale = 'en' }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={copy.passwordPlaceholder}
-              className="w-full h-11 pl-3.5 pr-10 rounded-xl bg-[#101216] border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/50 transition-all font-mono"
+              className="w-full h-control-lg pl-3.5 pr-10 rounded-xl bg-well border border-line-subtle text-ink placeholder-ink-disabled text-body-sm control-focus transition-[border-color,background-color] duration-fast font-mono"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 p-1 cursor-pointer transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 control-focus rounded-sm p-1 text-ink-subtle hover:text-ink transition-colors duration-fast"
             >
               {showPassword ? (
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -339,7 +328,7 @@ export default function RegisterForm({ locale = 'en' }) {
 
         {/* 邀请码 (可选) */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-white/70">
+          <label className="text-label font-medium text-ink-muted">
             {copy.inviteCodeLabel}
           </label>
           <input
@@ -347,7 +336,7 @@ export default function RegisterForm({ locale = 'en' }) {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             placeholder={copy.inviteCodePlaceholder}
-            className="w-full h-11 px-3.5 rounded-xl bg-[#101216] border border-white/10 text-white placeholder-white/30 text-xs sm:text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/50 transition-all font-mono"
+            className="w-full h-control-lg px-3.5 rounded-xl bg-well border border-line-subtle text-ink placeholder-ink-disabled text-body-sm control-focus transition-[border-color,background-color] duration-fast font-mono"
           />
         </div>
 
@@ -358,15 +347,15 @@ export default function RegisterForm({ locale = 'en' }) {
             id="agreement"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-0.5 rounded border-white/20 bg-zinc-900 text-brand focus:ring-brand/50 cursor-pointer"
+            className="control-focus mt-0.5 rounded-xs border-line bg-well text-brand cursor-pointer"
           />
-          <label htmlFor="agreement" className="text-xs text-white/60 leading-normal cursor-pointer">
+          <label htmlFor="agreement" className="text-label text-ink-muted leading-normal cursor-pointer">
             {copy.agreePrompt}
-            <Link href={routes.termsUrl} target="_blank" className="text-white hover:text-brand transition-colors underline">
+            <Link href={routes.termsUrl} target="_blank" className="text-ink hover:text-brand-text transition-colors underline">
               {copy.termsText}
             </Link>
             {copy.agreeAnd}
-            <Link href={routes.privacyUrl} target="_blank" className="text-white hover:text-brand transition-colors underline">
+            <Link href={routes.privacyUrl} target="_blank" className="text-ink hover:text-brand-text transition-colors underline">
               {copy.privacyText}
             </Link>
           </label>
@@ -376,7 +365,7 @@ export default function RegisterForm({ locale = 'en' }) {
         <button
           type="submit"
           disabled={busy}
-          className="w-full h-11 mt-2 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active disabled:opacity-50 text-white text-sm font-semibold transition-all duration-200 shadow-elevation-2 flex items-center justify-center gap-2 cursor-pointer"
+          className="control-focus w-full h-control-lg mt-2 rounded-lg bg-brand text-label font-semibold text-ink-on-accent transition-[background-color,color,transform] duration-fast ease-standard hover:bg-brand-hover-solid active:bg-brand-active-solid active:scale-[0.99] active:duration-press disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
           {busy && <span className="animate-spin text-sm">◌</span>}
           <span>{copy.submitRegister}</span>
@@ -384,50 +373,48 @@ export default function RegisterForm({ locale = 'en' }) {
       </form>
 
       {/* 第三方社交平台快捷注册与登录 */}
-      {(socialProviders.length > 0 || socialRegion) && (
+      {socialProviders.length > 0 && (
         <div className="flex flex-col gap-3">
           <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
+              <div className="w-full border-t border-line-subtle" />
             </div>
-            <span className="relative px-3 bg-[#131519] text-[11px] text-white/40 uppercase tracking-wider">
+            <span className="relative px-3 bg-surface-raised text-micro text-ink-subtle uppercase tracking-wider">
               {copy.socialDivider}
             </span>
           </div>
 
-          {socialProviders.length > 0 && (
-            <div className="grid grid-cols-2 gap-2.5">
-              {socialProviders.map((provider) => {
-                const item = SOCIAL_ICONS[provider.id];
-                if (!item) return null;
-                const Icon = item.icon;
-                const btnLabel = copy.socialRegisterLabel
-                  ? copy.socialRegisterLabel(item.label)
-                  : (String(locale || '').startsWith('zh') ? `${item.label} 快捷注册` : item.label);
-                return (
-                  <button
-                    key={provider.id}
-                    type="button"
-                    onClick={() => handleOAuth(provider.id)}
-                    title={btnLabel}
-                    className="h-10 px-3.5 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 flex items-center justify-center gap-2 text-xs font-medium text-white/90 hover:text-white transition-all active:scale-[0.98] shadow-elevation-1 cursor-pointer"
-                  >
-                    <Icon size={18} />
-                    <span className="truncate">{btnLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-2.5">
+            {socialProviders.map((provider) => {
+              const item = SOCIAL_ICONS[provider.id];
+              if (!item) return null;
+              const Icon = item.icon;
+              const btnLabel = copy.socialRegisterLabel
+                ? copy.socialRegisterLabel(item.label)
+                : (String(locale || '').startsWith('zh') ? `${item.label} 快捷注册` : item.label);
+              return (
+                <button
+                  key={provider.id}
+                  type="button"
+                  onClick={() => handleOAuth(provider.id)}
+                  title={btnLabel}
+                  className="control-focus h-control-md rounded-lg border border-line-subtle bg-wash px-3.5 text-label font-medium text-ink-muted transition-[background-color,border-color,color,transform] duration-fast ease-standard hover:border-line hover:bg-wash-strong hover:text-ink active:scale-[0.98] active:duration-press flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Icon size={18} />
+                  <span className="truncate">{btnLabel}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* 前往登录 */}
-      <div className="pt-2 text-center text-xs text-white/60">
+      <div className="pt-2 text-center text-body-sm text-ink-muted">
         <span>{copy.hasAccountPrompt} </span>
         <Link
           href={routes.loginUrl}
-          className="text-brand hover:text-brand-hover font-medium underline-offset-4 hover:underline transition-colors"
+          className="text-brand-text hover:underline font-medium underline-offset-4 hover:underline transition-colors"
         >
           {copy.signInLink}
         </Link>

@@ -258,7 +258,7 @@ export default function FrontendModelPicker({
   );
 
   return (
-    <div className="flex w-full select-none flex-col overflow-hidden rounded-xl bg-overlay-glass">
+    <div className="flex w-full select-none flex-col overflow-hidden rounded-xl bg-transparent">
       {/* ─── Top Header (Matching user screenshot: "选择模型:  Seedream 5.0 Pro") ─── */}
       <div className="flex shrink-0 select-none items-center gap-2 px-4 pt-3.5 pb-2.5 text-body-sm">
         <span className="shrink-0 font-normal text-ink-subtle">
@@ -301,9 +301,9 @@ export default function FrontendModelPicker({
                 ref={isSelected ? activeItemRef : null}
                 onClick={() => handleItemClick(entry)}
                 aria-pressed={Boolean(isSelected)}
-                className={`group w-full rounded-lg text-left transition-colors duration-fast ease-standard cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-ring ${
+                className={`control-focus group w-full rounded-md text-left transition-none cursor-pointer select-none ${
                   isSelected
-                    ? "bg-wash-strong"
+                    ? "bg-wash-press text-ink"
                     : "bg-transparent hover:bg-wash-strong"
                 }`}
               >

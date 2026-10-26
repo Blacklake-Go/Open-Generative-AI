@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { Check, ChevronDown, Globe } from 'lucide-react';
 import { getLocaleFromPathname, LOCALE_CONFIGS, SUPPORTED_LOCALES, normalizeLocale } from '@/lib/locales';
 import { switchLocale as switchLocaleVia } from '@/lib/client/localeSwitch';
 
@@ -89,36 +90,50 @@ export default function LanguageSwitcher({ className = '', showLabel = true }) {
         onKeyDown={handleMenuKeyDown}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-300 bg-zinc-900/70 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
+        className={`control-focus group flex h-control-sm select-none items-center gap-1.5 rounded-lg border px-3 text-label font-medium transition-[background-color,border-color,color] duration-fast ease-standard cursor-pointer ${
+          open
+            ? 'border-brand-line bg-brand-soft text-ink'
+            : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
+        }`}
         aria-label={`Switch language. Current language: ${currentOption.label}`}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-        {showLabel && <span>{currentOption.label}</span>}
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
+        <Globe className="size-3.5 shrink-0" strokeWidth={1.8} />
+        {showLabel && <span className="text-ink">{currentOption.label}</span>}
+        <ChevronDown
+          className={`size-3.5 shrink-0 text-ink-subtle transition-transform duration-fast ease-standard ${open ? 'rotate-180' : ''}`}
+          strokeWidth={1.8}
+        />
       </button>
 
       {open && (
-        <div role="menu" aria-label="Language options" className="absolute right-0 mt-1.5 w-40 py-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95">
+        <div
+          role="menu"
+          aria-label="Language options"
+          data-state="open"
+          className="popover-surface absolute right-0 z-dropdown mt-1.5 w-44 p-1.5"
+        >
           {LOCALE_OPTIONS.map((option) => {
             const selected = option.code === currentLocale;
             return (
               <button
                 key={option.code}
                 type="button"
-                role="menuitem"
-                aria-current={selected ? 'true' : undefined}
+                role="menuitemradio"
+                aria-checked={selected}
                 onClick={() => switchLocale(option.code)}
-                className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2.5 transition-colors ${selected ? 'text-cyan-400 bg-cyan-950/20 font-medium' : 'text-zinc-300 hover:text-white hover:bg-zinc-800/50'}`}
+                className={`control-focus flex min-h-10 w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-body transition-none cursor-pointer ${
+                  selected
+                    ? 'bg-wash-press text-ink'
+                    : 'text-ink-muted hover:bg-wash-strong hover:text-ink'
+                }`}
               >
-                <img src={option.flag} alt={option.flagAlt} className="h-4 w-5 rounded-[4px] object-cover ring-1 ring-white/10" />
+                <img
+                  src={option.flag}
+                  alt={option.flagAlt}
+                  className="h-4 w-5 shrink-0 rounded-sm object-cover ring-1 ring-line-subtle"
+                />
                 <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                {selected && <span className="text-cyan-400" aria-hidden="true">✓</span>}
+                {selected && <Check className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.8} />}
               </button>
             );
           })}

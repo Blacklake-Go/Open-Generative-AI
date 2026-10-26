@@ -8,6 +8,15 @@ import { useBranding } from '@/lib/hooks/useBranding';
 import { SpatialBackground } from '@/components/spatial';
 import { getAuthCopy, getAuthRoutes, normalizeAuthLocale } from '@/lib/authCopy';
 
+const FLAG_BY_LOCALE = {
+  en: ['/flags/en.svg', 'English'],
+  'zh-CN': ['/flags/zh-cn.svg', 'Simplified Chinese'],
+  'zh-TW': ['/flags/zh-tw.svg', 'Traditional Chinese'],
+  'ja-JP': ['/flags/ja.svg', 'Japanese'],
+  'ko-KR': ['/flags/ko.svg', 'Korean'],
+  es: ['/flags/es.svg', 'Spanish'],
+};
+
 export default function AuthLayout({
   children,
   locale = 'en',
@@ -54,7 +63,7 @@ export default function AuthLayout({
       <header className="relative z-20 w-full px-4 sm:px-8 py-5 flex items-center justify-between">
         <Link
           href={routes.studioUrl}
-          className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 text-white/80 hover:text-white text-xs font-medium transition-all active:scale-95 shadow-elevation-1"
+          className="control-focus group inline-flex h-control-sm items-center gap-1.5 rounded-lg border border-line-subtle bg-wash px-3 text-label font-medium text-ink-muted transition-[background-color,border-color,color] duration-fast ease-standard hover:border-line hover:bg-wash-strong hover:text-ink active:scale-[0.98] active:duration-press"
         >
           <svg
             width="14"
@@ -62,10 +71,10 @@ export default function AuthLayout({
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="transition-transform group-hover:-translate-x-0.5"
+            className="transition-transform duration-fast group-hover:-translate-x-0.5"
           >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
@@ -81,35 +90,55 @@ export default function AuthLayout({
           <button
             type="button"
             onClick={() => setShowLangMenu((prev) => !prev)}
-            className="h-8 px-3 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 text-white/80 hover:text-white text-xs font-medium inline-flex items-center gap-1.5 transition-all active:scale-95 shadow-elevation-1 cursor-pointer"
+            className={`control-focus flex h-control-sm select-none items-center gap-1.5 rounded-lg border px-3 text-label font-medium transition-[background-color,border-color,color] duration-fast ease-standard active:scale-[0.98] active:duration-press cursor-pointer ${
+              showLangMenu
+                ? 'border-brand-line bg-brand-soft text-ink'
+                : 'border-line-subtle bg-wash text-ink-muted hover:border-line hover:bg-wash-strong hover:text-ink'
+            }`}
             aria-expanded={showLangMenu}
+            aria-haspopup="menu"
             aria-label="Select Language"
           >
-            <Globe size={13} className="text-white/70" />
-            <span>{currentLocale?.label || 'Language'}</span>
+            <Globe className="size-3.5 shrink-0" strokeWidth={1.8} />
+            <span className="text-ink">{currentLocale?.label || 'Language'}</span>
             <ChevronDown
-              size={12}
-              className={`text-white/60 transition-transform duration-200 ${showLangMenu ? 'rotate-180' : ''}`}
+              className={`size-3.5 shrink-0 text-ink-subtle transition-transform duration-fast ease-standard ${showLangMenu ? 'rotate-180' : ''}`}
+              strokeWidth={1.8}
             />
           </button>
 
           {showLangMenu && (
-            <div className="absolute right-0 top-full mt-1.5 min-w-[130px] p-1.5 rounded-xl bg-[#14171d]/95 backdrop-blur-2xl border border-white/10 shadow-elevation-3 z-50 animate-fade-in flex flex-col gap-0.5">
-              {routes.localeOptions.map((opt) => (
-                <Link
-                  key={opt.code}
-                  href={opt.url}
-                  onClick={() => handleSelectLocale(opt.code)}
-                  className={`h-7 px-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
-                    opt.active
-                      ? 'bg-white/15 text-white font-semibold'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <span>{opt.label}</span>
-                  {opt.active && <Check size={12} className="text-brand" />}
-                </Link>
-              ))}
+            <div
+              role="menu"
+              data-state="open"
+              aria-label="Language options"
+              className="popover-surface absolute right-0 top-full z-dropdown mt-1.5 w-44 p-1.5"
+            >
+              {routes.localeOptions.map((opt) => {
+                const [flag, flagAlt] = FLAG_BY_LOCALE[opt.code] || ['/flags/en.svg', opt.code];
+                return (
+                  <Link
+                    key={opt.code}
+                    href={opt.url}
+                    role="menuitemradio"
+                    aria-checked={opt.active}
+                    onClick={() => handleSelectLocale(opt.code)}
+                    className={`control-focus flex min-h-10 w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-body transition-none cursor-pointer ${
+                      opt.active
+                        ? 'bg-wash-press text-ink'
+                        : 'text-ink-muted hover:bg-wash-strong hover:text-ink'
+                    }`}
+                  >
+                    <img
+                      src={flag}
+                      alt={flagAlt}
+                      className="h-4 w-5 shrink-0 rounded-sm object-cover ring-1 ring-line-subtle"
+                    />
+                    <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+                    {opt.active && <Check className="size-3.5 shrink-0 text-ink-muted" strokeWidth={1.8} />}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
@@ -119,7 +148,7 @@ export default function AuthLayout({
       <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-[450px] animate-fade-in">
           {/* 卡片外壳：严格遵循《UI_DESIGN_SYSTEM.md》深暗高斯毛玻璃、发丝高光边框与中性阴影 */}
-          <div className="relative rounded-2xl bg-[#131519]/85 backdrop-blur-2xl border border-white/10 shadow-elevation-4 p-6 sm:p-8 overflow-hidden">
+          <div className="relative rounded-2xl bg-surface-glass backdrop-blur-2xl border border-line shadow-elevation-4 p-6 sm:p-8 overflow-hidden">
             {/* 顶部微透环境漫反射高光 */}
             <div
               className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full pointer-events-none opacity-40 blur-2xl"
@@ -130,12 +159,12 @@ export default function AuthLayout({
             {(title || subtitle) && (
               <div className="mb-6 text-center">
                 {title && (
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white mb-1.5">
+                  <h1 className="text-card-title sm:text-page-title font-semibold tracking-tight text-ink mb-1.5">
                     {title}
                   </h1>
                 )}
                 {subtitle && (
-                  <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+                  <p className="text-body-sm text-ink-muted leading-relaxed">
                     {subtitle}
                   </p>
                 )}
@@ -149,14 +178,14 @@ export default function AuthLayout({
       </main>
 
       {/* 4. 底部法务条款与版权说明 */}
-      <footer className="relative z-20 w-full px-4 py-6 text-center text-xs text-ink-muted flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+      <footer className="relative z-20 w-full px-4 py-6 text-center text-label text-ink-muted flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
         <span>{copy.copyright}</span>
         <div className="flex items-center gap-3">
-          <Link href={routes.termsUrl} className="hover:text-white transition-colors underline-offset-4 hover:underline">
+          <Link href={routes.termsUrl} className="hover:text-ink transition-colors underline-offset-4 hover:underline">
             {copy.terms}
           </Link>
           <span className="opacity-30">·</span>
-          <Link href={routes.privacyUrl} className="hover:text-white transition-colors underline-offset-4 hover:underline">
+          <Link href={routes.privacyUrl} className="hover:text-ink transition-colors underline-offset-4 hover:underline">
             {copy.privacy}
           </Link>
         </div>

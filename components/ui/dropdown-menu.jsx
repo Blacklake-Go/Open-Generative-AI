@@ -25,8 +25,7 @@ function DropdownMenuContent({ className, sideOffset = 6, ...props }) {
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-dropdown max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-menu overflow-y-auto custom-scrollbar",
-          "rounded-xl border border-line-subtle bg-overlay-glass backdrop-blur-md p-1.5 shadow-elevation-3 animate-fade-in",
+          "popover-surface z-dropdown max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-menu overflow-y-auto p-1.5 custom-scrollbar",
           withoutRadiusUtilities(className)
         )}
         {...props}
@@ -41,8 +40,8 @@ function DropdownMenuItem({ className, variant = "default", ...props }) {
       data-slot="dropdown-menu-item"
       data-variant={variant}
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2 rounded-md px-2.5 py-1.5 text-body-sm outline-none bg-transparent",
-        "transition-[background-color,color] duration-fast data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+        "relative flex min-h-10 cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-body-sm outline-none bg-transparent",
+        "transition-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45",
         "[&_*]:bg-transparent",
         variant === "danger"
           ? "text-danger hover:bg-danger-soft focus:bg-danger-soft data-[highlighted]:bg-danger-soft"

@@ -28,10 +28,10 @@ const Input = React.forwardRef(
         disabled={disabled}
         aria-invalid={error || undefined}
         className={cn(
-          "w-full bg-well text-ink placeholder:text-ink-subtle border border-line transition-[background-color,border-color,box-shadow]",
-          "focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring",
+          "w-full bg-well text-ink placeholder:text-ink-subtle border border-line transition-[background-color,border-color,box-shadow] duration-fast ease-standard",
+          "focus-visible:outline-none focus-visible:border-brand focus-visible:ring-1 focus-visible:ring-brand-ring",
           error && "border-danger focus-visible:border-danger focus-visible:ring-danger-ring",
-          disabled && "opacity-40 cursor-not-allowed bg-base",
+          disabled && "opacity-45 cursor-not-allowed bg-base",
           sizeClasses[size] || sizeClasses.md,
           withoutRadiusUtilities(className)
         )}

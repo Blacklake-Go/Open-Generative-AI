@@ -9,6 +9,7 @@ import PhoneLoginView from './PhoneLoginView';
 import RegisterView from './RegisterView';
 import ForgotPasswordView from './ForgotPasswordView';
 import SocialLoginButtons, { SOCIAL_PROVIDER_META } from './SocialLoginButtons';
+import { fetchSocialOptions as fetchSocialOptionsRequest } from '@/lib/auth/socialOptionsClient';
 
 export default function AuthCard({
   initialMode = 'login',
@@ -75,7 +76,6 @@ export default function AuthCard({
   const [errorMsg, setErrorMsg] = useState('');
   const [infoMsg, setInfoMsg] = useState('');
   const [socialProviders, setSocialProviders] = useState([]);
-  const [socialRegion, setSocialRegion] = useState(null);
 
   // Timers cleanup
   useEffect(() => {
@@ -86,21 +86,10 @@ export default function AuthCard({
     };
   }, []);
 
-  const fetchSocialOptions = useCallback(() => {
-    return fetch('/api/auth/social-options', { cache: 'no-store', credentials: 'same-origin' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data) return;
-        if (Array.isArray(data.providers)) {
-          setSocialProviders(
-            data.providers.filter((p) => Boolean(p?.id && SOCIAL_PROVIDER_META[p.id]))
-          );
-        }
-        if (data.region) {
-          setSocialRegion(data.region);
-        }
-      })
-      .catch(() => {});
+  const fetchSocialOptions = useCallback(async () => {
+    const data = await fetchSocialOptionsRequest();
+    if (!data) return;
+    setSocialProviders(data.providers.filter((p) => Boolean(SOCIAL_PROVIDER_META[p.id])));
   }, []);
 
   // Fetch Regional Social Providers
@@ -419,7 +408,7 @@ export default function AuthCard({
 
   const containerClasses = embedded
     ? `w-full text-ink select-none ${className}`
-    : `relative w-full max-w-[450px] my-auto rounded-2xl bg-overlay backdrop-blur-2xl border border-line-strong shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden animate-scale-in ${className}`;
+    : `relative w-full max-w-[450px] my-auto rounded-modal bg-overlay backdrop-blur-2xl border border-line shadow-elevation-4 p-6 sm:p-8 text-ink select-none overflow-hidden animate-scale-in ${className}`;
 
   return (
     <div
@@ -441,7 +430,7 @@ export default function AuthCard({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 size-8 rounded-full bg-wash hover:bg-surface-raised border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center active:scale-95 active:duration-instant transition-[background-color,color,transform] duration-fast ease-standard cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring"
+          className="control-focus absolute right-4 top-4 size-control-md rounded-lg bg-wash hover:bg-wash-strong border border-line-subtle text-ink-muted hover:text-ink flex items-center justify-center active:scale-[0.98] active:duration-press transition-[background-color,border-color,color,transform] duration-fast ease-standard cursor-pointer z-10"
           aria-label="关闭"
         >
           <X className="size-3.5" />
@@ -450,14 +439,14 @@ export default function AuthCard({
 
       {/* 顶部标题区 */}
       <div className="mb-6 text-center">
-        <h2 id="auth-modal-title" className="text-xl sm:text-2xl font-bold tracking-tight text-ink mb-1.5">
+        <h2 id="auth-modal-title" className="text-page-title font-semibold tracking-tight text-ink mb-1.5">
           {mode === 'login'
             ? (routes.isChinese ? '创作者账号登录' : 'Creator Account Login')
             : mode === 'register'
               ? (routes.isChinese ? '创建创作者账号' : 'Create Creator Account')
               : (routes.isChinese ? '找回密码与账号' : 'Forgot Password & Account')}
         </h2>
-        <p className="text-xs sm:text-sm text-ink-muted leading-relaxed">
+        <p className="text-body-sm text-ink-muted leading-relaxed">
           {mode === 'login'
             ? (routes.isChinese ? '畅享 200+ 生成模型与统一创作算力' : 'Access 200+ generative AI models and unified creative compute')
             : mode === 'register'
@@ -468,14 +457,14 @@ export default function AuthCard({
 
       {/* 提示消息条 */}
       {errorMsg && (
-        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2 animate-fade-in">
+        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-danger-soft border border-danger-line text-danger text-label flex items-center gap-2 animate-fade-in">
           <AlertCircle className="size-4 shrink-0" />
           <span className="flex-1">{errorMsg}</span>
         </div>
       )}
 
       {infoMsg && (
-        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fade-in">
+        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-success-soft border border-success-line text-success text-label flex items-center gap-2 animate-fade-in">
           <CheckCircle2 className="size-4 shrink-0" />
           <span className="flex-1">{infoMsg}</span>
         </div>
@@ -491,9 +480,9 @@ export default function AuthCard({
                 setLoginTab('email');
                 setErrorMsg('');
               }}
-              className={`flex-1 h-full rounded-full text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
+              className={`control-focus flex-1 h-control-xs rounded-full text-label font-medium transition-none cursor-pointer ${
                 loginTab === 'email'
-                  ? 'bg-wash text-ink shadow-elevation-1'
+                  ? 'bg-surface-inverse text-ink-inverse font-semibold shadow-elevation-1'
                   : 'text-ink-muted hover:text-ink'
               }`}
             >
@@ -505,9 +494,9 @@ export default function AuthCard({
                 setLoginTab('phone');
                 setErrorMsg('');
               }}
-              className={`flex-1 h-full rounded-full text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer ${
+              className={`control-focus flex-1 h-control-xs rounded-full text-label font-medium transition-none cursor-pointer ${
                 loginTab === 'phone'
-                  ? 'bg-wash text-ink shadow-elevation-1'
+                  ? 'bg-surface-inverse text-ink-inverse font-semibold shadow-elevation-1'
                   : 'text-ink-muted hover:text-ink'
               }`}
             >
@@ -542,12 +531,11 @@ export default function AuthCard({
             />
           )}
 
-          {(socialProviders.length > 0 || socialRegion) && (
+          {socialProviders.length > 0 && (
             <SocialLoginButtons
               providers={socialProviders}
               dividerText={copy.login.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '登录' : ''}
-              region={socialRegion || 'mainland_china'}
             />
           )}
 
@@ -556,7 +544,7 @@ export default function AuthCard({
             <button
               type="button"
               onClick={() => switchMode('register')}
-              className="text-brand hover:text-brand-hover font-semibold hover:underline cursor-pointer"
+              className="text-brand-text hover:text-brand-text font-semibold hover:underline cursor-pointer"
             >
               {copy.login.registerLink || '免费注册'}
             </button>
@@ -587,12 +575,11 @@ export default function AuthCard({
             routes={routes}
           />
 
-          {(socialProviders.length > 0 || socialRegion) && (
+          {socialProviders.length > 0 && (
             <SocialLoginButtons
               providers={socialProviders}
               dividerText={copy.register?.socialDivider || copy.login?.socialDivider || '或使用快捷方式'}
               actionLabel={routes.isChinese ? '快捷注册' : ''}
-              region={socialRegion || 'mainland_china'}
             />
           )}
         </div>

@@ -29,23 +29,36 @@ function SelectValue({ ...props }) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
-function SelectTrigger({ className, size = "default", children, ...props }) {
+const TRIGGER_SHAPE = {
+  soft: "rounded-lg border border-transparent bg-wash-strong hover:border-line hover:bg-wash-press",
+  pill: "rounded-full border border-line-subtle bg-well hover:border-line hover:bg-wash",
+  field: "rounded-xl border border-line bg-transparent hover:border-line-strong",
+};
+
+const TRIGGER_SIZE = {
+  sm: "h-control-sm px-2.5 text-label",
+  default: "h-control-md px-3 text-body",
+  md: "h-control-md px-3 text-body",
+  lg: "h-control-lg px-4 text-body",
+};
+
+function SelectTrigger({ className, size = "default", shape = "soft", children, ...props }) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "flex w-fit items-center justify-between gap-2 rounded-lg border border-line bg-well px-3 text-ink transition-[background-color,border-color,color,box-shadow] outline-none select-none",
-        "hover:border-line-strong hover:text-ink",
-        "focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand-ring",
-        "disabled:cursor-not-allowed disabled:opacity-40",
-        size === "sm" ? "h-control-sm text-label" : "h-control-md text-body",
+        "group/select flex w-fit items-center justify-between gap-2 text-ink control-focus select-none",
+        "transition-[background-color,border-color,color] duration-fast ease-standard",
+        "disabled:cursor-not-allowed disabled:opacity-45",
+        TRIGGER_SHAPE[shape] || TRIGGER_SHAPE.soft,
+        TRIGGER_SIZE[size] || TRIGGER_SIZE.default,
         withoutRadiusUtilities(className)
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50 text-gray-400" />
+        <ChevronDownIcon className="size-3.5 shrink-0 text-ink-subtle transition-transform duration-product-state ease-standard group-data-[state=open]/select:rotate-180" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -57,7 +70,7 @@ function SelectContent({ className, children, position = "popper", align = "star
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "relative z-dropdown max-h-[var(--radix-select-content-available-height)] min-w-popover overflow-hidden rounded-xl border border-line-strong bg-overlay-glass text-ink shadow-elevation-3 animate-fade-in custom-scrollbar",
+          "popover-surface relative z-dropdown max-h-[var(--radix-select-content-available-height)] min-w-popover overflow-hidden text-ink custom-scrollbar",
           position === "popper" && "translate-y-1",
           withoutRadiusUtilities(className)
         )}
@@ -88,17 +101,18 @@ function SelectItem({ className, children, ...props }) {
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-pointer items-center rounded-md py-1.5 pr-8 pl-2.5 text-body-sm outline-none select-none text-ink-muted transition-[background-color,color] duration-fast",
+        "relative flex min-h-10 w-full cursor-pointer items-center rounded-md py-2 pr-8 pl-3 text-body-sm outline-none select-none text-ink-muted",
+        "transition-none",
         "hover:bg-wash-strong hover:text-ink",
-        "focus:bg-wash-strong focus:text-ink data-[state=checked]:text-brand font-medium",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+        "focus:bg-wash-strong focus:text-ink data-[state=checked]:bg-wash-press data-[state=checked]:text-ink data-[state=checked]:font-medium",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-45",
         withoutRadiusUtilities(className)
       )}
       {...props}
     >
       <span className="absolute right-2 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-3.5 text-brand" />
+          <CheckIcon className="size-3.5 text-ink-muted" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

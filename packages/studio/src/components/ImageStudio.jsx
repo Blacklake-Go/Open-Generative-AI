@@ -2751,7 +2751,8 @@ export default function ImageStudio({
                 {dropdownOpen === "model" && (
                   <PromptPopover
                     onClick={(e) => e.stopPropagation()}
-                    className="w-[calc(100vw-2rem)] sm:w-[410px] max-h-[78vh] flex flex-col overflow-hidden p-0 border border-line-strong shadow-elevation-3 rounded-xl bg-overlay-glass"
+                    className="w-[calc(100vw-2rem)] sm:w-[410px] max-h-[78vh] flex flex-col overflow-hidden p-0"
+                    glass
                   >
                     <FrontendModelPicker
                       studioType="image"

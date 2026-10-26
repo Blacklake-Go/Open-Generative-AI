@@ -12,17 +12,17 @@ export default function NavBadge({ badge, className = '' }) {
   let colorStyle = 'bg-wash-strong text-ink-muted border-line';
 
   if (b === 'TOP') {
-    colorStyle = 'bg-danger text-ink-inverse font-bold shadow-elevation-1';
+    colorStyle = 'bg-brand text-ink-on-accent font-bold';
   } else if (b === 'NEW') {
-    colorStyle = 'bg-success text-ink-inverse font-bold shadow-elevation-1';
+    colorStyle = 'bg-brand-soft text-brand-text border border-brand-line font-bold';
   } else if (b === 'HOT') {
-    colorStyle = 'bg-warning text-ink-inverse font-bold shadow-elevation-1';
+    colorStyle = 'bg-brand text-ink-on-accent font-bold';
   } else if (b === 'FREE') {
-    colorStyle = 'bg-info text-ink-inverse font-bold shadow-elevation-1';
+    colorStyle = 'bg-brand-soft text-brand-text border border-brand-line font-bold';
   } else if (b === 'SOON') {
     colorStyle = 'bg-wash-strong text-ink-subtle border border-line-subtle font-medium';
   } else if (b === 'BETA') {
-    colorStyle = 'bg-brand-soft text-brand border border-brand-line font-bold';
+    colorStyle = 'bg-brand-soft text-brand-text border border-brand-line font-bold';
   }
 
   return (

@@ -10,18 +10,17 @@ import { cn } from "cn";
  */
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center font-medium whitespace-nowrap select-none",
-    "transition-[background-color,border-color,color,box-shadow,transform] duration-fast ease-standard",
-    "outline-none focus-visible:ring-1 focus-visible:ring-brand-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
-    "disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed",
-    "aria-disabled:pointer-events-none aria-disabled:opacity-40 aria-disabled:cursor-not-allowed",
+    "inline-flex items-center justify-center font-medium whitespace-nowrap select-none control-focus",
+    "transition-[background-color,border-color,color,transform] duration-fast ease-standard",
+    "disabled:pointer-events-none disabled:opacity-45 disabled:cursor-not-allowed",
+    "aria-disabled:pointer-events-none aria-disabled:opacity-45 aria-disabled:cursor-not-allowed",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
   ].join(" "),
   {
     variants: {
       variant: {
         primary:
-          "bg-brand text-ink-on-accent font-semibold border border-brand-line hover:bg-brand-hover hover:border-brand-hover active:bg-brand-active active:border-brand-active btn-spatial-glow",
+          "bg-brand text-ink-on-accent font-semibold border border-transparent hover:bg-brand-hover-solid active:bg-brand-active-solid",
         secondary:
           "bg-raised text-ink border border-line hover:bg-overlay hover:border-line-strong active:bg-wash-press active:border-line-strong",
         ghost:
@@ -31,24 +30,24 @@ const buttonVariants = cva(
         outline:
           "bg-transparent text-ink border border-line hover:bg-wash hover:border-line-strong active:bg-wash-press",
         danger:
-          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed focus-visible:ring-danger-ring",
+          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed",
         default:
           "bg-raised text-ink border border-line hover:bg-overlay hover:border-line-strong active:bg-wash-press active:border-line-strong",
         destructive:
-          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed focus-visible:ring-danger-ring",
-        link: "text-brand underline-offset-4 hover:underline border border-transparent active:scale-100",
+          "bg-danger-soft text-danger border border-danger-line hover:bg-danger-hover hover:border-danger active:bg-danger-pressed",
+        link: "text-brand-text underline-offset-4 hover:underline border border-transparent active:scale-100",
       },
       size: {
-        xs: "h-control-xs px-2 text-caption gap-1.5 active:scale-[0.98] active:duration-instant",
-        sm: "h-control-sm px-3 text-label gap-1.5 active:scale-[0.98] active:duration-instant",
-        md: "h-control-md px-4 text-body gap-2 active:scale-[0.98] active:duration-instant",
-        lg: "h-control-lg px-6 text-body gap-2.5 active:scale-[0.98] active:duration-instant",
-        default: "h-control-md px-4 text-body gap-2 active:scale-[0.98] active:duration-instant",
-        icon: "size-control-md p-0 active:scale-95 active:duration-instant",
-        "icon-xs": "size-control-xs p-0 active:scale-95 active:duration-instant",
-        "icon-sm": "size-control-sm p-0 active:scale-95 active:duration-instant",
-        "icon-md": "size-control-md p-0 active:scale-95 active:duration-instant",
-        "icon-lg": "size-control-lg p-0 active:scale-95 active:duration-instant",
+        xs: "h-control-xs px-2.5 text-caption gap-1.5 [&_svg]:size-3.5 active:scale-[0.98] active:duration-press",
+        sm: "h-control-sm px-3 text-label gap-1.5 [&_svg]:size-3.5 active:scale-[0.98] active:duration-press",
+        md: "h-control-md px-3.5 text-body gap-2 [&_svg]:size-4 active:scale-[0.98] active:duration-press",
+        lg: "h-control-lg px-4 text-body gap-2 [&_svg]:size-4 active:scale-[0.98] active:duration-press",
+        default: "h-control-md px-3.5 text-body gap-2 [&_svg]:size-4 active:scale-[0.98] active:duration-press",
+        icon: "size-control-md p-0 active:scale-[0.96] active:duration-press",
+        "icon-xs": "size-control-xs p-0 active:scale-[0.96] active:duration-press",
+        "icon-sm": "size-control-sm p-0 active:scale-[0.96] active:duration-press",
+        "icon-md": "size-control-md p-0 active:scale-[0.96] active:duration-press",
+        "icon-lg": "size-control-lg p-0 active:scale-[0.96] active:duration-press",
       },
     },
     defaultVariants: {
@@ -123,7 +122,7 @@ const Button = React.forwardRef(
           shape === "pill" ? "rounded-full" : SIZE_RADIUS[resolvedSize] || SIZE_RADIUS.md,
           fullWidth && "w-full",
           loading && "cursor-progress",
-          isDisabled && Component === Slot.Root && "pointer-events-none cursor-not-allowed opacity-40",
+          isDisabled && Component === Slot.Root && "pointer-events-none cursor-not-allowed opacity-45",
         )}
         {...props}
       >
@@ -211,10 +210,22 @@ const IconButton = React.forwardRef(
         disabled={disabled}
         loading={loading}
         aria-label={accessibleLabel}
-        className={cn("[&_svg]:size-4 [&_svg]:stroke-[1.8]", className)}
+        className={cn(
+          "pointer-events-auto",
+          resolvedSize === "icon-xs" || resolvedSize === "icon-sm"
+            ? "[&_svg]:size-3.5"
+            : "[&_svg]:size-4",
+          className
+        )}
         {...props}
       >
-        {Icon ? <Icon className="size-4" strokeWidth={1.8} aria-hidden="true" /> : children}
+        {Icon ? (
+          <Icon
+            className={resolvedSize === "icon-xs" || resolvedSize === "icon-sm" ? "size-3.5" : "size-4"}
+            strokeWidth={1.8}
+            aria-hidden="true"
+          />
+        ) : children}
       </Button>
     );
   }

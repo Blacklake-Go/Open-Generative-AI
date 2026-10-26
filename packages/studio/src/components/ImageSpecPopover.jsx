@@ -162,9 +162,9 @@ export function ImageSpecPopover({
     <div className="flex flex-col gap-4 select-none w-full">
       {/* ── 1. Aspect Ratio Section ── */}
       <div>
-        <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-2 flex items-center justify-between">
+        <div className="text-caption font-semibold text-ink-muted uppercase tracking-wider mb-2 flex items-center justify-between">
           <span>{t.titleRatio || "长宽比例"}</span>
-          <span className="text-[10px] text-ink-subtle font-normal">
+          <span className="text-micro text-ink-subtle font-normal">
             {selectedAr}
           </span>
         </div>
@@ -176,16 +176,16 @@ export function ImageSpecPopover({
                 key={ratio}
                 type="button"
                 onClick={() => handleRatioClick(ratio)}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer group ${
+                className={`control-focus group flex flex-col items-center justify-center rounded-lg border p-2 transition-[background-color,border-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-press cursor-pointer ${
                   isSelected
-                    ? "bg-brand-soft border-brand-line text-brand shadow-elevation-1"
-                    : "bg-wash/40 border-line text-ink-muted hover:border-line-strong hover:text-ink hover:bg-wash"
+                    ? "border-line bg-wash-press text-ink"
+                    : "border-line-subtle bg-wash text-ink-muted hover:border-line-strong hover:bg-wash-strong hover:text-ink"
                 }`}
               >
                 <AspectWireframeIcon ratio={ratio} active={isSelected} />
                 <span
-                  className={`text-[11px] mt-1.5 font-medium leading-none ${
-                    isSelected ? "text-brand font-semibold" : "text-white/70"
+                  className={`mt-1.5 text-caption leading-none ${
+                    isSelected ? "font-semibold text-ink" : "text-ink-muted"
                   }`}
                 >
                   {ratio}
@@ -199,9 +199,9 @@ export function ImageSpecPopover({
       {/* ── 2. Resolution / Quality Section ── */}
       {showQuality && resolutions.length > 0 && (
         <div>
-          <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <div className="text-caption font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
             <span>{qualityLabel || t.titleResolution || "分辨率"}</span>
-            <span className="text-[10px] text-ink-subtle font-normal">
+            <span className="text-micro text-ink-subtle font-normal">
               {formatQuality(selectedQuality || resolutions[0])}
             </span>
           </div>
@@ -219,9 +219,9 @@ export function ImageSpecPopover({
                   type="button"
                   data-pill-segment-item
                   onClick={() => onSelectQuality?.(res)}
-                  className={`py-1.5 px-2 rounded-full text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer text-center ${
+                  className={`control-focus h-control-xs rounded-full px-2 text-center text-label font-medium transition-none active:scale-[0.98] active:duration-press cursor-pointer ${
                     isSelected
-                      ? "bg-surface-raised text-ink font-semibold shadow-elevation-1"
+                      ? "bg-surface-inverse text-ink-inverse font-semibold shadow-elevation-1"
                       : "text-ink-muted hover:text-ink hover:bg-wash-strong"
                   }`}
                 >
@@ -235,9 +235,9 @@ export function ImageSpecPopover({
 
       {/* ── 3. Batch Size / Generation Quantity Section ── */}
       <div>
-        <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+        <div className="text-caption font-semibold text-ink-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
           <span>{t.titleQuantity || "生成数量"}</span>
-          <span className="text-[10px] text-ink-subtle font-normal">
+          <span className="text-micro text-ink-subtle font-normal">
             {t.batchCountUnit
               ? t.batchCountUnit.replace("{count}", batchSize)
               : `${batchSize} 张`}
@@ -255,9 +255,9 @@ export function ImageSpecPopover({
                 type="button"
                 data-pill-segment-item
                 onClick={() => onChangeBatchSize?.(num)}
-                className={`py-1.5 rounded-full text-xs font-medium transition-[background-color,color,box-shadow,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer text-center ${
+                className={`control-focus h-control-xs rounded-full text-center text-label font-medium transition-none active:scale-[0.98] active:duration-press cursor-pointer ${
                   isSelected
-                    ? "bg-surface-raised text-ink font-semibold shadow-elevation-1"
+                    ? "bg-surface-inverse text-ink-inverse font-semibold shadow-elevation-1"
                     : "text-ink-muted hover:text-ink hover:bg-wash-strong"
                 }`}
               >
@@ -271,16 +271,16 @@ export function ImageSpecPopover({
       {/* ── 4. Dimensions & Custom Resolution Section ── */}
       <div className="pt-2.5 border-t border-line-subtle flex flex-col gap-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
+          <span className="text-caption font-semibold text-ink-muted uppercase tracking-wider">
             {t.titleDimensions || "尺寸规格 (自定义)"}
           </span>
           <button
             type="button"
             onClick={() => setIsLocked((v) => !v)}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] transition-colors cursor-pointer ${
+            className={`control-focus flex h-control-xs items-center gap-1 rounded-md border px-2 text-caption transition-colors duration-fast cursor-pointer ${
               isLocked
-                ? "bg-brand-soft border-brand-line text-brand font-medium"
-                : "bg-wash border-line text-ink-muted hover:text-ink"
+                ? "border-brand-line bg-brand-soft font-medium text-ink"
+                : "border-line-subtle bg-wash text-ink-muted hover:text-ink"
             }`}
             title={isLocked ? "比例已锁定 (Lock Aspect Ratio)" : "自由比例 (Free Aspect Ratio)"}
           >
@@ -290,8 +290,8 @@ export function ImageSpecPopover({
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono">
-          <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-well border border-line focus-within:border-brand-line">
-            <span className="text-[10px] font-semibold text-ink-subtle">W</span>
+          <div className="flex h-control-sm flex-1 items-center gap-1.5 rounded-xl border border-line bg-well px-2.5 transition-colors duration-fast focus-within:border-brand-line">
+            <span className="text-micro font-semibold text-ink-subtle">W</span>
             <input
               type="number"
               min="256"
@@ -305,8 +305,8 @@ export function ImageSpecPopover({
 
           <span className="text-ink-subtle shrink-0">×</span>
 
-          <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-well border border-line focus-within:border-brand-line">
-            <span className="text-[10px] font-semibold text-ink-subtle">H</span>
+          <div className="flex h-control-sm flex-1 items-center gap-1.5 rounded-xl border border-line bg-well px-2.5 transition-colors duration-fast focus-within:border-brand-line">
+            <span className="text-micro font-semibold text-ink-subtle">H</span>
             <input
               type="number"
               min="256"
@@ -318,10 +318,10 @@ export function ImageSpecPopover({
             />
           </div>
 
-          <span className="text-[10px] text-ink-subtle shrink-0 font-semibold">PX</span>
+          <span className="text-micro text-ink-subtle shrink-0 font-semibold">PX</span>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] text-ink-subtle">
+        <div className="flex items-center justify-between text-micro text-ink-subtle">
           <span>最小 256px · 最大 4096px</span>
           <span>{currentW} × {currentH}</span>
         </div>

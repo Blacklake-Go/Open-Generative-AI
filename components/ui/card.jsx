@@ -13,9 +13,9 @@ const Card = React.forwardRef(({ className, interactive = false, elevated = fals
   <div
     ref={ref}
     className={cn(
-      "rounded-card border border-line-subtle bg-surface text-ink transition-[background-color,border-color,box-shadow]",
+      "rounded-card border border-line-subtle bg-surface text-ink transition-[background-color,border-color,box-shadow] duration-fast ease-standard",
       elevated && "shadow-elevation-2",
-      interactive && "cursor-pointer hover:border-line-strong hover:bg-raised hover:shadow-elevation-3",
+      interactive && "cursor-pointer hover:border-line-strong hover:bg-raised hover:shadow-elevation-2",
       withoutRadiusUtilities(className)
     )}
     {...props}
@@ -31,14 +31,14 @@ CardHeader.displayName = "CardHeader";
 const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn("text-base font-semibold leading-none tracking-tight text-white", className)}
+    className={cn("text-card-title leading-tight tracking-tight text-ink", className)}
     {...props}
   />
 ));
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-xs text-gray-400 leading-relaxed", className)} {...props} />
+  <p ref={ref} className={cn("text-body-sm text-ink-muted leading-relaxed", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 

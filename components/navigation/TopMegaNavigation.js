@@ -165,7 +165,7 @@ export default function TopMegaNavigation({
               <Link
                 href="/"
                 prefetch={false}
-                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
                   pathname === '/' || pathname === '/zh' || pathname === '/zh/' || (rootPath && pathname === rootPath) ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
                 }`}
               >
@@ -180,7 +180,7 @@ export default function TopMegaNavigation({
               <Link
                 href={rootPath ? `${rootPath}/assets` : '/assets'}
                 prefetch={false}
-                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING} ${
                   pathname?.includes('/assets') ? 'bg-wash-strong text-ink font-semibold border-line-subtle' : 'text-ink-muted'
                 }`}
               >
@@ -196,7 +196,7 @@ export default function TopMegaNavigation({
                 <Link
                   href={rootPath ? `${rootPath}/studio/image` : '/studio/image'}
                   prefetch={false}
-                  className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 h-control-sm text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
                 >
                   {categories.find((category) => category.id === 'images')?.label || getNavLabel('images', 'Image')}
                 </Link>
@@ -215,7 +215,7 @@ export default function TopMegaNavigation({
                     <Link
                       href={cat.href}
                       prefetch={false}
-                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
                         isDirectActive
                           ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
                           : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink'
@@ -241,7 +241,7 @@ export default function TopMegaNavigation({
                       delete triggerRefs.current[cat.id];
                     }
                   }}
-                  className={`group inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast select-none ${FOCUS_RING} ${
+                  className={`group inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast select-none ${FOCUS_RING} ${
                     isCategoryActive
                       ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
                       : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink data-[state=open]:bg-wash-strong data-[state=open]:text-ink data-[state=open]:border-line-subtle'
@@ -255,7 +255,7 @@ export default function TopMegaNavigation({
                   />
                 </NavigationMenu.Trigger>
 
-                <NavigationMenu.Content className="animate-fade-in duration-fast">
+                <NavigationMenu.Content className="animate-popover-in">
                   <MegaMenuPanel
                     category={cat}
                     locale={locale}
@@ -273,7 +273,7 @@ export default function TopMegaNavigation({
                 href="/canvas"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 h-control-sm text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}
               >
                 <span>{getNavLabel('infiniteCanvas', 'Infinite Canvas')}</span>
                 <ExternalLink className="size-3.5" aria-hidden="true" />
@@ -287,7 +287,7 @@ export default function TopMegaNavigation({
               <Link
                 href="/feedback"
                 prefetch={false}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
                   pathname === '/feedback'
                     ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
                     : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink'
@@ -304,7 +304,7 @@ export default function TopMegaNavigation({
               <Link
                 href={rootPath ? `${rootPath}/about` : '/about'}
                 prefetch={false}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 h-control-sm text-body-sm font-medium font-jost transition-[background-color,color,border-color] duration-fast shrink-0 select-none ${FOCUS_RING} ${
                   pathname === '/about' || (rootPath && pathname === `${rootPath}/about`)
                     ? 'bg-wash-strong text-ink font-semibold border-line-subtle'
                     : 'border-transparent text-ink-muted hover:bg-wash hover:text-ink'
@@ -324,7 +324,7 @@ export default function TopMegaNavigation({
         >
           <NavigationMenu.Viewport
             ref={viewportRef}
-            className="relative overflow-hidden rounded-2xl shadow-elevation-3 transition-[width,height] duration-fast ease-standard"
+            className="relative overflow-hidden rounded-xl shadow-elevation-3 transition-[width,height] duration-fast ease-standard"
           />
         </div>
       </NavigationMenu.Root>
