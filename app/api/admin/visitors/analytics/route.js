@@ -29,11 +29,7 @@ async function handleGET(request) {
 }
 
 async function handlePOST(request) {
-  // Check usersUpdate (preferred for visitor analytics under users-access) or settingsWrite
-  let guard = await requirePermission(request, PERMISSIONS.usersUpdate);
-  if (!guard.ok) {
-    guard = await requirePermission(request, PERMISSIONS.settingsWrite);
-  }
+  const guard = await requirePermission(request, PERMISSIONS.settingsWrite);
   if (!guard.ok) return guard.response;
 
   const idempotencyKey = getRequiredIdempotencyKey(request);

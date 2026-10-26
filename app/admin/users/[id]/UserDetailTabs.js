@@ -53,7 +53,7 @@ function getProviderBadge(provider) {
   );
 }
 
-export default function UserDetailTabs({ detail }) {
+export default function UserDetailTabs({ detail, canManageAdmins = false }) {
   const router = useRouter();
   const [tab, setTab] = useState('overview');
   const [selectedTag, setSelectedTag] = useState('');
@@ -290,32 +290,41 @@ export default function UserDetailTabs({ detail }) {
                   />
                 </div>
 
-                <div className="rounded-xl border border-white/[0.08] bg-black/20 p-4">
-                  <p className="text-xs font-semibold text-white mb-2">变更管理角色</p>
-                  <AdminActionForm
-                    action={`/api/admin/users/${user.id}/role`}
-                    method="PATCH"
-                    fields={[
-                      {
-                        name: 'role',
-                        label: '分配角色',
-                        type: 'select',
-                        defaultValue: user.role,
-                        options: [
-                          { label: '普通用户 (user)', value: 'user' },
-                          { label: '超级管理员 (super_admin)', value: 'super_admin' },
-                          { label: '运营管理员 (operations_admin)', value: 'operations_admin' },
-                          { label: '财务管理员 (finance_admin)', value: 'finance_admin' },
-                          { label: '支持管理员 (support_admin)', value: 'support_admin' },
-                          { label: '审计员 (auditor)', value: 'auditor' },
-                        ],
-                      },
-                    ]}
-                    submitLabel="保存角色分配"
-                    confirmText="修改角色后将强制撤销会话，确定修改？"
-                    tone="attention"
-                  />
-                </div>
+                {canManageAdmins && (
+                  <div className="rounded-xl border border-white/[0.08] bg-black/20 p-4">
+                    <p className="text-xs font-semibold text-white mb-2">变更管理角色</p>
+                    <AdminActionForm
+                      action={`/api/admin/admins/${user.id}/role`}
+                      method="PUT"
+                      fields={[
+                        {
+                          name: 'role',
+                          label: '分配角色',
+                          type: 'select',
+                          defaultValue: user.role,
+                          options: [
+                            { label: '普通用户 (user)', value: 'user' },
+                            { label: '超级管理员 (super_admin)', value: 'super_admin' },
+                            { label: '运营管理员 (operations_admin)', value: 'operations_admin' },
+                            { label: '财务管理员 (finance_admin)', value: 'finance_admin' },
+                            { label: '支持管理员 (support_admin)', value: 'support_admin' },
+                            { label: '审计员 (auditor)', value: 'auditor' },
+                          ],
+                        },
+                        {
+                          name: 'adminPassword',
+                          label: '您的超级管理员密码（二次校验）',
+                          type: 'password',
+                          required: true,
+                          placeholder: '用于高风险权限变更的二次验证',
+                        },
+                      ]}
+                      submitLabel="保存角色分配"
+                      confirmText="修改角色后将强制撤销会话，确定修改？"
+                      tone="attention"
+                    />
+                  </div>
+                )}
               </div>
             </Card>
           </div>

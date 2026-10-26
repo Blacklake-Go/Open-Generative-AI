@@ -37,7 +37,6 @@ test('用户与权限全套 API 路由文件与导出方法完备', async () => 
     { file: 'app/api/admin/users/[id]/credits/route.js', methods: ['POST'] },
     { file: 'app/api/admin/users/[id]/notes/route.js', methods: ['POST'] },
     { file: 'app/api/admin/users/[id]/sessions/route.js', methods: ['DELETE', 'POST'] },
-    { file: 'app/api/admin/users/[id]/role/route.js', methods: ['PATCH', 'PUT', 'POST'] },
     { file: 'app/api/admin/security/sessions/[hash]/route.js', methods: ['DELETE', 'POST'] },
     { file: 'app/api/admin/invites/route.js', methods: ['GET', 'POST'] },
     { file: 'app/api/admin/invites/switch/route.js', methods: ['GET', 'POST'] },
@@ -53,6 +52,18 @@ test('用户与权限全套 API 路由文件与导出方法完备', async () => 
       );
     }
   }
+});
+
+test('角色变更仅保留带密码二次校验的管理员端点', async () => {
+  const legacyPath = path.join(repoRoot, 'app/api/admin/users/[id]/role/route.js');
+  await assert.rejects(fs.access(legacyPath), '无二次校验的旧角色变更端点必须已删除');
+
+  const tabs = await fs.readFile(path.join(repoRoot, 'app/admin/users/[id]/UserDetailTabs.js'), 'utf8');
+  assert.ok(tabs.includes('/api/admin/admins/${user.id}/role'), '用户详情必须复用带二次校验的管理员角色端点');
+  assert.ok(tabs.includes('adminPassword'), '角色变更表单必须收集操作者密码做二次校验');
+
+  const adminsRole = await fs.readFile(path.join(repoRoot, 'app/api/admin/admins/[id]/role/route.js'), 'utf8');
+  assert.ok(adminsRole.includes('verifyAdminPassword'), '管理员角色端点必须保留密码二次校验');
 });
 
 test('AdminActionForm 支持多字段类型与别名兼容', async () => {

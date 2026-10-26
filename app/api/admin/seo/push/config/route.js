@@ -14,7 +14,7 @@ async function handleGET(request) {
 }
 
 async function handlePOST(request) {
-  const guard = await requirePermission(request, PERMISSIONS.usersRead);
+  const guard = await requirePermission(request, PERMISSIONS.settingsWrite);
   if (!guard.ok) return guard.response;
 
   let body = {};

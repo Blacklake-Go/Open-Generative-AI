@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getUserDetailFull } from '@/lib/services/users';
-import { roleLabel } from '@/lib/admin/permissions';
+import { roleLabel, hasPermission } from '@/lib/admin/permissions';
 import { Card, DataTable, PageHeader, StatusBadge, CopyableId } from '@/components/admin/AdminUi';
 import UserDetailTabs from './UserDetailTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
@@ -14,7 +14,7 @@ function formatDate(value) {
 }
 
 export default async function UserDetailPage({ params }) {
-  await requireAdminPagePermission(PERMISSIONS.usersRead);
+  const actor = await requireAdminPagePermission(PERMISSIONS.usersRead);
   const { id } = await params;
   const detail = await getUserDetailFull(id);
 
@@ -74,7 +74,7 @@ export default async function UserDetailPage({ params }) {
       </div>
 
       {/* 标签页主体 */}
-      <UserDetailTabs detail={detail} />
+      <UserDetailTabs detail={detail} canManageAdmins={hasPermission(actor.role, PERMISSIONS.adminsWrite)} />
     </>
   );
 }
