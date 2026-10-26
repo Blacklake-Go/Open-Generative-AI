@@ -118,7 +118,8 @@ function validateEvidence(name, evidence, component, manifest, nowMs) {
 export async function computeSourceTreeSha256(rootDir) {
   const paths = [];
   const ignoredDirectories = new Set(['.git', '.next', 'node_modules', 'data', 'logs', '.cache', 'coverage', 'dist']);
-  const shouldIgnore = (relative, name) => ignoredDirectories.has(name)
+  const shouldIgnore = (relative, name, isDirectory) => ignoredDirectories.has(name)
+    || (isDirectory && name.startsWith('.next-'))
     || relative === '.supdance-production-snapshot.json'
     || relative === '.env'
     || relative.startsWith('.env.')
@@ -129,7 +130,7 @@ export async function computeSourceTreeSha256(rootDir) {
     entries.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
     for (const entry of entries) {
       const relative = relativeDir ? `${relativeDir}/${entry.name}` : entry.name;
-      if (shouldIgnore(relative, entry.name)) continue;
+      if (shouldIgnore(relative, entry.name, entry.isDirectory())) continue;
       const absolute = path.join(absoluteDir, entry.name);
       const stat = await fsp.lstat(absolute);
       if (stat.isDirectory()) await walk(absolute, relative);
