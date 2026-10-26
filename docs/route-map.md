@@ -65,6 +65,7 @@
 | `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=branding` |
 | `/admin/content/effects` | `app/admin/content/effects/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=motion` |
 | `/admin/content/icon` | `app/admin/content/icon/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/content/visitors` | `app/admin/content/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/content/x-prompts` | `app/admin/content/x-prompts/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/cost-center` | `app/admin/cost-center/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/coupons` | `app/admin/coupons/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -115,7 +116,7 @@
 | `/admin/users` | `app/admin/users/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/{*}` | `app/admin/users/[id]/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/dashboard` | `app/admin/users/dashboard/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/visitors` | `app/admin/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/visitors` | `app/admin/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/content/visitors` |
 | `/admin/webhooks` | `app/admin/webhooks/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/agents` | `app/agents/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents` |
 | `/agents/{*}` | `app/agents/[agent_id]/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents/${encodeURIComponent(agent_id)}` |
@@ -236,7 +237,7 @@
 
 ## API 路由
 
-- 处理器总数：231（其中 `/api/**` 227，`/api/admin/**` 103 个全部经 `requirePermission`）
+- 处理器总数：228（其中 `/api/**` 224，`/api/admin/**` 100 个全部经 `requirePermission`）
 - 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
