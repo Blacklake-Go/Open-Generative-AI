@@ -125,6 +125,14 @@
     "minimax-music-3.0": {
       "name": "MiniMax 音楽 3.0",
       "description": "プロンプトと構造化された歌詞から、ボーカル入り楽曲または伴奏曲を生成します。"
+    },
+    "suno-v4": {
+      "name": "Suno v4",
+      "description": "Suno v4 はテキストプロンプトからボーカル・歌詞・伴奏を含むスタジオ品質の楽曲を制作します。"
+    },
+    "suno-v3.5": {
+      "name": "Suno v3.5",
+      "description": "Suno v3.5 はテキストプロンプトからポップス向けの楽曲をボーカル・歌詞・伴奏付きで素早く合成します。"
     }
   },
   "fields": {

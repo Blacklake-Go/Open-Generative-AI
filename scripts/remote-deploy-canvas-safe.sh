@@ -35,6 +35,7 @@ else
   mv "$STAGE/next"/. "$STAGE/source/.next/"
 fi
 node "$VERIFY_SNAPSHOT" "$STAGE/source" "$BACKUP_PREFLIGHT"
+node "$STAGE/source/scripts/verify-build-assets.mjs" "$STAGE/source/.next"
 
 for file in package.json package-lock.json pnpm-lock.yaml pnpm-workspace.yaml; do
   if [ -e "$STAGE/source/$file" ] && [ -e "$WEB_DIR/$file" ]; then
@@ -178,7 +179,14 @@ const publicPreflight = await fetch('https://www.supdance.com/api/canvas/session
 if (publicPreflight.status !== 204 || publicPreflight.headers.get('access-control-allow-origin') !== 'https://canvas.supdance.com') {
   throw new Error(`public /api/canvas/session OPTIONS failed: HTTP ${publicPreflight.status}`);
 }
-console.log('POST_DEPLOY_PREFLIGHT_OK internal+public routes=11 session=401 cors=verified ready=200');
+for (const region of ['mainland_china', 'international']) {
+  const res = await fetch(`https://www.supdance.com/api/auth/social-options?region=${region}`, { cache: 'no-store' });
+  if (res.status !== 200) throw new Error(`social-options ${region} returned HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.region !== region) throw new Error(`social-options ${region} resolved ${data.region}`);
+  if (!(data.diagnostics?.ipRangeCount > 0)) throw new Error(`social-options ${region} loaded 0 IP ranges`);
+}
+console.log('POST_DEPLOY_PREFLIGHT_OK internal+public routes=11 session=401 cors=verified ready=200 social-regions=2');
 NODE
 
 MUTATION_STARTED=0

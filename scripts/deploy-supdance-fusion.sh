@@ -57,7 +57,7 @@ set -Eeuo pipefail
 WEB_DIR=\"$REMOTE_WEB_DIR\"
 RELEASE_ID=\"\$(date -u +%Y%m%dT%H%M%SZ)-\$\$\"
 BACKUP_DIR=\"/home/ubuntu/backups/fusion-release-\${RELEASE_ID}\"
-STAGE=\"/dev/shm/fusion-stage-\${RELEASE_ID}\"
+STAGE=\"/home/ubuntu/fusion-stage-\${RELEASE_ID}\"
 
 echo \"创建发布备份目录: \$BACKUP_DIR\"
 mkdir -p \"\$BACKUP_DIR\" \"\$STAGE\"
@@ -83,6 +83,8 @@ tar -xzf /tmp/source_supdance_fusion.tar.gz -C \"\$STAGE\"
 tar -xzf /tmp/next_supdance_fusion.tar.gz -C \"\$STAGE\"
 
 echo \"验证构建 BUILD_ID: \$(cat \"\$STAGE/.next/BUILD_ID\")\"
+echo \"验证构建静态资源完整性（防止 ChunkLoadError / 登录弹窗空白）...\"
+node \"\$STAGE/scripts/verify-build-assets.mjs\" \"\$STAGE/.next\"
 
 # 停止业务服务
 echo \"暂停应用服务进入原子切换窗口...\"
@@ -100,7 +102,9 @@ mkdir -p \"\$WEB_DIR/node_modules/studio/src\" \"\$WEB_DIR/node_modules/studio/d
 rsync -a \"\$STAGE/packages/studio/src/\" \"\$WEB_DIR/node_modules/studio/src/\"
 rsync -a \"\$STAGE/packages/studio/dist/\" \"\$WEB_DIR/node_modules/studio/dist/\"
 rsync -a --delete \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
-rsync -a --delete \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
+rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
+# 资产同步已下线：清掉仅存在于旧发布中的同步路由（app/ 保留生产独有页面，故不整体 --delete）
+rm -rf \"\$WEB_DIR/app/api/canvas/assets/sync\" \"\$WEB_DIR/app/api/account/asset-sync-tokens\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
 if [ -d \"\$STAGE/plugins\" ]; then
   rsync -a \"\$STAGE/plugins/\" \"\$WEB_DIR/plugins/\"
@@ -142,12 +146,25 @@ chown www:www \"\$WEB_DIR/middleware.js\" \"\$WEB_DIR/tailwind.config.js\" \"\$W
 echo \"执行数据库版本迁移 (058 等)...\"
 (cd \"\$WEB_DIR\" && node --env-file=/etc/supdance.env scripts/migrate.mjs)
 
+# 安装/更新资产回收站保留期清理定时器（每日 04:20，persistent 补跑）
+echo \"安装资产回收站保留期定时器...\"
+install -m 0644 \"\$WEB_DIR/scripts/supdance-asset-retention.service\" /etc/systemd/system/supdance-asset-retention.service
+install -m 0644 \"\$WEB_DIR/scripts/supdance-asset-retention.timer\" /etc/systemd/system/supdance-asset-retention.timer
+systemctl daemon-reload
+systemctl enable --now supdance-asset-retention.timer
+
 # 清理暂存文件
 rm -rf \"\$STAGE\" /tmp/source_supdance_fusion.tar.gz /tmp/next_supdance_fusion.tar.gz
 
 # 启动服务
 echo \"重启应用与 Worker 服务...\"
 systemctl start supdance.service canvas-supdance.service supdance-worker.service
+
+# 轮转历史发布备份：仅保留最近 3 份，防止根盘被备份占满
+echo \"轮转历史发布备份（保留最近 3 份）...\"
+ls -1dt /home/ubuntu/backups/fusion-release-* 2>/dev/null | tail -n +4 | xargs -r rm -rf
+ls -1dt \"\$WEB_DIR\"/.next-prev-* 2>/dev/null | tail -n +4 | xargs -r rm -rf
+
 echo \"SWITCH_COMPLETED RELEASE_ID=\$RELEASE_ID\"
 '"
 
@@ -161,6 +178,8 @@ echo '=== 服务状态 ==='
 sudo systemctl is-active supdance.service
 sudo systemctl is-active canvas-supdance.service
 sudo systemctl is-active supdance-worker.service
+sudo systemctl is-active supdance-asset-retention.timer
+systemctl list-timers supdance-asset-retention.timer --no-pager | head -n 3
 
 echo '=== 端口监听状态 ==='
 curl -s -o /dev/null -w 'Port 3100 (canvas-supdance): HTTP %{http_code}\n' http://127.0.0.1:3100/zh
@@ -201,6 +220,9 @@ echo '=== 线上 robots.txt 预览 ==='
 curl -s https://www.supdance.com/robots.txt | head -n 6 || true
 curl -s https://www.supdance.com/api/ready
 echo ""
+
+echo '=== 静态资源与三方登录接口验收 ==='
+node "$SCRIPT_DIR/verify-production-assets.mjs" --base https://www.supdance.com --pages /,/login,/register,/studio
 
 echo "=================================================="
 echo "🎉 部署全部成功并已通过线上校验！"

@@ -230,7 +230,7 @@ export const GLOBAL_SERVER_MODEL_META_KEY = '__SUPDANCE_SERVER_MODEL_META__';
 /**
  * Register dynamic model metadata received from backend /api/models/active.
  */
-export function setServerModelMeta(metaList) {
+export function setServerModelMeta(metaList, aliasesByServerId = {}) {
   if (!Array.isArray(metaList)) return;
   if (typeof globalThis === 'undefined') return;
   const map = new Map();
@@ -242,6 +242,14 @@ export function setServerModelMeta(metaList) {
     const cleanId = lower.replace(/-edit$/, '').replace(/-(t2i|i2i|t2v|i2v|v2v)$/, '');
     if (cleanId !== lower) {
       if (!map.has(cleanId)) map.set(cleanId, m);
+    }
+  }
+  // Static Studio variants share capability metadata with their canonical server model.
+  for (const m of metaList) {
+    if (!m?.id) continue;
+    for (const alias of aliasesByServerId[String(m.id)] || []) {
+      const key = String(alias).toLowerCase();
+      if (!map.has(key)) map.set(key, m);
     }
   }
   globalThis[GLOBAL_SERVER_MODEL_META_KEY] = map;

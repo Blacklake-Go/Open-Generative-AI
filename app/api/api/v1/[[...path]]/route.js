@@ -58,7 +58,14 @@ export async function GET(request, { params }) {
             : creation.status === 'cancelled' ? 'cancelled'
                 : creation.status;
         const resultUrl = creation.result_object_key
-            ? await getAssetUrl({ objectKey: creation.result_object_key, visibility: 'private' }).catch(() => null)
+            ? await getAssetUrl({
+                objectKey: creation.result_object_key,
+                visibility: 'private',
+                provider: creation.storage_provider || null,
+                locationId: creation.storage_location_id || null,
+                bucket: creation.storage_bucket || null,
+                region: creation.storage_region || null,
+            }).catch(() => null)
             : creation.result_url;
         return NextResponse.json({
             id: creation.id,

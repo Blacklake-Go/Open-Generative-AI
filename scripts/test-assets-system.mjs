@@ -177,31 +177,33 @@ async function main() {
     assert.strictEqual(parentInTree.children[0].id, subfolderId, '子文件夹必须正确嵌套在一级目录下');
     console.log('✓ 12. HTTP GET /api/assets/folders (树形嵌套读取) 测试通过 (200 OK)');
 
-    // 12. API 接口测试：GET /api/assets 检索素材
-    const getAssetsRes = await fetch(`${BASE_URL}/api/assets?type=all`, {
+    // 12. API 接口测试：GET /api/assets/library 检索素材
+    const getAssetsRes = await fetch(`${BASE_URL}/api/assets/library?kind=all`, {
       headers: baseHeaders,
     });
     assert.strictEqual(getAssetsRes.status, 200);
     const getAssetsJson = await getAssetsRes.json();
     assert.strictEqual(getAssetsJson.assets.length, 2);
-    console.log('✓ 13. HTTP GET /api/assets 测试通过 (200 OK)');
+    assert.strictEqual(getAssetsJson.total, 2);
+    console.log('✓ 13. HTTP GET /api/assets/library 测试通过 (200 OK)');
 
-    // 13. API 接口测试：PATCH /api/assets/[id] (单条更新与收藏)
-    const patchAssetRes = await fetch(`${BASE_URL}/api/assets/${assetId1}`, {
+    // 13. API 接口测试：PATCH /api/assets/library/[id] (单条更新与收藏)
+    const patchAssetRes = await fetch(`${BASE_URL}/api/assets/library/${assetId1}`, {
       method: 'PATCH',
       headers: {
         ...baseHeaders,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ is_favorite: true, title: '用户自定义海报标题' }),
+      body: JSON.stringify({ isFavorite: true, title: '用户自定义海报标题' }),
     });
     assert.strictEqual(patchAssetRes.status, 200);
     const patchAssetJson = await patchAssetRes.json();
-    assert.strictEqual(patchAssetJson.asset.is_favorite, true);
-    console.log('✓ 14. HTTP PATCH /api/assets/[id] 测试通过 (200 OK)');
+    assert.strictEqual(patchAssetJson.asset.starred, true);
+    assert.strictEqual(patchAssetJson.asset.title, '用户自定义海报标题');
+    console.log('✓ 14. HTTP PATCH /api/assets/library/[id] 测试通过 (200 OK)');
 
-    // 14. API 接口测试：POST /api/assets/batch (批量移动至二级子文件夹)
-    const batchMoveRes = await fetch(`${BASE_URL}/api/assets/batch`, {
+    // 14. API 接口测试：POST /api/assets/library/batch (批量移动至二级子文件夹)
+    const batchMoveRes = await fetch(`${BASE_URL}/api/assets/library/batch`, {
       method: 'POST',
       headers: {
         ...baseHeaders,
@@ -216,7 +218,7 @@ async function main() {
     assert.strictEqual(batchMoveRes.status, 200);
     const batchMoveJson = await batchMoveRes.json();
     assert.strictEqual(batchMoveJson.count, 2);
-    console.log('✓ 15. HTTP POST /api/assets/batch (批量移动) 测试通过 (200 OK)');
+    console.log('✓ 15. HTTP POST /api/assets/library/batch (批量移动) 测试通过 (200 OK)');
 
     // 15. API 接口测试：DELETE /api/assets/folders/[id] (删除二级文件夹)
     const delFolderRes = await fetch(`${BASE_URL}/api/assets/folders/${subfolderId}`, {

@@ -130,7 +130,14 @@ export async function POST(request, context) {
     });
     if (task.idempotent && task.creation.status !== 'queued') {
       const resultUrl = task.creation.result_object_key
-        ? await getAssetUrl({ objectKey: task.creation.result_object_key, visibility: 'private' }).catch(() => null)
+        ? await getAssetUrl({
+          objectKey: task.creation.result_object_key,
+          visibility: 'private',
+          provider: task.creation.storage_provider || null,
+          locationId: task.creation.storage_location_id || null,
+          bucket: task.creation.storage_bucket || null,
+          region: task.creation.storage_region || null,
+        }).catch(() => null)
         : task.creation.result_url;
       return NextResponse.json({
         creation_id: task.creation.id,
@@ -151,7 +158,14 @@ export async function POST(request, context) {
     const processed = await processGenerationTask({ creationId: task.creation.id });
     const status = processed.success === false ? 502 : processed.pending ? 202 : 200;
     const resultUrl = processed.creation?.result_object_key
-      ? await getAssetUrl({ objectKey: processed.creation.result_object_key, visibility: 'private' }).catch(() => null)
+      ? await getAssetUrl({
+        objectKey: processed.creation.result_object_key,
+        visibility: 'private',
+        provider: processed.creation.storage_provider || null,
+        locationId: processed.creation.storage_location_id || null,
+        bucket: processed.creation.storage_bucket || null,
+        region: processed.creation.storage_region || null,
+      }).catch(() => null)
       : processed.creation?.result_url;
     return NextResponse.json({
       creation_id: processed.creation?.id,

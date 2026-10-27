@@ -1,7 +1,7 @@
-import { redirect } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
-import { getLocaleConfig, normalizeLocale } from '@/lib/locales';
+import { normalizeLocale } from '@/lib/locales';
 import { getUserBySession } from '@/lib/services/auth';
+import { isChinaIp, resolveClientIp } from '@/lib/security/chinaIpBlock';
 import JimengHomePortal from '@/components/home/JimengHomePortal';
 
 export const metadata = {
@@ -24,6 +24,7 @@ export default async function Home() {
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value || cookieStore.get('locale')?.value;
   const headerLocale = headerList.get('x-locale');
   const targetLocale = normalizeLocale(user?.locale || cookieLocale || headerLocale || 'en');
+  const googleOneTapEligible = !user && !isChinaIp(resolveClientIp(headerList).ip, headerList);
 
-  return <JimengHomePortal locale={targetLocale} initialUser={user} />;
+  return <JimengHomePortal locale={targetLocale} initialUser={user} googleOneTapEligible={googleOneTapEligible} />;
 }

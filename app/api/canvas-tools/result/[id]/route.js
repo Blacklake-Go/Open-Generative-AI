@@ -1,6 +1,6 @@
 import { getUserFromRequest, json } from '@/lib/services/auth';
 import { getGenerationTrace } from '@/lib/services/generations';
-import { getStorageConfigAndAdapter } from '@/lib/storage/storageService';
+import { getAssetStorageAdapter } from '@/lib/storage/storageService';
 import { publicErrorMessage } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
@@ -27,7 +27,13 @@ export async function GET(request, context) {
       return json({ error: '生成结果暂不可用' }, { status: 404 });
     }
 
-    const { adapter } = await getStorageConfigAndAdapter();
+    const adapter = await getAssetStorageAdapter({
+      provider: creation.storage_provider || null,
+      locationId: creation.storage_location_id || null,
+      bucket: creation.storage_bucket || null,
+      region: creation.storage_region || null,
+    });
+    if (!adapter) return json({ error: '生成结果所属存储位置不可用' }, { status: 503 });
     const downloaded = await adapter.download({ key: objectKey });
     const body = Buffer.isBuffer(downloaded?.body) ? downloaded.body : Buffer.from(downloaded?.body || '');
     if (!body.length) return json({ error: '生成结果暂不可用' }, { status: 404 });

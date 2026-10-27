@@ -125,6 +125,14 @@
     "minimax-music-3.0": {
       "name": "MiniMax 音樂 3.0",
       "description": "MiniMax 音樂大模型，支援根據提示詞與結構化歌詞生成完整歌曲或純伴奏。"
+    },
+    "suno-v4": {
+      "name": "Suno v4 錄音室母帶級全曲",
+      "description": "Suno v4 可將文字提示詞創作成錄音室品質的完整歌曲，包含人聲、歌詞與伴奏。"
+    },
+    "suno-v3.5": {
+      "name": "Suno v3.5 流行音樂合成",
+      "description": "Suno v3.5 可根據文字提示詞快速合成流行風格歌曲，包含人聲、歌詞與伴奏。"
     }
   },
   "fields": {

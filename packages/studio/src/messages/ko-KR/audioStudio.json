@@ -125,6 +125,14 @@
     "minimax-music-3.0": {
       "name": "MiniMax 음악 3.0",
       "description": "프롬프트와 구조화된 가사를 바탕으로 보컬곡 또는 연주곡을 생성하는 음악 모델입니다."
+    },
+    "suno-v4": {
+      "name": "Suno v4",
+      "description": "Suno v4는 텍스트 프롬프트로 보컬, 가사, 반주가 포함된 스튜디오 품질의 완성곡을 만듭니다."
+    },
+    "suno-v3.5": {
+      "name": "Suno v3.5",
+      "description": "Suno v3.5는 텍스트 프롬프트로 보컬, 가사, 반주가 포함된 팝 스타일 곡을 빠르게 합성합니다."
     }
   },
   "fields": {

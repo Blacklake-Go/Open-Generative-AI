@@ -31486,6 +31486,150 @@ export const audioModels = [
         "default": false
       }
     }
+  },
+  {
+    "id": "suno-v4",
+    "name": "Suno v4",
+    "endpoint": "suno-v4",
+    "family": "suno",
+    "description": "Suno v4 turns text prompts into full studio-mastered songs — complete with vocals, lyrics, and instrumentation.",
+    "required": [
+      "style"
+    ],
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Hard-hitting rap track with aggressive beat and confident male vocals about winning."
+        ],
+        "description": "A description of the desired audio content. The prompt will be strictly used as the lyrics and sung in the generated track",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "style": {
+        "examples": [
+          "Classical"
+        ],
+        "description": "Music style specification for the generated audio.",
+        "format": "text",
+        "type": "string",
+        "title": "Style",
+        "name": "style",
+        "placeholder": "Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc."
+      },
+      "custom_mode": {
+        "type": "boolean",
+        "title": "Custom Mode",
+        "name": "custom_mode",
+        "description": "Enable custom mode for advanced settings.",
+        "default": true
+      },
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "name": "title",
+        "description": "Title for the generated music track (optional).",
+        "placeholder": "Peaceful Piano Meditation"
+      },
+      "instrumental": {
+        "type": "boolean",
+        "title": "Instrumental",
+        "name": "instrumental",
+        "description": "Enable this option to generate music without prompt. If false prompt will used as the exact lyrics.",
+        "default": true
+      },
+      "negative_tags": {
+        "title": "Negative Tags",
+        "name": "negative_tags",
+        "type": "string",
+        "format": "text",
+        "description": "Music styles or traits to exclude from the generated audio (optional). Use to avoid specific styles.",
+        "placeholder": "Heavy Metal, Upbeat Drums"
+      },
+      "vocal_gender": {
+        "enum": [
+          "male",
+          "female"
+        ],
+        "title": "Vocal Gender",
+        "name": "vocal_gender",
+        "type": "string",
+        "description": "Vocal gender preference for the singing voice (optional).",
+        "default": "male"
+      }
+    }
+  },
+  {
+    "id": "suno-v3.5",
+    "name": "Suno v3.5",
+    "endpoint": "suno-v3.5",
+    "family": "suno",
+    "description": "Suno v3.5 synthesizes pop-ready tracks from text prompts — vocals, lyrics, and instrumentation in seconds.",
+    "required": [
+      "style"
+    ],
+    "inputs": {
+      "prompt": {
+        "examples": [
+          "Hard-hitting rap track with aggressive beat and confident male vocals about winning."
+        ],
+        "description": "A description of the desired audio content. The prompt will be strictly used as the lyrics and sung in the generated track",
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt"
+      },
+      "style": {
+        "examples": [
+          "Classical"
+        ],
+        "description": "Music style specification for the generated audio.",
+        "format": "text",
+        "type": "string",
+        "title": "Style",
+        "name": "style",
+        "placeholder": "Jazz, Classical, Electronic, Pop, Rock, Hip-hop, etc."
+      },
+      "custom_mode": {
+        "type": "boolean",
+        "title": "Custom Mode",
+        "name": "custom_mode",
+        "description": "Enable custom mode for advanced settings.",
+        "default": true
+      },
+      "title": {
+        "type": "string",
+        "title": "Title",
+        "name": "title",
+        "description": "Title for the generated music track (optional).",
+        "placeholder": "Peaceful Piano Meditation"
+      },
+      "instrumental": {
+        "type": "boolean",
+        "title": "Instrumental",
+        "name": "instrumental",
+        "description": "Enable this option to generate music without prompt. If false prompt will used as the exact lyrics.",
+        "default": true
+      },
+      "negative_tags": {
+        "title": "Negative Tags",
+        "name": "negative_tags",
+        "type": "string",
+        "format": "text",
+        "description": "Music styles or traits to exclude from the generated audio (optional). Use to avoid specific styles.",
+        "placeholder": "Heavy Metal, Upbeat Drums"
+      },
+      "vocal_gender": {
+        "enum": [
+          "male",
+          "female"
+        ],
+        "title": "Vocal Gender",
+        "name": "vocal_gender",
+        "type": "string",
+        "description": "Vocal gender preference for the singing voice (optional).",
+        "default": "male"
+      }
+    }
   }
 ];
 
@@ -31560,11 +31704,6 @@ const SERVER_TO_CATALOG_ALIASES = {
     'seedream-5.0',
     'bytedance-seedream-5.0',
     'bytedance-seedream-v5.0',
-    'seedream-4.5',
-    'bytedance-seedream-v4.5',
-    'bytedance-seedream-v4.5-edit',
-    'seedream-5.0-lite',
-    'bytedance-seedream-5.0-lite',
   ],
   'imagen-4': ['google-imagen4', 'google-imagen4-ultra', 'google-imagen4-fast', 'google-imagen-4'],
   'kling-3.0': [
@@ -31623,7 +31762,7 @@ const SERVER_TO_CATALOG_ALIASES = {
 export function applyActiveModelDirectory(rows) {
   if (!Array.isArray(rows)) return { activeCount: activeModelIds?.size || 0, visibleCount: 0 };
   const list = rows;
-  setServerModelMeta(list);
+  setServerModelMeta(list, SERVER_TO_CATALOG_ALIASES);
 
   const activeIds = new Set(
     list

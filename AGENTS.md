@@ -1,5 +1,12 @@
 # KOYO Studio project instructions
 
+## Canvas repository workflow
+
+- All `canvas.supdance.com` frontend work belongs to the separate repo `Blacklake-Go/canvas`, checked out at `/Users/seelucency/Documents/dev/canvas-web`.
+- Commit and push canvas changes directly to that repo's only remote branch, `koyo-canvas-ui-i18n` (`git push blacklake HEAD:koyo-canvas-ui-i18n`); never create or push additional remote branches.
+- After any canvas edit, sync it to `Blacklake-Go/canvas` in the same task instead of leaving local-only commits.
+- This repo only supplies the canvas backend under `app/api/canvas/**`; do not duplicate canvas frontend code here.
+
 ## UI and visual changes
 
 - Before making any UI or visual change, read and follow both `docs/UI_DESIGN_SYSTEM.md` and `docs/UI_REPAIR_INSTRUCTION.md`. This applies to new pages, components, studio workbenches, and visual fixes.

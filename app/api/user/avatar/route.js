@@ -2,7 +2,7 @@ import path from 'node:path';
 import { getUserFromRequest, json } from '@/lib/services/auth';
 import { execute, queryOne } from '@/lib/application/dataAccess.js';
 import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
-import { getAssetUrl, getStorageAdapter, ingestBuffer } from '@/lib/storage/storageService';
+import { getAssetStorageAdapter, getAssetUrl, getStorageAdapter, ingestBuffer } from '@/lib/storage/storageService';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -83,7 +83,7 @@ export async function POST(request) {
       return json({ error: '图片文件已损坏或非真实图片内容' }, { status: 400 });
     }
 
-    const previous = await queryOne('SELECT avatar_object_key FROM users WHERE id = $1', [user.id]);
+    const previous = await queryOne('SELECT avatar_object_key, avatar_storage_provider, avatar_storage_location_id FROM users WHERE id = $1', [user.id]);
     const stored = await ingestBuffer({
       body: buffer,
       userId: user.id,
@@ -96,10 +96,17 @@ export async function POST(request) {
 
     // 只保存稳定的同源资源入口与 object key，不保存 COS URL 或签名。
     await execute(
-      'UPDATE users SET avatar_url = $1, avatar_object_key = $2, updated_at = NOW() WHERE id = $3',
-      [publicUrl, stored.objectKey, user.id]
+      'UPDATE users SET avatar_url = $1, avatar_object_key = $2, avatar_storage_provider = $3, avatar_storage_location_id = $4, updated_at = NOW() WHERE id = $5',
+      [publicUrl, stored.objectKey, stored.provider || null, stored.storageLocationId || null, user.id]
     );
-    if (previous?.avatar_object_key) await getStorageAdapter().then((adapter) => adapter.delete({ key: previous.avatar_object_key })).catch(() => {});
+    if (previous?.avatar_object_key) {
+      await getAssetStorageAdapter({
+        provider: previous.avatar_storage_provider,
+        locationId: previous.avatar_storage_location_id,
+      })
+        .then((adapter) => adapter?.delete({ key: previous.avatar_object_key }))
+        .catch(() => {});
+    }
 
     const updatedUser = await queryOne(
       'SELECT id, user_number, email, phone, display_name, avatar_url, role, credits, status, locale FROM users WHERE id = $1',
@@ -124,16 +131,21 @@ export async function GET(request) {
   let userRow = null;
 
   if (targetId) {
-    userRow = await queryOne('SELECT id, avatar_object_key, avatar_url FROM users WHERE id = $1 OR user_number = $1', [targetId]);
+    userRow = await queryOne('SELECT id, avatar_object_key, avatar_url, avatar_storage_provider, avatar_storage_location_id FROM users WHERE id = $1 OR user_number = $1', [targetId]);
   } else {
     const user = await getUserFromRequest(request);
     if (user) {
-      userRow = await queryOne('SELECT id, avatar_object_key, avatar_url FROM users WHERE id = $1', [user.id]);
+      userRow = await queryOne('SELECT id, avatar_object_key, avatar_url, avatar_storage_provider, avatar_storage_location_id FROM users WHERE id = $1', [user.id]);
     }
   }
 
   if (userRow?.avatar_object_key) {
-    const assetUrl = await getAssetUrl({ objectKey: userRow.avatar_object_key, visibility: 'private' });
+    const assetUrl = await getAssetUrl({
+      objectKey: userRow.avatar_object_key,
+      visibility: 'private',
+      provider: userRow.avatar_storage_provider || null,
+      locationId: userRow.avatar_storage_location_id || null,
+    });
     if (assetUrl) {
       const redirectLocation = /^https?:\/\//i.test(assetUrl)
         ? assetUrl

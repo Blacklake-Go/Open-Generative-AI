@@ -10,6 +10,7 @@ import { getModelMediaCapabilities, mapReferenceParams } from './modelCapabiliti
 import { buildSupplementalInputPayload } from './modelParameters.js';
 import { getGroupedVideoConfiguration } from './groupedVideoModels.js';
 import { submitPlatformGeneration } from './platformGeneration.js';
+import { getServerModelMeta } from './modelDescriptions.js';
 
 // In an http(s) browser we route through the host app's proxy (Next.js routes
 // under /api/* re-issue the call server-side) so api.muapi.ai CORS is bypassed.
@@ -211,8 +212,9 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
     if (typeof window !== 'undefined' && BASE_URL === '/api') {
         if (!platformModelId) throw new Error('A server-admitted model ID is required for platform generation.');
         const resolvedStudioId = resolveStudioId(studioId);
+        const canonicalModelId = getServerModelMeta(platformModelId)?.id || platformModelId;
         return submitPlatformGeneration({
-            modelId: platformModelId,
+            modelId: canonicalModelId,
             studioId: resolvedStudioId,
             prompt: payload.prompt || '',
             parameters: payload,
@@ -223,7 +225,7 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
             onAuthRequired: notifyAuthRequired,
             onPhase: (phase, requestId) => {
                 window.dispatchEvent(new CustomEvent('supdance:credits-updated', {
-                    detail: { phase, requestId, modelId: platformModelId, studioId: resolvedStudioId },
+                    detail: { phase, requestId, modelId: canonicalModelId, studioId: resolvedStudioId },
                 }));
             },
         }).catch((error) => {

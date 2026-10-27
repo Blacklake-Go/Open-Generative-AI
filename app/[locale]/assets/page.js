@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { getLocaleConfig, isSupportedLocale, normalizeLocale } from '@/lib/locales';
 import { getUserBySession } from '@/lib/services/auth';
+import { getAssetLibraryCopy } from '@/lib/assetLibraryCopy';
 import JimengAssetCenter from '@/components/assets/JimengAssetCenter';
 
 export const dynamic = 'force-dynamic';
@@ -39,5 +40,5 @@ export default async function LocalizedAssetsPage({ params }) {
     redirect(`${rootPath}/login?redirect=${encodeURIComponent(targetPath)}`);
   }
 
-  return <JimengAssetCenter locale={normalized} initialUser={user} />;
+  return <JimengAssetCenter locale={normalized} initialUser={user} assetLibraryCopy={getAssetLibraryCopy(normalized)} />;
 }

@@ -76,7 +76,7 @@
 | `/admin/forbidden` | `app/admin/forbidden/page.js` | **public** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations` | `app/admin/generations/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations/failures` | `app/admin/generations/failures/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
-| `/admin/health` | `app/admin/health/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/health` | `app/admin/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/i18n` | `app/admin/i18n/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/invites` | `app/admin/invites/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/login` | `app/admin/login/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -108,6 +108,8 @@
 | `/admin/routing/{*}` | `app/admin/routing/[modelId]/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/security/sessions` | `app/admin/security/sessions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/settings` | `app/admin/settings/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/settings/storage` | `app/admin/settings/storage/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/storage` | `app/admin/storage/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings/storage` |
 | `/admin/subscription-faq` | `app/admin/subscription-faq/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/subscriptions` | `app/admin/subscriptions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/system` | `app/admin/system/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -237,8 +239,8 @@
 
 ## API 路由
 
-- 处理器总数：228（其中 `/api/**` 224，`/api/admin/**` 100 个全部经 `requirePermission`）
-- 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
+- 处理器总数：234（其中 `/api/**` 230，`/api/admin/**` 103 个全部经 `requirePermission`）
+- 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/google/one-tap` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
 - 变更型但缺 `guardMutation`：`app/api/auth/oauth/[provider]/callback/route.js` `app/api/auth/oauth/[provider]/webhook/route.js` `app/api/billing/webhooks/paypal/route.js` `app/api/webhooks/bilibili/route.js` `app/api/webhooks/douyin/route.js`

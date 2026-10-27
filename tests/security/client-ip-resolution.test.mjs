@@ -33,13 +33,20 @@ test('a mainland visitor remains mainland despite an overseas forged header', ()
   assert.equal(isChinaIp(resolved.ip, headers), true);
 });
 
-test('invalid and local real IPs fall back to a valid forwarded visitor IP', () => {
+test('invalid and local real IPs fall back to the forwarded hop appended by our proxy', () => {
   for (const realIp of ['not-an-ip', '127.0.0.1']) {
     assert.deepEqual(resolveClientIp(new Headers({
       'x-real-ip': realIp,
       'x-forwarded-for': 'invalid, 114.114.114.114, 127.0.0.1',
     })), { ip: '114.114.114.114', source: 'x-forwarded-for' });
   }
+});
+
+test('X-Forwarded-For prefers the right-most public hop so clients cannot prepend a forged region', () => {
+  const resolved = resolveClientIp(new Headers({
+    'x-forwarded-for': '114.114.114.114, 8.8.8.8',
+  }));
+  assert.deepEqual(resolved, { ip: '8.8.8.8', source: 'x-forwarded-for' });
 });
 
 test('IPv4-mapped IPv6 is normalized before region lookup', () => {
@@ -56,21 +63,35 @@ test('loopback IP falls back to CDN country header when public IP is absent', ()
   assert.equal(isChinaIp('127.0.0.1', usHeaders), false);
 });
 
-test('regional social login providers match mainland vs international IP detection and frontend renders all regional pills', async () => {
+test('regional social login providers hide only channels that cannot work, keeping unknown ones visible', async () => {
   const mainlandProviders = getSocialLoginProviders('mainland_china', {
-    configured: { qq: true, wechat: false, douyin: true, bilibili: false },
+    // null means "credential lookup failed" — it must stay visible (fail open).
+    configured: { qq: true, wechat: false, douyin: null, bilibili: true },
   });
   assert.deepEqual(
     mainlandProviders.map((p) => p.id),
-    ['qq', 'wechat', 'douyin', 'bilibili']
+    ['qq', 'douyin', 'bilibili']
+  );
+  assert.deepEqual(
+    mainlandProviders.filter((p) => p.configured).map((p) => p.id),
+    ['qq', 'bilibili']
   );
 
   const internationalProviders = getSocialLoginProviders('international', {
-    configured: { google: true, x: true, tiktok: true, instagram: false },
+    // Instagram missing from the map = unknown, so it must still render.
+    configured: { google: true, x: true, tiktok: true },
   });
   assert.deepEqual(
     internationalProviders.map((p) => p.id),
     ['google', 'x', 'tiktok', 'instagram']
+  );
+
+  const operatorDisabled = getSocialLoginProviders('international', {
+    config: { international: [{ id: 'instagram', enabled: false }] },
+  });
+  assert.deepEqual(
+    operatorDisabled.map((p) => p.id),
+    ['google', 'x', 'tiktok']
   );
 
   const [authCard, loginForm, registerForm, socialButtons] = await Promise.all([
@@ -84,5 +105,12 @@ test('regional social login providers match mainland vs international IP detecti
   assert.doesNotMatch(loginForm, /p\.available\s*&&/);
   assert.doesNotMatch(registerForm, /p\.available\s*&&/);
   assert.match(socialButtons, /rounded-full/);
+
+  // All three surfaces must share the single client contract; a duplicated
+  // fetch is how region/provider drift sneaks back in.
+  for (const source of [authCard, loginForm, registerForm]) {
+    assert.doesNotMatch(source, /fetch\('\/api\/auth\/social-options'/);
+    assert.match(source, /from '@\/lib\/auth\/socialOptionsClient'/);
+  }
 });
 

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getUserBySession } from '@/lib/services/auth';
+import { getAssetLibraryCopy } from '@/lib/assetLibraryCopy';
 import JimengAssetCenter from '@/components/assets/JimengAssetCenter';
 
 export const dynamic = 'force-dynamic';
@@ -26,5 +27,5 @@ export default async function ZhAssetsPage() {
     redirect('/zh/login?redirect=/zh/assets');
   }
 
-  return <JimengAssetCenter locale="zh" initialUser={user} />;
+  return <JimengAssetCenter locale="zh" initialUser={user} assetLibraryCopy={getAssetLibraryCopy('zh')} />;
 }

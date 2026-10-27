@@ -13,7 +13,15 @@ export async function GET(request, { params }) {
   const asset = await getUserAssetDownload(user.id, id);
   if (!asset || asset.deletedAt) return NextResponse.json({ error: '资产不存在或已删除' }, { status: 404 });
   if (asset.objectKey) {
-    const url = await getAssetUrl({ objectKey: asset.objectKey, visibility: asset.visibility || 'private', disposition: 'attachment' });
+    const url = await getAssetUrl({
+      objectKey: asset.objectKey,
+      visibility: asset.visibility || 'private',
+      disposition: 'attachment',
+      provider: asset.provider,
+      locationId: asset.locationId,
+      bucket: asset.bucket,
+      region: asset.region,
+    });
     if (url) {
       const redirectUrl = /^https?:\/\//i.test(url) ? url : new URL(url, request.url);
       return NextResponse.redirect(redirectUrl);

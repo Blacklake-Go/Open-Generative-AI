@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import StudioHeader from '@/components/site/StudioHeader';
 
 const RATIO_OPTIONS = ['21:9', '16:9', '4:3', '1:1', '9:16'];
 const FALLBACK_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4', '21:9'];
@@ -230,15 +231,6 @@ function UploadIcon(props) {
       <path d="M12 16V4" />
       <path d="M7.5 8.5L12 4l4.5 4.5" />
       <path d="M4 15v4a1 1 0 001 1h14a1 1 0 001-1v-4" />
-    </IconBase>
-  );
-}
-
-function ArrowLeftIcon(props) {
-  return (
-    <IconBase {...props}>
-      <path d="M19 12H5" />
-      <path d="M11 6l-6 6 6 6" />
     </IconBase>
   );
 }
@@ -1058,31 +1050,7 @@ export default function CanvasToolsStudio({ initialUser = null, initialTool = 'o
         onChange={handleFileInput}
       />
 
-      <header className="ct-topbar">
-        <div className="ct-topbar-left">
-          <Link href="/zh" className="ct-back" aria-label="返回首页">
-            <ArrowLeftIcon size={18} />
-          </Link>
-          <div className="ct-title">
-            <span className="ct-title-main">画布工具</span>
-            <span className="ct-title-sub">扩图 · 智能超清 · 抠图 · 三视图 · 多角度</span>
-          </div>
-        </div>
-        <div className="ct-topbar-right">
-          {user ? (
-            <span className="ct-user">
-              <span className="ct-avatar">
-                {user.avatar ? <img src={user.avatar} alt="" /> : (user.displayName || 'U').slice(0, 1)}
-              </span>
-              <span className="ct-user-name">{user.displayName || '已登录'}</span>
-            </span>
-          ) : (
-            <Link className="ct-login" href={`/zh/login?redirect=${encodeURIComponent('/zh/canvas-tools')}`}>
-              登录 / 注册
-            </Link>
-          )}
-        </div>
-      </header>
+      <StudioHeader locale="zh" initialUser={user} />
 
       <div className="ct-shell">
         <main

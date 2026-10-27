@@ -1,6 +1,7 @@
 import { withAdminErrorBoundary, requirePermission, okResponse } from '@/lib/admin/authz';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { getSystemHealth } from '@/lib/services/systemHealth';
+import { collectSystemPerformance } from '@/lib/services/systemPerformance';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,7 @@ async function handleGET(request) {
   if (!guard.ok) return guard.response;
   try {
     const { database, migrations, providers, worker, storage, email, modelProviders, checkedAt } = await getSystemHealth();
+    const performance = await collectSystemPerformance({ database, migrations }).catch(() => null);
     return okResponse({
       status: database.ok && migrations.ok && [worker, storage, email, modelProviders].every((dependency) => dependency.status === 'healthy') ? 'healthy' : 'degraded',
       uptimeSeconds: Math.floor(process.uptime()),
@@ -20,6 +22,7 @@ async function handleGET(request) {
       email,
       modelProviders,
       providers,
+      performance,
       checkedAt,
     }, guard.requestId);
   } catch (error) {

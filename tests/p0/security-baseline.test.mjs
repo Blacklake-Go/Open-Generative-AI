@@ -241,9 +241,9 @@ test('P0 rejects a supplied cross-origin mutation', () => {
 });
 
 test('P0 health rendering degrades instead of assuming database fields exist', async () => {
-  const page = await source('app/admin/health/page.js');
+  const dashboard = await source('app/admin/health/SystemHealthDashboard.jsx');
   const health = await source('lib/services/systemHealth.js');
-  assert.match(page, /database\.pool\?\.idle/);
+  assert.match(dashboard, /pool\.idle \?\? 0/);
   assert.match(health, /healthCheck\(\)\.catch/);
   assert.match(health, /getMigrationStatus\(\)\.catch/);
 });

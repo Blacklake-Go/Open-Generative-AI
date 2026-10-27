@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import { getUserFromRequest } from '@/lib/services/auth';
 import { getUserAssetDownload, getUserAsset } from '@/lib/services/assets';
-import { getAssetUrl, getStorageConfigAndAdapter } from '@/lib/storage/storageService';
+import { getAssetStorageAdapter, getAssetUrl } from '@/lib/storage/storageService';
 import { canvasJson, canvasOriginGuard, canvasPreflight, canvasResponse } from '@/lib/canvas/http';
 
 export const runtime = 'nodejs';
@@ -27,14 +27,39 @@ async function serveAsset(request, { params }, headOnly = false) {
   if (!/^(image|video|audio)\//i.test(String(asset.mimeType || ''))) {
     return canvasJson(request, { error: '该素材类型不支持预览', code: 'ASSET_PREVIEW_UNSUPPORTED' }, { status: 415 });
   }
+  const wantsPreview = new URL(request.url).searchParams.get('preview') === '1';
+  const previewObjectKey = download.previewObjectKey || download.thumbnailObjectKey || null;
+  let objectKey = wantsPreview && previewObjectKey ? previewObjectKey : download.objectKey;
+  let contentType = objectKey !== download.objectKey ? 'image/webp' : asset.mimeType;
   try {
     const range = request.headers.get('range');
-    const { adapter } = await getStorageConfigAndAdapter();
+    const location = {
+      provider: download.provider,
+      locationId: download.locationId,
+      bucket: download.bucket,
+      region: download.region,
+    };
+    const adapter = await getAssetStorageAdapter(location);
+    if (!adapter) {
+      return canvasJson(request, { error: '素材所属存储位置不可用', code: 'STORAGE_LOCATION_UNAVAILABLE' }, { status: 503 });
+    }
+    if (objectKey !== download.objectKey && typeof adapter.getMetadata === 'function') {
+      try {
+        const previewMetadata = await adapter.getMetadata({ key: objectKey });
+        if (!previewMetadata || !(Number(previewMetadata.size) > 0)) {
+          objectKey = download.objectKey;
+          contentType = asset.mimeType;
+        }
+      } catch {
+        objectKey = download.objectKey;
+        contentType = asset.mimeType;
+      }
+    }
     if (adapter.provider === 'amh'
       && typeof adapter.downloadStream === 'function'
-      && !/^https?:\/\//i.test(download.objectKey)
-      && !String(download.objectKey).startsWith('data:')) {
-      const metadata = await adapter.getMetadata({ key: download.objectKey });
+      && !/^https?:\/\//i.test(objectKey)
+      && !String(objectKey).startsWith('data:')) {
+      const metadata = await adapter.getMetadata({ key: objectKey });
       const size = Number(metadata.size) || 0;
       const rangeMatch = range?.match(/^bytes=(\d*)-(\d*)$/);
       let status = 200;
@@ -76,7 +101,7 @@ async function serveAsset(request, { params }, headOnly = false) {
       }
 
       const headers = new Headers({
-        'Content-Type': asset.mimeType,
+        'Content-Type': contentType,
         'Content-Length': String(status === 206 ? end - start + 1 : size),
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
@@ -86,11 +111,11 @@ async function serveAsset(request, { params }, headOnly = false) {
       if (metadata.lastModified) headers.set('Last-Modified', new Date(metadata.lastModified).toUTCString());
       const body = headOnly
         ? null
-        : Readable.toWeb(await adapter.downloadStream({ key: download.objectKey, range: rangeHeader }));
+        : Readable.toWeb(await adapter.downloadStream({ key: objectKey, range: rangeHeader }));
       return canvasResponse(request, new Response(body, { status, headers }));
     }
 
-    const signedUrl = await getAssetUrl({ objectKey: download.objectKey, visibility: download.visibility || 'private' });
+    const signedUrl = await getAssetUrl({ ...location, objectKey, visibility: download.visibility || 'private' });
     const requestHeaders = new Headers();
     if (range && /^bytes=\d*-\d*(,\d*-\d*)*$/.test(range)) requestHeaders.set('Range', range);
     let upstream;
@@ -114,7 +139,7 @@ async function serveAsset(request, { params }, headOnly = false) {
       return canvasJson(request, { error: '读取素材失败', code: 'ASSET_READ_FAILED' }, { status: 502 });
     }
     const headers = new Headers({
-      'Content-Type': asset.mimeType,
+      'Content-Type': contentType,
       'Cache-Control': 'private, no-store',
       'X-Content-Type-Options': 'nosniff',
       'Accept-Ranges': 'bytes',

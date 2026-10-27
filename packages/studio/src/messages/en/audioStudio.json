@@ -125,6 +125,14 @@
     "minimax-music-3.0": {
       "name": "MiniMax Music 3.0",
       "description": "Generate full songs with vocals or instrumental tracks from text prompts and structured lyrics."
+    },
+    "suno-v4": {
+      "name": "Suno v4",
+      "description": "Suno v4 turns text prompts into full studio-mastered songs with vocals, lyrics, and instrumentation."
+    },
+    "suno-v3.5": {
+      "name": "Suno v3.5",
+      "description": "Suno v3.5 synthesizes pop-ready tracks from text prompts with vocals, lyrics, and instrumentation."
     }
   },
   "fields": {

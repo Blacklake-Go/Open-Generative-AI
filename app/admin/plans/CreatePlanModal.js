@@ -30,7 +30,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
   const [asyncConcurrency, setAsyncConcurrency] = useState(4);
   const [portraitCapacity, setPortraitCapacity] = useState(5);
   const [storageGb, setStorageGb] = useState(20);
-  const [exclusiveFeatures, setExclusiveFeatures] = useState(['no_watermark', 'vip_speed_queue', 'commercial_license']);
+  const [exclusiveFeatures, setExclusiveFeatures] = useState(['no_watermark', 'vip_speed_queue', 'canvas_premium_tools', 'commercial_license']);
   const [featuresText, setFeaturesText] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [busy, setBusy] = useState(false);

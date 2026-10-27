@@ -409,24 +409,24 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
       assert.equal(Number(sitePrice.toFixed(2)), 1.05);
     });
 
-    it('T7.2: Target contribution margin rate is enforced at 75% floor', () => {
-      assert.equal(CREDIT_PRICING_POLICY.targetContributionMarginRate, 0.75, 'Floor must be exactly 75%');
+    it('T7.2: Target contribution margin rate is enforced at 30% floor', () => {
+      assert.equal(CREDIT_PRICING_POLICY.targetContributionMarginRate, 0.30, 'Floor must be exactly 30%');
     });
 
     it('T7.3: Provider cost reserve rate is enforced at 10% risk buffer', () => {
       assert.equal(CREDIT_PRICING_POLICY.providerCostReserveRate, 0.1, 'Cost reserve must be 10%');
     });
 
-    it('T7.4: nano-banana at 15 credits with RunningHub ($0.020 USD = 0.144 CNY) yields >80% margin', () => {
+    it('T7.4: nano-banana with RunningHub ($0.020 USD = 0.144 CNY) meets the 30% margin floor', () => {
       const quote = quoteCreditsFromProviderCostCny(0.144);
-      assert.ok(quote.contributionMarginRate >= 0.75, 'Margin must meet 75% floor');
-      assert.ok(quote.credits <= 15, 'Quoted credits must be <= 15');
+      assert.ok(quote.contributionMarginRate >= 0.30, 'Margin must meet 30% floor');
+      assert.equal(quote.credits, 10, 'Quoted credits must equal 10');
     });
 
-    it('T7.5: nano-banana at 15 credits with Volcengine ($0.025 USD = 0.180 CNY) yields >80% margin', () => {
+    it('T7.5: nano-banana with Volcengine ($0.025 USD = 0.180 CNY) meets the 30% margin floor', () => {
       const quote = quoteCreditsFromProviderCostCny(0.18);
-      assert.ok(quote.contributionMarginRate >= 0.75, 'Margin must meet 75% floor');
-      assert.equal(quote.credits, 15, 'Quoted credits must equal 15');
+      assert.ok(quote.contributionMarginRate >= 0.30, 'Margin must meet 30% floor');
+      assert.equal(quote.credits, 10, 'Quoted credits must equal 10');
     });
   });
 
@@ -1450,9 +1450,9 @@ describe('Tier 3: Cross-Feature Combinations (Pairwise Coverage)', () => {
   it('T3.1: Full Quote -> Task Creation -> Credit Reservation -> RunningHub Selection -> Storage Archival -> Credit Commit', async () => {
     const ledger = createLedgerSimulator({ artist: { perpetual: 50 } });
 
-    // 1. Pre-quote for nano-banana (15 credits base covers up to 0.18 CNY)
+    // 1. Pre-quote for nano-banana (10 credits base covers up to 0.18 CNY)
     const quote = quoteCreditsFromProviderCostCny(0.18);
-    assert.equal(quote.credits, 15);
+    assert.equal(quote.credits, 10);
 
     // 2. Reserve credits
     const idemKey = `idem_full_${Date.now()}`;
@@ -1463,7 +1463,7 @@ describe('Tier 3: Cross-Feature Combinations (Pairwise Coverage)', () => {
       idempotencyKey: idemKey,
     });
     assert.equal(reservation.status, 'RESERVED');
-    assert.equal(ledger.getWallet('artist').frozen_credits, 15);
+    assert.equal(ledger.getWallet('artist').frozen_credits, 10);
 
     // 3. Router selects RunningHub
     const routing = evaluateCandidates({
@@ -1490,7 +1490,7 @@ describe('Tier 3: Cross-Feature Combinations (Pairwise Coverage)', () => {
     });
     assert.equal(commitRes.status, 'COMMITTED');
     assert.equal(ledger.getWallet('artist').frozen_credits, 0);
-    assert.equal(ledger.getWallet('artist').perpetual_credits, 35);
+    assert.equal(ledger.getWallet('artist').perpetual_credits, 40);
   });
 
   it('T3.2: Quote -> Task Creation -> RunningHub Failure -> Smart Router Failover to Volcengine -> Archival -> Commit', async () => {
@@ -1533,8 +1533,8 @@ describe('Tier 3: Cross-Feature Combinations (Pairwise Coverage)', () => {
       modelId: 'nano-banana',
       idempotencyKey: 'idem_outage',
     });
-    assert.equal(reservation.reserved_amount, 15);
-    assert.equal(ledger.getWallet('user3').frozen_credits, 15);
+    assert.equal(reservation.reserved_amount, 10);
+    assert.equal(ledger.getWallet('user3').frozen_credits, 10);
 
     // All candidates fail
     const allCandidates = [
@@ -1625,7 +1625,7 @@ describe('Tier 3: Cross-Feature Combinations (Pairwise Coverage)', () => {
 // ============================================================================
 
 describe('Tier 4: Real-World Application Scenarios', () => {
-  it('T4.1: Scenario 1: Standard Image Generation Journey (Prompt -> Select nano-banana -> Server Pre-Quote 15 credits -> Reserve -> RunningHub Generate -> COS Ingest -> Settle Credits)', async () => {
+  it('T4.1: Scenario 1: Standard Image Generation Journey (Prompt -> Select nano-banana -> Server Pre-Quote 10 credits -> Reserve -> RunningHub Generate -> COS Ingest -> Settle Credits)', async () => {
     const ledger = createLedgerSimulator({ artist_jane: { daily: 5, perpetual: 20 } });
     const initialTotal = 25;
 
@@ -1636,9 +1636,9 @@ describe('Tier 4: Real-World Application Scenarios', () => {
       parameters: { aspectRatio: '1:1', resolution: '1024x1024' },
     };
 
-    // Step 2: Client requests server-side pre-quote (15 credits base)
+    // Step 2: Client requests server-side pre-quote (10 credits base)
     const quote = quoteCreditsFromProviderCostCny(0.18); // Covers candidate cost ceiling
-    assert.equal(quote.credits, 15);
+    assert.equal(quote.credits, 10);
     const quoteRecord = {
       quoteId: `quote_${crypto.randomUUID().slice(0, 10)}`,
       credits: quote.credits,
@@ -1654,8 +1654,8 @@ describe('Tier 4: Real-World Application Scenarios', () => {
     });
     assert.equal(reservation.status, 'RESERVED');
     assert.equal(reservation.bucket_split_json.daily, 5);
-    assert.equal(reservation.bucket_split_json.perpetual, 10);
-    assert.equal(ledger.getWallet('artist_jane').frozen_credits, 15);
+    assert.equal(reservation.bucket_split_json.perpetual, 5);
+    assert.equal(ledger.getWallet('artist_jane').frozen_credits, 10);
 
     // Step 4: Smart Router selects RunningHub
     const routing = evaluateCandidates({
@@ -1686,8 +1686,8 @@ describe('Tier 4: Real-World Application Scenarios', () => {
     const finalWallet = ledger.getWallet('artist_jane');
     assert.equal(finalWallet.frozen_credits, 0);
     assert.equal(finalWallet.daily_free_credits, 0);
-    assert.equal(finalWallet.perpetual_credits, 10);
-    assert.equal(finalWallet.perpetual_credits + finalWallet.daily_free_credits, initialTotal - 15);
+    assert.equal(finalWallet.perpetual_credits, 15);
+    assert.equal(finalWallet.perpetual_credits + finalWallet.daily_free_credits, initialTotal - 10);
   });
 
   it('T4.2: Scenario 2: Provider Outage & Disaster Recovery Journey (User requests nano-banana -> MuAPI circuit open -> RunningHub selected -> Upstream Network Glitch -> Volcengine Failover -> Asset Saved -> Commit)', async () => {
@@ -1725,7 +1725,7 @@ describe('Tier 4: Real-World Application Scenarios', () => {
     const commit = ledger.commitReservation({ reservationId: reservation.id, creationId: 'gen_bob_dr_001' });
     assert.equal(commit.status, 'COMMITTED');
     assert.equal(ledger.getWallet('user_bob').frozen_credits, 0);
-    assert.equal(ledger.getWallet('user_bob').perpetual_credits, 85);
+    assert.equal(ledger.getWallet('user_bob').perpetual_credits, 90);
   });
 
   it('T4.3: Scenario 3: Catastrophic Provider Outage & 100% Refund Journey (User requests generation -> Provider 500 -> Fallback timeout -> Job aborted -> 100% atomic refund to user wallet with multi-bucket restoration)', async () => {

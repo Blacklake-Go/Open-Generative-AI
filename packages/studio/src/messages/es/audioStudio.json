@@ -125,6 +125,14 @@
     "minimax-music-3.0": {
       "name": "MiniMax Música 3.0",
       "description": "Genera canciones completas con voz o pistas puramente instrumentales con MiniMax Music 3.0."
+    },
+    "suno-v4": {
+      "name": "Suno v4",
+      "description": "Suno v4 convierte prompts de texto en canciones completas con calidad de estudio, incluyendo voces, letras e instrumentación."
+    },
+    "suno-v3.5": {
+      "name": "Suno v3.5",
+      "description": "Suno v3.5 sintetiza pistas de estilo pop a partir de prompts de texto con voces, letras e instrumentación."
     }
   },
   "fields": {

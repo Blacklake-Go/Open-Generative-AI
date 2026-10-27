@@ -2,10 +2,11 @@ import crypto from 'node:crypto';
 import { getUserFromRequest } from '@/lib/services/auth';
 import { getCanvasUploadAssetByIdempotencyHash, recordUserAsset, toClientAsset } from '@/lib/services/assets';
 import { consumeRateLimit, rateLimitResponse } from '@/lib/security/requestGuard';
-import { ingestBuffer } from '@/lib/storage/storageService';
+import { ingestBuffer, storedLocationFields } from '@/lib/storage/storageService';
 import { publicErrorMessage } from '@/lib/security/publicError';
 import { canvasJson, canvasMutationGuard, canvasPreflight, canvasResponse } from '@/lib/canvas/http';
 import { getCanvasSessionOwnerConflict } from '@/lib/canvas/sessionOwner';
+import { assertStorageQuota } from '@/lib/services/assetLibrary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -58,6 +59,7 @@ export async function POST(request) {
         idempotent: true,
       }, { status: 200 });
     }
+    await assertStorageQuota(user.id, file.size || buffer.length);
     const safeUserId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '_');
     const objectKey = 'uploads/' + safeUserId + '/canvas/' + idempotencyHash + '-' + checksum + '.bin';
     stage = 'storage_ingest';
@@ -79,12 +81,14 @@ export async function POST(request) {
       objectKey: stored.objectKey,
       previewObjectKey: stored.previewObjectKey || null,
       thumbnailObjectKey: stored.thumbnailObjectKey || null,
+      ...storedLocationFields(stored),
       mimeType: stored.mimeType,
       fileSizeBytes: stored.sizeBytes,
       checksum: stored.checksum,
       visibility: 'private',
       sourceType: 'user_upload',
       sourceProvider: 'canvas',
+      source: '画布上传',
       storageStatus: 'ready',
       generationParams: { canvas_upload_idempotency_hash: idempotencyHash },
       originalFilename: file.name || null,
@@ -107,6 +111,7 @@ export async function POST(request) {
     const errorName = /^[A-Za-z0-9_-]{1,64}$/.test(rawName) ? rawName : 'Error';
     console.error('[canvas-assets-upload-failed]', JSON.stringify({ requestId, stage, errorName, errorCode }));
     const status = error.code === 'UPLOAD_IDEMPOTENCY_CONFLICT' ? 409
+      : error.code === 'STORAGE_QUOTA_EXCEEDED' ? 413
       : error.code === 'STORAGE_FILE_TOO_LARGE' ? 413
       : String(error.code || '').startsWith('STORAGE_') ? 422 : 503;
     const response = canvasJson(request, { error: publicErrorMessage(error, '上传参考图片失败'), code: error.code || 'UPLOAD_FAILED', requestId }, { status });

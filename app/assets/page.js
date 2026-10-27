@@ -2,6 +2,7 @@ import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { normalizeLocale } from '@/lib/locales';
 import { getUserBySession } from '@/lib/services/auth';
+import { getAssetLibraryCopy } from '@/lib/assetLibraryCopy';
 import JimengAssetCenter from '@/components/assets/JimengAssetCenter';
 
 export const dynamic = 'force-dynamic';
@@ -37,5 +38,5 @@ export default async function AssetsPage() {
     redirect('/zh/assets');
   }
 
-  return <JimengAssetCenter locale="en" initialUser={user} />;
+  return <JimengAssetCenter locale="en" initialUser={user} assetLibraryCopy={getAssetLibraryCopy('en')} />;
 }

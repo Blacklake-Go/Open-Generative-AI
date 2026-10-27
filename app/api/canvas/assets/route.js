@@ -19,11 +19,13 @@ export async function GET(request) {
   const limit = Math.max(1, Math.min(50, Number.parseInt(params.get('limit') || '30', 10) || 30));
   const type = ['all', 'image', 'video', 'audio'].includes(params.get('type')) ? params.get('type') : 'all';
   try {
-    const result = await getUserAssets(user.id, { assetType: type, search: String(params.get('search') || '').slice(0, 160), page, limit, sort: 'newest' });
+    const result = await getUserAssets(user.id, { assetType: type, search: String(params.get('search') || '').slice(0, 160), page, limit, sort: 'newest', mediaOnly: true });
     return canvasJson(request, {
       assets: result.assets.map((asset) => ({
         id: asset.id,
         type: asset.type,
+        kind: asset.kind || asset.type,
+        category: asset.category || 'other',
         title: asset.title,
         url: `/api/canvas/assets/${encodeURIComponent(asset.id)}/content`,
         thumbnailUrl: null,

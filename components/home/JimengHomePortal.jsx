@@ -29,6 +29,7 @@ import { useUserSession } from '@/lib/hooks/useUserSession';
 import { localizeStudioPath, normalizeLocale, getCommonCopy, getLocaleConfig } from '@/lib/locales';
 import HomeStudioPromptComposer from './HomeStudioPromptComposer';
 import AuthModal from '@/components/AuthModal';
+import GoogleOneTap from '@/components/auth/GoogleOneTap';
 
 // 画布卡片占位封面：无缩略图时使用确定性的氛围渐变，贴近即梦的哑光质感
 const CANVAS_CARD_BACKDROPS = [
@@ -1157,7 +1158,7 @@ const getRecentFeatures = (locale, tHome, rootPath) => {
   ];
 };
 
-export default function JimengHomePortal({ locale = 'en', initialUser = undefined }) {
+export default function JimengHomePortal({ locale = 'en', initialUser = undefined, googleOneTapEligible = false }) {
   const router = useRouter();
   const { user } = useUserSession(initialUser);
   const [activeMode, setActiveMode] = useState('generate'); // 'generate' | 'canvas'
@@ -2066,6 +2067,8 @@ export default function JimengHomePortal({ locale = 'en', initialUser = undefine
           </div>
         </div>
       )}
+
+      {!user && googleOneTapEligible && <GoogleOneTap eligible />}
 
       {/* 登录弹窗 */}
       {showAuthModal && (
