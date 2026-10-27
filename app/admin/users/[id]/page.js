@@ -7,6 +7,8 @@ import UserDetailTabs from './UserDetailTabs';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { formatAdminDateTime } from '@/components/admin/formatters';
+import { UserAvatar } from '@/components/admin/UserAvatar';
+import { resolveUserAvatarUrl } from '@/lib/avatar';
 
 export default async function UserDetailPage({ params }) {
   const actor = await requireAdminPagePermission(PERMISSIONS.usersRead);
@@ -18,7 +20,25 @@ export default async function UserDetailPage({ params }) {
   }
 
   const { user } = detail;
-  const titleDisplay = user.display_name || user.email || (user.phone ? `${user.phone_country_code || '+86'} ${user.phone}` : user.id);
+  const rawTitle = user.display_name || user.email || (user.phone ? `${user.phone_country_code || '+86'} ${user.phone}` : user.id);
+  const letter = (user.display_name || user.email || user.phone || user.id || 'U').slice(0, 1).toUpperCase();
+  const avatarUrl = resolveUserAvatarUrl(user);
+
+  const titleDisplay = (
+    <span className="inline-flex items-center gap-3">
+      <span className="inline-flex size-9 sm:size-10 shrink-0 overflow-hidden rounded-full border border-white/10 bg-surface-raised shadow-md align-middle">
+        <UserAvatar
+          src={avatarUrl}
+          alt={rawTitle}
+          letter={letter}
+          seed={user.id}
+          fallbackType="svg"
+          className="size-full object-cover"
+        />
+      </span>
+      <span>{rawTitle}</span>
+    </span>
+  );
 
   return (
     <>

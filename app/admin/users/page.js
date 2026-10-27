@@ -10,6 +10,8 @@ import { PERMISSIONS } from '@/lib/admin/permissions';
 
 import { ProviderBadgeList } from '@/components/admin/ProviderBadges';
 import { formatAdminDateTime } from '@/components/admin/formatters';
+import { UserAvatar } from '@/components/admin/UserAvatar';
+import { resolveUserAvatarUrl } from '@/lib/avatar';
 
 function renderTagBadges(tags = [], preferredModality = null) {
   const hasTags = tags && tags.length > 0;
@@ -70,28 +72,54 @@ export default async function UsersPage({ searchParams }) {
     {
       key: 'user_info',
       label: '用户主体',
-      render: (row) => (
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-white">
-              {row.display_name || (row.phone ? `用户${row.phone.slice(-4)}` : row.email?.split('@')[0])}
-            </p>
-            {row.registration_source && (
-              <span className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.2 text-[10px] text-white/50">
-                {row.registration_source}
-              </span>
-            )}
+      render: (row) => {
+        const displayName = row.display_name || (row.phone ? `用户${row.phone.slice(-4)}` : row.email?.split('@')[0]) || '用户';
+        const letter = (row.display_name || row.email || row.phone || row.user_number || row.id || 'U').slice(0, 1).toUpperCase();
+        const avatarUrl = resolveUserAvatarUrl(row);
+
+        return (
+          <div className="flex items-center gap-3 min-w-[210px]">
+            <Link
+              href={`/admin/users/${row.id}`}
+              className="group relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-surface-raised text-xs font-bold text-brand shadow-sm transition hover:border-brand/40"
+              title={`查看 ${displayName} 的用户画像`}
+            >
+              <UserAvatar
+                src={avatarUrl}
+                alt={displayName}
+                letter={letter}
+                seed={row.id || row.user_number}
+                fallbackType="svg"
+                className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+              />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/users/${row.id}`}
+                  className="font-semibold text-white transition hover:text-brand truncate max-w-[150px]"
+                  title={displayName}
+                >
+                  {displayName}
+                </Link>
+                {row.registration_source && (
+                  <span className="shrink-0 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.2 text-[10px] text-white/50">
+                    {row.registration_source}
+                  </span>
+                )}
+              </div>
+              <div className="mt-0.5 space-y-0.5 text-xs text-white/50">
+                {row.email && <div className="truncate max-w-[180px]">✉️ {row.email}</div>}
+                {row.phone && <div>📱 {row.phone_country_code || '+86'} {row.phone}</div>}
+              </div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="text-[11px] font-mono text-brand/80">#{row.user_number || row.id}</span>
+                <CopyableId id={row.id} />
+              </div>
+            </div>
           </div>
-          <div className="mt-0.5 text-xs text-white/50 space-y-0.5">
-            {row.email && <div>✉️ {row.email}</div>}
-            {row.phone && <div>📱 {row.phone_country_code || '+86'} {row.phone}</div>}
-          </div>
-          <div className="mt-1 flex items-center gap-1.5">
-            <span className="text-[11px] font-mono text-brand/80">#{row.user_number || row.id}</span>
-            <CopyableId id={row.id} />
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'login_providers',

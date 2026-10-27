@@ -11,6 +11,8 @@ import AdminScrollableTabs from '@/components/admin/AdminScrollableTabs';
 
 import { ProviderBadge } from '@/components/admin/ProviderBadges';
 import { formatAdminDateTime } from '@/components/admin/formatters';
+import { UserAvatar } from '@/components/admin/UserAvatar';
+import { resolveUserAvatarUrl } from '@/lib/avatar';
 
 export default function UserDetailTabs({ detail, canManageAdmins = false }) {
   const router = useRouter();
@@ -102,7 +104,19 @@ export default function UserDetailTabs({ detail, canManageAdmins = false }) {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* 基本资料 */}
           <Card>
-            <h3 className="text-sm font-bold text-white mb-4">基本资料</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white">基本资料</h3>
+              <div className="size-10 shrink-0 overflow-hidden rounded-full border border-white/10 bg-surface-raised shadow-sm">
+                <UserAvatar
+                  src={resolveUserAvatarUrl(user)}
+                  alt={user.display_name || '用户头像'}
+                  letter={(user.display_name || user.email || user.id || 'U').slice(0, 1).toUpperCase()}
+                  seed={user.id}
+                  fallbackType="svg"
+                  className="size-full object-cover"
+                />
+              </div>
+            </div>
             <div className="space-y-3 text-xs">
               <div className="flex justify-between border-b border-white/[0.05] pb-2">
                 <span className="text-white/45">显示名称</span>
