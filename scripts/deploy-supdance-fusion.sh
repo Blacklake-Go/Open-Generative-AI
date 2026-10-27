@@ -105,6 +105,9 @@ rsync -a --delete \"\$STAGE/components/\" \"\$WEB_DIR/components/\"
 rsync -a \"\$STAGE/app/\" \"\$WEB_DIR/app/\"
 # 资产同步已下线：清掉仅存在于旧发布中的同步路由（app/ 保留生产独有页面，故不整体 --delete）
 rm -rf \"\$WEB_DIR/app/api/canvas/assets/sync\" \"\$WEB_DIR/app/api/account/asset-sync-tokens\"
+# 资产库 V2 已下线遗留 assets 接口（保留 [id]/download 与 folders library upload）
+rm -f \"\$WEB_DIR/app/api/assets/route.js\" \"\$WEB_DIR/app/api/assets/[id]/route.js\"
+rm -rf \"\$WEB_DIR/app/api/assets/batch\"
 rsync -a \"\$STAGE/lib/\" \"\$WEB_DIR/lib/\"
 if [ -d \"\$STAGE/plugins\" ]; then
   rsync -a \"\$STAGE/plugins/\" \"\$WEB_DIR/plugins/\"
