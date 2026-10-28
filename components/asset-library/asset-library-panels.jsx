@@ -171,7 +171,7 @@ export function AssetDrawer({ asset, onClose, onCopy, onEdit, onDownload }) {
   const KindIcon = asset ? (ASSET_KIND_ICONS[asset.kind] || FileText) : Clapperboard;
 
   return (
-    <Drawer rootClassName="asset-library-drawer-root" className="library-drawer asset-library-drawer" title={copy.assetArchive} open={Boolean(asset)} size="large" onClose={onClose}>
+    <Drawer rootClassName="asset-library-drawer-root asset-library-overlay-root" className="library-drawer asset-library-drawer" title={copy.assetArchive} open={Boolean(asset)} size={400} onClose={onClose}>
       {asset ? (
         <div className="asset-archive">
           <div className="asset-archive-header">

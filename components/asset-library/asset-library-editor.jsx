@@ -103,10 +103,11 @@ export default function AssetEditorModal({ open, asset, defaultFolderId, folders
 
   return (
     <Modal
+      rootClassName="asset-library-overlay-root"
       className="library-modal asset-editor-modal"
       title={asset ? copy.editAsset : copy.newAsset}
       open={open}
-      width={880}
+      width={800}
       onCancel={onCancel}
       onOk={() => { void submit(); }}
       okText={copy.save}
@@ -121,6 +122,7 @@ export default function AssetEditorModal({ open, asset, defaultFolderId, folders
           <div className="asset-editor-row">
             <Form.Item name="kind" label={copy.fieldKind}>
               <Select
+                classNames={{ popup: { root: 'asset-library-overlay-root' } }}
                 disabled={Boolean(asset)}
                 options={[
                   { label: copy.kindLabels.text, value: 'text' },
@@ -129,7 +131,7 @@ export default function AssetEditorModal({ open, asset, defaultFolderId, folders
               />
             </Form.Item>
             <Form.Item name="category" label={copy.fieldCategory}>
-              <Select options={categoryOptions} />
+              <Select classNames={{ popup: { root: 'asset-library-overlay-root' } }} options={categoryOptions} />
             </Form.Item>
           </div>
           <Form.Item name="title" label={copy.fieldTitle} rules={[{ required: true, message: copy.titleRequired }]}>
@@ -137,10 +139,10 @@ export default function AssetEditorModal({ open, asset, defaultFolderId, folders
           </Form.Item>
           <div className="asset-editor-row">
             <Form.Item name="folderId" label={copy.fieldFolder}>
-              <Select options={folderOptions} />
+              <Select classNames={{ popup: { root: 'asset-library-overlay-root' } }} options={folderOptions} />
             </Form.Item>
             <Form.Item name="tags" label={copy.fieldTags}>
-              <Select mode="tags" tokenSeparators={[',', '，']} placeholder={copy.tagsPlaceholder} />
+              <Select classNames={{ popup: { root: 'asset-library-overlay-root' } }} mode="tags" tokenSeparators={[',', '，']} placeholder={copy.tagsPlaceholder} />
             </Form.Item>
           </div>
           {kind === 'entity' ? (
@@ -150,7 +152,7 @@ export default function AssetEditorModal({ open, asset, defaultFolderId, folders
               </Form.Item>
               <div className="asset-editor-row">
                 <Form.Item name={['definition', 'aliases']} label={copy.fieldAliases}>
-                  <Select mode="tags" tokenSeparators={[',', '，']} placeholder={copy.aliasesPlaceholder} />
+                  <Select classNames={{ popup: { root: 'asset-library-overlay-root' } }} mode="tags" tokenSeparators={[',', '，']} placeholder={copy.aliasesPlaceholder} />
                 </Form.Item>
                 <Form.Item name="version" label={copy.fieldVersion}>
                   <Input allowClear placeholder={copy.versionPlaceholder} />

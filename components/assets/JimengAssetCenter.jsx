@@ -130,28 +130,28 @@ export default function JimengAssetCenter({ locale = 'en', initialUser = null, a
   if (!user) {
     const loginTarget = localizeStudioPath(`/login?redirect=${encodeURIComponent(localizeStudioPath('/assets', activeLocale))}`, activeLocale);
     return (
-      <div className="min-h-screen bg-[#0d0e12] text-ink flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-[#14161b] p-8 text-center shadow-elevation-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-brand">
-            <Folder className="w-7 h-7" />
+      <div className="min-h-screen bg-base text-ink flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-line bg-overlay p-8 text-center shadow-elevation-4">
+          <div className="w-20 h-20 rounded-2xl bg-wash border border-line flex items-center justify-center mx-auto mb-4 text-brand-text">
+            <Folder className="w-9 h-9" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">
+          <h2 className="text-section-title font-semibold text-ink mb-2">
             {copy.signInTitle}
           </h2>
-          <p className="text-xs text-ink-muted leading-relaxed mb-6">
+          <p className="text-body-sm text-ink-muted leading-relaxed mb-6">
             {copy.signInDesc}
           </p>
           <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={() => setShowAuthModal(true)}
-              className="w-full h-10 rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-xs font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1 cursor-pointer"
+              className="w-full h-control-md rounded-full bg-brand hover:bg-brand-hover active:bg-brand-active text-ink-on-accent text-body-sm font-semibold transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring shadow-elevation-1 cursor-pointer"
             >
               {copy.signInBtn}
             </button>
             <Link
               href={loginTarget}
-              className="w-full h-10 rounded-full bg-surface hover:bg-surface-raised border border-line text-ink-muted hover:text-ink text-xs font-medium flex items-center justify-center transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
+              className="w-full h-control-md rounded-full bg-surface hover:bg-surface-raised border border-line text-ink-muted hover:text-ink text-body-sm font-medium flex items-center justify-center transition-[background-color,color,border-color,transform] duration-fast ease-standard active:scale-[0.98] active:duration-instant focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-ring cursor-pointer"
             >
               {copy.goToLoginPage}
             </Link>
@@ -173,7 +173,7 @@ export default function JimengAssetCenter({ locale = 'en', initialUser = null, a
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0e12] text-ink flex flex-col overflow-hidden asset-library-shell">
+    <div className="min-h-screen bg-base text-ink flex flex-col overflow-hidden asset-library-shell">
       <StudioHeader locale={activeLocale} initialUser={user} />
 
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">

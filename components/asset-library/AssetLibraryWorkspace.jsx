@@ -55,29 +55,91 @@ const ANTD_LOCALES = {
   es: antdEsES,
 };
 
+/* AntD 表面映射到 KOYO 暗色语义 token（值与 app/globals.css :root 对齐）。 */
 const ANTD_THEME = {
   token: {
-    colorPrimary: '#171717',
-    colorLink: '#171717',
-    colorText: '#1b1b1f',
-    colorTextSecondary: 'rgba(27, 27, 31, 0.62)',
-    colorBorder: 'rgba(17, 17, 17, 0.14)',
-    colorBorderSecondary: 'rgba(17, 17, 17, 0.09)',
-    colorBgElevated: '#ffffff',
-    borderRadius: 8,
-    controlHeight: 34,
-    fontSize: 13,
-    boxShadowSecondary: '0 22px 64px rgba(15, 23, 42, 0.16)',
+    colorPrimary: '#e11d74',
+    colorInfo: '#e11d74',
+    colorLink: '#f472b6',
+    colorSuccess: '#10b981',
+    colorWarning: '#f59e0b',
+    colorError: '#ef4444',
+    colorText: '#f3f4f6',
+    colorTextSecondary: '#9ca3af',
+    colorTextTertiary: '#868b8f',
+    colorTextQuaternary: '#4b5563',
+    colorBgContainer: '#0d0e12',
+    colorBgElevated: '#181a22',
+    colorBgLayout: '#070708',
+    colorBgMask: 'rgba(3, 4, 5, 0.72)',
+    colorBgSpotlight: 'rgba(24, 26, 34, 0.97)',
+    colorBorder: 'rgba(255, 255, 255, 0.10)',
+    colorBorderSecondary: 'rgba(255, 255, 255, 0.06)',
+    colorFill: 'rgba(255, 255, 255, 0.10)',
+    colorFillSecondary: 'rgba(255, 255, 255, 0.07)',
+    colorFillTertiary: 'rgba(255, 255, 255, 0.04)',
+    colorFillQuaternary: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
+    borderRadiusLG: 16,
+    borderRadiusSM: 8,
+    borderRadiusXS: 4,
+    controlHeight: 38,
+    controlHeightSM: 32,
+    controlHeightLG: 44,
+    fontSize: 14,
+    fontSizeSM: 13,
+    fontSizeLG: 15,
+    boxShadowSecondary:
+      '0 12px 32px -10px rgba(0, 0, 0, 0.74), 0 4px 12px -6px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.025)',
+    motionDurationFast: '0.12s',
+    motionDurationMid: '0.18s',
+    motionDurationSlow: '0.24s',
+    motionEaseInOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    motionEaseOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
   },
   components: {
     Button: {
       primaryShadow: 'none',
       defaultShadow: 'none',
       dangerShadow: 'none',
-      fontWeight: 520,
+      fontWeight: 500,
     },
     Drawer: {
-      colorBgElevated: '#ffffff',
+      colorBgElevated: '#181a22',
+      paddingLG: 24,
+    },
+    Modal: {
+      colorBgElevated: '#181a22',
+      borderRadiusLG: 20,
+      titleFontSize: 18,
+    },
+    Input: {
+      colorBgContainer: '#0f1015',
+      borderRadius: 16,
+      hoverBorderColor: 'rgba(255, 255, 255, 0.18)',
+      activeBorderColor: '#e11d74',
+      activeShadow: 'none',
+    },
+    Select: {
+      colorBgContainer: '#0f1015',
+      colorBgElevated: '#181a22',
+      optionHeight: 32,
+      optionFontSize: 14,
+      hoverBorderColor: 'rgba(255, 255, 255, 0.18)',
+      activeBorderColor: '#e11d74',
+      activeOutlineColor: 'rgba(0, 0, 0, 0)',
+    },
+    Dropdown: {
+      colorBgElevated: '#181a22',
+      borderRadiusLG: 16,
+      paddingBlock: 6,
+    },
+    Tag: {
+      borderRadiusSM: 6,
+    },
+    Form: {
+      labelColor: '#9ca3af',
+      labelFontSize: 12,
     },
   },
 };
@@ -691,6 +753,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
                 <>
                   {trashTotal > 0 ? (
                     <Popconfirm
+                      rootClassName="asset-library-overlay-root"
                       title={copy.clearTrashTitle}
                       description={copy.clearTrashDescription}
                       onConfirm={() => { void emptyTrash(); }}
@@ -708,6 +771,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
                   <Button type="primary" icon={<Plus />} onClick={openCreate}>{copy.createAsset}</Button>
                   <Button icon={<Images />} loading={uploading} disabled={importing} onClick={() => imageInputRef.current?.click()}>{copy.uploadImage}</Button>
                   <Dropdown
+                    rootClassName="asset-library-overlay-root"
                     trigger={['click']}
                     menu={{
                       items: [
@@ -816,6 +880,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
                           <PencilLine />
                         </button>
                         <Popconfirm
+                          rootClassName="asset-library-overlay-root"
                           title={fillCopy(copy.deleteCategoryTitle, { name: folder.name })}
                           description={copy.deleteCategoryDescription}
                           onConfirm={() => removeFolder(folder)}
@@ -981,6 +1046,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
       />
 
       <Modal
+        rootClassName="asset-library-overlay-root"
         className="library-modal library-confirm-modal"
         title={folderEditor === 'new' ? copy.newCategoryTitle : copy.renameCategoryTitle}
         open={Boolean(folderEditor)}
@@ -1001,6 +1067,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
       </Modal>
 
       <Modal
+        rootClassName="asset-library-overlay-root"
         className="library-modal library-confirm-modal"
         title={copy.archiveTitle}
         open={Boolean(archivingAsset)}
@@ -1015,6 +1082,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
       </Modal>
 
       <Modal
+        rootClassName="asset-library-overlay-root"
         className="library-modal library-confirm-modal"
         title={copy.archiveBatchTitle}
         open={batchArchiveOpen}
@@ -1029,6 +1097,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
       </Modal>
 
       <Modal
+        rootClassName="asset-library-overlay-root"
         className="library-modal library-confirm-modal"
         title={copy.purgeTitle}
         open={Boolean(deletingAsset)}
@@ -1044,6 +1113,7 @@ function AssetLibraryWorkspaceInner({ userId, studioHref, sideNav, onLibraryAsse
       </Modal>
 
       <Modal
+        rootClassName="asset-library-overlay-root"
         className="library-modal library-confirm-modal"
         title={copy.purgeBatchTitle}
         open={batchDeleteOpen}

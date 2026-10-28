@@ -95,7 +95,7 @@ export function AssetCover({ asset, selected = false, onSelect, onOpen, menuItem
         aria-label={fillCopy(copy.selectAssetAria, { title: asset.title })}
       />
       {menuItems?.length ? (
-        <Dropdown trigger={['click']} menu={{ items: menuItems }}>
+        <Dropdown rootClassName="asset-library-overlay-root" trigger={['click']} menu={{ items: menuItems }}>
           <button type="button" className="assets-cover-more" aria-label={copy.moreAssetActions} title={copy.moreActions}>
             <MoreHorizontal />
           </button>
