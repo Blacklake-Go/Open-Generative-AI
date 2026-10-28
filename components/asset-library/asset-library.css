@@ -140,7 +140,7 @@
 .al-search:focus-within { border-color: var(--border-strong); background: var(--bg-surface); }
 .al-search:has(input:focus-visible) { outline: 1px solid color-mix(in srgb, var(--text-primary) 36%, transparent); outline-offset: 1px; }
 .al-search svg { width: 16px; height: 16px; flex: none; color: var(--text-tertiary); }
-.al-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: var(--text-body-sm); }
+.al-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: var(--text-body); }
 .al-search input::placeholder { color: var(--text-disabled); }
 .al-search input::-webkit-search-cancel-button { cursor: pointer; }
 
@@ -157,7 +157,7 @@
   background-position: right 10px center;
   color: var(--text-secondary);
   font: inherit;
-  font-size: var(--text-label);
+  font-size: var(--text-body);
   cursor: pointer;
   transition: background-color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
 }
@@ -246,7 +246,7 @@
 /* ---------- 融合导航 (原左侧导航并入分类列) ---------- */
 .assets-nav-group { gap: var(--space-2); }
 .assets-nav-group a.assets-filter-item { color: inherit; text-decoration: none; }
-.assets-nav-session { height: var(--control-xs); font-size: var(--text-body-sm); }
+.assets-nav-session { height: var(--control-xs); font-size: var(--text-label); }
 .assets-nav-sessions { max-height: 176px; overflow-y: auto; }
 .assets-nav-empty { padding: 2px var(--space-3); color: var(--text-disabled); font-size: var(--text-body-sm); font-style: italic; }
 
@@ -416,7 +416,7 @@
 .app-pagination-size { height: var(--control-xs); padding: 0 24px 0 var(--space-2); border: 1px solid var(--border-default); border-radius: var(--radius-md); outline: 0; appearance: none; background: transparent; color: var(--text-secondary); font: inherit; font-size: var(--text-label); cursor: pointer; }
 .app-pagination-size:focus-visible { border-color: var(--border-strong); outline: 1px solid color-mix(in srgb, currentColor 36%, transparent); outline-offset: 1px; }
 .app-pagination-pages { display: flex; align-items: center; gap: 2px; }
-.app-pagination-btn { display: inline-flex; height: var(--control-xs); min-width: var(--control-xs); align-items: center; justify-content: center; padding: 0 var(--space-2); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font: inherit; font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer; transition: background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard); }
+.app-pagination-btn { display: inline-flex; height: var(--control-xs); min-width: var(--control-xs); align-items: center; justify-content: center; padding: 0 var(--space-2); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font: inherit; font-size: var(--text-label); font-variant-numeric: tabular-nums; line-height: 1; cursor: pointer; transition: background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard); }
 .app-pagination-btn:hover:not(:disabled) { background: var(--wash); color: var(--text-primary); }
 .app-pagination-btn.is-active,
 .app-pagination-btn.is-active:hover { background: var(--wash-press); color: var(--text-primary); font-weight: 600; }
@@ -494,7 +494,7 @@
 .ant-popover.asset-library-overlay-root .ant-popconfirm-title,
 .ant-popover.asset-library-overlay-root .ant-popconfirm-message-title { color: var(--text-primary); font-size: var(--text-body-sm); font-weight: var(--weight-label); }
 .ant-popover.asset-library-overlay-root .ant-popconfirm-description { color: var(--text-tertiary); font-size: var(--text-label); }
-.ant-popover.asset-library-overlay-root .ant-popconfirm-buttons .ant-btn { height: var(--control-sm); border-radius: var(--radius-md); font-size: var(--text-body-sm); box-shadow: none; }
+.ant-popover.asset-library-overlay-root .ant-popconfirm-buttons .ant-btn { height: var(--control-sm); border-radius: var(--radius-md); font-size: var(--text-label); box-shadow: none; }
 
 .asset-archive { display: flex; flex-direction: column; gap: var(--space-4); }
 .asset-archive-header { display: flex; align-items: flex-start; gap: var(--space-4); }
@@ -536,7 +536,7 @@
 .asset-archive-section-title { display: block; margin-bottom: var(--space-2); color: var(--text-tertiary); font-size: var(--text-micro); font-weight: var(--weight-label); letter-spacing: var(--tracking-micro); }
 .asset-archive-section-body { margin: 0; color: var(--text-secondary); font-size: var(--text-label); line-height: 1.7; white-space: pre-wrap; }
 .asset-archive-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.asset-archive-actions .ant-btn { height: var(--control-md); border-radius: var(--radius-lg); font-size: var(--text-body-sm); box-shadow: none; }
+.asset-archive-actions .ant-btn { height: var(--control-md); border-radius: var(--radius-lg); font-size: var(--text-body); box-shadow: none; }
 .asset-archive-actions .ant-btn svg { width: 16px; height: 16px; }
 
 .asset-archive-character { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -559,7 +559,7 @@
 /* ---------- 页头操作 ---------- */
 .assets-header-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-4); }
 .assets-header-action-buttons { display: flex; align-items: center; gap: var(--space-2); }
-.assets-header-action-buttons .ant-btn { height: var(--control-md); border-radius: var(--radius-lg); font-size: var(--text-body-sm); box-shadow: none; }
+.assets-header-action-buttons .ant-btn { height: var(--control-md); border-radius: var(--radius-lg); font-size: var(--text-body); box-shadow: none; }
 .assets-header-action-buttons .ant-btn svg { width: 16px; height: 16px; }
 
 /* ---------- 卡片多选与更多操作 ---------- */
@@ -651,7 +651,7 @@
 .assets-batch-count { display: inline-flex; align-items: baseline; gap: var(--space-2); margin-right: auto; color: var(--text-secondary); font-size: var(--text-label); }
 .assets-batch-count strong { color: var(--text-primary); font-size: var(--text-body); font-weight: 600; font-variant-numeric: tabular-nums; }
 .assets-batch-actions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
-.assets-batch-actions .ant-btn { height: var(--control-sm); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font-size: var(--text-body-sm); box-shadow: none; }
+.assets-batch-actions .ant-btn { height: var(--control-sm); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font-size: var(--text-label); box-shadow: none; }
 .assets-batch-actions .ant-btn:hover { background: var(--wash); color: var(--text-primary); }
 .assets-batch-actions .ant-btn svg { width: 16px; height: 16px; }
 
