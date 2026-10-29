@@ -1,4 +1,5 @@
 import { getMediaCapability } from "./modelCapabilities.js";
+import { publishedStudioModels } from "./publishedModelDirectory.js";
 import { setServerModelMeta } from "./modelDescriptions.js";
 
 // Synced from the canonical Muapi schema_data.json catalog.
@@ -31759,17 +31760,24 @@ const SERVER_TO_CATALOG_ALIASES = {
   ],
 };
 
+const directorySubscribers = new Set();
+export function subscribeModelDirectory(listener) {
+  directorySubscribers.add(listener);
+  return () => directorySubscribers.delete(listener);
+}
+
 export function applyActiveModelDirectory(rows) {
   if (!Array.isArray(rows)) return { activeCount: activeModelIds?.size || 0, visibleCount: 0 };
   const list = rows;
-  setServerModelMeta(list, SERVER_TO_CATALOG_ALIASES);
+  const aliasesById = Object.fromEntries(list.map(row => [row.id, [...(SERVER_TO_CATALOG_ALIASES[row.id] || []), ...publishedStudioModels(row).map(model => model.id)]]));
+  setServerModelMeta(list, aliasesById);
 
   const activeIds = new Set(
     list
       .filter(isServerModelGenerationEligible)
       .flatMap((row) => {
         const idStr = String(row.id);
-        const aliases = SERVER_TO_CATALOG_ALIASES[idStr] || [];
+        const aliases = aliasesById[idStr] || [];
         return [
           idStr,
           String(row.endpoint || ''),
@@ -31791,28 +31799,29 @@ export function applyActiveModelDirectory(rows) {
           formula: Boolean(row.pricingType) && String(row.pricingType) !== 'fixed',
         };
         const idStr = String(row.id);
-        const aliases = SERVER_TO_CATALOG_ALIASES[idStr] || [];
+        const aliases = aliasesById[idStr] || [];
         const entries = [[idStr, item], ...aliases.map((alias) => [alias, item])];
         return entries;
       }),
   );
 
+  const directoryModes = ['t2i','i2i','t2v','i2v','v2v','audio'];
+  const published = list.filter(isServerModelGenerationEligible).flatMap(publishedStudioModels);
+  for (let index = 0; index < MODEL_DIRECTORY_ARRAYS.length; index += 1) {
+    const catalog = MODEL_DIRECTORY_ARRAYS[index];
+    const active = ORIGINAL_MODEL_DIRECTORY_ARRAYS[index].filter(model =>
+      activeIds.has(String(model.id)) || (model.endpoint && activeIds.has(String(model.endpoint))));
+    const dynamic = published.filter(model => index === 5 ? ['t2a','t2m'].includes(model.taskType) : model.taskType === directoryModes[index]);
+    const canonical = new Set(dynamic.map(model => model.canonicalModelId));
+    catalog.splice(0, catalog.length, ...active.filter(model => !canonical.has(model.endpoint || model.id)), ...dynamic);
+  }
+  for (const listener of directorySubscribers) listener();
   if (typeof globalThis !== 'undefined') {
     globalThis[GLOBAL_PRICING_MAP_KEY] = modelPricingById;
     globalThis[GLOBAL_ACTIVE_IDS_KEY] = activeIds;
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('supdance-model-pricing-updated', {
-        detail: { count: modelPricingById.size }
-      }));
-    }
-  }
-
-  for (let index = 0; index < MODEL_DIRECTORY_ARRAYS.length; index += 1) {
-    const catalog = MODEL_DIRECTORY_ARRAYS[index];
-    const active = ORIGINAL_MODEL_DIRECTORY_ARRAYS[index].filter((model) => 
-      activeIds.has(String(model.id)) || (model.endpoint && activeIds.has(String(model.endpoint)))
-    );
-    catalog.splice(0, catalog.length, ...active);
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('supdance-model-pricing-updated', {
+      detail: { count: modelPricingById.size }
+    }));
   }
 
   return {

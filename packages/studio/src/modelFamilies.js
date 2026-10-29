@@ -2,6 +2,7 @@ import {
   i2iModels,
   i2vModels,
   isModelActive,
+  subscribeModelDirectory,
   t2iModels,
   t2vModels,
   v2vModels,
@@ -218,6 +219,7 @@ function normalizeVersion(value) {
 }
 
 function imageFamilyId(model) {
+  if (model.published) return model.canonicalModelId;
   return (IMAGE_FAMILY_ALIASES[model.id] || model.id)
     .toLowerCase()
     .replace(/-(text-to-image|image-to-image|image-edit)(?=-|$)/g, "")
@@ -228,6 +230,7 @@ function imageFamilyId(model) {
 }
 
 function videoFamilyId(model) {
+  if (model.published) return model.canonicalModelId;
   const grouped = getGroupedVideoConfiguration(model.id);
   if (grouped) return grouped.familyId;
   const modelId = model.id.toLowerCase();
@@ -560,7 +563,7 @@ export function getImageReferenceVariant(catalog, familyOrId, currentVariantId) 
   return getFamilyVariant(catalog, family, "i2i", currentVariantId);
 }
 
-export const imageModelCatalog = buildCatalog(
+export let imageModelCatalog = buildCatalog(
   [
     { mode: "t2i", models: t2iModels },
     { mode: "i2i", models: i2iModels },
@@ -574,7 +577,7 @@ export const imageModelCatalog = buildCatalog(
   },
 );
 
-export const videoModelCatalog = buildCatalog(
+export let videoModelCatalog = buildCatalog(
   [
     { mode: "t2v", models: t2vModels },
     { mode: "i2v", models: i2vModels },
@@ -769,13 +772,13 @@ function buildModelPickerEntries(catalog, modes, aliases) {
   return Object.freeze(entries);
 }
 
-export const imageModelPickerEntries = buildModelPickerEntries(
+export let imageModelPickerEntries = buildModelPickerEntries(
   imageModelCatalog,
   ["t2i", "i2i"],
   IMAGE_FAMILY_ALIASES,
 );
 
-export const videoModelPickerEntries = buildModelPickerEntries(
+export let videoModelPickerEntries = buildModelPickerEntries(
   videoModelCatalog,
   ["t2v", "i2v", "v2v"],
   VIDEO_FAMILY_ALIASES,
@@ -804,12 +807,12 @@ function indexModelPickerEntries(entries, catalog) {
   return entryByVariantId;
 }
 
-export const imageModelPickerEntryByVariantId = indexModelPickerEntries(
+export let imageModelPickerEntryByVariantId = indexModelPickerEntries(
   imageModelPickerEntries,
   imageModelCatalog,
 );
 
-export const videoModelPickerEntryByVariantId = indexModelPickerEntries(
+export let videoModelPickerEntryByVariantId = indexModelPickerEntries(
   videoModelPickerEntries,
   videoModelCatalog,
 );
@@ -870,8 +873,8 @@ function buildVideoModelMenuEntries() {
 
 // Menu grouping is presentation-only. The original picker entries still
 // describe compatible technical variants for existing workflow resolution.
-export const videoModelMenuEntries = buildVideoModelMenuEntries();
-export const videoModelMenuEntryByVariantId = indexModelPickerEntries(
+export let videoModelMenuEntries = buildVideoModelMenuEntries();
+export let videoModelMenuEntryByVariantId = indexModelPickerEntries(
   videoModelMenuEntries,
   videoModelCatalog,
 );
@@ -884,3 +887,57 @@ export function filterActiveModelEntries(entries) {
     [...(entry.variantIds || [])].some((id) => isModelActive(id)),
   );
 }
+
+subscribeModelDirectory(() => {
+  imageModelCatalog = buildCatalog(
+  [
+    { mode: "t2i", models: t2iModels },
+    { mode: "i2i", models: i2iModels },
+  ],
+  {
+    familyId: imageFamilyId,
+    familyName: (id, fallback) => IMAGE_FAMILY_NAMES[id] || cleanImageFamilyName(fallback),
+    namingModes: ["t2i", "i2i"],
+    preferredVariants: PREFERRED_IMAGE_VARIANTS,
+    seriesVersion: imageSeriesVersion,
+  },
+);
+  videoModelCatalog = buildCatalog(
+  [
+    { mode: "t2v", models: t2vModels },
+    { mode: "i2v", models: i2vModels },
+    { mode: "v2v", models: v2vModels },
+  ],
+  {
+    familyId: videoFamilyId,
+    familyName: videoFamilyName,
+    namingModes: ["t2v", "i2v", "v2v"],
+    preferredVariants: PREFERRED_VIDEO_VARIANTS,
+    seriesVersion: videoSeriesVersion,
+    variantKey: videoVariantKey,
+  },
+);
+  imageModelPickerEntries = buildModelPickerEntries(
+  imageModelCatalog,
+  ["t2i", "i2i"],
+  IMAGE_FAMILY_ALIASES,
+);
+  videoModelPickerEntries = buildModelPickerEntries(
+  videoModelCatalog,
+  ["t2v", "i2v", "v2v"],
+  VIDEO_FAMILY_ALIASES,
+);
+  imageModelPickerEntryByVariantId = indexModelPickerEntries(
+  imageModelPickerEntries,
+  imageModelCatalog,
+);
+  videoModelPickerEntryByVariantId = indexModelPickerEntries(
+  videoModelPickerEntries,
+  videoModelCatalog,
+);
+  videoModelMenuEntries = buildVideoModelMenuEntries();
+  videoModelMenuEntryByVariantId = indexModelPickerEntries(
+  videoModelMenuEntries,
+  videoModelCatalog,
+);
+});

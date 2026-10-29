@@ -73,6 +73,7 @@ function normalizeValue(value, schema, { includeEmpty = false } = {}) {
   }
   if (schema.type === "object") {
     if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+    if (!schema.properties) return value;
     const requiredKeys = schema.required || [];
     const stringKeys = Object.entries(schema.properties || {})
       .filter(([, propertySchema]) => propertySchema.type === "string")
@@ -116,7 +117,7 @@ export function mergeModelParameterValues(model, previousValues = {}) {
 }
 
 export function buildSupplementalInputPayload(model, values = {}) {
-  const payload = {};
+  const payload = model?.published ? {...model.fixedParameters} : {};
   for (const { key, schema } of getSupplementalModelInputs(model)) {
     if (!Object.hasOwn(values, key)) continue;
     const normalized = normalizeValue(values[key], schema);

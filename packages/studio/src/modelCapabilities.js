@@ -106,6 +106,14 @@ export function buildReferenceParams(
 ) {
   const capabilities = getModelMediaCapabilities(model);
   const params = {};
+  if (model?.published) {
+    for (const [type,urls] of Object.entries({image:imageUrls,video:videoUrls,audio:audioUrls})) {
+      const capability=capabilities[type];
+      const values=uniqueUrls(urls).slice(0,capability.maxItems);
+      if (capability.field && values.length) params[capability.field]=capability.isArray ? values : values[0];
+    }
+    return params;
+  }
 
   const images = uniqueUrls(imageUrls).slice(0, capabilities.image.maxItems);
   if (capabilities.image.field && images.length > 0) {
