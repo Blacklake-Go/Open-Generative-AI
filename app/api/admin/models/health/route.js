@@ -1,6 +1,8 @@
 import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse } from '@/lib/admin/authz';
 import { PERMISSIONS } from '@/lib/admin/permissions';
-import { getChannelsHealthOverview, probeProviderChannel } from '@/lib/services/circuitBreaker';
+import { getChannelsHealthOverview } from '@/lib/services/circuitBreaker';
+// 探针只保留一份实现：credential 探针没有网络往返，必须由 healthProbe 统一标注验证等级并双写 ops_bill。
+import { probeProviderChannel } from '@/lib/services/healthProbe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
