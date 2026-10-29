@@ -181,7 +181,9 @@ test('attempts link to the decision so receipt, retry and terminal state are tra
 
   const core = fs.readFileSync(path.join(REPO_ROOT, 'lib/services/generationCore.js'), 'utf8');
   assert.match(core, /routeDecisionId: routeDecision\.decisionId \|\| null/);
-  assert.match(core, /metadata: pendingFailoverMetadata \? \{ failover: pendingFailoverMetadata \} : \{\}/);
+  // attempt 的 metadata 同时承载切换原因与凭据来源，缺任何一项都会让回执/重试链断裂。
+  assert.match(core, /\.\.\.\(pendingFailoverMetadata \? \{ failover: pendingFailoverMetadata \} : \{\}\)/);
+  assert.match(core, /\.\.\.credentialMetadata/);
   assert.match(core, /pendingFailoverMetadata = \{/);
 
   const router = fs.readFileSync(path.join(REPO_ROOT, 'lib/services/smartRouter.js'), 'utf8');
