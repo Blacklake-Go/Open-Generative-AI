@@ -2,11 +2,15 @@ import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
 import { CANONICAL_GROUPS, isOrphanVariantCandidate, suggestCanonicalTarget } from '@/lib/modelCenter/canonicalModels.js';
+import { getReportingFxSnapshot } from '@/lib/admin/financialReporting';
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 import FrontendConfigClient from './frontend/FrontendConfigClient';
 
 export const dynamic = 'force-dynamic';
 
 async function getFrontendModels() {
+  const fx = await getReportingFxSnapshot();
+  const reportParameters = [fx.usdToCny, CREDIT_PRICING_POLICY.cnyPerCredit];
   try {
     return await queryMany(`
       SELECT
@@ -38,7 +42,7 @@ async function getFrontendModels() {
         COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
         CASE
           WHEN COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20) > 0 AND rc.min_cost_cny IS NOT NULL AND rc.min_cost_cny > 0 THEN
-            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1 - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1)) * 100)::numeric, 1)
+            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * $2::numeric - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * $2::numeric)) * 100)::numeric, 1)
           ELSE NULL
         END AS gross_margin_rate,
         COALESCE(act.calls_24h, 0)::int AS calls_24h,
@@ -67,24 +71,24 @@ async function getFrontendModels() {
               'health_status', COALESCE(p.health_status, 'healthy'),
               'cost_cny', CASE
                 WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
-                ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+                ELSE (pm.cost_config->>'base_cost')::numeric * $1::numeric
               END,
               'cost_usd', CASE
-                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / $1::numeric
                 ELSE (pm.cost_config->>'base_cost')::numeric
               END
             ) ORDER BY pm.priority DESC, pm.id ASC
           ) FILTER (WHERE pm.id IS NOT NULL) AS routes,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / 7.2
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / $1::numeric
               ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric
             END
           ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_usd,
           MIN(
             CASE 
               WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric
-              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * 7.2
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * $1::numeric
             END
           ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_cny
         FROM ai_studio.provider_models pm
@@ -112,7 +116,7 @@ async function getFrontendModels() {
         CASE WHEN m.is_visible THEN 0 ELSE 1 END,
         CASE m.tier WHEN 'core' THEN 0 WHEN 'backup' THEN 1 ELSE 2 END,
         m.sort ASC, m.created_at ASC
-    `);
+    `, reportParameters);
   } catch (err) {
     return await queryMany(`
       SELECT
@@ -143,7 +147,7 @@ async function getFrontendModels() {
         COALESCE(mp.min_gross_margin_rate, 0.3)::numeric AS min_gross_margin_rate,
         CASE
           WHEN COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20) > 0 AND rc.min_cost_cny IS NOT NULL AND rc.min_cost_cny > 0 THEN
-            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1 - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * 0.1)) * 100)::numeric, 1)
+            ROUND((((COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * $2::numeric - rc.min_cost_cny) / (COALESCE(NULLIF(mp.base_credits, 0), mc.credits_price, 20)::numeric * $2::numeric)) * 100)::numeric, 1)
           ELSE NULL
         END AS gross_margin_rate,
         0 AS calls_24h,
@@ -168,24 +172,24 @@ async function getFrontendModels() {
               'health_status', 'healthy',
               'cost_cny', CASE
                 WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
-                ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+                ELSE (pm.cost_config->>'base_cost')::numeric * $1::numeric
               END,
               'cost_usd', CASE
-                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+                WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / $1::numeric
                 ELSE (pm.cost_config->>'base_cost')::numeric
               END
             ) ORDER BY pm.priority DESC, pm.id ASC
           ) FILTER (WHERE pm.id IS NOT NULL) AS routes,
           MIN(
             CASE 
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / 7.2
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric / $1::numeric
               ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric
             END
           ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_usd,
           MIN(
             CASE 
               WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN NULLIF(pm.cost_config->>'base_cost', '')::numeric
-              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * 7.2
+              ELSE NULLIF(pm.cost_config->>'base_cost', '')::numeric * $1::numeric
             END
           ) FILTER (WHERE pm.review_status = 'approved' AND NULLIF(pm.cost_config->>'base_cost', '')::numeric > 0) AS min_cost_cny
         FROM ai_studio.provider_models pm WHERE pm.model_id = m.id
@@ -201,7 +205,7 @@ async function getFrontendModels() {
         CASE WHEN m.is_visible THEN 0 ELSE 1 END,
         CASE m.tier WHEN 'core' THEN 0 WHEN 'backup' THEN 1 ELSE 2 END,
         m.sort ASC, m.created_at ASC
-    `);
+    `, reportParameters);
   }
 }
 

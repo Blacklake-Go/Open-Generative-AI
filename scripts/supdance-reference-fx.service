@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh the official USD/CNY reference used by model routing
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=www
+Group=www
+WorkingDirectory=/home/wwwroot/AI/domain/supdance.com/web
+EnvironmentFile=/etc/supdance.env
+ExecStart=/usr/local/bin/node --experimental-loader ./scripts/server-only-loader.mjs ./scripts/refresh-safe-reference-fx.mjs

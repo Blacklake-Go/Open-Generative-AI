@@ -3,6 +3,7 @@ import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
 import { getModelPricingBreakdownList } from '@/lib/modelCenter/pricingMatrix';
+import { getReportingFxSnapshot } from '@/lib/admin/financialReporting';
 import RoutingClient from './RoutingClient';
 
 export const metadata = {
@@ -12,6 +13,7 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 async function getRoutingSnapshot() {
+  const fx = await getReportingFxSnapshot();
   const [models, providers] = await Promise.all([
     queryMany(`
       SELECT
@@ -34,10 +36,10 @@ async function getRoutingSnapshot() {
             'provider_name', p.name,
             'cost_cny', CASE
               WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric
-              ELSE (pm.cost_config->>'base_cost')::numeric * 7.2
+              ELSE (pm.cost_config->>'base_cost')::numeric * $1::numeric
             END,
             'cost_usd', CASE
-              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / 7.2
+              WHEN UPPER(pm.cost_config->>'currency') = 'CNY' THEN (pm.cost_config->>'base_cost')::numeric / $1::numeric
               ELSE (pm.cost_config->>'base_cost')::numeric
             END
           ) ORDER BY pm.priority DESC
@@ -48,7 +50,7 @@ async function getRoutingSnapshot() {
       ) routes ON TRUE
       WHERE m.status != 'disabled'
       ORDER BY m.sort, m.id
-    `),
+    `, [fx.usdToCny]),
     queryMany(`
       SELECT id, name, provider_type, health_status, enabled
       FROM ai_studio.ai_providers
