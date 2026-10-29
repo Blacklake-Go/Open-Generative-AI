@@ -126,7 +126,7 @@ try {
   console.log(`[generation-worker] started; poll=${pollMs}ms batch=${batchSize}`);
   while (!stopping) {
     try {
-      const summary = await runGenerationWorkerOnce({ batchSize });
+      const summary = await runGenerationWorkerOnce({ batchSize, shouldStop: () => stopping });
       if (summary.queuedCount || summary.duePollingCount || summary.expiredReservations?.processed?.length || summary.staleTasks?.processed?.length) {
         console.log('[generation-worker] cycle', JSON.stringify({
           queuedCount: summary.queuedCount,
@@ -140,9 +140,9 @@ try {
     } catch (error) {
       console.error('[generation-worker] cycle failed', { code: error.code || 'WORKER_ERROR' });
     }
-    await syncPendingPayments();
-    await syncProviderHealth();
-    await syncExpiredDeletions();
+    if (!stopping) await syncPendingPayments();
+    if (!stopping) await syncProviderHealth();
+    if (!stopping) await syncExpiredDeletions();
     if (!stopping) await sleep(pollMs);
   }
 } finally {

@@ -1,8 +1,9 @@
 import { json } from '@/lib/services/auth';
 import { createGenerationTask, processGenerationTask } from '@/lib/services/generationCore';
+import { findUserCreationByIdempotency } from '@/lib/repositories/creations';
 import { exposeCreationResult, getGenerationTrace, listUserGenerations } from '@/lib/services/generations';
 import { consumeRateLimit, getClientIp, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
-import { publicErrorMessage } from '@/lib/security/publicError';
+import { publicErrorMessage, publicErrorPayload } from '@/lib/security/publicError';
 import { validatePromptSafety } from '@/lib/security/contentModeration';
 import { generationApiErrorStatus } from '@/lib/security/generationApiErrors';
 import { resolveRequestUser } from '@/lib/security/requestUser';
@@ -17,7 +18,14 @@ export async function GET(request) {
   const { user } = auth;
 
   try {
-    const creationId = request.nextUrl.searchParams.get('id');
+    let creationId = request.nextUrl.searchParams.get('id');
+    const retryKey = request.nextUrl.searchParams.get('idempotencyKey');
+    if (!creationId && retryKey) {
+      if (retryKey.length<8 || retryKey.length>200) return json({error:'请求标识无效',code:'IDEMPOTENCY_REQUIRED'},{status:422});
+      const existing=await findUserCreationByIdempotency(user.id,retryKey);
+      if(!existing)return json({error:'尚未创建该请求的任务',code:'GENERATION_NOT_FOUND'},{status:404});
+      creationId=existing.id;
+    }
     if (creationId) {
       const trace = await getGenerationTrace(creationId, { expectedUserId: user.id });
       if (!trace?.creation) return json({ error: '任务不存在' }, { status: 404 });
@@ -66,9 +74,11 @@ export async function POST(request) {
       studioId: body.studioId || 'studio',
       prompt: body.prompt,
       parameters: body.parameters || body,
+      quoteParameters: body.parameters || body,
       idempotencyKey,
       label: body.label,
       quoteId,
+      expectedCapabilityVersion: body.capabilityVersion || null,
       requirePublicAvailability: true,
       routingMode: body.routingMode || body.routing_mode || 'cost',
     });
@@ -95,6 +105,6 @@ export async function POST(request) {
     }, { status: processed.pending ? 202 : 201 });
   } catch (error) {
     console.error('[api/generations]', error);
-    return json({ error: publicErrorMessage(error, '创建生成任务失败'), code: error.code || 'GENERATION_CREATE_FAILED' }, { status: generationApiErrorStatus(error) });
+    return json(publicErrorPayload(error, '创建生成任务失败', 'GENERATION_CREATE_FAILED'), { status: generationApiErrorStatus(error) });
   }
 }
