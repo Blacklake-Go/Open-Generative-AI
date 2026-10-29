@@ -3,6 +3,7 @@ import { PERMISSIONS } from '@/lib/admin/permissions';
 import { listProviders, getProviderById, updateProvider, createProvider, deleteProvider } from '@/lib/application/dataAccess.js';
 import { saveProviderSecret, getProviderSecretsMetadata } from '@/lib/application/dataAccess.js';
 import { getServerProviderCredentialStatus, getProviderEnvCredentialHints } from '@/lib/services/providerSecrets.js';
+import { invalidateProviderCredentialConsumers } from '@/lib/services/providerCredentialChange.js';
 import { logAudit } from '@/lib/admin/audit';
 
 export const runtime = 'nodejs';
@@ -85,6 +86,8 @@ async function handlePOST(request) {
       name: 'api_key',
       secretValue: String(body.apiKey).trim(),
     });
+    // 旧密钥留下的熔断与目录缓存不能继续代表新密钥的执行结论。
+    await invalidateProviderCredentialConsumers(id);
   }
 
   const [credential, secrets] = await Promise.all([
@@ -127,6 +130,8 @@ async function handleDELETE(request) {
   }
 
   await deleteProvider(id);
+  // 删除供应商等同于撤销其凭据：熔断与目录缓存不能继续把它当作可执行线路。
+  await invalidateProviderCredentialConsumers(id);
   await logAudit({
     actor: guard.user,
     action: 'providers.delete',
