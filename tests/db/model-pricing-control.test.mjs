@@ -130,6 +130,34 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
         '{}'::jsonb,'https://muapi.ai/docs/pricing',now(),now(),now(),now()+interval '7 days',
         'video-fixture-evidence','active','test-fixture',now())`, [`video_price_v1_${suffix}`, videoMappingId]);
 
+    /*
+     * 后台透视表的渠道成本必须与路由同口径：active 价格版本优先。
+     * 迁移 022 后视频成本不再是 base_cost，旧实现会把这里算成 0 成本、100% 毛利。
+     */
+    const breakdown = await getModelPricingBreakdownList();
+    const imageBreakdown = breakdown.find((row) => row.modelId === modelId);
+    assert.equal(imageBreakdown?.channelCount, 1);
+    assert.equal(imageBreakdown?.pricedChannels, 1);
+    assert.equal(imageBreakdown?.unpricedChannels, 0);
+    assert.equal(imageBreakdown?.minCostUsd, 0.01);
+    assert.equal(imageBreakdown?.minCostCny, 0.072);
+    assert.equal(imageBreakdown?.minCostChannel?.costSource, 'price_version');
+    assert.equal(imageBreakdown?.minCostChannel?.priceVersionId, `price_v1_${suffix}`);
+    assert.equal(imageBreakdown?.marginRate, 97.9);
+    const videoBreakdown = breakdown.find((row) => row.modelId === videoModelId);
+    assert.equal(videoBreakdown?.channelCount, 1);
+    assert.equal(videoBreakdown?.pricedChannels, 1);
+    assert.equal(videoBreakdown?.unpricedChannels, 0);
+    // 0.01 USD/秒 × 默认 5 秒 = 0.05 USD；按 7.2 汇率折合 0.36 CNY。
+    assert.equal(videoBreakdown?.minCostUsd, 0.05);
+    assert.equal(videoBreakdown?.minCostCny, 0.36);
+    assert.equal(videoBreakdown?.minCostChannel?.costSource, 'price_version');
+    assert.equal(videoBreakdown?.minCostChannel?.priceVersionId, `video_price_v1_${suffix}`);
+    assert.deepEqual(videoBreakdown?.costBasis, { outputSeconds: 5, inputSeconds: 0, units: 1 });
+    assert.equal(videoBreakdown?.grossMarginCny, 3.84);
+    assert.equal(videoBreakdown?.marginRate, 91.4);
+    assert.equal(videoBreakdown?.marginStatus, 'high');
+
     process.env.MUAPI_API_KEY = 'not-a-real-provider-key-for-local-tests';
     const parameters = { task_type: 't2i', resolution: '1024x1024', num_images: 1 };
     const quote = await createGenerationQuote({ userId, modelId, parameters, idempotencyKey: quoteKey });
