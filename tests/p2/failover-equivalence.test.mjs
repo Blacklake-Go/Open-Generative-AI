@@ -277,5 +277,7 @@ test('generation pipeline uses the equivalence policy and no longer hardcodes a 
 
   const router = fs.readFileSync(path.join(REPO_ROOT, 'lib/services/smartRouter.js'), 'utf8');
   assert.match(router, /normalizeRouteCostCeiling\(costCeiling\)/);
-  assert.match(router, /crossModelCostCeiling/);
+
+  const record = fs.readFileSync(path.join(REPO_ROOT, 'lib/modelCenter/routeDecisionRecord.js'), 'utf8');
+  assert.match(record, /crossModelCostCeiling/);
 });

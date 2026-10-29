@@ -305,8 +305,10 @@ test('admin health probing has a single graded implementation', () => {
   assert.match(catalogSrc, /latest_probe\.probe_kind AS last_probe_kind/);
   assert.match(catalogSrc, /hc\.details_json->>'probeKind'/);
 
+  const recordSrc = fs.readFileSync(path.join(REPO_ROOT, 'lib/modelCenter/routeDecisionRecord.js'), 'utf8');
+  assert.match(recordSrc, /healthEvidence: winner\?\.healthEvidence \|\| null/);
+  assert.match(recordSrc, /healthEvidenceLevel:/);
+
   const routerSrc = fs.readFileSync(path.join(REPO_ROOT, 'lib/services/smartRouter.js'), 'utf8');
-  assert.match(routerSrc, /healthEvidence: winner\.healthEvidence \|\| null/);
-  assert.match(routerSrc, /healthEvidenceLevel:/);
   assert.match(routerSrc, /未完成接口连通、鉴权或真实生成验证/);
 });
