@@ -1,3 +1,7 @@
+import {filterModelsForPublicationAccess} from '@/lib/services/modelPublicationAccess';
+import {getUserFromRequest} from '@/lib/services/auth';
+import { publicCanvasModel } from '@/lib/canvas/modelDescriptor';
+import { canvasContractVersion } from '@/lib/modelCenter/capabilitySchema';
 import { NextResponse } from 'next/server';
 import { listActiveModels } from '@/lib/services/models';
 import { isSelectablePublicModel, serializePublicGenerationCapabilities } from '@/lib/modelCenter/publicDirectory';
@@ -5,34 +9,32 @@ import { isSelectablePublicModel, serializePublicGenerationCapabilities } from '
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-let cachedModelsPayload = null;
-let lastModelsCacheTime = 0;
+const cachedPayloads = new Map();
 const MODELS_CACHE_TTL_MS = 5 * 1000;
 
 export function invalidateActiveModelsCache() {
-  cachedModelsPayload = null;
-  lastModelsCacheTime = 0;
+  cachedPayloads.clear();
 }
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
+  let schemaVersion;
+  try { schemaVersion = canvasContractVersion(request); }
+  catch (error) { return NextResponse.json({error:error.message,code:error.code},{status:409}); }
   const forceRefresh = searchParams.get('refresh') === 'true' || searchParams.get('nocache') === '1';
 
   const now = Date.now();
-  if (!forceRefresh && cachedModelsPayload && now - lastModelsCacheTime < MODELS_CACHE_TTL_MS) {
-    return NextResponse.json(cachedModelsPayload, {
-      headers: {
-        'Cache-Control': 'no-store',
-      },
-    });
-  }
-
   try {
-    const models = await listActiveModels();
-    cachedModelsPayload = {
+    const cached=cachedPayloads.get('catalog');
+    const models=!forceRefresh && cached && now-cached.time<MODELS_CACHE_TTL_MS ? cached.models : await listActiveModels();
+    cachedPayloads.set('catalog',{models,time:cached?.models===models ? cached.time : now});
+    const user=await getUserFromRequest(request);
+    const visible=await filterModelsForPublicationAccess(models.filter(isSelectablePublicModel),{userId:user?.id,site:'main'});
+    const payload = {
       success: true,
+      schemaVersion,
       launchScope: { restricted: false, categories: [] },
-      models: models.filter(isSelectablePublicModel).map((m) => ({
+      models: visible.map((m) => ({
         id: m.id,
         name: m.name,
         displayName: m.display_name || m.name,
@@ -52,14 +54,14 @@ export async function GET(request) {
         isVisible: Boolean(m.is_visible !== false),
         autoRouteEligible: Boolean(m.auto_route_eligible),
         hasWorkingRoute: Boolean(m.hasWorkingRoute),
-        generationCapabilities: serializePublicGenerationCapabilities(m.generation_capabilities),
+        ...(schemaVersion === 2 ? publicCanvasModel(m,{schemaVersion:2}) : {}),
+        generationCapabilities: serializePublicGenerationCapabilities(m.generation_capabilities,{includeVariants:schemaVersion===2}),
       })),
     };
-    lastModelsCacheTime = now;
-
-    return NextResponse.json(cachedModelsPayload, {
+    return NextResponse.json(payload, {
       headers: {
         'Cache-Control': 'no-store',
+        'Vary': 'Cookie',
       },
     });
   } catch (error) {

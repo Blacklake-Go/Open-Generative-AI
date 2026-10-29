@@ -15,6 +15,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
 }, async () => {
   const { allocateUserId } = await import('../../lib/auth/user-id.js');
   const authRepo = await import('../../lib/repositories/auth.js');
+  const assetRepo = await import('../../lib/repositories/assets.js');
   const { createGenerationQuote, verifyAndConsumeQuote } = await import('../../lib/services/pricingEngine.js');
   const { createGenerationTask, processGenerationTask } = await import('../../lib/services/generationCore.js');
   const { runGenerationWorkerOnce } = await import('../../lib/services/taskWorker.js');
@@ -54,6 +55,9 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
   let importBatchId = null;
 
   try {
+    await db.execute(`INSERT INTO ai_studio.exchange_rate_snapshots
+      (id,base_currency,quote_currency,rate,source_type,observed_at,expires_at,created_by)
+      VALUES ($1,'USD','CNY',7.2,'manual',now(),now()+interval '1 day','test-fixture')`, [`fx_test_${suffix}`]);
     userId = await allocateUserId({
       reserve: (candidate, digits) => authRepo.reserveUserId(candidate, digits),
       findFirstAvailable: (digits) => authRepo.findFirstAvailableUserId(digits),
@@ -77,7 +81,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
        min_gross_margin_rate,is_active,created_at,updated_at)
       VALUES ($1,$2,'fixed',50,'{}'::jsonb,'{}'::jsonb,10,0.75,TRUE,now(),now())`, [`pricing_${suffix}`, modelId]);
     await db.execute(`UPDATE ai_studio.ai_providers SET enabled=TRUE,health_status='healthy',
-      last_health_check_at=now(),balance=1000,circuit_state='closed' WHERE id='muapi'`);
+      last_health_check_at=now(),balance=1000,available_quota=1000,quota_checked_at=now(),circuit_state='closed' WHERE id='muapi'`);
     await db.execute(`INSERT INTO ai_studio.provider_models
       (id,model_id,provider_id,provider_model_id,enabled,priority,cost_config,capabilities,
        review_status,provider_endpoint,supported_task_types,supported_resolutions,
@@ -135,6 +139,16 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(quote.routeSnapshot.selectedProviderId, 'muapi');
     assert.equal(quote.routeSnapshot.candidates[0].providerModelId, providerModelId);
     assert.equal(quote.routeSnapshot.routingMode, 'stability');
+    const capabilitySnapshot = {version:`capability_${suffix}`,schemaVersion:2,schema:{type:'object',properties:{task_type:{const:'t2i'},resolution:{enum:['1024x1024']},num_images:{type:'integer',minimum:1,maximum:1}},required:['task_type','resolution','num_images'],additionalProperties:false}};
+    const boundQuote = await createGenerationQuote({userId,modelId,parameters,capabilitySnapshot,idempotencyKey:`cap_quote_${suffix}`});
+    assert.equal(boundQuote.credits,quote.credits,'capability metadata cannot change the price between sites');
+    assert.equal(boundQuote.pricingBreakdown.capability.version,capabilitySnapshot.version);
+    await assert.rejects(createGenerationQuote({userId,modelId,parameters,capabilitySnapshot:{...capabilitySnapshot,version:'changed'},idempotencyKey:`cap_quote_${suffix}`}),{code:'QUOTE_IDEMPOTENCY_CONFLICT'});
+    await assert.rejects(verifyAndConsumeQuote({quoteId:boundQuote.quoteId,userId,modelId,parameters,expectedCapabilityVersion:'different'}),{code:'QUOTE_CAPABILITY_MISMATCH'});
+    assert.equal((await db.queryOne('SELECT consumed_at FROM ai_studio.generation_quotes WHERE id=$1',[boundQuote.quoteId])).consumed_at,null);
+    const bound = await verifyAndConsumeQuote({quoteId:boundQuote.quoteId,userId,modelId,parameters,expectedCapabilityVersion:capabilitySnapshot.version});
+    assert.equal(bound.pricingBreakdown.capability.version,capabilitySnapshot.version);
+
     const consumed = await verifyAndConsumeQuote({ quoteId: quote.quoteId, userId, modelId, parameters });
     assert.equal(consumed.is_consumed, true);
     await assert.rejects(
@@ -263,6 +277,10 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     const canvasJobDetail = await getCanvasProjectJob(userId, atomicCreationId);
     assert.equal(canvasJobDetail.quote_id, atomicQuote.quoteId);
     assert.equal(canvasJobDetail.provider_request_id, atomicProviderRequestId);
+    // The synthetic receipt above only proves the job lookup exposes it. A queued
+    // task must not carry a receipt: the worker would have to poll rather than
+    // dispatch, and a real submission publishes its receipt itself.
+    await db.execute('UPDATE ai_studio.creations SET provider_request_id=NULL WHERE id=$1', [atomicCreationId]);
     assert.equal(await getCanvasProjectJob(`non_owner_${suffix}`, atomicCreationId), null);
     assert.equal((await listCanvasProjectJobs(`non_owner_${suffix}`, {
       projectId: atomicProjectId,
@@ -304,6 +322,36 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
 
     process.env.PUBLIC_APP_URL = 'http://127.0.0.1:3100';
     const session = await authService.createSession(userId);
+    // Exercise the authenticated Canvas contract using this isolated model and wallet,
+    // never an arbitrary existing user or a production model's current price.
+    const canvasModelsRoute = await import('../../app/api/canvas/models/route.js');
+    const originalCanvasConfig = await db.queryOne(`SELECT value_json FROM ops_bill.system_settings WHERE key='canvas_model_config'`);
+    const originalVerified = process.env.CANVAS_E2E_VERIFIED_MODEL_IDS;
+    try {
+      process.env.CANVAS_E2E_VERIFIED_MODEL_IDS = '*';
+      await db.execute(`INSERT INTO ops_bill.system_settings(key,value_json,updated_at) VALUES('canvas_model_config',$1::jsonb,now())
+        ON CONFLICT(key) DO UPDATE SET value_json=EXCLUDED.value_json`, [JSON.stringify({
+        mountedModelIds: { image: [modelId, unpricedModelId], video: [], text: [], audio: [] },
+        defaults: { imageModelId: modelId },
+      })]);
+      const response = await canvasModelsRoute.GET(new NextRequest('http://127.0.0.1:3100/api/canvas/models', {
+        headers: { Origin: 'http://127.0.0.1:3100', Cookie: `ko_session=${session.token}` },
+      }));
+      assert.equal(response.status, 200);
+      const catalog = await response.json();
+      assert.equal(catalog.schemaVersion, 1);
+      assert.equal(typeof catalog.catalogVersion, 'string');
+      assert.deepEqual(catalog.models.map((m) => m.id), [modelId]);
+      assert.equal(catalog.models[0].available, true);
+      assert.equal(catalog.models[0].capability, 'image');
+      assert.equal(catalog.models[0].creditsPrice, 50);
+      assert.equal(catalog.models[0].availability.state, 'enabled');
+    } finally {
+      if (originalVerified === undefined) delete process.env.CANVAS_E2E_VERIFIED_MODEL_IDS;
+      else process.env.CANVAS_E2E_VERIFIED_MODEL_IDS = originalVerified;
+      if (originalCanvasConfig) await db.execute(`UPDATE ops_bill.system_settings SET value_json=$1::jsonb WHERE key='canvas_model_config'`, [JSON.stringify(originalCanvasConfig.value_json)]);
+      else await db.execute(`DELETE FROM ops_bill.system_settings WHERE key='canvas_model_config'`);
+    }
     const createRequest = (path, body, idempotencyKey) => new NextRequest(new URL(path, 'http://127.0.0.1:3100'), {
       method: 'POST',
       headers: new Headers({
@@ -382,9 +430,14 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     const duplicateTaskBody = await duplicateTaskResponse.json();
     assert.equal(duplicateTaskBody.creation.id, imageTask.creation.id);
     assert.equal(duplicateTaskBody.idempotent, true);
+    const recoveredByKey=await generationRoute.GET(new NextRequest(new URL(`/api/generations?idempotencyKey=image_task_${suffix}`,'http://127.0.0.1:3100'),{headers:{Cookie:`ko_session=${session.token}`}}));
+    assert.equal(recoveredByKey.status,200);
+    assert.equal((await recoveredByKey.json()).creation.id,imageTask.creation.id);
+    const foreignKey=await (await import('../../lib/repositories/creations.js')).findUserCreationByIdempotency('another-fixture-user',`image_task_${suffix}`);
+    assert.equal(foreignKey,null,'member lookup remains scoped to the authenticated owner');
     if (oldGenerationAsync === undefined) delete process.env.GENERATION_ASYNC;
     else process.env.GENERATION_ASYNC = oldGenerationAsync;
-    const duplicateImageTask = await createGenerationTask({ userId, modelId, prompt: 'nonpaid local image scenario',
+    const duplicateImageTask = await createGenerationTask({ userId, modelId, studioId:'image', prompt: 'nonpaid local image scenario',
       parameters: imageParameters, quoteId: quoteBody.quote_id, idempotencyKey: `image_task_${suffix}` });
     assert.equal(duplicateImageTask.creation.id, imageTask.creation.id);
     assert.equal(duplicateImageTask.idempotent, true);
@@ -421,14 +474,13 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
           [creation.reservation_id],
         );
         assert.equal(reservation.status, 'RESERVED', 'private asset persistence must complete before credits are committed');
-        return { id: `asset_${creation.id}`, object_key: creation.result_object_key, visibility: 'private' };
+        return assetRepo.createUserAsset({ transaction, userId: creation.user_id, creationId: creation.id,
+          objectKey: creation.result_object_key, visibility: 'private', storageStatus: 'ready', assetType: 'image' });
       },
       getProviderAdapter: async (providerId) => {
         assert.equal(providerId, 'muapi');
-        let submittedModelId = null;
         return {
           async createTask({ providerModelId: submittedId, providerEndpoint }) {
-            submittedModelId = submittedId;
             submittedModels.push(submittedId);
             if (submittedId === providerModelId) {
               assert.equal(providerEndpoint, '/api/v1/test-image');
@@ -438,8 +490,11 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
             assert.equal(providerEndpoint, '/api/v1/test-video');
             return { providerRequestId: `video_request_${suffix}`, resultUrl: null, actualCostUsd: null };
           },
-          async getTask() {
-            assert.equal(submittedModelId, videoProviderModelId);
+          // The factory is stateless in production, so polling must recover the
+          // upstream model from the stored attempt rather than adapter state.
+          async getTask(requestId, { providerModelId: polledModelId } = {}) {
+            assert.equal(requestId, `video_request_${suffix}`);
+            assert.equal(polledModelId, videoProviderModelId, 'polling must reuse the attempt provider model');
             return { status: 'succeeded', resultUrl: 'data:video/mp4;base64,AAAA', actualCostUsd: 0.025 };
           },
           normalizeError(error) { return error; },
@@ -471,8 +526,9 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     const videoResult = await processGenerationTask({ creationId: videoTask.creation.id, testDependencies });
     const storageFailureResult = await processGenerationTask({ creationId: storageFailureTask.creation.id, testDependencies });
     const assetFailureResult = await processGenerationTask({ creationId: assetFailureTask.creation.id, testDependencies });
-    assert.equal(imageResult.success, true);
-    assert.equal(videoResult.success, true);
+    assert.equal(imageResult.success, true, JSON.stringify(imageResult));
+    assert.equal(videoResult.success, true, JSON.stringify(videoResult));
+    assert.ok(imageResult.creation.asset_id, 'synchronous response must contain the linked private asset ID');
     assert.equal(storageFailureResult.success, false);
     assert.equal(storageFailureResult.storageFailed, true);
     assert.equal(storageFailureResult.creation.status, 'failed');
@@ -652,7 +708,108 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(Number(cost.estimated_cost_usd), 0.01);
     assert.equal(cost.actual_cost_usd, null);
     assert.equal(cost.reconciliation_status, 'pending_reconciliation');
+    // The publication workflow accepts only capability-bound, settled test evidence.
+    const publication=await import('../../lib/services/modelPublication.js');
+    const publicationActor={id:userId,email:`${userId}@pricing.test`,role:'admin'};
+    await assert.rejects(publication.publishModel({actor:{...publicationActor,role:'auditor'},modelId,policy:{sites:['main'],audience:'all',userIds:[]}}),{code:'FORBIDDEN'});
+    await db.execute(`UPDATE ai_studio.provider_models SET capabilities=capabilities || $2::jsonb WHERE id=$1`,[mappingId,JSON.stringify({parameters:['resolution','num_images','watermark']})]);
+    const publicationParameters={resolution:'1024x1024',num_images:1,watermark:false,task_type:'t2i'};
+    const initialReport=await publication.inspectModelPublication({modelId,parameters:publicationParameters});
+    const v2DirectoryResponse=await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2&nocache=1','http://127.0.0.1:3100')));
+    const v2Directory=await v2DirectoryResponse.json();
+    assert.equal(v2Directory.schemaVersion,2);
+    const v2Model=v2Directory.models.find(model=>model.id===modelId);
+    assert.ok(v2Model.capabilityVersion);
+    const v2Parameters={...publicationParameters,prompt:'published contract fixture'};
+    const v2QuoteResponse=await quoteRoute.POST(createRequest('/api/generation/quote',{modelId,parameters:v2Parameters,capabilityVersion:v2Model.capabilityVersion},`main_v2_quote_${suffix}`));
+    assert.equal(v2QuoteResponse.status,201,JSON.stringify(await v2QuoteResponse.clone().json()));
+    const v2Quote=await v2QuoteResponse.json();
+    assert.equal(v2Quote.pricingBreakdown.capability.version,v2Model.capabilityVersion);
+    const outdatedQuote=await quoteRoute.POST(createRequest('/api/generation/quote',{modelId,parameters:v2Parameters,capabilityVersion:'outdated'},`old_v2_quote_${suffix}`));
+    assert.equal(outdatedQuote.status,409);
+    const publicationGuard=await (await import('../../lib/services/models.js')).createModel({actor:publicationActor,model:{id:'never_created',isVisible:true}});
+    assert.equal(publicationGuard.code,'MODEL_PUBLICATION_REQUIRED');
+    assert.equal(initialReport.ready,false);
+    assert.ok(initialReport.checks.some(check=>check.code==='VERIFIED_TEST' && !check.passed));
+    await assert.rejects(publication.publishModel({actor:publicationActor,modelId,policy:{sites:['canvas'],audience:'all',userIds:[]}}),{code:'MODEL_PUBLICATION_BLOCKED'});
+    const publicationQuote=await publication.quoteModelPublicationTest({actor:publicationActor,modelId,parameters:publicationParameters,idempotencyKey:`publication_quote_${suffix}`});
+    await assert.rejects(publication.submitModelPublicationTest({actor:publicationActor,modelId,parameters:publicationParameters,prompt:'fixture publication',quoteId:publicationQuote.quoteId,maxCredits:0,idempotencyKey:`publication_task_${suffix}`}),{code:'TEST_BUDGET_REQUIRED'});
+    const publicationTask=await publication.submitModelPublicationTest({actor:publicationActor,modelId,parameters:publicationParameters,prompt:'fixture publication',quoteId:publicationQuote.quoteId,maxCredits:publicationQuote.credits,idempotencyKey:`publication_task_${suffix}`});
+    await assert.rejects(publication.recordModelPublicationTest({actor:publicationActor,modelId,creationId:publicationTask.creation.id,resultReviewed:true}),{code:'TEST_EVIDENCE_INCOMPLETE'});
+    const publicationResult=await processGenerationTask({creationId:publicationTask.creation.id,testDependencies});
+    assert.equal(publicationResult.success,true);
+    await publication.recordModelPublicationTest({actor:publicationActor,modelId,creationId:publicationTask.creation.id,resultReviewed:true});
+    const publicationPolicy={sites:['canvas'],audience:'allowlist',userIds:[userId]};
+    const published=await publication.publishModel({actor:publicationActor,modelId,policy:publicationPolicy});
+    assert.equal(published.canvasMounted,true);
+    const canvasConfigRow=await db.queryOne("SELECT value_json FROM ops_bill.system_settings WHERE key='canvas_model_config'");
+    assert.ok(canvasConfigRow.value_json.mountedModelIds.image.includes(modelId));
+    const {assertPublicModelOrderable}=await import('../../lib/services/models.js');
+    await assert.rejects(assertPublicModelOrderable(modelId,{userId,site:'main'}),{code:'MODEL_SCOPE_FORBIDDEN'});
+    await assertPublicModelOrderable(modelId,{userId,site:'canvas'});
+    await assert.rejects(assertPublicModelOrderable(modelId,{userId:'different-user',site:'canvas'}),{code:'MODEL_SCOPE_FORBIDDEN'});
+    await db.execute("UPDATE ai_studio.ai_models SET capabilities=jsonb_set(capabilities,'{publicationPolicy}',$2::jsonb) WHERE id=$1",[modelId,JSON.stringify({...publicationPolicy,sites:['main','canvas']})]);
+    const anonymousDirectory=await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2&nocache=1','http://127.0.0.1:3100')));
+    assert.ok(!(await anonymousDirectory.json()).models.some(model=>model.id===modelId));
+    const ownerDirectory=await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2','http://127.0.0.1:3100'),{headers:{Cookie:`ko_session=${session.token}`}}));
+    assert.ok((await ownerDirectory.json()).models.some(model=>model.id===modelId),'a shared catalogue cache must still apply this user scope');
+    const cachedAnonymous=await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2','http://127.0.0.1:3100')));
+    assert.ok(!(await cachedAnonymous.json()).models.some(model=>model.id===modelId),'an allowed user response cannot populate another user catalogue');
+    await db.execute("UPDATE ai_studio.ai_models SET capabilities=capabilities - 'publicationPolicy' WHERE id=$1",[modelId]);
+    // Unknown submission outcomes must neither retry upstream nor release held credits.
+    for (const accepted of [false,true]) {
+      const key=`uncertain_${accepted}_${suffix}`;
+      const uncertainQuote=await createGenerationQuote({userId,modelId,parameters:imageParameters,idempotencyKey:`${key}_quote`});
+      const uncertainTask=await createGenerationTask({userId,modelId,prompt:'isolated ambiguous response',parameters:imageParameters,quoteId:uncertainQuote.quoteId,idempotencyKey:key});
+      const beforeHeld=await db.queryOne('SELECT frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1',[userId]);
+      let submissions=0;
+      const uncertainDeps={getProviderAdapter:async()=>({
+        async createTask(){submissions++;if(!accepted)throw Object.assign(new Error('network response lost'),{code:'NETWORK_ERROR'});return {providerRequestId:`accepted_${key}`};},
+        async getTask(){throw Object.assign(new Error('status query denied'),{code:'AUTH_ERROR',providerStatus:401});},
+        normalizeError:error=>error,
+      })};
+      const uncertain=await processGenerationTask({creationId:uncertainTask.creation.id,testDependencies:uncertainDeps});
+      assert.equal(uncertain.reconciliationRequired,true);
+      assert.equal(uncertain.creation.status,'processing');
+      assert.equal(submissions,1);
+      await processGenerationTask({creationId:uncertainTask.creation.id,testDependencies:uncertainDeps});
+      assert.equal(submissions,1,'a processing retry cannot submit to another provider');
+      assert.equal((await db.queryOne('SELECT status FROM ops_bill.credit_reservations WHERE id=$1',[uncertainTask.creation.reservation_id])).status,'RESERVED');
+      assert.deepEqual(await db.queryOne('SELECT frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1',[userId]),beforeHeld);
+      assert.equal(Number((await db.queryOne("SELECT count(*) AS count FROM ai_studio.generation_events WHERE creation_id=$1 AND event_type='TASK_RECONCILIATION_REQUIRED'",[uncertainTask.creation.id])).count),1);
+    }
+    // A quote is bound to the published capability contract: if the contract changed after the
+    // quote was issued, the task must be re-quoted before the quote is consumed or credits are held.
+    const liveDirectory = await (await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2&nocache=1','http://127.0.0.1:3100')))).json();
+    const liveModel = liveDirectory.models.find((model) => model.id === modelId);
+    assert.ok(liveModel?.capabilityVersion, 'the published model must expose a capability version');
+    await grantPerpetualCredits(userId, 200, 'capability binding fixture', userId, `pricing_test_capability_grant_${suffix}`);
+    const publishedCapability = { version: liveModel.capabilityVersion, schemaVersion: 2, schema: { type: 'object', additionalProperties: true } };
+    const currentQuote = await createGenerationQuote({ userId, modelId, parameters: imageParameters,
+      capabilitySnapshot: publishedCapability, idempotencyKey: `capability_current_quote_${suffix}` });
+    const currentQuoteTask = await createGenerationTask({ userId, modelId, prompt: 'capability contract fixture',
+      parameters: imageParameters, quoteId: currentQuote.quoteId, idempotencyKey: `capability_current_task_${suffix}` });
+    assert.equal(currentQuoteTask.creation.status, 'queued');
+
+    const staleQuote = await createGenerationQuote({ userId, modelId, parameters: imageParameters,
+      capabilitySnapshot: publishedCapability, idempotencyKey: `capability_stale_quote_${suffix}` });
+    await db.execute(`UPDATE ai_studio.ai_models SET capabilities = capabilities || '{"supported_ratios":["1:1"]}'::jsonb WHERE id=$1`, [modelId]);
+    const changedDirectory = await (await publicDirectoryRoute.GET(new NextRequest(new URL('/api/models/active?schemaVersion=2&nocache=1','http://127.0.0.1:3100')))).json();
+    const changedModel = changedDirectory.models.find((model) => model.id === modelId);
+    assert.ok(changedModel?.capabilityVersion);
+    assert.notEqual(changedModel.capabilityVersion, liveModel.capabilityVersion, 'publishing new capability specs must change the version');
+    const walletBeforeStaleTask = await db.queryOne('SELECT perpetual_credits,frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1', [userId]);
+    await assert.rejects(createGenerationTask({ userId, modelId, prompt: 'stale capability contract',
+      parameters: imageParameters, quoteId: staleQuote.quoteId, idempotencyKey: `capability_stale_task_${suffix}` }), { code: 'QUOTE_CAPABILITY_MISMATCH' });
+    assert.equal((await db.queryOne('SELECT consumed_at FROM ai_studio.generation_quotes WHERE id=$1', [staleQuote.quoteId])).consumed_at, null,
+      'a rejected quote must stay reusable for diagnostics and must not be consumed');
+    assert.equal(Number((await db.queryOne('SELECT count(*) AS count FROM ai_studio.creations WHERE user_id=$1 AND idempotency_key=$2',
+      [userId, `capability_stale_task_${suffix}`])).count), 0, 'a stale quote must not create a task');
+    const walletAfterStaleTask = await db.queryOne('SELECT perpetual_credits,frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1', [userId]);
+    assert.deepEqual(walletAfterStaleTask, walletBeforeStaleTask, 'a stale quote must not freeze or charge credits');
+    await db.execute(`UPDATE ai_studio.ai_models SET capabilities = capabilities - 'supported_ratios' WHERE id=$1`, [modelId]);
   } finally {
+    await db.execute('DELETE FROM ai_studio.exchange_rate_snapshots WHERE id=$1', [`fx_test_${suffix}`]).catch(() => {});
     if (oldApiKey === undefined) delete process.env.MUAPI_API_KEY;
     else process.env.MUAPI_API_KEY = oldApiKey;
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;
@@ -667,6 +824,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     else process.env.GENERATION_CALLBACK_SECRET = oldCallbackSecret;
     await db.execute(`DELETE FROM ai_studio.route_decision_logs WHERE job_id IN
       (SELECT id FROM ai_studio.creations WHERE user_id=$1)`, [userId]).catch(() => {});
+    await db.execute('DELETE FROM ai_studio.model_publication_tests WHERE model_id=$1',[modelId]).catch(()=>{});
     if (creationId) await db.execute('DELETE FROM ai_studio.creations WHERE id=$1', [creationId]).catch(() => {});
     if (userId) await db.execute('DELETE FROM ai_studio.creations WHERE user_id=$1', [userId]).catch(() => {});
     if (videoModelId) await db.execute('DELETE FROM ai_studio.ai_models WHERE id=$1', [videoModelId]).catch(() => {});

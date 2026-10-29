@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS, hasPermission } from '@/lib/admin/permissions';
 import { queryMany, queryOne } from '@/lib/db/index';
@@ -251,11 +252,14 @@ export default async function ModelsPage({ searchParams }) {
   }
 
   return (
+    <>
+    <div className="mb-4"><Link href="/admin/models/publication" className="text-sm font-medium text-brand hover:underline">模型接入、测试与发布 →</Link></div>
     <FrontendConfigClient
       initialModels={JSON.parse(JSON.stringify(models))}
       initialBrand={initialBrand}
       pendingPricesCount={pendingPricesCount}
       canWrite={hasPermission(admin.role, PERMISSIONS.modelsWrite)}
     />
+    </>
   );
 }
