@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
     const url = await getAssetUrl({
       objectKey: asset.objectKey,
       visibility: asset.visibility || 'private',
-      disposition: 'attachment',
+      disposition: request.nextUrl.searchParams.get('inline') === '1' ? 'inline' : 'attachment',
       provider: asset.provider,
       locationId: asset.locationId,
       bucket: asset.bucket,

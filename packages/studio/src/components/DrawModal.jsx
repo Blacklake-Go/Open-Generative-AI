@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { uploadFile, generateI2I } from "../muapi.js";
+import { runImageBatch, recoverImageBatchResult } from "../imageBatch.js";
 import { PromptInputField } from "./prompt/PromptInputField.jsx";
 
 export default function DrawModal({
@@ -52,6 +53,7 @@ export default function DrawModal({
 
   // Refs
   const canvasRef = useRef(null);
+  const generationInFlightRef = useRef(false);
   const bgCanvasRef = useRef(null);
   const canvasWrapperRef = useRef(null);
   const drawingState = useRef({
@@ -956,12 +958,13 @@ export default function DrawModal({
 
   // Merge Layers and Trigger Generation
   const handleGenerateClick = async () => {
-    if (generating) return;
+    if (generating || generationInFlightRef.current) return;
 
     const canvas = canvasRef.current;
     const bgCanvas = bgCanvasRef.current;
     if (!canvas || !bgCanvas) return;
 
+    generationInFlightRef.current = true;
     setGenerating(true);
 
     try {
@@ -1032,21 +1035,28 @@ export default function DrawModal({
       );
       if (!blob) throw new Error("Canvas serialization failed");
 
-      const uploadedUrl = await uploadFile(apiKey, blob);
-
-      const results = await Promise.all(
-        Array.from({ length: batchSize }).map(async () => {
+      const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+      const imageDigest = [...new Uint8Array(digest)].map((n) => n.toString(16).padStart(2, '0')).join('');
+      const { settled } = await runImageBatch({
+        descriptor: { entry: 'draw', imageDigest, selectedModel, promptText, aspectRatio, batchSize },
+        count: batchSize,
+        prepare: () => uploadFile(apiKey, blob, undefined, { stableAssetUrl: true }),
+        recover: recoverImageBatchResult,
+        generate: async (_index, idempotencyKey, uploadedUrl, recovery) => {
           const genParams = {
             model: selectedModel,
+            studioId: 'image',
+            idempotencyKey,
+            resumeExistingTask:recovery.resumeExistingTask,
             prompt: promptText.trim() || "Edit the image based on the drawing overlay",
             images_list: [uploadedUrl],
             aspect_ratio: aspectRatio === "Auto" ? "1:1" : aspectRatio,
           };
           return await generateI2I(apiKey, genParams);
-        }),
-      );
+        },
+      });
 
-      results.forEach((res) => {
+      settled.filter((result) => result.status === 'fulfilled').forEach(({ value: res }) => {
         if (res && res.url) {
           const entry = {
             id: res.id || Math.random().toString(36).substring(7),
@@ -1060,12 +1070,18 @@ export default function DrawModal({
         }
       });
 
-      toast.success("画板编辑与生成已完成！");
-      onClose();
+      const failures = settled.filter((result) => result.status === 'rejected');
+      if (failures.length) {
+        toast.error(`${settled.length - failures.length}/${settled.length} 完成：${failures[0].reason?.message || '生成失败'}`);
+      } else {
+        toast.success("画板编辑与生成已完成！");
+        onClose();
+      }
     } catch (e) {
       console.error("[DrawModal] Generation failed:", e);
       toast.error(`生成失败: ${e.message}`);
     } finally {
+      generationInFlightRef.current = false;
       setGenerating(false);
     }
   };

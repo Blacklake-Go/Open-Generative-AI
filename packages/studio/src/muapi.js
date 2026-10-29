@@ -200,13 +200,15 @@ export async function requestGenerationQuote(modelId, parameters = {}, options =
     };
 }
 
-async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 60, studioId = 'studio', platformModelId = endpoint) {
+async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 60, studioId = 'studio', platformModelId = endpoint, idempotencyKey, resumeExistingTask) {
     // The shell opens the account dialog only when a model request is about
     // to consume quota. It resolves after login so the original request can
     // continue without making the user click Generate a second time.
     const accountGate = typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_ACCOUNT__;
+    let ownerUserId;
     if (accountGate) {
         const user = await accountGate();
+        ownerUserId = user?.id || user?.userId;
         if (!user) throw new Error('Generation cancelled: account login is required.');
     }
     if (typeof window !== 'undefined' && BASE_URL === '/api') {
@@ -215,10 +217,14 @@ async function submitAndPoll(endpoint, payload, key, onRequestId, maxAttempts = 
         const canonicalModelId = getServerModelMeta(platformModelId)?.id || platformModelId;
         return submitPlatformGeneration({
             modelId: canonicalModelId,
+            capabilityVersion: getServerModelMeta(platformModelId)?.capabilityVersion,
             studioId: resolvedStudioId,
             prompt: payload.prompt || '',
             parameters: payload,
             label: payload.label,
+            idempotencyKey,
+            ownerUserId,
+            resumeExistingTask,
             onRequestId,
             maxAttempts,
             intervalMs: 2_000,
@@ -294,7 +300,7 @@ export async function generateImage(apiKey, params) {
     if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     const submittedPayload = usePublicPlatformParameters ? params.public_parameters : payload;
-    return submitAndPoll(endpoint, submittedPayload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'));
+    return submitAndPoll(endpoint, submittedPayload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'), endpoint, params.idempotencyKey, params.resumeExistingTask);
 }
 
 export async function generateI2I(apiKey, params) {
@@ -332,7 +338,7 @@ export async function generateI2I(apiKey, params) {
     if (params.negative_prompt) payload.negative_prompt = params.negative_prompt;
     if (params.seed != null && params.seed !== -1) payload.seed = params.seed;
     const submittedPayload = usePublicPlatformParameters ? params.public_parameters : payload;
-    return submitAndPoll(endpoint, submittedPayload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'));
+    return submitAndPoll(endpoint, submittedPayload, apiKey, params.onRequestId, 180, resolveStudioId(params.studioId, 'image'), endpoint, params.idempotencyKey, params.resumeExistingTask);
 }
 
 export async function decomposeLayers(apiKey, params) {
@@ -573,7 +579,7 @@ export async function generateAudio(apiKey, params) {
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900, resolveStudioId(params.studioId, 'audio'));
 }
 
-export async function uploadFile(apiKey, file, onProgress) {
+export async function uploadFile(apiKey, file, onProgress, { stableAssetUrl = false } = {}) {
     if (!file || typeof file.size !== 'number') throw new Error('请选择有效文件');
     const accountGate = typeof window !== 'undefined' && window.__SUPDANCE_REQUIRE_ACCOUNT__;
     if (accountGate) {
@@ -603,7 +609,13 @@ export async function uploadFile(apiKey, file, onProgress) {
             if (xhr.status >= 200 && xhr.status < 300) {
                 try {
                     const res = JSON.parse(xhr.responseText);
-                    const url = res.url || res.asset?.url || res.data?.asset?.url;
+                    const asset = res.asset || res.data?.asset;
+                    if (stableAssetUrl && !asset?.id) {
+                        return reject(new Error('上传结果缺少素材编号，请重新上传'));
+                    }
+                    const url = stableAssetUrl && asset?.id
+                        ? `/api/assets/${encodeURIComponent(asset.id)}/download?inline=1`
+                        : (res.url || asset?.url);
                     if (url) {
                         onProgress?.(100);
                         return resolve(url);

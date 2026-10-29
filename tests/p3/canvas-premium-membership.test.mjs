@@ -50,7 +50,7 @@ test('生成任务必须携带报价，积分按已核销报价冻结且先核�
   assert.ok(reserveIndex > verifyIndex, '必须先核销报价再冻结积分');
   assert.match(core, /creditCost = verifiedQuote\.credits/);
   assert.match(core, /quoteId: effectiveQuoteId/);
-  assert.match(core, /userId,\s*modelId: model\.id,\s*parameters: parametersForQuote,\s*transaction: tx/);
+  assert.match(core, /userId,\s*modelId: model\.id,\s*parameters: parametersForQuote,\s*expectedCapabilityVersion,\s*currentCapabilityVersion,\s*transaction: tx/);
 });
 
 test('画布会话返回前端权益判定所需的会员字段', () => {

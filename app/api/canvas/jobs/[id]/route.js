@@ -4,7 +4,7 @@ import { getGenerationTrace } from '@/lib/services/generations';
 import { getUserAssetByCreationId, getUserAssetDownload, syncCreationToAsset } from '@/lib/services/assets';
 import { getCanvasProjectJob, updateCanvasProjectJob } from '@/lib/repositories/canvasProjects';
 import { findCreationById } from '@/lib/repositories/creations';
-import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus } from '@/lib/canvas/jobResultState';
+import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus, getCanvasJobFunding, getCanvasJobReconciliation } from '@/lib/canvas/jobResultState';
 import { ensureCanvasResultAsset } from '@/lib/canvas/resolveJobAsset';
 import { canvasJson, canvasOriginGuard, canvasPreflight } from '@/lib/canvas/http';
 
@@ -65,6 +65,8 @@ export async function GET(request, { params }) {
         quoteId: linkedJob.quote_id || null,
         providerRequestId: linkedJob.provider_request_id || null,
         status: jobStatus,
+        funding: getCanvasJobFunding(trace.reservation),
+        reconciliation: getCanvasJobReconciliation(creation.status, trace.events),
         createdAt: creation.created_at,
         updatedAt: creation.updated_at,
         estimatedCredits: Number(creation.credit_cost || 0),
@@ -77,7 +79,7 @@ export async function GET(request, { params }) {
           contentUrl: asset?.id ? `/api/canvas/assets/${encodeURIComponent(asset.id)}/content` : null,
         },
         error: creation.status === 'failed'
-          ? getCanvasJobFailure({ errorCode: creation.error_code, failureMetadata: failureEvent?.metadata })
+          ? getCanvasJobFailure({ errorCode: creation.error_code, failureMetadata: failureEvent?.metadata, reservation: trace.reservation })
           : jobStatus === 'result_unavailable'
             ? { code: 'RESULT_ASSET_MISSING', message: '任务已完成并结算，但归档素材不可用，请联系支持人员核对任务与积分。' }
             : null,

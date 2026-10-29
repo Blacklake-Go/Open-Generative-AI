@@ -23,7 +23,7 @@ export async function GET(request) {
         id: user.id,
         userNumber: user.user_number || user.userNumber || String(user.id).slice(-6),
         displayName: user.display_name || user.displayName || user.nickname || `创作者#${user.id}`,
-        avatar: user.avatar_url || user.avatarUrl || null,
+        avatar: user.avatar || user.avatar_url || user.avatarUrl || null,
         email: user.email || null,
         phone: user.phone || null,
         isAdmin: Boolean(user.role === 'admin' || user.is_admin),
@@ -55,7 +55,7 @@ export async function POST(request) {
   if (!limit.allowed) return canvasResponse(request, rateLimitResponse(limit));
   await deleteSession(token);
   const response = json({ ok: true });
-  clearSessionCookie(response);
+  clearSessionCookie(response,request);
   response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin'));
   response.headers.set('Access-Control-Allow-Credentials', 'true');
   response.headers.set('Vary', 'Origin');

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus } from '../../lib/canvas/jobResultState.js';
+import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus, getCanvasJobFunding, getCanvasJobReconciliation } from '../../lib/canvas/jobResultState.js';
 import { ensureCanvasResultAsset } from '../../lib/canvas/resolveJobAsset.js';
 
 const updatedAt = new Date('2026-10-09T00:00:00.000Z');
@@ -147,4 +147,18 @@ test('Canvas does not return an Asset without an owner-scoped storage object key
 
   assert.equal(resolved.asset, null);
   assert.equal(syncCount, 1);
+});
+
+test('Canvas exposes pending task reconciliation and original-expiry release without claiming a full refund', () => {
+  const event = {event_type:'TASK_RECONCILIATION_REQUIRED', metadata_json:{privateEvidence:'not-public'}};
+  const pending = getCanvasJobReconciliation('processing',[event]);
+  assert.equal(pending.state,'pending');
+  assert.doesNotMatch(JSON.stringify(pending),/privateEvidence|not-public/);
+  assert.equal(getCanvasJobReconciliation('succeeded',[event]),null);
+  const reservation={status:'VOIDED',reserved_amount:20,released_amount:5,expired_amount:15};
+  assert.deepEqual(getCanvasJobFunding(reservation),{state:'released',reservedCredits:20,releasedCredits:5,expiredCredits:15});
+  const error=getCanvasJobFailure({errorCode:'MODEL_UNAVAILABLE',reservation});
+  assert.match(error.message,/5 积分.*返还/);
+  assert.match(error.message,/15 积分已到期/);
+  assert.match(getCanvasJobFailure({reservation:{status:'RESERVED',reserved_amount:20}}).message,/仍保留/);
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useRef } from "react";
+import { Children, useRef, useState, useEffect } from "react";
 
 import {
   PROMPT_CONTROL_LABEL_CLASS,
@@ -131,14 +131,14 @@ function ArrayInput({ schema, value, onChange, label }) {
           key={index}
           className="rounded-lg border border-white/[0.07] bg-black/20 p-2.5"
         >
-          {itemSchema.type === "object" ? (
+          {itemSchema.type === "object" && itemSchema.properties ? (
             <div className="flex flex-col gap-2">
               {Object.entries(itemSchema.properties || {}).map(([key, property]) => (
-                <label key={key} className="flex flex-col gap-1">
+                <div key={key} className="flex flex-col gap-1">
                   <span className="text-[10px] font-semibold text-white/45">
                     {property.title || key.replaceAll("_", " ")}
                   </span>
-                  <ScalarInput
+                  <ModelParameterInput
                     schema={property}
                     label={property.title || key.replaceAll("_", " ")}
                     value={item?.[key] ?? createEmptyValue(property)}
@@ -146,11 +146,11 @@ function ArrayInput({ schema, value, onChange, label }) {
                       updateItem(index, { ...item, [key]: nextValue })
                     }
                   />
-                </label>
+                </div>
               ))}
             </div>
           ) : (
-            <ScalarInput
+            <ModelParameterInput
               schema={itemSchema}
               label={`${label} ${index + 1}`}
               value={item}
@@ -179,6 +179,25 @@ function ArrayInput({ schema, value, onChange, label }) {
       )}
     </div>
   );
+}
+
+function JsonParameterInput({schema,value,onChange,label}) {
+  const [text,setText]=useState(()=>JSON.stringify(value ?? createEmptyValue(schema),null,2));
+  const [error,setError]=useState(false);
+  useEffect(()=>{if(value!==undefined){setText(JSON.stringify(value,null,2));setError(false);}},[value]);
+  return <div className="space-y-1"><textarea aria-label={label} aria-invalid={error} className={`${FIELD_CLASS} min-h-24 font-mono`} value={text} onChange={event=>{
+    const next=event.target.value;setText(next);
+    try{const parsed=JSON.parse(next);setError(false);onChange(parsed);}catch{setError(true);onChange(undefined);}
+  }}/>{error && <p role="alert" className="text-xs text-ink-muted">请输入完整、有效的参数内容。</p>}</div>;
+}
+
+export function ModelParameterInput({schema,value,onChange,label}) {
+  if(schema.const!==undefined)return <span className="text-xs text-ink-muted">{JSON.stringify(schema.const)}</span>;
+  if(schema.type==='object' && schema.properties)return <div className="space-y-3 rounded-xl border border-line p-3">{Object.entries(schema.properties).map(([key,property])=><div key={key} className="block space-y-1 text-xs text-ink-muted"><span>{property.title || key}</span><ModelParameterInput schema={property} label={`${label} ${property.title || key}`} value={value?.[key]} onChange={next=>onChange({...value,[key]:next})}/></div>)}</div>;
+  if(schema.type==='array')return <ArrayInput schema={schema} value={value} onChange={onChange} label={label}/>;
+  if(schema.type==='object' || Array.isArray(schema.type) || schema.anyOf || schema.oneOf)return <JsonParameterInput schema={schema} value={value} onChange={onChange} label={label}/>;
+  const numeric=['number','integer','int'].includes(schema.type);
+  return <ScalarInput schema={schema} value={value} label={label} onChange={next=>onChange(numeric ? next==='' ? undefined : Number(next) : next)}/>;
 }
 
 export default function ModelParameterControls({
@@ -212,14 +231,14 @@ export default function ModelParameterControls({
       <div className={schema.type === "boolean" ? "flex items-center justify-between gap-4" : "flex flex-col gap-2"}>
         <FieldLabel schema={schema} inputKey={key} />
         {schema.type === "array" ? (
-          <ArrayInput
+          <ModelParameterInput
             schema={schema}
             label={schema.title || key.replaceAll("_", " ")}
             value={values[key]}
             onChange={(nextValue) => onChange(key, nextValue)}
           />
         ) : (
-          <ScalarInput
+          <ModelParameterInput
             schema={schema}
             label={schema.title || key.replaceAll("_", " ")}
             value={values[key]}

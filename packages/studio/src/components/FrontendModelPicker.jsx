@@ -60,7 +60,7 @@ export default function FrontendModelPicker({
       setDirectoryRevision((revision) => revision + 1);
     };
     window.addEventListener('supdance-model-pricing-updated', handleDirectoryUpdate);
-    fetch("/api/models/active?nocache=1")
+    fetch("/api/models/active?schemaVersion=2&nocache=1")
       .then((res) => {
         if (!res.ok) throw new Error('模型目录不可用');
         return res.json();
@@ -137,6 +137,10 @@ export default function FrontendModelPicker({
 
     // Dynamic fallback: include any active server models of this category not already covered in static catalog
     const coveredIds = new Set(catalogEntries.flatMap((e) => [...(e.variantIds || [e.id])]));
+    for (const id of [...coveredIds]) {
+      const canonical = getServerModelMeta(id)?.id;
+      if (canonical) coveredIds.add(canonical);
+    }
     const KNOWN_CATALOG_ALIASES = {
       'seedream-5.0': ['seedream-4.5', 'seedream-5.0-lite', 'bytedance-seedream-v4.5', 'bytedance-seedream-5.0-lite', 'seedream-5.0'],
       'seedream-5.0-pro': ['bytedance-seedream-5.0-pro', 'bytedance-seedream-v5.0', 'seedream-5.0', 'seedream-5.0-edit'],

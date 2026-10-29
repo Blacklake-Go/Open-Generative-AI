@@ -433,7 +433,7 @@ export default function AiInfluencerStudio({
   // ── Fetch active image models from backend ─────────────────────────────────
   useEffect(() => {
     let isMounted = true;
-    fetch("/api/models/active?nocache=1")
+    fetch("/api/models/active?schemaVersion=2&nocache=1")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!isMounted || !Array.isArray(data?.models)) return;

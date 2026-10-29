@@ -7,12 +7,13 @@ import { generateAudio, uploadFile } from "../muapi.js";
 import { PromptInputField } from "./prompt/PromptInputField.jsx";
 import { formatErrorMessage } from "../utils/formatError.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
-import { audioModels, getAudioModelById } from "../models.js";
+import { audioModels, getAudioModelById, applyActiveModelDirectory } from "../models.js";
 import { getProviderLogo } from "../providerLogos.js";
 import { formatModelDisplayName } from "../modelDisplayFormat.js";
 import { getModelBadge } from "../modelDescriptions.js";
 import ModelDisplayRow from "./ModelDisplayRow.jsx";
 import ModelPriceTag from "./ModelPriceTag.jsx";
+import {ModelParameterInput} from './ModelParameterControls.jsx';
 import en from "../messages/en/audioStudio.json";
 import zh from "../messages/zh/audioStudio.json";
 import ja from "../messages/ja-JP/audioStudio.json";
@@ -98,7 +99,7 @@ const TrashIcon = () => (
 // ---------------------------------------------------------------------------
 // Single File Uploader Component
 // ---------------------------------------------------------------------------
-function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
+function AudioFileUploader({ label, value, onChange, apiKey, copy = en, stableAssetUrl = false }) {
   const [uploadState, setUploadState] = useState(value ? UPLOAD_STATE.READY : UPLOAD_STATE.IDLE);
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState(value ? value.split('/').pop().slice(-30) : "");
@@ -132,7 +133,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
     try {
       const url = await uploadFile(apiKey, file, (pct) => {
         setProgress(pct);
-      });
+      }, {stableAssetUrl});
       setFileName(file.name);
       setUploadState(UPLOAD_STATE.READY);
       onChange(url);
@@ -277,7 +278,7 @@ function AudioFileUploader({ label, value, onChange, apiKey, copy = en }) {
 // ---------------------------------------------------------------------------
 // Multiple File Uploader Component (for array fields like audios_list)
 // ---------------------------------------------------------------------------
-function AudioListUploader({ label, value = [], onChange, apiKey, maxItems = 2, copy = en }) {
+function AudioListUploader({ label, value = [], onChange, apiKey, maxItems = 2, copy = en, stableAssetUrl = false }) {
   const handleItemChange = (index, url) => {
     const newItems = [...value];
     if (url) {
@@ -296,6 +297,7 @@ function AudioListUploader({ label, value = [], onChange, apiKey, maxItems = 2, 
       <div className="space-y-3">
         {Array.from({ length: maxItems }).map((_, i) => (
           <AudioFileUploader
+            stableAssetUrl={stableAssetUrl}
             key={i}
             label={copy.uploader.trackLabel.replace('{index}', i + 1)}
             value={value[i] || null}
@@ -589,6 +591,18 @@ export default function AudioStudio({
     'mmaudio': 'mmaudio-v2-text-to-audio',
   };
 
+  const [directoryRevision, setDirectoryRevision] = useState(0);
+  useEffect(() => {
+    let mounted = true;
+    const refresh = () => setDirectoryRevision(value => value + 1);
+    window.addEventListener('supdance-model-pricing-updated', refresh);
+    fetch('/api/models/active?schemaVersion=2&nocache=1', {cache:'no-store'})
+      .then(response => { if (!response.ok) throw new Error('模型目录不可用'); return response.json(); })
+      .then(data => { if (mounted) applyActiveModelDirectory(Array.isArray(data.models) ? data.models : []); })
+      .catch(() => { if (mounted) applyActiveModelDirectory([]); });
+    return () => { mounted = false; window.removeEventListener('supdance-model-pricing-updated', refresh); };
+  }, []);
+
   const resolveAudioModelId = useCallback((modelKey) => {
     if (!modelKey) return audioModels[0]?.id ?? "";
     const rawKey = String(modelKey).trim();
@@ -597,11 +611,12 @@ export default function AudioStudio({
     const found = audioModels.find(
       (m) =>
         m.id.toLowerCase() === keyLower ||
+        m.canonicalModelId?.toLowerCase() === keyLower ||
         (m.endpoint && m.endpoint.toLowerCase() === keyLower) ||
         (m.family && m.family.toLowerCase() === keyLower) ||
         keyLower.includes(m.id.toLowerCase())
     );
-    return found?.id || audioModels[0]?.id || "";
+    return found?.id || rawKey;
   }, []);
 
   // ── Mode & model state ──────────────────────────────────────────────────
@@ -623,7 +638,7 @@ export default function AudioStudio({
       const resolved = resolveAudioModelId(targetModel);
       if (resolved) setSelectedModelId(resolved);
     }
-  }, [initialModel, resolveAudioModelId]);
+  }, [initialModel, resolveAudioModelId, directoryRevision]);
 
   // Sync with global supdance-select-model custom events
   useEffect(() => {
@@ -706,7 +721,7 @@ export default function AudioStudio({
       }
     });
     setParams(initial);
-  }, [selectedModelId]); // Only reset when model ID changes
+  }, [selectedModelId, selectedModel?.capabilityVersion]);
 
   // ── Persistence: Load ────────────────────────────────────────────────────
   useEffect(() => {
@@ -753,23 +768,23 @@ export default function AudioStudio({
       if (audioFiles.length > 0 && selectedModel) {
         // Find the first audio input field in the current model
         const firstAudioField = Object.entries(selectedModel.inputs || {}).find(
-          ([_, schema]) => schema.field === 'audio'
+          ([_, schema]) => schema.field === 'audio' && schema.type === 'string'
         );
         const firstAudioListField = Object.entries(selectedModel.inputs || {}).find(
-          ([_, schema]) => schema.field === 'audios_list'
+          ([_, schema]) => ['audios_list','audio'].includes(schema.field) && schema.type === 'array'
         );
 
         if (firstAudioField) {
           const [key] = firstAudioField;
           // Trigger file upload helper
-          uploadFile(apiKey, audioFiles[0], () => {})
+          uploadFile(apiKey, audioFiles[0], () => {}, {stableAssetUrl:Boolean(selectedModel.published)})
             .then(url => {
               setParams(prev => ({ ...prev, [key]: url }));
             })
             .catch(err => toast.error(copy.generate.droppedFileUploadError.replace('{message}', err.message)));
         } else if (firstAudioListField) {
           const [key] = firstAudioListField;
-          uploadFile(apiKey, audioFiles[0], () => {})
+          uploadFile(apiKey, audioFiles[0], () => {}, {stableAssetUrl:Boolean(selectedModel.published)})
             .then(url => {
               setParams(prev => {
                 const currentList = Array.isArray(prev[key]) ? [...prev[key]] : [];
@@ -816,7 +831,8 @@ export default function AudioStudio({
 
     try {
       const audioParams = {
-        ...params,
+        ...Object.fromEntries(Object.entries(params).filter(([,value])=>value !== '' && value !== undefined && value !== null)),
+        ...selectedModel.fixedParameters,
         _modelId: selectedModelId,
       };
 
@@ -1016,6 +1032,7 @@ export default function AudioStudio({
               if (schema.type === "string" && schema.field === "audio") {
                 return (
                   <AudioFileUploader
+                    stableAssetUrl={Boolean(selectedModel.published)}
                     key={key}
                     label={fieldTitle}
                     value={params[key] || ""}
@@ -1027,9 +1044,10 @@ export default function AudioStudio({
               }
 
               // Audio URLs list file upload (multiple)
-              if (schema.type === "array" && schema.field === "audios_list") {
+              if (schema.type === "array" && ['audios_list','audio'].includes(schema.field)) {
                 return (
                   <AudioListUploader
+                    stableAssetUrl={Boolean(selectedModel.published)}
                     key={key}
                     label={fieldTitle}
                     value={params[key] || []}
@@ -1042,6 +1060,9 @@ export default function AudioStudio({
               }
 
               // Boolean Toggles
+              if(selectedModel.published && (['array','object'].includes(schema.type) || Array.isArray(schema.type) || schema.anyOf || schema.oneOf)) {
+                return <div key={key} className="space-y-2"><label className="block text-xs text-ink-muted">{fieldTitle}</label><ModelParameterInput key={`${selectedModel.id}:${key}`} schema={schema} label={fieldTitle} value={params[key]} onChange={value=>setParams(current=>({...current,[key]:value}))}/></div>;
+              }
               if (schema.type === "boolean") {
                 return (
                   <div key={key} className="flex items-center justify-between bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-xl p-4 transition-[background-color,border-color] duration-fast ease-standard hover:bg-white/[0.05] hover:border-white/20">

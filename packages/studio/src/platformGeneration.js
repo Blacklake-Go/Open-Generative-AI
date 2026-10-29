@@ -41,9 +41,9 @@ function resolveIntentStorage(storageOverride) {
   }
 }
 
-async function buildIntentStorageKey({ studioId, modelId, prompt, parameters }) {
+async function buildIntentStorageKey({ studioId, modelId, prompt, parameters, ownerUserId }) {
   if (!globalThis.crypto?.subtle || typeof TextEncoder !== 'function') return null;
-  const intent = stableSerialize({ studioId, modelId, prompt, parameters });
+  const intent = stableSerialize({ studioId, modelId, prompt, parameters, ...(ownerUserId ? {ownerUserId} : {}) });
   const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(intent));
   const hex = [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
   return GENERATION_INTENT_STORAGE_PREFIX + hex;
@@ -56,6 +56,7 @@ async function resolveGenerationIntent({
   modelId,
   prompt,
   parameters,
+  ownerUserId,
 }) {
   if (idempotencyKey !== undefined && idempotencyKey !== null) {
     return { key: String(idempotencyKey), storage: null, storageKey: null };
@@ -65,11 +66,11 @@ async function resolveGenerationIntent({
   let storageKey = null;
   if (storage) {
     try {
-      storageKey = await buildIntentStorageKey({ studioId, modelId, prompt, parameters });
+      storageKey = await buildIntentStorageKey({ studioId, modelId, prompt, parameters, ownerUserId });
       if (storageKey) {
         const existing = storage.getItem(storageKey);
         if (existing && String(existing).trim().length >= 8 && String(existing).trim().length <= 200) {
-          return { key: String(existing).trim(), storage, storageKey };
+          return { key: String(existing).trim(), storage, storageKey, resumed:true };
         }
       }
     } catch {
@@ -134,7 +135,7 @@ function reportPhase(onPhase, phase, requestId) {
   onPhase?.(phase, requestId);
 }
 
-async function requestPlatformQuote({ modelId, parameters, idempotencyKey, fetchImpl, onAuthRequired }) {
+async function requestPlatformQuote({ modelId, parameters, capabilityVersion, idempotencyKey, fetchImpl, onAuthRequired }) {
   const response = await fetchImpl('/api/generation/quote', {
     method: 'POST',
     credentials: 'same-origin',
@@ -142,7 +143,7 @@ async function requestPlatformQuote({ modelId, parameters, idempotencyKey, fetch
       'Content-Type': 'application/json',
       'Idempotency-Key': await quoteIdempotencyKey(idempotencyKey),
     },
-    body: JSON.stringify({ modelId, parameters }),
+    body: JSON.stringify({ modelId, parameters, ...(capabilityVersion ? {capabilityVersion} : {}) }),
   });
   const payload = await readJson(response);
 
@@ -193,7 +194,9 @@ function failedGeneration(creation, creationId) {
 }
 
 function completedGeneration(creation, creationId) {
-  const url = creation.result_url || creation.resultUrl || null;
+  const assetId = creation.asset_id || creation.assetId;
+  const url = assetId ? `/api/assets/${encodeURIComponent(assetId)}/download?inline=1`
+    : (creation.result_url || creation.resultUrl || null);
   return {
     id: creationId,
     request_id: creationId,
@@ -201,6 +204,8 @@ function completedGeneration(creation, creationId) {
     url,
     result_url: url,
     outputs: url ? [url] : [],
+    result_text: creation.result_text || creation.resultText || null,
+    output: creation.result_text || creation.resultText || null,
     cost: {
       refunded: false,
       amount_credits: Number(creation.credit_cost || 0),
@@ -214,6 +219,9 @@ function completedGeneration(creation, creationId) {
  */
 export async function submitPlatformGeneration({
   modelId,
+  capabilityVersion,
+  ownerUserId,
+  resumeExistingTask = false,
   studioId = 'studio',
   prompt = '',
   parameters = {},
@@ -238,6 +246,7 @@ export async function submitPlatformGeneration({
     modelId,
     prompt,
     parameters,
+    ownerUserId,
   });
   const normalizedIdempotencyKey = String(generationIntent.key || '').trim();
   if (normalizedIdempotencyKey.length < 8 || normalizedIdempotencyKey.length > 200) {
@@ -248,31 +257,53 @@ export async function submitPlatformGeneration({
 
   // Quote the final model settings before creating a billable GenerationJob.
   // The same caller key makes retries reuse the quote and job identity.
-  const quoteId = await requestPlatformQuote({
-    modelId,
-    parameters,
-    idempotencyKey: normalizedIdempotencyKey,
-    fetchImpl,
-    onAuthRequired,
-  });
+  let submitData;
+  let confirmedAbsent=false;
+  if (resumeExistingTask || generationIntent.resumed) {
+    const response=await fetchImpl(`/api/generations?idempotencyKey=${encodeURIComponent(normalizedIdempotencyKey)}`,{
+      method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},
+    });
+    const trace=await readJson(response);
+    if (response.ok && trace?.creation?.id) {
+      if (trace.creation.model && trace.creation.model!==modelId) throw Object.assign(new Error('恢复任务与所选模型不一致，请检查历史记录'),{code:'GENERATION_IDEMPOTENCY_CONFLICT',status:409,pending:true});
+      submitData=trace;
+    } else if (response.status===404 && trace?.code==='GENERATION_NOT_FOUND') confirmedAbsent=true;
+    else {
+      if(response.status===401)onAuthRequired?.(response.status,trace?.error || '');
+      throw Object.assign(requestError(trace,response,'原任务状态暂时无法确认，请稍后恢复'),{pending:true});
+    }
+  }
+  const recovered=Boolean(submitData);
+  if (!submitData) {
+    const quoteId = await requestPlatformQuote({
+      modelId,
+      capabilityVersion,
+      parameters,
+      // A confirmed missing job may need a fresh quote after the old quote expired.
+      // Its member identity stays unchanged, so concurrent delayed submits deduplicate.
+      idempotencyKey: confirmedAbsent ? `${normalizedIdempotencyKey}:${createIdempotencyKey()}` : normalizedIdempotencyKey,
+      fetchImpl,
+      onAuthRequired,
+    });
 
-  const submitResponse = await fetchImpl('/api/generations', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      'Idempotency-Key': normalizedIdempotencyKey,
-    },
-    body: JSON.stringify({ modelId, studioId, prompt, parameters, label, quoteId }),
-  });
-  const submitData = await readJson(submitResponse);
+    const submitResponse = await fetchImpl('/api/generations', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': normalizedIdempotencyKey,
+      },
+      body: JSON.stringify({ modelId, studioId, prompt, parameters, label, quoteId, ...(capabilityVersion ? {capabilityVersion} : {}) }),
+    });
+    submitData = await readJson(submitResponse);
 
-  if (!submitResponse.ok) {
-    const error = requestError(submitData, submitResponse, 'Could not create the generation task.');
-    const submittedStatus = String(submitData?.creation?.status || submitData?.status || '').toLowerCase();
-    if (FAILURE_STATUSES.has(submittedStatus)) clearGenerationIntent(generationIntent);
-    if (submitResponse.status === 401) onAuthRequired?.(submitResponse.status, submitData?.error || '');
-    throw error;
+    if (!submitResponse.ok) {
+      const error = requestError(submitData, submitResponse, 'Could not create the generation task.');
+      const submittedStatus = String(submitData?.creation?.status || submitData?.status || '').toLowerCase();
+      if (FAILURE_STATUSES.has(submittedStatus)) clearGenerationIntent(generationIntent);
+      if (submitResponse.status === 401) onAuthRequired?.(submitResponse.status, submitData?.error || '');
+      throw error;
+    }
   }
 
   const creationId = generationId(submitData);
@@ -282,7 +313,7 @@ export async function submitPlatformGeneration({
     });
   }
   onRequestId?.(creationId);
-  reportPhase(onPhase, 'reserved', creationId);
+  reportPhase(onPhase, recovered ? 'recovered' : 'reserved', creationId);
 
   const initialCreation = submitData.creation || submitData.task || submitData;
   const initialStatus = String(initialCreation?.status || '').toLowerCase();
@@ -290,6 +321,11 @@ export async function submitPlatformGeneration({
     clearGenerationIntent(generationIntent);
     reportPhase(onPhase, 'completed', creationId);
     return completedGeneration(initialCreation, creationId);
+  }
+  if (FAILURE_STATUSES.has(initialStatus)) {
+    clearGenerationIntent(generationIntent);
+    reportPhase(onPhase,'failed',creationId);
+    throw failedGeneration(initialCreation,creationId);
   }
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
@@ -305,7 +341,7 @@ export async function submitPlatformGeneration({
       const error = requestError(trace, pollResponse, 'Could not read the generation task.');
       if (pollResponse.status === 401) onAuthRequired?.(pollResponse.status, trace?.error || '');
       if (pollResponse.status >= 500 && attempt + 1 < maxAttempts) continue;
-      throw error;
+      throw Object.assign(error,{requestId:creationId,pending:true});
     }
 
     const creation = trace.creation || trace.task || trace;
@@ -319,6 +355,9 @@ export async function submitPlatformGeneration({
       clearGenerationIntent(generationIntent);
       reportPhase(onPhase, 'failed', creationId);
       throw failedGeneration(creation, creationId);
+    }
+    if ((trace.events || []).some(event=>['TASK_RECONCILIATION_REQUIRED','PROVIDER_POLL_PAUSED'].includes(event.event_type))) {
+      throw Object.assign(new Error('任务结果待核对，预留积分仍保留，请稍后在原任务中查看'),{code:'GENERATION_RECONCILIATION_REQUIRED',requestId:creationId,status:409,pending:true});
     }
   }
 

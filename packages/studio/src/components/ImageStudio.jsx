@@ -6,6 +6,8 @@ import { Ban, X } from "lucide-react";
 import { ToastHost as Toaster } from "../ui";
 import { generateImage, generateI2I, uploadFile } from "../muapi.js";
 import { formatErrorMessage } from "../utils/formatError.js";
+import { hasTemporaryReferenceUrl } from "../stableAssetReference.js";
+import { runImageBatch, recoverImageBatchResult } from "../imageBatch.js";
 import { scopedPersistKey, migrateLegacyPersistKey } from "../persistKey.js";
 import DrawModal from "./DrawModal.jsx";
 import ImageDetailWorkbench from "./ImageDetailWorkbench.jsx";
@@ -435,7 +437,7 @@ export function UploadButton({
               setUploadHistory((prev) =>
                 prev.map((h) => (h.id === id ? { ...h, progress: pct } : h)),
               );
-            });
+            }, { stableAssetUrl: true });
 
             setUploadHistory((prev) =>
               prev.map((h) => {
@@ -1162,7 +1164,7 @@ export default function ImageStudio({
     }
 
     let mounted = true;
-    fetch("/api/models/active?nocache=1")
+    fetch("/api/models/active?schemaVersion=2&nocache=1")
       .then((response) => {
         if (!response.ok) throw new Error("Active model directory unavailable");
         return response.json();
@@ -1182,7 +1184,7 @@ export default function ImageStudio({
   }, []);
 
   const defaultModel = t2iModels.find((m) => isModelActive(m.id)) || t2iModels.find((m) => m.id === "gpt-image-2.5-flash") || t2iModels[0] || {};
-  const initialFamily = imageModelCatalog.familyByVariantId.get(defaultModel.id);
+  const initialFamily = imageModelCatalog.familyByVariantId.get(defaultModel.id) || {id:'',name:'',provider:''};
   const [imageMode, setImageMode] = useState(false); // false=t2i, true=i2i
   const [selectedModelId, setSelectedModelId] = useState(defaultModel.id || "");
   const [selectedFamilyId, setSelectedFamilyId] = useState(initialFamily?.id || defaultModel.id || "");
@@ -1310,6 +1312,7 @@ export default function ImageStudio({
   const dropdownRef = useRef(null);
   const uploadPickerResetRef = useRef(null); // not used directly — managed via key
   const selectionRef = useRef(null);
+  const generationInFlightRef = useRef(false);
   selectionRef.current = { imageMode, selectedFamilyId, selectedModelId };
 
   // ── Close dropdown on outside click ─────────────────────────────────────
@@ -1431,7 +1434,7 @@ export default function ImageStudio({
       const urls = await Promise.all(
         toUpload.map(async (file) => {
           try {
-            return await uploadFile(apiKey, file);
+            return await uploadFile(apiKey, file, undefined, { stableAssetUrl: true });
           } catch (err) {
             console.error(
               "[ImageStudio] Drop upload failed for",
@@ -1864,7 +1867,12 @@ export default function ImageStudio({
 
   // ── Generation ───────────────────────────────────────────────────────────
   const handleGenerate = async () => {
-    if (generating) return;
+    if (generating || generationInFlightRef.current) return;
+
+    if (hasTemporaryReferenceUrl([...uploadedImageUrls, swapImageUrl])) {
+      toast.error("参考图链接已过期或无法安全恢复，请重新上传参考图。");
+      return;
+    }
 
     if (imageMode) {
       if (uploadedImageUrls.length === 0) {
@@ -1947,15 +1955,22 @@ export default function ImageStudio({
     } : null;
 
     onGenerationStart?.();
+    generationInFlightRef.current = true;
     setGenerating(true);
     setGenerateError(null);
 
     try {
-      const settledResults = await Promise.allSettled(
-        Array.from({ length: batchSize }).map(async () => {
+      const { batchId: currentBatchId, settled: settledResults } = await runImageBatch({
+        descriptor: { entry: 'image', selectedModelId, effectivePrompt, publicParameters, rawReferenceParams, modelParameterValues, selectedAr, selectedQuality, imageMode, batchSize, swapImageUrl, selectedEffect },
+        count: batchSize,
+        recover: recoverImageBatchResult,
+        generate: async (_index, idempotencyKey, _context, recovery) => {
           if (imageMode) {
             const genParams = {
               model: selectedModelId,
+              studioId: 'image',
+              idempotencyKey,
+              resumeExistingTask:recovery.resumeExistingTask,
               ...buildSupplementalInputPayload(
                 selectedVariant?.model,
                 modelParameterValues,
@@ -1979,6 +1994,9 @@ export default function ImageStudio({
           } else {
             const genParams = {
               model: selectedModelId,
+              studioId: 'image',
+              idempotencyKey,
+              resumeExistingTask:recovery.resumeExistingTask,
               ...buildSupplementalInputPayload(
                 selectedVariant?.model,
                 modelParameterValues,
@@ -1996,8 +2014,8 @@ export default function ImageStudio({
             if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateImage(apiKey, genParams);
           }
-        })
-      );
+        },
+      });
 
       const fulfilled = settledResults.filter(r => r.status === 'fulfilled' && r.value?.url).map(r => r.value);
       const rejected = settledResults.filter(r => r.status === 'rejected');
@@ -2008,8 +2026,8 @@ export default function ImageStudio({
         ...failedValues.map(r => new Error(r.value?.error || copy.errors.generationFailed))
       ];
 
-      const currentBatchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       fulfilled.forEach((res) => {
+        if (history.some((item) => item.id === res.id)) return;
         const entry = {
           id: res.id || Math.random().toString(36).substring(7),
           batchId: currentBatchId,
@@ -2051,6 +2069,7 @@ export default function ImageStudio({
       if (onGenerationError) onGenerationError(errMsg);
       else toast.error(errMsg);
     } finally {
+      generationInFlightRef.current = false;
       setGenerating(false);
       onGenerationEnd?.();
     }
@@ -2193,6 +2212,10 @@ export default function ImageStudio({
     const targetModelId = batch.model || selectedModelId;
     const targetAr = batch.aspect_ratio || selectedAr;
     const targetRefImages = batch.referenceImages || [];
+    if (hasTemporaryReferenceUrl(targetRefImages)) {
+      toast.error("历史参考图链接无法安全恢复，请重新上传参考图。");
+      return;
+    }
     const isTargetI2I = targetRefImages.length > 0;
     const targetMode = isTargetI2I ? "i2i" : "t2i";
     const targetVariant = imageModelCatalog.variantById.get(targetModelId);
@@ -2250,20 +2273,27 @@ export default function ImageStudio({
       return;
     }
 
+    if (generationInFlightRef.current) return;
+    generationInFlightRef.current = true;
     setGenerating(true);
     setGenerateError(null);
     onGenerationStart?.();
 
     try {
-      const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const curQualityField = targetQualityField;
       const count = Number(batch.requestedCount) || batch.items?.length || 1;
 
-      const settledResults = await Promise.allSettled(
-        Array.from({ length: count }).map(async () => {
+      const { batchId, settled: settledResults } = await runImageBatch({
+        descriptor: { entry: 'regenerate', targetModelId, targetEffectivePrompt, publicParameters, targetRefImages, targetAr, quality: batch.quality, count },
+        count,
+        recover: recoverImageBatchResult,
+        generate: async (_index, idempotencyKey, _context, recovery) => {
           if (isTargetI2I) {
             const genParams = {
               model: targetModelId,
+              studioId: 'image',
+              idempotencyKey,
+              resumeExistingTask:recovery.resumeExistingTask,
               ...rawTargetReferences,
               images_list: targetRefImages,
               image_url: targetRefImages[0],
@@ -2284,6 +2314,9 @@ export default function ImageStudio({
             });
             const genParams = {
               model: targetModelId,
+              studioId: 'image',
+              idempotencyKey,
+              resumeExistingTask:recovery.resumeExistingTask,
               ...referenceParams,
               prompt: targetEffectivePrompt,
               aspect_ratio: targetAr,
@@ -2297,11 +2330,12 @@ export default function ImageStudio({
             if (publicParameters) genParams.public_parameters = publicParameters;
             return await generateImage(apiKey, genParams);
           }
-        })
-      );
+        },
+      });
 
       const fulfilled = settledResults.filter((r) => r.status === "fulfilled" && r.value?.url).map((r) => r.value);
       fulfilled.forEach((res) => {
+        if (history.some((item) => item.id === res.id)) return;
         const entry = {
           id: res.id || Math.random().toString(36).substring(7),
           batchId,
@@ -2326,14 +2360,19 @@ export default function ImageStudio({
       if (fulfilled.length > 0) {
         toast.success(isZh ? "已重新生成一组图片" : "New batch generated");
       }
+      const failed = settledResults.filter((result) => result.status === 'rejected');
+      if (failed.length) {
+        toast.error(`${fulfilled.length}/${count}：${formatErrorMessage(failed[0].reason, copy.errors?.generationFailed || "生成失败")}`);
+      }
     } catch (err) {
       const errMsg = formatErrorMessage(err, copy.errors?.generationFailed || "生成失败");
       toast.error(errMsg);
     } finally {
+      generationInFlightRef.current = false;
       setGenerating(false);
       onGenerationEnd?.();
     }
-  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, modelDirectoryRevision, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, locale]);
+  }, [apiKey, generating, copy, selectedModelId, selectedAr, selectedQuality, modelDirectoryRevision, addToHistory, onGenerationStart, onGenerationEnd, onGenerationComplete, locale, history]);
 
   const placeholderText =
     uploadedImageUrls.length > 1

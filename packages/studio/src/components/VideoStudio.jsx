@@ -1,5 +1,6 @@
 "use client";
 
+import { hasTemporaryReferenceUrl } from "../stableAssetReference.js";
 import { useState, useEffect, useRef, useCallback, useMemo, useId } from "react";
 import toast from "react-hot-toast";
 import { ToastHost as Toaster } from "../ui";
@@ -896,7 +897,7 @@ export default function VideoStudio({
   useEffect(() => {
     if (typeof window === "undefined" || window.__SUPDANCE_ACTIVE_MODEL_IDS__ instanceof Set) return;
     let mounted = true;
-    fetch("/api/models/active?nocache=1")
+    fetch("/api/models/active?schemaVersion=2&nocache=1")
       .then((response) => {
         if (!response.ok) throw new Error("Active model directory unavailable");
         return response.json();
@@ -1959,7 +1960,7 @@ export default function VideoStudio({
   );
 
   const uploadFiles = useCallback(
-    async (files, { label, maxBytes, setUploading, setProgress }) => {
+    async (files, { label, maxBytes, setUploading, setProgress, stableAssetUrl = false }) => {
       const selectedFiles = Array.from(files);
       const tooLarge = selectedFiles.find((file) => file.size > maxBytes);
       if (tooLarge) {
@@ -1977,7 +1978,7 @@ export default function VideoStudio({
               setProgress(
                 Math.round(progress.reduce((sum, item) => sum + item, 0) / progress.length),
               );
-            }),
+            }, { stableAssetUrl }),
           ),
         );
         const failures = results.flatMap((result, index) =>
@@ -2026,7 +2027,7 @@ export default function VideoStudio({
       const selectedFiles = Array.from(files).slice(0, remaining);
       if (selectedFiles.length === 0) return;
       const options = slot.mediaType === "image"
-        ? { label: slot.label, maxBytes: 10 * 1024 * 1024, setUploading: setImageUploading, setProgress: setImageProgress }
+        ? { label: slot.label, maxBytes: 10 * 1024 * 1024, setUploading: setImageUploading, setProgress: setImageProgress, stableAssetUrl: true }
         : slot.mediaType === "video"
           ? { label: slot.label, maxBytes: 50 * 1024 * 1024, setUploading: setVideoUploading, setProgress: setVideoProgress }
           : { label: slot.label, maxBytes: 50 * 1024 * 1024, setUploading: setAudioUploading, setProgress: setAudioProgress };
@@ -2144,7 +2145,7 @@ export default function VideoStudio({
       if (remaining === 0) return;
 
       const options = mediaType === "image"
-        ? { label: copy.media.image, maxBytes: 10 * 1024 * 1024, setUploading: setImageUploading, setProgress: setImageProgress }
+        ? { label: copy.media.image, maxBytes: 10 * 1024 * 1024, setUploading: setImageUploading, setProgress: setImageProgress, stableAssetUrl: true }
         : mediaType === "video"
           ? { label: copy.media.video, maxBytes: 50 * 1024 * 1024, setUploading: setVideoUploading, setProgress: setVideoProgress }
           : { label: copy.media.audio, maxBytes: 50 * 1024 * 1024, setUploading: setAudioUploading, setProgress: setAudioProgress };
@@ -2268,7 +2269,7 @@ export default function VideoStudio({
     try {
       const url = await uploadFile(apiKey, file, (pct) => {
         setEndImageProgress(pct);
-      });
+      }, { stableAssetUrl: true });
       const latestModel = videoModelCatalog.variantById.get(
         selectionRef.current.selectedModel,
       )?.model;
@@ -2522,6 +2523,11 @@ export default function VideoStudio({
           videoUrls: uploadedVideoUrls,
           audioUrls: uploadedAudioUrls,
         };
+
+    if (hasTemporaryReferenceUrl([...(workflowMedia.imageUrls || []), workflowMedia.endImageUrl])) {
+      toast.error("参考图链接已过期或无法安全恢复，请重新上传参考图。");
+      return;
+    }
 
     if (!selectedWorkflowId && uploadedVideoUrls.length > 0 && capabilities.video.maxItems === 0) {
       toast.error(`${selectedFamily?.name || "This model"} does not support video references.`);

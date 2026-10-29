@@ -34,26 +34,15 @@ export default function ModelPriceTag({
 }) {
   const copy = resolveCopy(en, MODEL_PRICE_MESSAGES, locale).price;
   const [, setVersion] = useState(0);
-  const [liveQuote, setLiveQuote] = useState(null);
 
   useEffect(() => {
     const handleUpdate = () => setVersion((v) => v + 1);
-    const handleQuote = (event) => {
-      const detail = event?.detail;
-      if (!detail || !detail.modelId || !Number.isFinite(Number(detail.credits))) return;
-      const targetIds = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
-      if (targetIds.length === 1 && targetIds[0] === detail.modelId) {
-        setLiveQuote({ modelId: detail.modelId, credits: Number(detail.credits) });
-      }
-    };
     if (typeof window !== "undefined") {
       window.addEventListener("supdance-model-pricing-updated", handleUpdate);
-      window.addEventListener("supdance:quote", handleQuote);
     }
     return () => {
       if (typeof window !== "undefined") {
         window.removeEventListener("supdance-model-pricing-updated", handleUpdate);
-        window.removeEventListener("supdance:quote", handleQuote);
       }
     };
   }, [ids]);
@@ -63,7 +52,7 @@ export default function ModelPriceTag({
     const globalPricing = globalThis.__SUPDANCE_MODEL_PRICING_MAP__;
     if (!window.__SUPDANCE_PRICING_FETCHING__ && (!globalPricing || globalPricing.size === 0)) {
       window.__SUPDANCE_PRICING_FETCHING__ = true;
-      fetch("/api/models/active")
+      fetch("/api/models/active?schemaVersion=2")
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (Array.isArray(data?.models)) {
@@ -77,12 +66,7 @@ export default function ModelPriceTag({
     }
   }, []);
 
-  const targetIds = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
-  const shelfPrice = priceForIds(ids);
-  const rawPrice =
-    targetIds.length === 1 && liveQuote?.modelId === targetIds[0]
-      ? { kind: "exact", credits: liveQuote.credits }
-      : shelfPrice;
+  const rawPrice = priceForIds(ids);
   const factor = Number.isFinite(multiplier) && multiplier > 1 ? multiplier : 1;
   const price =
     rawPrice.credits != null && factor > 1
