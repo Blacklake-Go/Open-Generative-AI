@@ -2,9 +2,7 @@ import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse } 
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { listProviders, getProviderById, updateProvider, createProvider, deleteProvider } from '@/lib/application/dataAccess.js';
 import { saveProviderSecret, getProviderSecretsMetadata } from '@/lib/application/dataAccess.js';
-import { getProviderSecret } from '@/lib/repositories/providers.js';
-import { getServerProviderApiKey } from '@/lib/services/providerSecrets.js';
-import { maskSecretKey } from '@/lib/admin/redaction.js';
+import { getServerProviderCredentialStatus } from '@/lib/services/providerSecrets.js';
 import { logAudit } from '@/lib/admin/audit';
 
 export const runtime = 'nodejs';
@@ -18,17 +16,12 @@ async function handleGET(request) {
   const enriched = await Promise.all(
     providers.map(async (p) => {
       const secrets = await getProviderSecretsMetadata(p.id);
-      const secretVal =
-        (await getServerProviderApiKey({ provider: p.id })) ||
-        (await getProviderSecret(p.id, 'api_key')) ||
-        (await getProviderSecret(p.id, 'apiKey')) ||
-        process.env[`${p.id.toUpperCase()}_API_KEY`] ||
-        '';
-      const maskedApiKey = secretVal ? maskSecretKey(secretVal) : '';
+      const credential = await getServerProviderCredentialStatus({ provider: p.id });
       return {
         ...p,
-        hasApiKey: Boolean(maskedApiKey) || secrets.some((s) => s.name === 'api_key' || s.name === 'apiKey') || Boolean(process.env[`${p.id.toUpperCase()}_API_KEY`]),
-        maskedApiKey,
+        hasApiKey: credential.configured,
+        maskedApiKey: credential.configured ? '••••••••' : '',
+        credential,
         modelCatalogApiUrl: p.model_catalog_api_url || p.metadata?.model_catalog_api_url || '',
         secretsCount: secrets.length,
       };
@@ -92,18 +85,13 @@ async function handlePOST(request) {
     });
   }
 
-  const secretVal =
-    (body.apiKey && String(body.apiKey).trim()) ||
-    (await getServerProviderApiKey({ provider: id })) ||
-    (await getProviderSecret(id, 'api_key')) ||
-    (await getProviderSecret(id, 'apiKey')) ||
-    process.env[`${id.toUpperCase()}_API_KEY`] ||
-    '';
-  const maskedApiKey = secretVal ? maskSecretKey(secretVal) : '';
+  const credential = await getServerProviderCredentialStatus({ provider: id });
   const providerWithKeyInfo = {
     ...saved,
-    hasApiKey: Boolean(maskedApiKey),
-    maskedApiKey,
+    hasApiKey: credential.configured,
+    maskedApiKey: credential.configured ? '••••••••' : '',
+    credential,
+    credentialSavedAsFallback: Boolean(String(body.apiKey || '').trim() && credential.source === 'environment'),
     modelCatalogApiUrl: saved.model_catalog_api_url || saved.metadata?.model_catalog_api_url || '',
   };
 

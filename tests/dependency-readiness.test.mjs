@@ -74,6 +74,34 @@ function createMockRoute(overrides = {}) {
   };
 }
 
+test('provider readiness honors the configured router price age and still rejects older prices', async () => {
+  const previous = process.env.MODEL_PRICE_MAX_AGE_MS;
+  const now = Date.now();
+  process.env.MODEL_PRICE_MAX_AGE_MS = String(30 * 86400000);
+  try {
+    const check = async (days) => {
+      const base = createMockRoute();
+      const price = { ...base.active_price_version, source_observed_at: new Date(now - days * 86400000).toISOString() };
+      return probeRequiredProviders({
+        listRoutes: async () => [
+          { ...base, model_category: 'image', active_price_version: price },
+          { ...base, model_id: 'video', model_category: 'video', active_price_version: price },
+        ],
+        resolveApiKey: async () => 'configured',
+        hasAdapter: () => true,
+        getAdapter: async () => ({ healthCheck: async () => ({ healthy: true }) }),
+        updateHealth: async () => {},
+        now,
+      });
+    };
+    assert.equal((await check(8)).status, 'healthy');
+    assert.equal((await check(31)).status, 'degraded');
+  } finally {
+    if (previous === undefined) delete process.env.MODEL_PRICE_MAX_AGE_MS;
+    else process.env.MODEL_PRICE_MAX_AGE_MS = previous;
+  }
+});
+
 test('assessPublicModelProviderReadiness recovers from cold-start staleness when active probe reports healthy', () => {
   const now = Date.now();
   // Stale historical timestamp (30 minutes ago, exceeding 15m threshold)
