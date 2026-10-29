@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
 import { Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle, Trash2, Wand2 } from 'lucide-react';
 import { EXCLUSIVE_BENEFITS, getDefaultExclusiveFeatures } from '@/lib/pricing/exclusiveBenefits';
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 
 const ICON_MAP = {
   Sparkles,
@@ -150,7 +151,7 @@ export default function PlanCardEditor({ plan }) {
               <p className="text-[11px] font-semibold text-white/40 mb-1.5">每月订阅额度资产：</p>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-white/80">月度积分: <strong className="font-mono text-brand">{quotaBase}</strong></span>
-                <span className="text-white/50">兑换率: <strong className="font-mono text-amber-200">¥0.07 / 积分</strong></span>
+                <span className="text-white/50">兑换率: <strong className="font-mono text-amber-200">¥{CREDIT_PRICING_POLICY.cnyPerCredit} / 积分</strong></span>
               </div>
             </div>
 

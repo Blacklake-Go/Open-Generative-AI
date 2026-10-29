@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Plus, Sparkles, Check, Crown, Zap, Flame, ShieldCheck, HelpCircle, Wand2 } from 'lucide-react';
 import { EXCLUSIVE_BENEFITS } from '@/lib/pricing/exclusiveBenefits';
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 
 const ICON_MAP = {
   Sparkles,
@@ -44,7 +45,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
     setMonthlyCny(num);
     setQuarterlyCny(Math.round(num * 3 * 0.9));
     setYearlyCny(Math.round(num * 10));
-    setQuotaBase(Math.round(num / 0.07));
+    setQuotaBase(Math.round(num / CREDIT_PRICING_POLICY.cnyPerCredit));
   };
 
   const handleMonthlyUsdChange = (val) => {
@@ -193,7 +194,7 @@ export default function CreatePlanModal({ isOpen, onClose, onCreated }) {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white/80">阶梯周期定价 (CNY / USD)</span>
-              <span className="text-[11px] text-brand/80">月付¥0.07/分 · 季付9折 · 年付8.3折</span>
+              <span className="text-[11px] text-brand/80">月付¥{CREDIT_PRICING_POLICY.cnyPerCredit}/分 · 季付9折 · 年付8.3折</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>

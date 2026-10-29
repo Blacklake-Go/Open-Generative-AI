@@ -314,8 +314,8 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
         const saved = data.data.provider;
         setChannels((prev) => {
           const idx = prev.findIndex((p) => p.id === saved.id);
-          const maskedApiKey = saved.maskedApiKey || (idx >= 0 ? prev[idx].maskedApiKey : '');
-          const hasApiKey = Boolean(maskedApiKey) || (payload.apiKey ? true : idx >= 0 ? prev[idx].hasApiKey : false);
+          const maskedApiKey = saved.maskedApiKey || '';
+          const hasApiKey = saved.hasApiKey === true;
           const merged = {
             ...saved,
             hasApiKey,
@@ -338,6 +338,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
         });
         setEditingProvider(null);
         setIsCreating(false);
+        if (saved.credentialSavedAsFallback) alert('密钥已加密保存为备用配置。当前执行仍使用环境变量中的密钥，本次保存未切换执行凭据。');
       } else {
         alert(data.error?.message || '保存供应商配置失败');
       }
@@ -1015,6 +1016,15 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   }
                   className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
+                <p className="text-xs text-ink-tertiary">
+                  {editingProvider.credential?.source === 'environment'
+                    ? '生效来源：服务器环境变量。这里保存的新密钥仅作为加密备用配置。'
+                    : editingProvider.credential?.status === 'error'
+                      ? '凭据读取异常，尚不能确认可用；请检查加密配置。'
+                      : editingProvider.credential?.configured
+                        ? '生效来源：加密数据库。凭据可读取，上游权限仍需单独验证。'
+                        : '尚未确认可用凭据。'}
+                </p>
               </div>
 
               {/* 品牌模型关联与管理通道 */}

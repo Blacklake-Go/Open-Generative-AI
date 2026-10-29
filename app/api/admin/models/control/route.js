@@ -1,3 +1,4 @@
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse } from '@/lib/admin/authz';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { checkIdempotency, completeIdempotency, getRequiredIdempotencyKey, releaseIdempotency } from '@/lib/admin/idempotency';
@@ -197,7 +198,7 @@ async function handlePOST(request) {
         const pricingMode = body.pricingMode || body.pricing_mode || 'auto';
         const manualOverridePriceCny = body.manualOverridePriceCny !== undefined && body.manualOverridePriceCny !== null
           ? Number(body.manualOverridePriceCny)
-          : (pricingMode === 'manual' || pricingMode === 'locked') ? Number((baseCredits * 0.1).toFixed(4)) : null;
+          : (pricingMode === 'manual' || pricingMode === 'locked') ? Number((baseCredits * CREDIT_PRICING_POLICY.cnyPerCredit).toFixed(4)) : null;
         const minGrossMarginRate = Number(body.minGrossMarginRate ?? body.min_gross_margin_rate ?? 0.3);
 
         const updated = await upsertModelPricing({

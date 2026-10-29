@@ -1,5 +1,6 @@
 'use client';
 
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 import { useState, useEffect, useMemo } from 'react';
 import {
   X, Save, Loader2, RefreshCw, CheckCircle2, XCircle,
@@ -242,7 +243,7 @@ export default function ModelConfigDrawer({
       }
     }
     const credits = Number(formData.credits || 0);
-    const userPriceCny = credits * 0.1; // 1 credit = 0.1 CNY
+    const userPriceCny = credits * CREDIT_PRICING_POLICY.cnyPerCredit; // Shared with the quote engine.
 
     if (costCny !== null && costCny > 0 && userPriceCny > 0) {
       const marginCny = userPriceCny - costCny;

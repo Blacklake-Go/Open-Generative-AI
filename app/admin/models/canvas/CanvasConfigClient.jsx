@@ -5,7 +5,8 @@ import { useMemo, useState } from 'react';
 const GROUPS = [
   { id: 'image', label: '图片', defaultKey: 'imageModelId' },
   { id: 'video', label: '视频', defaultKey: 'videoModelId' },
-  { id: 'audio', label: '音频与音乐', defaultKey: 'audioModelId' },
+  { id:'audio',label:'语音与音频',defaultKey:'audioModelId' },
+  { id:'music',label:'音乐',defaultKey:'musicModelId' },
   { id: 'text', label: '文本', defaultKey: 'textModelId' },
 ];
 
@@ -16,18 +17,7 @@ const fieldBase = 'h-10 w-full border border-line bg-well px-3 text-body text-in
 const inputClass = `${fieldBase} rounded-xl`;
 const selectClass = `${fieldBase} rounded-lg`;
 
-const PREFERRED_DEFAULTS = {
-  image: 'seedream-4.5',
-  video: 'wan-2.1',
-  audio: 'minimax-music-3.0',
-  text: 'deepseek-r1',
-};
-
-function pickBestDefault(groupId, availableIds) {
-  const preferred = PREFERRED_DEFAULTS[groupId];
-  if (preferred && availableIds?.includes(preferred)) return preferred;
-  return availableIds?.[0] || '';
-}
+function pickBestDefault(_groupId, availableIds) { return availableIds?.[0] || ''; }
 
 function initialState(initialConfig, candidates) {
   const mountedModelIds = Object.fromEntries(GROUPS.map(({ id }) => [
@@ -42,6 +32,7 @@ function initialState(initialConfig, candidates) {
     videoModelId: '',
     textModelId: '',
     audioModelId: '',
+    musicModelId: '',
     canvasImageCount: '1',
     audioVoice: 'alloy',
     audioFormat: 'mp3',
@@ -66,8 +57,8 @@ export default function CanvasConfigClient({ initialConfig, candidates = [], can
   const [feedback, setFeedback] = useState('');
   const [feedbackError, setFeedbackError] = useState(false);
   const [saved, setSaved] = useState(Boolean(initialConfig));
-  const [search, setSearch] = useState({ image: '', video: '', text: '', audio: '' });
-  const [brandFilter, setBrandFilter] = useState({ image: 'all', video: 'all', text: 'all', audio: 'all' });
+  const [search, setSearch] = useState({ image: '', video: '', text: '', audio: '', music:'' });
+  const [brandFilter, setBrandFilter] = useState({ image: 'all', video: 'all', text: 'all', audio: 'all', music:'all' });
 
   const setDefault = (key, value) => {
     setDraft((current) => ({

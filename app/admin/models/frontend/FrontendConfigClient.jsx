@@ -1,5 +1,6 @@
 'use client';
 
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 import { useState, useMemo, useCallback, useEffect, Fragment } from 'react';
 import Link from 'next/link';
 import {
@@ -285,7 +286,7 @@ export default function FrontendConfigClient({
   const computeModelMargin = useCallback((model, overrideCredits = null) => {
     const costCny = model.min_cost_cny !== null && model.min_cost_cny !== undefined ? Number(model.min_cost_cny) : null;
     const credits = overrideCredits !== null ? overrideCredits : Number(model.base_credits || 0);
-    const userPriceCny = credits * 0.1; // 1 credit = 0.1 CNY
+    const userPriceCny = credits * CREDIT_PRICING_POLICY.cnyPerCredit; // Shared with the quote engine.
 
     if (costCny !== null && costCny > 0 && userPriceCny > 0) {
       const marginCny = userPriceCny - costCny;
@@ -634,7 +635,7 @@ export default function FrontendConfigClient({
             .map((r) => Number(r.cost_cny))
             .filter((c) => Number.isFinite(c) && c > 0);
           const newMinCostCny = validRouteCosts.length > 0 ? Math.min(...validRouteCosts) : null;
-          const userPriceCny = creditsPrice * 0.1;
+          const userPriceCny = creditsPrice * CREDIT_PRICING_POLICY.cnyPerCredit;
           const newMarginRate = (newMinCostCny !== null && userPriceCny > 0)
             ? Number((((userPriceCny - newMinCostCny) / userPriceCny) * 100).toFixed(1))
             : null;
@@ -1352,7 +1353,7 @@ export default function FrontendConfigClient({
                               {credits} 积分 ✏️
                             </span>
                             <span className="font-mono text-[10px] text-ink-subtle">
-                              ≈ ¥{(credits * 0.1).toFixed(2)}
+                              ≈ ¥{(credits * CREDIT_PRICING_POLICY.cnyPerCredit).toFixed(2)}
                             </span>
                           </button>
                         ) : (
@@ -1681,7 +1682,7 @@ export default function FrontendConfigClient({
                     autoFocus
                   />
                   <span className="absolute right-3 top-2.5 text-caption text-ink-subtle font-mono">
-                    ≈ ¥{((Number(quickPriceInput) || 0) * 0.1).toFixed(2)}
+                    ≈ ¥{((Number(quickPriceInput) || 0) * CREDIT_PRICING_POLICY.cnyPerCredit).toFixed(2)}
                   </span>
                 </div>
               </div>

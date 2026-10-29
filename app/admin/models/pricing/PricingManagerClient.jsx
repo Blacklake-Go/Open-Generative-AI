@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
+import { CREDIT_PRICING_POLICY } from '@/lib/pricing/creditPolicy';
 import { Card, MetricCard, StatusBadge, Button } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
 import {
@@ -358,7 +359,7 @@ export default function PricingManagerClient({
               ? {
                   ...item,
                   baseCredits: payload.baseCredits,
-                  userPriceCny: Number((payload.baseCredits * 0.1).toFixed(4)),
+                  userPriceCny: Number((payload.baseCredits * CREDIT_PRICING_POLICY.cnyPerCredit).toFixed(4)),
                   pricingMode: payload.pricingMode,
                 }
               : item
@@ -408,7 +409,7 @@ export default function PricingManagerClient({
         setBreakdownList((prev) =>
           prev.map((b) => {
             if (b.modelId !== quickEditModel.modelId) return b;
-            const userPriceCny = Number((baseCredits * 0.1).toFixed(4));
+            const userPriceCny = Number((baseCredits * CREDIT_PRICING_POLICY.cnyPerCredit).toFixed(4));
             const grossMarginCny = b.minCostCny !== null ? Number((userPriceCny - b.minCostCny).toFixed(4)) : null;
             const marginRate = userPriceCny > 0 && grossMarginCny !== null ? Number(((grossMarginCny / userPriceCny) * 100).toFixed(1)) : null;
             const marginStatus = marginRate === null ? 'unknown' : marginRate < 0 ? 'loss' : marginRate < 30 ? 'low' : marginRate < 50 ? 'healthy' : 'high';
@@ -1328,7 +1329,7 @@ export default function PricingManagerClient({
                   className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-white font-mono text-base font-bold"
                   required
                 />
-                <p className="mt-1 text-[11px] text-white/40">1 算力基准价值按 0.1 元换算</p>
+                <p className="mt-1 text-[11px] text-white/40">1 算力基准价值按 {CREDIT_PRICING_POLICY.cnyPerCredit} 元换算</p>
               </div>
 
               <div>
