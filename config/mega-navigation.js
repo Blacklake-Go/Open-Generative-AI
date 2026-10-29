@@ -444,7 +444,7 @@ export const MEGA_NAV_CATEGORIES = [
     models: [
       {
         id: 'kling-3-0',
-        modelKey: 'kling-v3.0-pro-t2v',
+        modelKey: 'kling-v3.0-standard-text-to-video',
         tabId: 'video',
         name: 'Kling 3.0 Pro',
         provider: 'Kuaishou',
@@ -457,11 +457,11 @@ export const MEGA_NAV_CATEGORIES = [
           es: 'Simulación física de vanguardia y movimiento coherente, 35 créditos',
         },
         badge: 'TOP',
-        href: '/studio?tab=video&model=kling-v3.0-pro-t2v',
+        href: '/studio?tab=video&model=kling-v3.0-standard-text-to-video',
       },
       {
         id: 'seedance-2-5',
-        modelKey: 'seedance-2.5-pro',
+        modelKey: 'seedance-2.5-text-to-video',
         tabId: 'video',
         name: 'Seedance 2.5',
         provider: 'ByteDance',
@@ -474,7 +474,7 @@ export const MEGA_NAV_CATEGORIES = [
           es: 'Co-generación nativa de audio y video con calidad de cine',
         },
         badge: 'HOT',
-        href: '/studio?tab=video&model=seedance-2.5-pro',
+        href: '/studio?tab=video&model=seedance-2.5-text-to-video',
       },
       {
         id: 'minimax-hailuo-2-3',
