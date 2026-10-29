@@ -23,6 +23,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+function formatAdminTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+}
+
 export default function ProvidersManagerClient({ initialChannels = [] }) {
   const [channels, setChannels] = useState(initialChannels);
   const [searchTerm, setSearchTerm] = useState('');
@@ -742,6 +749,39 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                         </span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* 上游余额/配额：未知必须显示为未知，禁止用数据库默认 0 冒充真实余额 */}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-xs">
+                    <span className="shrink-0 text-gray-500">上游余额:</span>
+                    {c.balance === null || c.balance === undefined ? (
+                      <span className="font-semibold text-gray-400">未知</span>
+                    ) : (
+                      <span className="font-mono font-semibold text-white">
+                        {Number(c.balance).toLocaleString('zh-CN', { maximumFractionDigits: 4 })}
+                        {c.currency ? ` ${c.currency}` : ''}
+                      </span>
+                    )}
+                    {c.availableQuota !== null && c.availableQuota !== undefined && (
+                      <span className="shrink-0 text-gray-500">
+                        配额{' '}
+                        <span className="font-mono text-gray-300">
+                          {Number(c.availableQuota).toLocaleString('zh-CN', { maximumFractionDigits: 4 })}
+                        </span>
+                      </span>
+                    )}
+                    <span
+                      className="min-w-0 flex-1 truncate text-caption text-gray-500"
+                      title={c.balanceApi?.reason || c.balanceApi?.url || '未登记余额接口'}
+                      suppressHydrationWarning
+                    >
+                      {c.balanceApi?.url
+                        ? `来源 ${c.balanceApi.url}`
+                        : c.balanceApi?.supported === false
+                          ? '通道未提供余额接口'
+                          : '余额来源未登记'}
+                      {c.balanceCheckedAt ? ` · 观测于 ${formatAdminTime(c.balanceCheckedAt)}` : ' · 未观测'}
+                    </span>
                   </div>
 
                   {/* 探测信息展开条 */}
