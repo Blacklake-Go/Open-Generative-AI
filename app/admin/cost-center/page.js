@@ -1,49 +1,12 @@
 import { Card, PageHeader, MetricCard, DataTable, StatusBadge } from '@/components/admin/AdminUi';
 import { requireAdminPagePermission } from '@/lib/admin/pageAuth';
 import { PERMISSIONS } from '@/lib/admin/permissions';
-import { queryMany } from '@/lib/db/index';
+import { getCostReport } from '@/lib/admin/financialReporting';
 import CostCenterClient from './CostCenterClient';
 
 const PERIOD_LABELS = {
   today: '今天', yesterday: '昨天', '7d': '近 7 天', '30d': '近 30 天', month: '本月',
 };
-
-function periodToSql(period) {
-  switch (period) {
-    case 'today': return { since: "now() - INTERVAL '1 day'", end: '' };
-    case 'yesterday': return { since: "now() - INTERVAL '2 day'", end: "AND pcr.created_at < now() - INTERVAL '1 day'" };
-    case '30d': return { since: "now() - INTERVAL '30 day'", end: '' };
-    case 'month': return { since: "date_trunc('month', now())", end: '' };
-    default: return { since: "now() - INTERVAL '7 day'", end: '' };
-  }
-}
-
-async function getCostData(period = '7d') {
-  const { since, end } = periodToSql(period);
-  return queryMany(`
-    SELECT
-      pcr.model_id,
-      m.display_name AS model_name,
-      pcr.provider_id,
-      p.name AS provider_name,
-      COUNT(*)::int AS total_requests,
-      COUNT(*) FILTER (WHERE att.status = 'succeeded')::int AS success_count,
-      COUNT(*) FILTER (WHERE att.status = 'failed')::int AS failure_count,
-      CASE WHEN COUNT(*) = 0 THEN 0
-        ELSE ROUND(COUNT(*) FILTER (WHERE att.status = 'succeeded')::numeric / COUNT(*) * 100, 1) END AS success_rate,
-      ROUND(COALESCE(AVG(att.duration_ms) FILTER (WHERE att.duration_ms IS NOT NULL), 0))::int AS avg_duration_ms,
-      ROUND(COALESCE(SUM(pcr.actual_cost_usd), SUM(pcr.estimated_cost_usd), 0)::numeric, 4) AS total_cost_usd,
-      CASE WHEN COUNT(*) = 0 THEN 0
-        ELSE ROUND(COALESCE(SUM(pcr.actual_cost_usd), SUM(pcr.estimated_cost_usd), 0)::numeric / COUNT(*), 6) END AS avg_cost_usd
-    FROM ai_studio.provider_cost_records pcr
-    LEFT JOIN ai_studio.generation_attempts att ON att.id = pcr.attempt_id
-    LEFT JOIN ai_studio.ai_models m ON m.id = pcr.model_id
-    LEFT JOIN ai_studio.ai_providers p ON p.id = pcr.provider_id
-    WHERE pcr.created_at >= ${since} ${end}
-    GROUP BY pcr.model_id, m.display_name, pcr.provider_id, p.name
-    ORDER BY total_cost_usd DESC, total_requests DESC
-  `);
-}
 
 export default async function CostCenterPage({ searchParams }) {
   await requireAdminPagePermission(PERMISSIONS.dashboardRead);
@@ -52,13 +15,17 @@ export default async function CostCenterPage({ searchParams }) {
   const period = resolvedParams?.period || '7d';
   let rows = [];
   try {
-    rows = await getCostData(period);
+    rows = await getCostReport(period);
   } catch (error) {
     console.error('[admin/cost-center]', error.message);
   }
 
   const totalRequests = rows.reduce((sum, r) => sum + r.total_requests, 0);
   const totalSuccess = rows.reduce((sum, r) => sum + r.success_count, 0);
+  const pending = rows.reduce((sum, r) => sum + r.pending_reconciliation, 0);
+  const usdComplete = rows.every((r) => r.total_cost_usd != null);
+  const cnyComplete = rows.every((r) => r.total_cost_cny != null);
+  const totalCostCny = rows.reduce((sum, r) => sum + Number(r.total_cost_cny || 0), 0);
   const totalCostUsd = rows.reduce((sum, r) => sum + Number(r.total_cost_usd || 0), 0);
   const overallSuccessRate = totalRequests > 0 ? ((totalSuccess / totalRequests) * 100).toFixed(1) : '0';
 
@@ -88,11 +55,11 @@ export default async function CostCenterPage({ searchParams }) {
         {row.avg_duration_ms > 0 ? `${(row.avg_duration_ms / 1000).toFixed(1)}s` : '—'}
       </span>
     )},
-    { key: 'cost', label: 'API 成本', render: (row) => (
-      <span className="text-xs font-mono tabular-nums text-white">${Number(row.total_cost_usd).toFixed(4)}</span>
+    { key: 'cost', label: 'API 成本（含估算）', render: (row) => (
+      <span className="text-xs font-mono tabular-nums text-white">{row.total_cost_usd == null ? '待核对' : `$${Number(row.total_cost_usd).toFixed(4)}`}</span>
     )},
     { key: 'unit_cost', label: '单次成本', render: (row) => (
-      <span className="text-xs font-mono tabular-nums text-white/70">${Number(row.avg_cost_usd).toFixed(6)}</span>
+      <span className="text-xs font-mono tabular-nums text-white/70">{row.avg_cost_usd == null ? '待核对' : `$${Number(row.avg_cost_usd).toFixed(6)}`}</span>
     )},
   ];
 
@@ -101,7 +68,7 @@ export default async function CostCenterPage({ searchParams }) {
       <PageHeader
         eyebrow="财务分析"
         title="成本中心"
-        description="按模型和供应商分析 API 调用成本、成功率和平均耗时。"
+        description="按模型和供应商分析 API 调用成本。实际费用与待核对估算合并展示；历史人民币成本使用任务锁定汇率。"
       >
         <CostCenterClient currentPeriod={period} />
       </PageHeader>
@@ -109,8 +76,8 @@ export default async function CostCenterPage({ searchParams }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <MetricCard label="总请求数" value={totalRequests.toLocaleString()} hint={`${PERIOD_LABELS[period] || period}`} tone="neutral" />
         <MetricCard label="成功率" value={`${overallSuccessRate}%`} hint={`${totalSuccess} 次成功`} tone={Number(overallSuccessRate) >= 95 ? 'good' : 'warn'} />
-        <MetricCard label="API 总成本" value={`$${totalCostUsd.toFixed(2)}`} hint="USD" tone="info" />
-        <MetricCard label="估算成本(CNY)" value={`¥${(totalCostUsd * 7.2).toFixed(2)}`} hint="按 7.2 汇率估算" tone="neutral" />
+        <MetricCard label="API 总成本（含估算）" value={usdComplete ? `$${totalCostUsd.toFixed(2)}` : '待核对'} hint={`${pending} 条费用待核对`} tone="info" />
+        <MetricCard label="成本(CNY，含估算)" value={cnyComplete ? `¥${totalCostCny.toFixed(2)}` : '待核对'} hint="按任务锁定汇率；缺失费用或汇率时待核对" tone="neutral" />
       </div>
 
       <DataTable columns={columns} rows={rows} empty="该时间段暂无成本记录" />

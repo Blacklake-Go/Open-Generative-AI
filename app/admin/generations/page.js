@@ -162,6 +162,7 @@ export default async function GenerationsPage({ searchParams }) {
         title="生成任务"
         description="以用户为单位查看平台通过 AI Studio 提交的图像、视频和语音生成任务：默认展示每位用户最新的一条任务，展开可查看更早的记录。"
       >
+        <Link href="/admin/generations/reconciliation" className="rounded-lg border border-line px-4 py-2 text-xs font-semibold text-ink hover:bg-wash">待核对任务与冻结款</Link>
         <Link
           href="/admin/generations/failures"
           className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-bold text-amber-200 hover:bg-amber-400/20"
