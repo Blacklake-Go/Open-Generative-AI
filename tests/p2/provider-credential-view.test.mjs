@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildCredentialView,
+  buildExecutionView,
   buildVerificationView,
 } from '../../lib/services/providerCredentialView.js';
 
@@ -185,4 +186,153 @@ test('后台页面、刷新接口与保存接口都把来源、存盘记录和�
   assert.match(client, /<CredentialVerificationPanel channel=\{c\} \/>/);
   assert.match(client, /<CredentialSourceHint provider=\{editingProvider\} \/>/);
   assert.match(client, /buildVerificationView/);
+});
+
+test('最近一次执行与当前生效密钥一致时才算已用于实际执行', () => {
+  const applied = buildExecutionView({
+    credential: {
+      source: 'encrypted_database',
+      configured: true,
+      activeSecretName: 'api_key',
+      updatedAt: '2026-10-20T08:30:00.000Z',
+    },
+    lastAttemptAt: '2026-10-28T02:00:00.000Z',
+    lastAttemptCredentialSource: 'encrypted_database',
+    lastAttemptSecretName: 'api_key',
+  });
+
+  assert.equal(applied.state, 'applied');
+  assert.equal(applied.label, '已用于实际执行');
+  assert.equal(applied.tone, 'success');
+  assert.equal(applied.secretMatches, true);
+  assert.equal(applied.attemptedSource, 'encrypted_database');
+  assert.equal(applied.attemptedSourceLabel, '加密数据库');
+  assert.equal(applied.at, '2026-10-28T02:00:00.000Z');
+});
+
+test('执行记录指向的密钥与当前生效密钥不同时标记为仍在用旧配置', () => {
+  const stale = buildExecutionView({
+    credential: {
+      source: 'encrypted_database',
+      configured: true,
+      activeSecretName: 'api_key_sandbox',
+      updatedAt: '2026-10-20T08:30:00.000Z',
+    },
+    lastAttemptAt: '2026-10-28T02:00:00.000Z',
+    lastAttemptCredentialSource: 'encrypted_database',
+    lastAttemptSecretName: 'api_key',
+  });
+
+  assert.equal(stale.state, 'stale');
+  assert.equal(stale.tone, 'warning');
+  assert.equal(stale.secretMatches, false);
+  assert.match(stale.note, /api_key_sandbox/);
+});
+
+test('执行早于密钥变更时间且没有可比密钥名时保持未生效', () => {
+  const pending = buildExecutionView({
+    credential: {
+      source: 'encrypted_database',
+      configured: true,
+      activeSecretName: 'api_key',
+      updatedAt: '2026-10-28T09:00:00.000Z',
+    },
+    lastAttemptAt: '2026-10-28T02:00:00.000Z',
+    lastAttemptCredentialSource: 'encrypted_database',
+  });
+
+  assert.equal(pending.state, 'pending');
+  assert.equal(pending.tone, 'warning');
+  assert.equal(pending.secretMatches, null);
+  assert.match(pending.note, /新配置尚未被执行使用/);
+});
+
+test('环境变量覆盖数据库后，仍按数据库来源执行的记录不能算已生效', () => {
+  const stale = buildExecutionView({
+    credential: {
+      source: 'environment',
+      configured: true,
+      activeSecretName: null,
+      updatedAt: null,
+    },
+    lastAttemptAt: '2026-10-27T02:00:00.000Z',
+    lastAttemptCredentialSource: 'encrypted_database',
+    lastAttemptSecretName: 'api_key',
+  });
+
+  assert.equal(stale.state, 'stale');
+  assert.equal(stale.attemptedSourceLabel, '加密数据库');
+  assert.match(stale.note, /当前生效来源是服务器环境变量/);
+
+  const sameSource = buildExecutionView({
+    credential: { source: 'environment', configured: true },
+    lastAttemptAt: '2026-10-27T02:00:00.000Z',
+    lastAttemptCredentialSource: 'environment',
+  });
+  // 环境变量的变更时间不落库，只能证明来源一致，不能再升级成版本已验证
+  assert.equal(sameSource.state, 'applied');
+  assert.match(sameSource.note, /无法比较具体版本/);
+});
+
+test('历史执行没有来源留痕时保持未记录，不默认已生效', () => {
+  const view = buildExecutionView({
+    credential: { source: 'encrypted_database', configured: true, activeSecretName: 'api_key' },
+    lastAttemptAt: '2026-10-01T00:00:00.000Z',
+  });
+
+  assert.equal(view.state, 'unknown');
+  assert.equal(view.tone, 'neutral');
+  assert.equal(view.attemptedSource, null);
+  assert.equal(view.attemptedSourceLabel, null);
+  assert.match(view.note, /来源留痕/);
+});
+
+test('从未执行、无凭据与凭据读错是三种不同的执行状态', () => {
+  const unexecuted = buildExecutionView({
+    credential: { source: 'encrypted_database', configured: true, activeSecretName: 'api_key' },
+  });
+  assert.equal(unexecuted.state, 'unexecuted');
+  assert.equal(unexecuted.tone, 'neutral');
+  assert.equal(unexecuted.at, null);
+
+  const none = buildExecutionView({
+    credential: { source: 'none', configured: false },
+    lastAttemptAt: '2026-10-01T00:00:00.000Z',
+  });
+  assert.equal(none.state, 'none');
+  assert.equal(none.tone, 'warning');
+  assert.equal(none.attemptedSource, null);
+
+  const readError = buildExecutionView({
+    credential: { source: 'none', configured: false, readError: true },
+    lastAttemptAt: '2026-10-01T00:00:00.000Z',
+    lastAttemptCredentialSource: 'encrypted_database',
+  });
+  assert.equal(readError.state, 'unknown');
+  assert.equal(readError.tone, 'danger');
+  assert.match(readError.note, /读取失败/);
+});
+
+test('执行留痕由 attempt 元数据承载，后台面板消费同一份 buildExecutionView', () => {
+  const generation = readRepoFile('lib/services/generationCore.js');
+  const providers = readRepoFile('lib/repositories/providers.js');
+  const breaker = readRepoFile('lib/services/circuitBreaker.js');
+  const client = readRepoFile('app/admin/models/providers/ProvidersManagerClient.jsx');
+
+  // 写入端只记录来源与密钥名，不得把密钥值写进 attempt 元数据
+  assert.match(generation, /getServerProviderCredentialStatus/);
+  assert.match(generation, /credentialSource:\s*attemptCredential\.source/);
+  assert.match(generation, /credentialSecretName:\s*attemptCredential\.secretName/);
+  assert.doesNotMatch(generation, /credentialValue|apiKeyValue/);
+
+  // 读取端取最新一条 attempt 的留痕，不能跨行取最大值冒充
+  assert.match(providers, /metadata_json->>'credentialSource'/);
+  assert.match(providers, /metadata_json->>'credentialSecretName'/);
+  assert.match(providers, /ORDER BY created_at DESC/);
+  assert.match(breaker, /lastAttemptCredentialSource/);
+  assert.match(breaker, /lastAttemptCredentialSecretName/);
+
+  assert.match(client, /buildExecutionView/);
+  assert.match(client, /lastAttemptCredentialSource: channel\.lastAttemptCredentialSource/);
+  assert.match(client, /实际执行/);
 });

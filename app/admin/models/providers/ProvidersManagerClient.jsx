@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, MetricCard, StatusBadge, Button, EmptyState } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
-import { buildCredentialView, buildVerificationView } from '@/lib/services/providerCredentialView';
+import { buildCredentialView, buildExecutionView, buildVerificationView } from '@/lib/services/providerCredentialView';
 import {
   Server,
   Zap,
@@ -57,6 +57,12 @@ function CredentialVerificationPanel({ channel }) {
       : null,
     generation: { lastSuccessAt: channel.lastSuccessAt, lastAttemptAt: channel.lastAttemptAt },
   });
+  const execution = buildExecutionView({
+    credential,
+    lastAttemptAt: channel.lastAttemptAt,
+    lastAttemptCredentialSource: channel.lastAttemptCredentialSource,
+    lastAttemptSecretName: channel.lastAttemptCredentialSecretName,
+  });
   const tiers = [verification.config, verification.auth, verification.modelAccess, verification.generation];
   const sourceTone = credential.readError ? 'danger' : credential.configured ? 'success' : 'warning';
 
@@ -100,6 +106,20 @@ function CredentialVerificationPanel({ channel }) {
           {credential.readErrorNote}
         </p>
       )}
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/[0.06] pt-1.5">
+        <span className="text-gray-500">实际执行:</span>
+        <span className={`font-medium ${VERIFICATION_TONE_CLASS[execution.tone] || 'text-gray-400'}`}>
+          {execution.label}
+        </span>
+        {execution.at ? (
+          <span className="text-gray-500">
+            最近执行 {formatAdminTime(execution.at)}
+            {execution.attemptedSourceLabel ? ` · 当时来源 ${execution.attemptedSourceLabel}` : ''}
+          </span>
+        ) : null}
+        {execution.note ? <span className="text-gray-500" title={execution.note}>· {execution.note}</span> : null}
+      </div>
 
       <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/[0.06] pt-1.5">
         {tiers.map((t) => (
