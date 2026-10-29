@@ -1,3 +1,6 @@
+import { publicCanvasModel } from '@/lib/canvas/modelDescriptor';
+import { validateCapabilityParameters } from '@/lib/modelCenter/validateCapabilitySchema';
+import { isProviderConfigurationParameter } from '@/lib/modelCenter/capabilitySchema';
 import { getUserFromRequest } from '@/lib/services/auth';
 import { createGenerationTask } from '@/lib/services/generationCore';
 import { listActiveModels } from '@/lib/services/models';
@@ -10,7 +13,7 @@ import { canvasSnapshotContainsNode } from '@/lib/canvas/projectSnapshot';
 import { getUserAssetDownload, syncCreationToAsset } from '@/lib/services/assets';
 import { findCreationById } from '@/lib/repositories/creations';
 import { getCanvasJobCostMetadata, getCanvasJobFailure, getCanvasJobResultStatus } from '@/lib/canvas/jobResultState';
-import { publicErrorMessage } from '@/lib/security/publicError';
+import { publicErrorMessage, publicErrorPayload } from '@/lib/security/publicError';
 import { canvasJson, canvasMutationGuard, canvasOriginGuard, canvasPreflight, readCanvasJson, canvasResponse } from '@/lib/canvas/http';
 import { getCanvasSessionOwnerConflict } from '@/lib/canvas/sessionOwner';
 
@@ -27,7 +30,7 @@ function validateParameters(value) {
   let visited = 0;
   while (pending.length) {
     const { value: current, key } = pending.pop();
-    if (/api.?key|base.?url|credential|provider|endpoint|channel|secret|script|token/i.test(key)) {
+    if (isProviderConfigurationParameter(key)) {
       throw Object.assign(new Error('Canvas 不能提交 Provider 或凭据配置'), { code: 'PROVIDER_CONFIG_FORBIDDEN' });
     }
     if (typeof current === 'string') {
@@ -166,6 +169,11 @@ export async function POST(request) {
     const catalog = await listActiveModels();
     const model = catalog.find((item) => item.id === modelId);
     if (!model) return canvasJson(request, { error: '模型当前不可用', code: 'MODEL_NOT_AVAILABLE' }, { status: 404 });
+    if (body.capabilityVersion) {
+      const capability = publicCanvasModel(model,{schemaVersion:2});
+      if (body.capabilityVersion !== capability.capabilityVersion) return canvasJson(request,{error:'模型能力已更新，请刷新参数并重新报价',code:'MODEL_CAPABILITY_CHANGED'},{status:409});
+      validateCapabilityParameters(modelId,capability.capabilityVersion,capability.inputSchema,body.parameters || {});
+    }
     const allowed = await getCanvasAllowedModelIds({ userId: user.id });
     if (!allowed.has(modelId)) return canvasJson(request, { error: '该模型未挂载到无限画布', code: 'CANVAS_MODEL_UNMOUNTED' }, { status: 404 });
     if (!isCanvasServerCapabilityEnabled(model.type)) {
@@ -189,6 +197,7 @@ export async function POST(request) {
       return canvasJson(request, { error: '参考素材不存在或不属于当前账户', code: 'ASSET_NOT_FOUND' }, { status: 422 });
     }
     const task = await createGenerationTask({
+      site:'canvas',
       user,
       modelId,
       studioId: 'canvas',
@@ -198,6 +207,7 @@ export async function POST(request) {
       idempotencyKey,
       label: `${model.name || model.id} · Canvas`,
       quoteId,
+      expectedCapabilityVersion: body.capabilityVersion || null,
       routingMode: 'cost',
       onTaskCreated: async ({ creation, transaction }) => {
         const linked = await linkCanvasProjectJob(user.id, {
@@ -226,11 +236,12 @@ export async function POST(request) {
     }, { status: task.idempotent ? 200 : 202 });
   } catch (error) {
     const status = error.code === 'UNAUTHENTICATED' ? 401
+      : error.code === 'MODEL_SCOPE_FORBIDDEN' ? 403
       : error.code === 'INSUFFICIENT_CREDITS' ? 402
         : error.code === 'MODEL_NOT_FOUND' ? 404
           : error.code === 'IDEMPOTENCY_CONFLICT' || error.code === 'QUOTE_MISMATCH' || error.code === 'CANVAS_JOB_LINK_CONFLICT' ? 409
             : error.code === 'BODY_TOO_LARGE' || error.code === 'PARAMETERS_TOO_LARGE' ? 413
               : error.code === 'INVALID_JSON' ? 400 : 422;
-    return canvasJson(request, { error: publicErrorMessage(error, '创建生成任务失败'), code: error.code || 'GENERATION_CREATE_FAILED' }, { status });
+    return canvasJson(request, publicErrorPayload(error, '创建生成任务失败', 'GENERATION_CREATE_FAILED'), { status });
   }
 }

@@ -39,8 +39,10 @@ test('verified model environment values are parsed as trimmed comma-separated ID
 test('production does not promote route candidates to E2E-verified models by default', () => {
   const service = fs.readFileSync(new URL('../../lib/services/canvasModelConfig.js', import.meta.url), 'utf8');
 
-  assert.match(service, /const defaultVerifiedIds = parseCanvasE2EVerifiedModelIds\(envVerified\)/);
+  assert.match(service, /parseCanvasE2EVerifiedModelIds\(envVerified\)/);
   assert.doesNotMatch(service, /new Set\(candidateModelIds\)/);
+  assert.match(service,/verifiedByPublication/);
+  assert.match(service,/publicationVerifiedCapabilityVersion === publicCanvasModel/);
 });
 
 test('unverified E2E models are exposed only to explicitly configured test users', () => {
@@ -116,5 +118,5 @@ test('Canvas quote entitlement failures fail closed instead of pricing as Free',
   assert.match(quotes, /const subscription = await getActiveSubscription\(user\.id\);/);
   assert.doesNotMatch(quotes, /getActiveSubscription\(user\.id\)\.catch/);
   assert.match(quotes, /: 503;/);
-  assert.match(quotes, /publicErrorMessage\(error, '暂时无法确认可靠报价，请稍后重试'\)/);
+  assert.match(quotes, /publicErrorPayload\(error, '暂时无法确认可靠报价，请稍后重试', 'QUOTE_FAILED'\)/);
 });

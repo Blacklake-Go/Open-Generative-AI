@@ -1,3 +1,5 @@
+import { publicCanvasModel } from '@/lib/canvas/modelDescriptor';
+import { validateCapabilityParameters } from '@/lib/modelCenter/validateCapabilitySchema';
 import { getUserFromRequest } from '@/lib/services/auth';
 import { createGenerationQuote } from '@/lib/services/pricingEngine';
 import { getActiveSubscription } from '@/lib/application/dataAccess.js';
@@ -9,7 +11,7 @@ import { isCanvasServerCapabilityEnabled } from '@/lib/canvas/capabilityPolicy';
 import { consumeRateLimit, rateLimitResponse } from '@/lib/security/requestGuard';
 import { canvasJson, canvasMutationGuard, canvasPreflight, readCanvasJson, canvasResponse } from '@/lib/canvas/http';
 import { getCanvasSessionOwnerConflict } from '@/lib/canvas/sessionOwner';
-import { publicErrorMessage } from '@/lib/security/publicError';
+import { publicErrorMessage, publicErrorPayload } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,6 +53,9 @@ export async function POST(request) {
     if (!isCanvasServerCapabilityEnabled(model.type)) {
       return canvasJson(request, { error: 'Canvas 当前仅开放已验证的图片生成能力', code: 'CANVAS_CAPABILITY_DISABLED' }, { status: 422 });
     }
+    const capability = body.capabilityVersion ? publicCanvasModel(model,{schemaVersion:2}) : null;
+    if (capability && body.capabilityVersion !== capability.capabilityVersion) return canvasJson(request,{error:'模型能力已更新，请刷新参数并重新报价',code:'MODEL_CAPABILITY_CHANGED'},{status:409});
+    if (capability) validateCapabilityParameters(modelId,capability.capabilityVersion,capability.inputSchema,body.parameters || {});
     const allowed = await getCanvasAllowedModelIds({ userId: user.id });
     if (!allowed.has(modelId)) {
       return canvasJson(request, { error: '该模型未挂载到无限画布', code: 'CANVAS_MODEL_UNMOUNTED' }, { status: 404 });
@@ -84,8 +89,10 @@ export async function POST(request) {
     }
     const quote = await createGenerationQuote({
       userId: user.id,
+      site:'canvas',
       modelId,
       parameters: body.parameters && typeof body.parameters === 'object' ? body.parameters : {},
+      ...(capability ? {capabilitySnapshot:{version:capability.capabilityVersion,schema:capability.inputSchema,schemaVersion:2}} : {}),
       subscriptionLevel: subscription?.plan_id || 'free',
       idempotencyKey,
     });
@@ -96,15 +103,15 @@ export async function POST(request) {
       expires_at: quote.expiresAt,
     }, { status: 201 });
   } catch (error) {
-    const status = error.code === 'MODEL_NOT_FOUND' || error.code === 'MODEL_NOT_AVAILABLE' || error.code === 'CANVAS_MODEL_UNMOUNTED' ? 404
+    const status = error.code === 'MODEL_SCOPE_FORBIDDEN' ? 403
+      : error.code === 'MODEL_NOT_FOUND' || error.code === 'MODEL_NOT_AVAILABLE' || error.code === 'CANVAS_MODEL_UNMOUNTED' ? 404
       : error.code === 'QUOTE_IDEMPOTENCY_CONFLICT' ? 409
         : error.code === 'BODY_TOO_LARGE' ? 413
           : error.code === 'INVALID_JSON' ? 400
-            : ['MODEL_PRICING_UNCONFIGURED', 'SITE_PRICE_NOT_EFFECTIVE', 'SITE_PRICE_EXPIRED', 'PRICING_MARGIN_BELOW_FLOOR'].includes(error.code) ? 422
+            : ['MODEL_CAPABILITY_UNVERIFIED','MODEL_CAPABILITY_INVALID','MODEL_PARAMETERS_INVALID','MODEL_PRICING_UNCONFIGURED', 'SITE_PRICE_NOT_EFFECTIVE', 'SITE_PRICE_EXPIRED', 'PRICING_MARGIN_BELOW_FLOOR'].includes(error.code) ? 422
               : 503;
-    return canvasJson(request, {
-      error: publicErrorMessage(error, '暂时无法确认可靠报价，请稍后重试'),
-      code: error.code || 'QUOTE_FAILED',
-    }, { status });
+    return canvasJson(request,
+      publicErrorPayload(error, '暂时无法确认可靠报价，请稍后重试', 'QUOTE_FAILED'),
+      { status });
   }
 }
