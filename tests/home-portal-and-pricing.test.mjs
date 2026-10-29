@@ -31,6 +31,12 @@ test('R1: Studio Route Aliasing & Resolution', async (t) => {
     assert.equal(resolveStudioTab('cinema'), 'cinema');
     assert.equal(resolveStudioTab('audio'), 'audio');
   });
+
+  await t.test('keeps the legacy recast deep link landing on body-swap', () => {
+    assert.equal(STUDIO_TAB_ALIASES.recast, 'body-swap');
+    assert.equal(resolveStudioTab('recast'), 'body-swap');
+    assert.equal(resolveStudioTab('body-swap'), 'body-swap');
+  });
 });
 
 test('R2: Shelf Pricing Projection From Published Directory', async (t) => {

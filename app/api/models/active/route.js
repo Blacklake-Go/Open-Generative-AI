@@ -5,6 +5,7 @@ import { canvasContractVersion } from '@/lib/modelCenter/capabilitySchema';
 import { NextResponse } from 'next/server';
 import { listActiveModels } from '@/lib/services/models';
 import { isSelectablePublicModel, serializePublicGenerationCapabilities } from '@/lib/modelCenter/publicDirectory';
+import { publicErrorMessage } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,18 +17,24 @@ export function invalidateActiveModelsCache() {
   cachedPayloads.clear();
 }
 
+async function loadActiveModels(forceRefresh, now) {
+  const cached = cachedPayloads.get('catalog');
+  if (!forceRefresh && cached && now - cached.time < MODELS_CACHE_TTL_MS) return cached.models;
+  const models = await listActiveModels();
+  cachedPayloads.set('catalog', { models, time: now });
+  return models;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   let schemaVersion;
   try { schemaVersion = canvasContractVersion(request); }
-  catch (error) { return NextResponse.json({error:error.message,code:error.code},{status:409}); }
+  catch (error) { return NextResponse.json({error:publicErrorMessage(error),code:error.code},{status:409}); }
   const forceRefresh = searchParams.get('refresh') === 'true' || searchParams.get('nocache') === '1';
 
   const now = Date.now();
   try {
-    const cached=cachedPayloads.get('catalog');
-    const models=!forceRefresh && cached && now-cached.time<MODELS_CACHE_TTL_MS ? cached.models : await listActiveModels();
-    cachedPayloads.set('catalog',{models,time:cached?.models===models ? cached.time : now});
+    const models = await loadActiveModels(forceRefresh, now);
     const user=await getUserFromRequest(request);
     const visible=await filterModelsForPublicationAccess(models.filter(isSelectablePublicModel),{userId:user?.id,site:'main'});
     const payload = {

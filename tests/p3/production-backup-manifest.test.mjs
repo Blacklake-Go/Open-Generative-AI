@@ -152,7 +152,7 @@ test('release backup gate detects backup digest changes and production drift', a
   }
 });
 
-test('production source hash includes rotated Next build rollback directories', async () => {
+test('production source hash ignores Next build outputs and rollback snapshots but tracks source files', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'supdance-source-tree-'));
   try {
     await fs.mkdir(path.join(root, '.next-backup-20261011'), { recursive: true });
@@ -161,14 +161,18 @@ test('production source hash includes rotated Next build rollback directories', 
     await fs.writeFile(path.join(root, '.next-backup-20261011', 'BUILD_ID'), 'rollback-build');
     await fs.writeFile(path.join(root, '.next', 'BUILD_ID'), 'current-build');
     await fs.writeFile(path.join(root, 'public', 'uploads', 'asset.bin'), 'user-asset');
+    await fs.writeFile(path.join(root, 'app.js'), 'source-v1');
 
     const initial = await computeSourceTreeSha256(root);
+    // .next-* 是部署轮转出来的构建产物（3795311），计入会让每次轮转都造成 source drift 误报；
+    // .next 与 public/uploads 同属运行时数据，也应排除。
     await fs.writeFile(path.join(root, '.next-backup-20261011', 'BUILD_ID'), 'changed-rollback-build');
-    const withRollbackChange = await computeSourceTreeSha256(root);
-    assert.notEqual(withRollbackChange, initial);
     await fs.writeFile(path.join(root, '.next', 'BUILD_ID'), 'changed-current-build');
     await fs.writeFile(path.join(root, 'public', 'uploads', 'asset.bin'), 'changed-user-asset');
-    assert.equal(await computeSourceTreeSha256(root), withRollbackChange);
+    assert.equal(await computeSourceTreeSha256(root), initial);
+
+    await fs.writeFile(path.join(root, 'app.js'), 'source-v2');
+    assert.notEqual(await computeSourceTreeSha256(root), initial);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

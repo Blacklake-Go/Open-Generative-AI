@@ -2,6 +2,7 @@ import { canvasContractVersion } from '@/lib/modelCenter/capabilitySchema';
 import { getUserFromRequest } from '@/lib/services/auth';
 import { CANVAS_CAPABILITIES, getCanvasAllowedModelIds, getCanvasModelConfig, listCanvasModelCandidates, projectCanvasConfig } from '@/lib/services/canvasModelConfig';
 import { canvasJson, canvasOriginGuard, canvasPreflight } from '@/lib/canvas/http';
+import { publicErrorMessage } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,7 +32,7 @@ export async function GET(request) {
     projected.configured = Object.values(projected.mountedModelIds || {}).some((ids) => ids.length > 0);
     return canvasJson(request, schemaVersion === 1 && projected.mountedModelIds ? projectCanvasConfig(projected,candidates,{schemaVersion:1}) : projected);
   } catch (error) {
-    if (error.code === 'MODEL_CATALOG_VERSION_UNSUPPORTED') return canvasJson(request,{error:error.message,code:error.code},{status:409});
+    if (error.code === 'MODEL_CATALOG_VERSION_UNSUPPORTED') return canvasJson(request,{error:publicErrorMessage(error),code:error.code},{status:409});
     console.error('[api/canvas/config]', error);
     return canvasJson(request, { error: '画布配置暂时不可用' }, { status: 503 });
   }

@@ -162,7 +162,9 @@ test('P6 generation and proxy paths resolve server-managed provider secrets', ()
   const providerService = fs.readFileSync(new URL('../../lib/services/providers.js', import.meta.url), 'utf8');
   const legacyProxy = fs.readFileSync(new URL('../../app/api/api/v1/[[...path]]/route.js', import.meta.url), 'utf8');
 
-  assert.match(secretService, /getProviderSecret/);
+  // P2 收敛后，服务端唯一凭据入口是 getServerProviderApiKey；解密仍走 repository 的 readProviderSecret。
+  assert.match(secretService, /getServerProviderApiKey/);
+  assert.match(secretService, /readProviderSecret/);
   assert.match(secretService, /MUAPI_API_KEY/);
   assert.match(generationProviders, /getServerProviderApiKey/);
   assert.match(providerService, /getServerProviderApiKey/);

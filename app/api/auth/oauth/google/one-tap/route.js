@@ -61,7 +61,7 @@ export async function POST(request) {
     try {
       payload = await verifyGoogleIdToken(body?.credential, config.clientId);
     } catch (error) {
-      console.warn('[auth/google/one-tap] credential rejected:', error.message);
+      console.warn('[auth/google/one-tap] credential rejected:', error.code || 'INVALID_CREDENTIAL');
       return NextResponse.json({ ok: false, message: 'Google 登录凭证无效，请重试' }, { status: 401 });
     }
 
@@ -107,7 +107,6 @@ export async function POST(request) {
   } catch (error) {
     console.error('[auth/google/one-tap]', {
       code: error.code || 'ONE_TAP_FAILED',
-      message: error.message,
     });
     return NextResponse.json({ ok: false, message: '登录暂时不可用' }, { status: 500 });
   }

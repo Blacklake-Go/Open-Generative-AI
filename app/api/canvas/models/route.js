@@ -5,6 +5,7 @@ import { getCanvasAllowedModelIds } from '@/lib/services/canvasModelConfig';
 import { isCanvasServerCapabilityEnabled } from '@/lib/canvas/capabilityPolicy';
 import { publicCanvasModel, canvasCatalogVersion } from '@/lib/canvas/modelDescriptor';
 import { canvasJson, canvasOriginGuard, canvasPreflight } from '@/lib/canvas/http';
+import { publicErrorMessage } from '@/lib/security/publicError';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,7 +30,7 @@ export async function GET(request) {
       .filter((model) => isCanvasServerCapabilityEnabled(model.capability) && allowed.has(model.id) && model.available);
     return canvasJson(request, { schemaVersion, catalogVersion: canvasCatalogVersion(published), models: published });
   } catch (error) {
-    if (error.code === 'MODEL_CATALOG_VERSION_UNSUPPORTED') return canvasJson(request,{error:error.message,code:error.code},{status:409});
+    if (error.code === 'MODEL_CATALOG_VERSION_UNSUPPORTED') return canvasJson(request,{error:publicErrorMessage(error),code:error.code},{status:409});
     console.error('[api/canvas/models]', { code: error?.code || 'MODEL_CATALOG_FAILED' });
     return canvasJson(request, { error: '读取模型目录失败', code: 'MODEL_CATALOG_FAILED' }, { status: 503 });
   }

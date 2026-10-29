@@ -45,7 +45,7 @@ test('P5 model availability is gated by the PostgreSQL-backed active directory',
   const migration = await source('lib/db/migrations/011_model_catalog.sql');
   const endpoint = await source('app/api/models/active/route.js');
 
-  assert.match(shell, /fetch\('\/api\/models\/active'/);
+  assert.match(shell, /fetch\('\/api\/models\/active(?:\?[^']*)?'\)/);
   assert.match(shell, /applyActiveModelDirectory/);
   assert.match(shell, /modelDirectoryState === 'error'/);
   assert.match(models, /export function applyActiveModelDirectory/);

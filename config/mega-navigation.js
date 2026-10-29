@@ -396,7 +396,7 @@ export const MEGA_NAV_CATEGORIES = [
       },
       {
         id: 'body-swap',
-        tabId: 'recast',
+        tabId: 'body-swap',
         icon: 'user',
         label: {
           en: 'Body Swap',
@@ -415,7 +415,7 @@ export const MEGA_NAV_CATEGORIES = [
           es: 'Reemplazo de cuerpo y pose de personajes',
         },
         badge: 'HOT',
-        href: '/studio?tab=recast',
+        href: '/studio?tab=body-swap',
       },
       {
         id: 'marketing',

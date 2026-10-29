@@ -89,11 +89,15 @@ test('ProfileTab implements reference-image edit profile, password, third-party 
 
 test('AccountClient renders ActivityTab, ProfileTab, MembershipTab, and UsageTab', async () => {
   const clientSource = await readFile(new URL('../app/account/AccountClient.js', import.meta.url), 'utf8');
+  const viewSource = await readFile(new URL('../components/account/AccountCenterView.jsx', import.meta.url), 'utf8');
+  const settingsSource = await readFile(new URL('../components/account/AccountSettingsView.jsx', import.meta.url), 'utf8');
 
-  assert.ok(clientSource.includes('<ActivityTab'), 'Must render ActivityTab');
-  assert.ok(clientSource.includes('<ProfileTab'), 'Must render ProfileTab');
-  assert.ok(clientSource.includes('<MembershipTab'), 'Must render MembershipTab');
-  assert.ok(clientSource.includes('<UsageTab'), 'Must render UsageTab');
+  // AccountClient 保持薄包装，由 AccountCenterView 编排四个账户 Tab
+  assert.ok(clientSource.includes('<AccountCenterView'), 'AccountClient must delegate to AccountCenterView');
+  assert.ok(viewSource.includes('<ActivityTab'), 'Must render ActivityTab');
+  assert.ok(viewSource.includes('<MembershipTab'), 'Must render MembershipTab');
+  assert.ok(viewSource.includes('<UsageTab'), 'Must render UsageTab');
+  assert.ok(settingsSource.includes('<ProfileTab'), 'Must render ProfileTab');
 });
 
 test('UsageTab implements 1:1 reference UI of higgsfield.ai/me/settings/usage', async () => {
@@ -147,7 +151,7 @@ test('ActivityTab implements pixel-perfect aligned heatmap with floating tooltip
 
 test('ActivityTab displays Brand card with model brand logo and 偏好比重', async () => {
   const activitySource = await readFile(new URL('../components/account/tabs/ActivityTab.js', import.meta.url), 'utf8');
-  const { aggregateBrands } = await import('../lib/utils/modelBrands.js');
+  const { aggregateBrands, resolveModelBrand } = await import('../lib/utils/modelBrands.js');
 
   // 1. 验证卡片标题由“最常调用的生成模型”变更为“品牌”，Badge 为 BRANDS
   assert.ok(activitySource.includes('品牌'), 'Must display 品牌 as card title');
@@ -179,7 +183,8 @@ test('ActivityTab displays Brand card with model brand logo and 偏好比重', a
   assert.equal(brands[1].id, 'openai');
   assert.equal(brands[1].name, 'OpenAI');
   assert.equal(brands[1].percentage, 30);
-  assert.equal(brands[1].invert, true);
+  // 品牌资产已适配深色主题（providerLogos.invertLogos 为空），OpenAI 不做反色
+  assert.equal(brands[1].invert, false);
 
   assert.equal(brands[2].id, 'bytedance');
   assert.equal(brands[2].name, 'ByteDance');
@@ -188,6 +193,13 @@ test('ActivityTab displays Brand card with model brand logo and 偏好比重', a
   assert.equal(brands[3].id, 'alibaba');
   assert.equal(brands[3].name, 'Alibaba');
   assert.equal(brands[3].percentage, 10);
+
+  // 目录命中与关键字回退两条解析路径必须对同一品牌给出一致的反色策略
+  assert.equal(
+    resolveModelBrand('gpt-image-2.5-flash').invert,
+    resolveModelBrand('openai-sora-unknown').invert,
+    'Both brand resolution paths must apply the same invertLogos policy'
+  );
 });
 
 test('ActivityTab brand card implements frontend-aligned size-9 emblem badge, click floating physics and aurora glow', async () => {

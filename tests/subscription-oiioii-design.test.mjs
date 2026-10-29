@@ -12,6 +12,7 @@ async function source(relativePath) {
 
 test('SubscriptionModal incorporates oiioii visual architecture and interaction models', async () => {
   const modalSrc = await source('components/subscription/SubscriptionModal.jsx');
+  const i18nSrc = await source('components/subscription/subscriptionI18n.js');
 
   // 1. Check all 4 plans with code names
   assert.equal(modalSrc.includes("codeName: 'BASE'"), true);
@@ -28,22 +29,24 @@ test('SubscriptionModal incorporates oiioii visual architecture and interaction 
   assert.equal(modalSrc.includes('border-brand') || modalSrc.includes('border-brand-line'), true);
   assert.equal(modalSrc.includes('bg-brand'), true);
 
-  // 4. Check "常用模型折算" section and models
-  assert.equal(modalSrc.includes('常用模型折算'), true);
-  assert.equal(modalSrc.includes('Seedance2.0 pro 720p'), true);
-  assert.equal(modalSrc.includes('Seedance 2.5 720p'), true);
-  assert.equal(modalSrc.includes('MiniMax H3 Max Turbo'), true);
-  assert.equal(modalSrc.includes('顶级图像 (Flux/SD) 2K'), true);
+  // 4. Check "常用模型折算" section and models (locale copy lives in subscriptionI18n)
+  assert.equal(i18nSrc.includes('常用模型折算'), true);
+  assert.equal(i18nSrc.includes('Seedance2.0 pro 720p'), true);
+  assert.equal(i18nSrc.includes('Seedance 2.5 720p'), true);
+  assert.equal(i18nSrc.includes('MiniMax H3 Max Turbo'), true);
+  assert.equal(i18nSrc.includes('顶级图像 (Flux/SD) 2K'), true);
 
   // 5. Check "会员专用模型" section
-  assert.equal(modalSrc.includes('会员专用模型'), true);
-  assert.equal(modalSrc.includes('Seedance2.0 Pro / Fast / mini'), true);
-  assert.equal(modalSrc.includes('最低4.2折'), true);
+  assert.equal(i18nSrc.includes('会员专用模型'), true);
+  assert.equal(i18nSrc.includes('Seedance2.0 Pro / Fast / mini'), true);
+  assert.equal(i18nSrc.includes('最低4.2折'), true);
 
-  // 6. Check interactive micro-animations (scale 1.03 on button hover)
-  assert.equal(modalSrc.includes('hover:scale-[1.03]'), true);
+  // 6. Interactive micro-animation follows UI_DESIGN_SYSTEM v3.7 press physics
+  //    (transform 90ms, active:scale-[0.98]); the old hover-grow token is retired.
+  assert.equal(modalSrc.includes('active:scale-[0.98]'), true);
+  assert.equal(modalSrc.includes('duration-fast ease-standard'), true);
 
   // 7. Check quota breakdown (⚡ Monthly + 🎁 Bonus + ⓘ Tooltip)
   assert.equal(modalSrc.includes('InfoTooltip'), true);
-  assert.equal(modalSrc.includes('首充加赠'), true);
+  assert.equal(i18nSrc.includes('首充加赠'), true);
 });
