@@ -79,10 +79,13 @@ test('Auth repository and service include locale in session query and user objec
   assert.ok(authServiceSource.includes('locale: row.locale'), 'getUserBySession must include locale property');
 });
 
-test('Root page performs smart redirect to localized studio', async () => {
+test('Root page renders the portal with a normalized locale', async () => {
   const pageSource = await readFile(new URL('../app/page.js', import.meta.url), 'utf8');
 
-  assert.ok(pageSource.includes('getLocaleConfig'), 'Root page must use getLocaleConfig');
-  assert.ok(pageSource.includes('normalizeLocale'), 'Root page must use normalizeLocale');
-  assert.ok(pageSource.includes('redirect'), 'Root page must redirect intelligently');
+  // 根页不再是重定向壳：它直接渲染门户，语言按 用户偏好 → cookie → header → en 解析后规范化。
+  assert.ok(pageSource.includes('normalizeLocale'), 'Root page must normalize the resolved locale');
+  assert.ok(pageSource.includes('<JimengHomePortal'), 'Root page must render the home portal');
+  assert.ok(pageSource.includes('user?.locale'), 'Root page must prefer the signed-in user locale');
+  assert.ok(pageSource.includes("cookieStore.get('NEXT_LOCALE')"), 'Root page must fall back to the NEXT_LOCALE cookie');
+  assert.ok(pageSource.includes("headerList.get('x-locale')"), 'Root page must fall back to the x-locale header');
 });

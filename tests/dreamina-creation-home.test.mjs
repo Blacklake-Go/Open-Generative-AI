@@ -16,6 +16,8 @@ import {
   getAspectRatiosForVideoModel,
   getResolutionsForVideoModel,
   getDurationsForModel,
+  applyActiveModelDirectory,
+  getModelPricing,
 } from '../packages/studio/src/models.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +56,16 @@ test('D1: Multi-Mode Creation Workbench Structure & 5-Mode Definitions', async (
   });
 
   await t.test('renders primary generate action as capsule pill button', () => {
-    assert.ok(composerCode.includes('shape="pill"'), 'generate button has shape="pill"');
+    assert.ok(
+      composerCode.includes('data-testid="composer-generate-button"'),
+      'primary generate action must stay addressable for interaction tests'
+    );
+    // PromptAction maps `circular` to shape="pill" internally, so the composer
+    // expresses capsule geometry through the boolean rather than the shape prop.
+    assert.ok(
+      /<PromptAction[\s\S]{0,600}?data-testid="composer-generate-button"[\s\S]{0,600}?circular/.test(composerCode),
+      'generate action renders through PromptAction with circular (pill) geometry'
+    );
   });
 });
 
@@ -104,7 +115,12 @@ test('D2: JimengHomePortal Dreamina UI & Dynamic Skill Presets', async (t) => {
   });
 
   await t.test('strictly preserves /canvas relative links without hardcoded domains', () => {
-    assert.ok(portalCode.includes('href="/canvas"'), 'JimengHomePortal must use href="/canvas"');
+    // Locale-aware routing is the i18n successor of the old bare href="/canvas";
+    // both keep the link relative to the current host.
+    assert.ok(
+      portalCode.includes("localizeStudioPath('/canvas'"),
+      'JimengHomePortal must route to /canvas through localizeStudioPath'
+    );
     assert.ok(
       !portalCode.includes('https://www.Supdance.com/canvas') &&
       !portalCode.includes('https://canvas.supdance.com/'),
@@ -209,33 +225,65 @@ test('D6: Image Dimensions Calculation & Custom Dimension Bounds', async (t) => 
 });
 
 test('D7: Multi-Modal Shelf Pricing Resolution', async (t) => {
-  await t.test('resolves baseline prices for all 5 studio modalities', () => {
-    // 1. Image
-    const imgPrice = priceForIds('gpt-image-2.5-flash');
-    assert.ok(imgPrice.credits > 0, 'image model has positive credits');
+  // Shelf prices are projected from the server model directory (P1 contract):
+  // the studio only renders `model_pricing` rows the server published. Seed the
+  // directory through the same entry point the app uses after boot.
+  const published = (id, creditsPrice, extra = {}) => ({
+    id,
+    name: id,
+    isActive: true,
+    isVisible: true,
+    autoRouteEligible: true,
+    hasWorkingRoute: true,
+    creditsPrice,
+    pricingType: 'fixed',
+    ...extra,
+  });
+  const directory = [
+    published('d7-image-flat', 15),
+    published('d7-video-formula', 40, { pricingType: 'per_second' }),
+    published('d7-audio-flat', 10),
+    published('d7-music-flat', 12),
+    published('d7-agent-flat', 1),
+    published('d7-digital-human-flat', 25),
+  ];
+  applyActiveModelDirectory(directory);
 
-    // 2. Video
-    const vidPrice = priceForIds('seedance-2.5-text-to-video');
-    assert.ok(vidPrice.credits > 0, 'video model has positive credits');
+  await t.test('resolves published prices for all 5 studio modalities', () => {
+    assert.deepEqual(priceForIds('d7-image-flat'), { kind: 'flat', credits: 15 }, 'image model has flat credits');
+    assert.deepEqual(priceForIds('d7-audio-flat'), { kind: 'flat', credits: 10 }, 'audio model has flat credits');
+    assert.deepEqual(priceForIds('d7-music-flat'), { kind: 'flat', credits: 12 }, 'music model has flat credits');
+    assert.deepEqual(priceForIds('d7-agent-flat'), { kind: 'flat', credits: 1 }, 'agent model has flat credits');
+    assert.deepEqual(priceForIds('d7-digital-human-flat'), { kind: 'flat', credits: 25 }, 'digital human model has flat credits');
+  });
 
-    // 3. Audio
-    const audioPrice = priceForIds('suno-create-music');
-    assert.ok(audioPrice.credits > 0, 'audio model has positive credits');
+  await t.test('formula-priced models present a from-floor instead of a flat number', () => {
+    assert.deepEqual(priceForIds('d7-video-formula'), { kind: 'from', credits: 40 }, 'video model quotes its floor');
+  });
 
-    // 4. Agent (DeepSeek)
-    const agentPrice = priceForIds('deepseek-chat');
-    assert.equal(agentPrice.credits, 1, 'deepseek-chat has 1 credit baseline');
-    const reasonerPrice = priceForIds('deepseek-reasoner');
-    assert.equal(reasonerPrice.credits, 2, 'deepseek-reasoner has 2 credits baseline');
+  await t.test('mixed families report the lowest price as a from-floor', () => {
+    assert.deepEqual(
+      priceForIds(new Set(['d7-image-flat', 'd7-digital-human-flat'])),
+      { kind: 'from', credits: 15 },
+      'variant picks the cheapest published row and labels it from'
+    );
+  });
 
-    // 5. Digital Human
-    const humanPrice = priceForIds('infinitetalk-image-to-video');
-    assert.equal(humanPrice.credits, 25, 'digital human has 25 credits baseline');
+  await t.test('never fabricates a price for an unpublished or ineligible model', () => {
+    assert.deepEqual(priceForIds('gpt-image-2.5-flash'), { kind: 'missing', credits: null }, 'legacy catalog id has no published row');
+    assert.equal(getModelPricing('gpt-image-2.5-flash'), null, 'pricing map has no fallback default');
+
+    applyActiveModelDirectory([...directory, published('d7-draft-only', 99, { isActive: false })]);
+    assert.deepEqual(priceForIds('d7-draft-only'), { kind: 'missing', credits: null }, 'inactive rows are not sold');
+    applyActiveModelDirectory(directory);
   });
 
   await t.test('formats pricing copy without returning placeholder', () => {
     const price = { kind: 'flat', credits: 15 };
     const formatted = formatModelPrice(price, { credits: '{credits} 积分' });
     assert.equal(formatted, '15 积分');
+
+    const missingCopy = formatModelPrice({ kind: 'missing', credits: null }, { unavailable: '暂无价格' });
+    assert.equal(missingCopy, '暂无价格', 'missing price renders copy, never a number');
   });
 });

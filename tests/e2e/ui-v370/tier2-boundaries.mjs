@@ -270,11 +270,12 @@ export const tier2Tests = [
   {
     id: 'T2-F4-3',
     feature: 4,
-    name: 'F4 Boundary: TooltipProvider zero-delay initialization',
-    description: 'Verifies TooltipProvider initializes with delayDuration parameter for smooth trigger.',
+    name: 'F4 Boundary: TooltipProvider 350ms hover delay',
+    description: 'Verifies TooltipProvider initializes with the design-system 350ms delayDuration.',
     run: async () => {
       const tooltipFile = readProjectFile('components/ui/tooltip.jsx');
-      assert.ok(tooltipFile.includes('delayDuration = 0'), 'TooltipProvider must default delayDuration to 0');
+      assert.ok(tooltipFile.includes('delayDuration = 350'), 'TooltipProvider must default delayDuration to 350ms');
+      assert.ok(tooltipFile.includes('delayDuration={delayDuration}'), 'TooltipProvider must bind delayDuration');
     },
   },
   {
@@ -396,13 +397,14 @@ export const tier2Tests = [
   {
     id: 'T2-F6-3',
     feature: 6,
-    name: 'F6 Boundary: Active press tactile immediate feedback (active:duration-instant)',
-    description: 'Verifies CONTROL_BASE pairs active:scale-[0.98] with active:duration-instant for instant response.',
+    name: 'F6 Boundary: Active press tactile immediate feedback (active:duration-press)',
+    description: 'Verifies CONTROL_BASE pairs active:scale-[0.98] with active:duration-press for immediate response.',
     run: async () => {
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
       assert.ok(
-        studioTokens.includes('active:duration-instant'),
-        'CONTROL_BASE must specify active:duration-instant for immediate tactile feedback'
+        studioTokens.includes('active:scale-[0.98]') &&
+        studioTokens.includes('active:duration-press'),
+        'CONTROL_BASE must pair active:scale-[0.98] with active:duration-press for immediate tactile feedback'
       );
     },
   },

@@ -322,7 +322,11 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
 
     it('T4.5: ModelPriceTag renders active price without displaying 暂无价格 for valid core models', () => {
       const src = fs.readFileSync(path.join(ROOT, 'packages/studio/src/components/ModelPriceTag.jsx'), 'utf8');
-      assert.ok(src.includes('shelfPrice'), 'Must resolve shelfPrice');
+      assert.ok(src.includes('priceForIds'), 'Must resolve the shelf price through priceForIds');
+      assert.ok(src.includes('formatModelPrice'), 'Must format real prices through formatModelPrice');
+      assert.ok(src.includes('applyActiveModelDirectory'), 'Must hydrate the catalog from the published model directory');
+      assert.ok(src.includes('/api/models/active?schemaVersion=2'), 'Must fall back to the versioned active-model endpoint');
+      assert.ok(src.includes('data-model-price-kind'), 'Must expose the resolved price kind for missing-price handling');
     });
   });
 
@@ -729,6 +733,7 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
     });
 
     it('T14.5: Real creditService.js voidCredits handles mock transaction properly', async () => {
+      const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const mockReservation = {
         id: 'res_test_real_void',
         user_id: 'user_real_void',
@@ -736,6 +741,12 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
         model_id: 'nano-banana',
         reserved_amount: 10,
         bucket_split_json: { daily: 2, subscription: 3, perpetual: 5 },
+        // 分桶释放必须带回预扣时的原始有效期与来源，否则不能静默改写成永久积分。
+        bucket_allocations_json: [
+          { bucket: 'daily', source: 'wallet', amount: 2, expiresAt: future },
+          { bucket: 'subscription', source: 'wallet', amount: 3, expiresAt: future },
+          { bucket: 'perpetual', source: 'wallet', amount: 5, expiresAt: null },
+        ],
       };
       const mockWallet = {
         user_id: 'user_real_void',
@@ -751,6 +762,9 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
           if (sql.includes('FROM credit_wallets')) return mockWallet;
           return null;
         },
+        async queryMany() {
+          return [];
+        },
         async execute(sql, params) {
           writes.push({ sql, params });
           return { rowCount: 1 };
@@ -763,6 +777,7 @@ describe('Tier 1: Feature Coverage (Isolation & Happy Paths)', () => {
         transaction: tx,
       });
       assert.equal(result.status, 'VOIDED');
+      assert.equal(result.releasedAmount, 10);
       assert.ok(writes.some((w) => w.sql.includes('SET daily_free_credits')));
     });
   });

@@ -33,51 +33,92 @@ test('R1: Studio Route Aliasing & Resolution', async (t) => {
   });
 });
 
-test('R2: Deterministic Baseline Model Pricing', async (t) => {
+test('R2: Shelf Pricing Projection From Published Directory', async (t) => {
   const { priceForIds, formatModelPrice } = await import(
     path.join(rootDir, 'packages/studio/src/modelPrice.js')
   );
+  const { applyActiveModelDirectory } = await import(
+    path.join(rootDir, 'packages/studio/src/models.js')
+  );
 
-  await t.test('provides positive integer baseline for core image models', () => {
-    const flashPrice = priceForIds('gpt-image-2.5-flash');
-    assert.notEqual(flashPrice.kind, 'missing');
-    assert.equal(typeof flashPrice.credits, 'number');
-    assert.ok(flashPrice.credits > 0, 'Flash price must be greater than 0');
-    assert.equal(flashPrice.credits, 12);
-
-    const gpt2Price = priceForIds('gpt-image-2');
-    assert.equal(gpt2Price.credits, 10);
-
-    const fluxPrice = priceForIds('flux-dev');
-    assert.equal(fluxPrice.credits, 12);
+  const copy = {
+    credits: '{credits} 积分',
+    creditsFrom: '{credits} 积分起',
+    unavailable: '暂无价格',
+  };
+  const publishedRow = (id, creditsPrice, pricingType = 'fixed') => ({
+    id,
+    creditsPrice,
+    pricingType,
+    isActive: true,
+    isVisible: true,
+    autoRouteEligible: true,
+    hasWorkingRoute: true,
   });
 
-  await t.test('provides positive baseline for video models', () => {
-    const seedancePrice = priceForIds('seedance-2.5-text-to-video');
-    assert.equal(seedancePrice.credits, 35);
+  await t.test('never fabricates a shelf price before the server directory is published', () => {
+    const unpublished = priceForIds('seedream-5.0-pro');
+    assert.equal(unpublished.kind, 'missing');
+    assert.equal(unpublished.credits, null);
+    assert.equal(formatModelPrice(unpublished, copy), '暂无价格');
   });
 
-  await t.test('gracefully falls back for unknown/unregistered models instead of missing', () => {
-    const unknownPrice = priceForIds('completely-unknown-custom-model-999');
-    assert.notEqual(unknownPrice.kind, 'missing');
-    assert.equal(unknownPrice.credits, 10);
+  await t.test('projects published fixed prices onto the shelf', () => {
+    applyActiveModelDirectory([
+      publishedRow('seedream-5.0-pro', 12),
+      publishedRow('kling-2.6', 90),
+    ]);
+
+    const imagePrice = priceForIds('seedream-5.0-pro');
+    assert.equal(imagePrice.kind, 'flat');
+    assert.equal(imagePrice.credits, 12);
+    assert.equal(formatModelPrice(imagePrice, copy), '12 积分');
+    assert.equal(
+      formatModelPrice(imagePrice, {
+        credits: '{credits} credits',
+        creditsFrom: 'from {credits} credits',
+        unavailable: 'No price yet',
+      }),
+      '12 credits',
+    );
+
+    assert.equal(priceForIds('kling-2.6').credits, 90);
   });
 
-  await t.test('formats pricing templates without returning "暂无价格"', () => {
-    const flashPrice = priceForIds('gpt-image-2.5-flash');
-    const zhText = formatModelPrice(flashPrice, {
-      credits: '{credits} 积分',
-      creditsFrom: '{credits} 积分起',
-      unavailable: '暂无价格',
-    });
-    assert.equal(zhText, '12 积分');
+  await t.test('renders formula pricing as a floor instead of a flat price', () => {
+    const formulaPrice = priceForIds('seedream-5.0-flash');
+    assert.equal(formulaPrice.kind, 'missing', 'unpublished formula model still reports missing');
 
-    const enText = formatModelPrice(flashPrice, {
-      credits: '{credits} credits',
-      creditsFrom: 'from {credits} credits',
-      unavailable: 'No price yet',
-    });
-    assert.equal(enText, '12 credits');
+    applyActiveModelDirectory([
+      publishedRow('seedream-5.0-pro', 12),
+      publishedRow('seedream-5.0-flash', 8, 'formula'),
+    ]);
+    const projected = priceForIds('seedream-5.0-flash');
+    assert.equal(projected.kind, 'from');
+    assert.equal(projected.credits, 8);
+    assert.equal(formatModelPrice(projected, copy), '8 积分起');
+  });
+
+  await t.test('family spreads report the lowest published price as a floor', () => {
+    applyActiveModelDirectory([
+      publishedRow('seedream-5.0-pro', 12),
+      publishedRow('seedream-4.5', 30),
+    ]);
+    const family = priceForIds(['seedream-5.0-pro', 'seedream-4.5']);
+    assert.equal(family.kind, 'from');
+    assert.equal(family.credits, 12);
+  });
+
+  await t.test('unregistered or ineligible models stay missing, never a default number', () => {
+    applyActiveModelDirectory([
+      publishedRow('seedream-5.0-pro', 12),
+      { ...publishedRow('draft-model', 50), isActive: false },
+      { ...publishedRow('unpriced-model', 0) },
+    ]);
+
+    assert.equal(priceForIds('completely-unknown-custom-model-999').kind, 'missing');
+    assert.equal(priceForIds('draft-model').kind, 'missing');
+    assert.equal(priceForIds('unpriced-model').kind, 'missing');
   });
 });
 
