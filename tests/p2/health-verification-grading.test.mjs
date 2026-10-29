@@ -69,16 +69,25 @@ function evaluate(mapping, options = {}) {
   return evaluateRouteCandidates([mapping], { task_type: 't2i' }, {
     modelId: 'model-x',
     now: NOW,
+    // 固定健康新鲜度策略，避免本地 .env.local 的覆盖值让断言依赖运行环境。
+    maxHealthAgeMs: DEFAULT_MODEL_HEALTH_MAX_AGE_MS,
     ...options,
   });
 }
 
+function evaluateHealth(overrides = {}) {
+  return evaluateRouteHealth({
+    now: NOW,
+    maxHealthAgeMs: DEFAULT_MODEL_HEALTH_MAX_AGE_MS,
+    ...overrides,
+  });
+}
+
 test('health evidence carries source, scope and freshness', () => {
-  const decision = evaluateRouteHealth({
+  const decision = evaluateHealth({
     healthStatus: 'healthy',
     lastHealthCheckAt: at(-60_000),
     probeKind: 'http',
-    now: NOW,
   });
 
   assert.equal(decision.eligible, true);
@@ -93,21 +102,19 @@ test('health evidence carries source, scope and freshness', () => {
 });
 
 test('credential-only and legacy probes never claim verified connectivity', () => {
-  const credential = evaluateRouteHealth({
+  const credential = evaluateHealth({
     healthStatus: 'degraded',
     lastHealthCheckAt: at(-30_000),
     probeKind: PROBE_KIND.CREDENTIAL,
-    now: NOW,
   });
   assert.equal(credential.eligible, true, 'degraded is a pending state, not a hard failure');
   assert.equal(credential.evidenceLevel, 'credential_only');
   assert.equal(credential.probeKind, 'credential');
 
-  const legacy = evaluateRouteHealth({
+  const legacy = evaluateHealth({
     healthStatus: 'healthy',
     lastHealthCheckAt: at(-30_000),
     probeKind: null,
-    now: NOW,
   });
   assert.equal(legacy.eligible, true);
   assert.equal(legacy.evidenceLevel, 'unknown');
@@ -115,26 +122,24 @@ test('credential-only and legacy probes never claim verified connectivity', () =
 });
 
 test('stale or failed health checks are rejected with age evidence', () => {
-  const stale = evaluateRouteHealth({
+  const stale = evaluateHealth({
     healthStatus: 'healthy',
     lastHealthCheckAt: at(-16 * 60_000),
     probeKind: 'http',
-    now: NOW,
   });
   assert.equal(stale.eligible, false);
   assert.equal(stale.reason, 'HEALTH_CHECK_STALE');
   assert.equal(stale.ageMs, 16 * 60_000);
 
-  const neverChecked = evaluateRouteHealth({ healthStatus: 'healthy', lastHealthCheckAt: null, now: NOW });
+  const neverChecked = evaluateHealth({ healthStatus: 'healthy', lastHealthCheckAt: null });
   assert.equal(neverChecked.reason, 'HEALTH_CHECK_STALE');
   assert.equal(neverChecked.checkedAt, null);
   assert.equal(neverChecked.ageMs, null);
 
-  const failed = evaluateRouteHealth({
+  const failed = evaluateHealth({
     healthStatus: 'unhealthy',
     lastHealthCheckAt: at(-60_000),
     probeKind: 'http',
-    now: NOW,
   });
   assert.equal(failed.reason, 'HEALTH_CHECK_FAILED');
   assert.equal(failed.healthStatus, 'unhealthy');
