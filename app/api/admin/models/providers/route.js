@@ -2,7 +2,7 @@ import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse } 
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { listProviders, getProviderById, updateProvider, createProvider, deleteProvider } from '@/lib/application/dataAccess.js';
 import { saveProviderSecret, getProviderSecretsMetadata } from '@/lib/application/dataAccess.js';
-import { getServerProviderCredentialStatus } from '@/lib/services/providerSecrets.js';
+import { getServerProviderCredentialStatus, getProviderEnvCredentialHints } from '@/lib/services/providerSecrets.js';
 import { logAudit } from '@/lib/admin/audit';
 
 export const runtime = 'nodejs';
@@ -22,6 +22,8 @@ async function handleGET(request) {
         hasApiKey: credential.configured,
         maskedApiKey: credential.configured ? '••••••••' : '',
         credential,
+        storedSecrets: secrets,
+        envNames: getProviderEnvCredentialHints(p.id).envNames,
         modelCatalogApiUrl: p.model_catalog_api_url || p.metadata?.model_catalog_api_url || '',
         secretsCount: secrets.length,
       };
@@ -85,12 +87,17 @@ async function handlePOST(request) {
     });
   }
 
-  const credential = await getServerProviderCredentialStatus({ provider: id });
+  const [credential, secrets] = await Promise.all([
+    getServerProviderCredentialStatus({ provider: id }),
+    getProviderSecretsMetadata(id),
+  ]);
   const providerWithKeyInfo = {
     ...saved,
     hasApiKey: credential.configured,
     maskedApiKey: credential.configured ? '••••••••' : '',
     credential,
+    storedSecrets: secrets,
+    envNames: getProviderEnvCredentialHints(id).envNames,
     credentialSavedAsFallback: Boolean(String(body.apiKey || '').trim() && credential.source === 'environment'),
     modelCatalogApiUrl: saved.model_catalog_api_url || saved.metadata?.model_catalog_api_url || '',
   };

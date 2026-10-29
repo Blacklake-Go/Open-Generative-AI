@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, MetricCard, StatusBadge, Button, EmptyState } from '@/components/admin/AdminUi';
 import BrandLogo from '@/components/admin/BrandLogo';
+import { buildCredentialView, buildVerificationView } from '@/lib/services/providerCredentialView';
 import {
   Server,
   Zap,
@@ -28,6 +29,126 @@ function formatAdminTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
+}
+
+const VERIFICATION_TONE_CLASS = {
+  success: 'text-emerald-400',
+  warning: 'text-amber-400',
+  danger: 'text-red-400',
+  neutral: 'text-gray-400',
+};
+
+/**
+ * 凭据来源与四维验证等级。
+ *
+ * 只消费服务端证据（credential / storedSecrets / envNames / 探针与生成时间），
+ * 文案与等级全部由 providerCredentialView 计算；这里不做任何「有密钥就等于可用」的推断。
+ */
+function CredentialVerificationPanel({ channel }) {
+  const credential = buildCredentialView({
+    snapshot: channel.credential,
+    storedSecrets: channel.storedSecrets,
+    envNames: channel.envNames,
+  });
+  const verification = buildVerificationView({
+    credential,
+    probe: channel.lastProbeAt
+      ? { probeKind: channel.lastProbeKind, healthStatus: channel.lastProbeStatus, checkedAt: channel.lastProbeAt }
+      : null,
+    generation: { lastSuccessAt: channel.lastSuccessAt, lastAttemptAt: channel.lastAttemptAt },
+  });
+  const tiers = [verification.config, verification.auth, verification.modelAccess, verification.generation];
+  const sourceTone = credential.readError ? 'danger' : credential.configured ? 'success' : 'warning';
+
+  return (
+    <div className="mt-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="text-gray-500">凭据来源:</span>
+        <span className={`font-semibold ${VERIFICATION_TONE_CLASS[sourceTone]}`}>{credential.sourceLabel}</span>
+        <span className="text-gray-500">环境 {credential.environmentLabel}</span>
+        <span className="text-gray-500">
+          {credential.updatedAt
+            ? `变更于 ${formatAdminTime(credential.updatedAt)}`
+            : credential.source === 'environment'
+              ? '变更时间不可得（环境变量随进程）'
+              : credential.hasStoredSecret
+                ? '变更时间未知'
+                : '无存盘记录'}
+        </span>
+        <span className="text-gray-500">解密 {credential.decryptStatusLabel}</span>
+      </div>
+
+      {credential.envNames.length > 0 && (
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-gray-500">
+          <span>已设置环境变量:</span>
+          {credential.envNames.map((name) => (
+            <span key={name} className="rounded border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 font-mono text-[10px] text-gray-300">
+              {name}
+            </span>
+          ))}
+          <span className="text-gray-500">（值仅在服务端读取）</span>
+        </div>
+      )}
+
+      {credential.overrideNote && (
+        <p className="mt-1 rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-300">
+          {credential.overrideNote}
+        </p>
+      )}
+      {credential.readErrorNote && (
+        <p className="mt-1 rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-[11px] text-red-300">
+          {credential.readErrorNote}
+        </p>
+      )}
+
+      <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/[0.06] pt-1.5">
+        {tiers.map((t) => (
+          <div key={t.key} className="flex items-center justify-between gap-2" title={t.note}>
+            <span className="text-gray-500">{t.label}</span>
+            <span className={`font-medium ${VERIFICATION_TONE_CLASS[t.tone] || 'text-gray-400'}`}>
+              {t.stateLabel}
+              {t.at ? <span className="ml-1 font-normal text-gray-500">{formatAdminTime(t.at)}</span> : null}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 编辑弹窗里的凭据来源摘要。
+ *
+ * 与卡片面板共用同一份 buildCredentialView 口径，避免两处文案各自演化。
+ */
+function CredentialSourceHint({ provider }) {
+  const credential = buildCredentialView({
+    snapshot: provider?.credential,
+    storedSecrets: provider?.storedSecrets,
+    envNames: provider?.envNames,
+  });
+  const toneClass = credential.readError ? 'text-red-300' : credential.configured ? 'text-gray-400' : 'text-amber-300';
+
+  return (
+    <div className="space-y-1">
+      <p className={`text-xs ${toneClass}`}>
+        生效来源：<span className="font-medium">{credential.sourceLabel}</span>
+        {credential.source !== 'none' ? ` · 环境 ${credential.environmentLabel}` : ''}
+        {credential.updatedAt ? ` · 变更于 ${formatAdminTime(credential.updatedAt)}` : ''}
+        {credential.configured ? ' · 上游鉴权与生成能力仍需单独验证' : ''}
+      </p>
+      {credential.overrideNote && (
+        <p className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-300">
+          {credential.overrideNote}
+        </p>
+      )}
+      {credential.readErrorNote && (
+        <p className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-[11px] text-red-300">
+          {credential.readErrorNote}
+        </p>
+      )}
+    </div>
+  );
 }
 
 export default function ProvidersManagerClient({ initialChannels = [] }) {
@@ -784,6 +905,9 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                     </span>
                   </div>
 
+                  {/* 凭据来源、解密结果与四维验证等级 */}
+                  <CredentialVerificationPanel channel={c} />
+
                   {/* 探测信息展开条 */}
                   {feedback && (
                     <div
@@ -1056,15 +1180,7 @@ export default function ProvidersManagerClient({ initialChannels = [] }) {
                   }
                   className="mt-1.5 w-full rounded-xl border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-sm text-white focus:border-brand focus:outline-none font-mono"
                 />
-                <p className="text-xs text-ink-tertiary">
-                  {editingProvider.credential?.source === 'environment'
-                    ? '生效来源：服务器环境变量。这里保存的新密钥仅作为加密备用配置。'
-                    : editingProvider.credential?.status === 'error'
-                      ? '凭据读取异常，尚不能确认可用；请检查加密配置。'
-                      : editingProvider.credential?.configured
-                        ? '生效来源：加密数据库。凭据可读取，上游权限仍需单独验证。'
-                        : '尚未确认可用凭据。'}
-                </p>
+                <CredentialSourceHint provider={editingProvider} />
               </div>
 
               {/* 品牌模型关联与管理通道 */}
