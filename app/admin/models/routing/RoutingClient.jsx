@@ -48,10 +48,28 @@ const MODE_TONES = {
 
 const ROUTING_MODES = [
   { value: 'cost', label: '成本优先', icon: Scale, desc: '优先选择预估成本最低的健康渠道' },
+  { value: 'priority', label: '管理员优先级', icon: SlidersHorizontal, desc: '按线路管理员优先级排序，同优先级再比成本与稳定性' },
   { value: 'quality', label: '质量优先', icon: Shield, desc: '优先选择质量评分最高的渠道' },
   { value: 'stability', label: '稳定优先', icon: Clock, desc: '优先选择成功率最高、延迟最低的渠道' },
   { value: 'balanced', label: '智能平衡', icon: Zap, desc: '综合成本、质量和稳定性多因素智能调度' },
 ];
+
+const ROUTING_FALLBACK_MODE = 'balanced';
+const ROUTING_MODE_VALUES = ROUTING_MODES.map((mode) => mode.value);
+const ROUTING_FALLBACK_LABEL =
+  ROUTING_MODES.find((mode) => mode.value === ROUTING_FALLBACK_MODE)?.label || ROUTING_FALLBACK_MODE;
+
+/**
+ * 存量配置可能仍是早期写入的未知值。下拉框不能把它显示成“成本优先”，
+ * 否则管理员会误以为该策略已生效；未知值单独列出并说明执行时的回退策略。
+ */
+function routingModeSelection(model) {
+  const stored = String(model?.routing_mode || '').trim().toLowerCase();
+  if (!stored) return { value: 'cost', stored: '', unknown: false };
+  if (ROUTING_MODE_VALUES.includes(stored)) return { value: stored, stored, unknown: false };
+  return { value: '__unknown__', stored, unknown: true };
+}
+
 
 function defaultSimulationParameters(model) {
   if (model?.id === 'bytedance-seedream-v3') {
@@ -192,9 +210,10 @@ export default function RoutingClient({
   const handleToggleFailover = async (model) => {
     if (!canWrite) return;
     const nextVal = !model.failover_enabled;
+    // 只提交本次要改的字段：路由策略由服务端按已存配置沿用，
+    // 避免把存量未知策略值回传后被判为非法而卡住容灾开关。
     const res = await action('routing_policy', {
       modelId: model.id,
-      routingMode: model.routing_mode || 'cost',
       failoverEnabled: nextVal,
     });
     if (res) {
@@ -237,6 +256,7 @@ export default function RoutingClient({
     return {
       total: models.length,
       cost: models.filter((m) => (m.routing_mode || 'cost') === 'cost').length,
+      priority: models.filter((m) => m.routing_mode === 'priority').length,
       balanced: models.filter((m) => m.routing_mode === 'balanced').length,
       quality: models.filter((m) => m.routing_mode === 'quality').length,
       stability: models.filter((m) => m.routing_mode === 'stability').length,
@@ -753,15 +773,16 @@ export default function RoutingClient({
       {activeTab === 'topology' && (
         <div className="space-y-6">
           {/* 指标卡 */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <MetricCard label="路由模型数" value={routingStats.total} hint="所有已注册的规范模型" tone="info" />
             <MetricCard label="成本优先" value={routingStats.cost} hint="按最低预估成本选路" tone="neutral" />
+            <MetricCard label="管理员优先级" value={routingStats.priority} hint="按线路优先级排序，同级再比成本" tone="neutral" />
             <MetricCard label="智能平衡" value={routingStats.balanced} hint="综合多因素智能调度" tone="good" />
             <MetricCard label="质量/稳定" value={routingStats.quality + routingStats.stability} hint="偏重质量或稳定性" tone="neutral" />
           </div>
 
           {/* 路由策略参考 */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {ROUTING_MODES.map((mode) => {
               const Icon = mode.icon;
               return (
@@ -806,6 +827,7 @@ export default function RoutingClient({
               <tbody className="divide-y divide-white/[0.06]">
                 {filteredModels.map((model) => {
                   const routes = model.routes || [];
+                  const routeMode = routingModeSelection(model);
                   const approvedHealthyRoutes = routes.filter(
                     (r) => r.review_status === 'approved' && r.health_status !== 'unhealthy' && r.enabled !== false
                   );
@@ -825,15 +847,26 @@ export default function RoutingClient({
                       </td>
                       <td className="px-4 py-3">
                         <select
-                          value={model.routing_mode || 'cost'}
+                          aria-label={`${model.display_name || model.name || model.id} 路由策略`}
+                          value={routeMode.value}
                           onChange={(e) => handleRoutingModeChange(model.id, e.target.value)}
                           disabled={!canWrite || busy === 'routing_policy'}
                           className="rounded-lg border border-white/[0.12] bg-surface-raised px-2.5 py-1 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
                         >
+                          {routeMode.unknown && (
+                            <option value="__unknown__" disabled>
+                              未知策略（执行时按{ROUTING_FALLBACK_LABEL}）
+                            </option>
+                          )}
                           {ROUTING_MODES.map((mode) => (
                             <option key={mode.value} value={mode.value}>{mode.label}</option>
                           ))}
                         </select>
+                        {routeMode.unknown && (
+                          <span className="mt-1 block max-w-[16rem] font-mono text-[10px] leading-4 text-amber-300/80">
+                            存量值 “{routeMode.stored}” 无法识别，重新选择后生效
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
