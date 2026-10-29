@@ -1,8 +1,10 @@
 import { json } from '@/lib/services/auth';
 import { createGenerationQuote } from '@/lib/services/pricingEngine';
+import { listActiveModels } from '@/lib/services/models';
+import { publicCanvasModel } from '@/lib/canvas/modelDescriptor';
 import { getActiveSubscription } from '@/lib/application/dataAccess.js';
 import { consumeRateLimit, guardMutation, rateLimitResponse } from '@/lib/security/requestGuard';
-import { publicErrorMessage } from '@/lib/security/publicError';
+import { publicErrorMessage, publicErrorPayload } from '@/lib/security/publicError';
 import { generationApiErrorStatus } from '@/lib/security/generationApiErrors';
 import { resolveRequestUser } from '@/lib/security/requestUser';
 import { readJsonObjectRequestBody } from '@/lib/security/requestJson';
@@ -44,10 +46,18 @@ export async function POST(request) {
     const activeSub = await getActiveSubscription(user.id);
     const subscriptionLevel = activeSub?.plan_id || 'free';
 
+    let capability = null;
+    if (body.capabilityVersion) {
+      const model = (await listActiveModels()).find(model => model.id === modelId);
+      if (!model) return json({error:'模型当前不可用',code:'MODEL_NOT_AVAILABLE'},{status:404});
+      capability = publicCanvasModel(model,{schemaVersion:2});
+      if (capability.capabilityVersion !== body.capabilityVersion) return json({error:'模型能力已更新，请刷新参数并重新报价',code:'MODEL_CAPABILITY_CHANGED'},{status:409});
+    }
     const quote = await createGenerationQuote({
       userId: user.id,
       modelId,
       parameters: body.parameters || body,
+      ...(capability ? {capabilitySnapshot:{version:capability.capabilityVersion,schema:capability.inputSchema,schemaVersion:2}} : {}),
       subscriptionLevel,
       idempotencyKey,
       requirePublicAvailability: true,
@@ -67,9 +77,9 @@ export async function POST(request) {
     }, { status: 201 });
   } catch (error) {
     console.error('[api/generation/quote]', error);
-    return json({
-      error: publicErrorMessage(error, '获取模型报价失败'),
-      code: error.code || 'QUOTE_FAILED',
-    }, { status: generationApiErrorStatus(error) });
+    return json(
+      publicErrorPayload(error, '获取模型报价失败', 'QUOTE_FAILED'),
+      { status: generationApiErrorStatus(error) },
+    );
   }
 }
