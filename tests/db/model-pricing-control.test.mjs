@@ -143,6 +143,8 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(imageBreakdown?.minCostCny, 0.072);
     assert.equal(imageBreakdown?.minCostChannel?.costSource, 'price_version');
     assert.equal(imageBreakdown?.minCostChannel?.priceVersionId, `price_v1_${suffix}`);
+    assert.deepEqual(imageBreakdown?.unpricedReasons, {});
+    assert.deepEqual(imageBreakdown?.unpricedDetails, []);
     assert.equal(imageBreakdown?.marginRate, 97.9);
     const videoBreakdown = breakdown.find((row) => row.modelId === videoModelId);
     assert.equal(videoBreakdown?.channelCount, 1);
@@ -153,7 +155,14 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(videoBreakdown?.minCostCny, 0.36);
     assert.equal(videoBreakdown?.minCostChannel?.costSource, 'price_version');
     assert.equal(videoBreakdown?.minCostChannel?.priceVersionId, `video_price_v1_${suffix}`);
-    assert.deepEqual(videoBreakdown?.costBasis, { outputSeconds: 5, inputSeconds: 0, units: 1 });
+    assert.deepEqual(videoBreakdown?.costBasis, {
+      outputSeconds: 5,
+      inputSeconds: null,
+      units: 1,
+      billingUnit: 'per_second',
+    });
+    assert.deepEqual(videoBreakdown?.unpricedReasons, {});
+    assert.deepEqual(videoBreakdown?.unpricedDetails, []);
     assert.equal(videoBreakdown?.grossMarginCny, 3.84);
     assert.equal(videoBreakdown?.marginRate, 91.4);
     assert.equal(videoBreakdown?.marginStatus, 'high');
