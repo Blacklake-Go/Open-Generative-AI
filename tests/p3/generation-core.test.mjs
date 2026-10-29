@@ -21,7 +21,7 @@ test('mock provider exposes deterministic success and failure seams', async () =
 
   await assert.rejects(
     () => createMockGenerationProvider({ outcome: 'failed' }).generate({ creation }),
-    { code: 'MOCK_PROVIDER_FAILED' },
+    { code: 'MOCK_PROVIDER_FAILED', terminalFailure: true },
   );
 });
 
@@ -31,8 +31,10 @@ test('generation create and settlement keep credits, task state, events, and aud
   const repositories = fs.readFileSync(new URL('../../lib/repositories/creations.js', import.meta.url), 'utf8');
 
   assert.match(core, /return withTransaction\(async \(tx\) => \{/);
-  assert.match(core, /commitCredits\(\{[\s\S]*?transaction: tx/);
-  assert.match(core, /voidCredits\(\{[\s\S]*?transaction: tx/);
+  assert.match(core, /const executeCommitCredits = testDependencies\?\.commitCredits \|\| commitCredits/);
+  assert.match(core, /executeCommitCredits\(\{[\s\S]*?transaction: tx/);
+  assert.match(core, /const executeVoidCredits = testDependencies\?\.voidCredits \|\| voidCredits/);
+  assert.match(core, /executeVoidCredits\(\{[\s\S]*?transaction: tx/);
   assert.match(core, /logAudit\(\{[\s\S]*?transaction: tx/);
   assert.match(core, /claimQueuedGeneration\(creationId, tx\)/);
   assert.match(credits, /commitCredits\(\{[^}]*transaction = null/);
@@ -54,7 +56,8 @@ test('storage-ingestion failure releases reserved credits and cannot report an u
   assert.ok(start >= 0 && end > start, 'storage failure finalizer must exist');
   const finalizer = core.slice(start, end);
 
-  assert.match(finalizer, /await voidCredits\(/);
+  assert.match(finalizer, /const executeVoidCredits = dependencies\?\.voidCredits \|\| voidCredits/);
+  assert.match(finalizer, /await executeVoidCredits\(\{/);
   assert.doesNotMatch(finalizer, /commitCredits\(/);
   assert.match(finalizer, /status: 'failed'/);
   assert.match(finalizer, /resultUrl: null/);
