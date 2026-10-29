@@ -907,37 +907,37 @@ export const MEGA_NAV_COPY = {
     explore: 'Explore',
     features: 'Features & Tools',
     models: 'Core Model Matrix',
-    modelsReady: 'Ready',
+    modelsReady: 'listed',
   },
   'zh-CN': {
     explore: '探索',
     features: '功能与工具',
     models: '核心模型矩阵',
-    modelsReady: '款就绪',
+    modelsReady: '款可选',
   },
   'zh-TW': {
     explore: '探索',
     features: '功能與工具',
     models: '核心模型矩陣',
-    modelsReady: '款就緒',
+    modelsReady: '款可選',
   },
   'ja-JP': {
     explore: '探索',
     features: '機能とツール',
     models: 'コアモデルマトリックス',
-    modelsReady: '個が利用可能',
+    modelsReady: '個を表示',
   },
   'ko-KR': {
     explore: '탐색',
     features: '기능 및 도구',
     models: '핵심 모델 매트릭스',
-    modelsReady: '개 준비 완료',
+    modelsReady: '개 표시',
   },
   es: {
     explore: 'Explorar',
     features: 'Funciones y herramientas',
     models: 'Modelos principales',
-    modelsReady: 'listos',
+    modelsReady: 'en la lista',
   },
 };
 

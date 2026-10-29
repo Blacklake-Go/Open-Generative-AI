@@ -57,7 +57,7 @@ export default function AuthCard({
   const [registerCode, setRegisterCode] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [registerCountdown, setRegisterCountdown] = useState(0);
-  const [agreed, setAgreed] = useState(true);
+  const [agreed, setAgreed] = useState(false);
   const registerTimerRef = useRef(null);
 
   // Forgot Password / Account Mode State

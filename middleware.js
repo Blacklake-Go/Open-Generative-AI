@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import { getLocaleConfig, getLocaleFromPathname, isSupportedLocale, normalizeLocale, SUPPORTED_LOCALES } from './lib/locales.js';
+import { authEmbedFrameAncestors } from './lib/auth/embedAuth.js';
 /* --- [TEMPORARY PLUGIN: china-ip-block START] --- */
 import { handleChinaIpBlockMiddleware } from './plugins/china-ip-block/index.js';
 /* --- [TEMPORARY PLUGIN: china-ip-block END] --- */
 
 
 
-function addSecurityHeaders(response) {
+function addSecurityHeaders(response, { embeddedAuth = false } = {}) {
     // Prevent MIME type sniffing (CWE-693)
     response.headers.set('X-Content-Type-Options', 'nosniff');
     // Prevent clickjacking (CWE-1021)
-    response.headers.set('X-Frame-Options', 'DENY');
+    if (embeddedAuth) response.headers.delete('X-Frame-Options');
+    else response.headers.set('X-Frame-Options', 'DENY');
     // Enable XSS filter in legacy browsers
     response.headers.set('X-XSS-Protection', '1; mode=block');
     // Referrer policy
@@ -25,6 +27,8 @@ function addSecurityHeaders(response) {
     // 强制 HTML 页面与动态 API 不被浏览器协商强缓存，防止版本发布后旧 HTML 错位
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
+    const framePolicy = embeddedAuth ? authEmbedFrameAncestors() : "frame-ancestors 'none';";
+    response.headers.set('Content-Security-Policy', `${response.headers.get('Content-Security-Policy')} ${framePolicy}`);
     return response;
 }
 
@@ -234,7 +238,7 @@ export async function middleware(request) {
         response.headers.set('Access-Control-Allow-Credentials', 'true');
         response.headers.set('Vary', 'Origin');
     }
-    return addSecurityHeaders(response);
+    return addSecurityHeaders(response, { embeddedAuth: pathname === '/embed-auth' });
 }
 
 // Match all paths for security headers. Exclude Next.js internal paths.

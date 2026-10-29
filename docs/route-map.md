@@ -38,7 +38,7 @@
 `app/[locale]/[...slug]/page.js` 按这个顺序判定，闸门拿同一批表求差：
 1. 别名/非规范码（`ja`、`zh-CN`、`es-ES`…）→ **308** 到规范前缀（正常由中间件先做掉，页面层留一条给 matcher 之外的入口）；
 2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`assets` `login` `studio`）→ 就地渲染，永不走到这里；
-3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `feedback` `forgot-password` `lab` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
+3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `embed-auth` `feedback` `forgot-password` `lab` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
 4. 都不满足 → **404**（品牌化 404 页，按 `x-locale` 出文案）。
 
 已本地化的前缀与子路径：`/zh` → `about` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `credits` `forgot-password` `lab` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
@@ -76,6 +76,7 @@
 | `/admin/forbidden` | `app/admin/forbidden/page.js` | **public** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations` | `app/admin/generations/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations/failures` | `app/admin/generations/failures/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/generations/reconciliation` | `app/admin/generations/reconciliation/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/health` | `app/admin/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/i18n` | `app/admin/i18n/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/invites` | `app/admin/invites/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -90,6 +91,7 @@
 | `/admin/models/pricing` | `app/admin/models/pricing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/routing?tab=pending` `/admin/models/routing?tab=pricing` |
 | `/admin/models/profit-center` | `app/admin/models/profit-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/providers` | `app/admin/models/providers/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/models/publication` | `app/admin/models/publication/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/registry` | `app/admin/models/registry/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/routing` | `app/admin/models/routing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/telemetry` | `app/admin/models/telemetry/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -139,6 +141,7 @@
 | `/creations` | `app/creations/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/credits` | `app/credits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/design-system` | `app/design-system/page.js` | **public** | noindex | — | 2 | `（根）` | 有 | — |
+| `/embed-auth` | `app/embed-auth/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/feedback` | `app/feedback/page.js` | **client** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/forgot-password` | `app/forgot-password/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/lab` | `app/lab/page.js` | **public** | index | — | 1 | `（根）` | 有 | `/zh/lab` |
@@ -194,6 +197,7 @@
 | `/onboarding` | session | none | 无会话 redirect /；已完成者 redirect 进 studio |
 | `/studio/**` | onboarding | index | 三处 studio 入口各自 await assertOnboardingComplete()；匿名放行，只挡未完成引导的用户 |
 | `/account` | redirect | none | 无条件 redirect /studio?account=open |
+| `/embed-auth` | public | none | 嵌入式授权登录页：供无限画布 iframe 跨域嵌入登录 |
 | `/login` | public | none | 独立登录页，支持邮箱/密码与手机短信验证码 |
 | `/register` | public | none | 独立注册页，支持邮箱验证码与邀请码 |
 | `/forgot-password` | public | none | 独立找回密码与账号找回页 |
@@ -239,7 +243,7 @@
 
 ## API 路由
 
-- 处理器总数：234（其中 `/api/**` 230，`/api/admin/**` 103 个全部经 `requirePermission`）
+- 处理器总数：235（其中 `/api/**` 231，`/api/admin/**` 104 个全部经 `requirePermission`）
 - 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/google/one-tap` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
 - 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
@@ -259,7 +263,7 @@
 | `api-mutation-without-guard` | 5 | 5 |
 | `api-mutation-without-rate-limit` | 16 | 16 |
 | `api-spoofed-client-user-id` | 0 | 0 |
-| `raw-unprefixed-href` | 87 | 87 |
+| `raw-unprefixed-href` | 89 | 89 |
 | `locale-zh-branch-outside-onboarding` | 10 | 10 |
 
 ## 服务器 A 边缘层

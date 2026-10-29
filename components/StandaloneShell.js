@@ -1109,7 +1109,7 @@ export default function StandaloneShell({
       try {
         const [contentRes, modelsRes] = await Promise.all([
           fetch('/api/site/content-config').catch(() => null),
-          fetch('/api/models/active').catch(() => null),
+          fetch('/api/models/active?schemaVersion=2').catch(() => null),
         ]);
         if (!active) return;
 

@@ -15,7 +15,7 @@ const settingsRepo = await import('../../lib/repositories/settings.js');
 test('registration pause blocks new phone and OAuth accounts but preserves existing sign-in', { skip: !testUrl }, async () => {
   const originalSetting = await settingsRepo.getSettingByKey('registration_enabled');
   const originalValue = originalSetting?.value ?? { enabled: true, allow_oauth: true };
-  const phone = `+1202${String(crypto.randomInt(0, 10000000)).padStart(7, '0')}`;
+  const phone = '+12025550123'; // Reserved fictional NANP number; random exchanges may be invalid.
   const provider = 'test-oauth-registration-policy';
   const newProviderUserId = crypto.randomUUID();
   const existingProviderUserId = crypto.randomUUID();
@@ -48,7 +48,7 @@ test('registration pause blocks new phone and OAuth accounts but preserves exist
     await saveRegistrationSetting({ ...originalValue, enabled: false });
 
     const blockedPhoneRegistration = await auth.findOrCreateUserByPhone({
-      phone: `+1203${String(crypto.randomInt(0, 10000000)).padStart(7, '0')}`,
+      phone: '+12025550124',
       countryCode: '+1',
       ip: '198.51.100.22',
     });

@@ -450,7 +450,7 @@ export default function UserDropdownMenu({
             <button
               type="button"
               onClick={handleOpenSubscriptionModal}
-              className={`${FOCUS_RING} flex h-control-sm select-none items-center gap-1.5 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-semibold text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:px-3`}
+              className={`${FOCUS_RING} hidden h-control-sm select-none items-center gap-1.5 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-semibold text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:flex sm:px-3`}
               title={t.membership || 'Membership Subscription'}
             >
               <Crown className="size-3.5 shrink-0" strokeWidth={1.8} />
@@ -484,7 +484,7 @@ export default function UserDropdownMenu({
           <button
             type="button"
             onClick={handleOpenSubscriptionModal}
-            className={`${FOCUS_RING} flex h-control-sm select-none items-center gap-2 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-medium text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:px-3`}
+            className={`${FOCUS_RING} hidden h-control-sm select-none items-center gap-2 rounded-lg border border-brand-line bg-brand-soft px-2.5 text-label font-medium text-brand-text transition-[background-color,border-color,color] duration-fast ease-standard hover:border-brand hover:bg-brand-pressed active:scale-[0.98] active:duration-press cursor-pointer sm:flex sm:px-3`}
             title={t.membership || 'Subscription & Quota Usage'}
           >
             <div className="flex items-center gap-1.5">

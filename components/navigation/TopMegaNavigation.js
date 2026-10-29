@@ -8,6 +8,7 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { ChevronDown } from 'lucide-react';
 import { ExternalLink } from 'lucide-react';
 import { getMegaNavCategories } from '../../config/mega-navigation';
+import { withPublicNavigationModels } from '../../lib/modelCenter/megaNavigationModels';
 import MegaMenuPanel from './MegaMenuPanel';
 import NavBadge from './NavBadge';
 import { getCommonCopy, getLocaleConfig, normalizeLocale } from '@/lib/locales';
@@ -37,8 +38,8 @@ export default function TopMegaNavigation({
   const copy = getCommonCopy(normLocale);
   const tNav = copy.topNav || {};
   const rootPath = getLocaleConfig(normLocale)?.rootPath || '';
-  const categories = getMegaNavCategories(normLocale);
   const [launchScope, setLaunchScope] = useState({ restricted: false, models: [] });
+  const categories = withPublicNavigationModels(getMegaNavCategories(normLocale), launchScope.models, rootPath);
 
   useEffect(() => {
     let cancelled = false;

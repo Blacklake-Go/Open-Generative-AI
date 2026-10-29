@@ -64,6 +64,7 @@ import ModelPriceTag from '@/packages/studio/src/components/ModelPriceTag.jsx';
 import DrawModal from '@/packages/studio/src/components/DrawModal.jsx';
 import { priceForIds } from '@/packages/studio/src/modelPrice.js';
 import { submitPlatformGeneration } from '@/packages/studio/src/platformGeneration.js';
+import { hasTemporaryReferenceUrl } from '@/packages/studio/src/stableAssetReference.js';
 
 // Studio models, logos & config
 import {
@@ -575,7 +576,12 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
       }
 
       const data = await res.json();
-      const finalUrl = data.url || data.asset?.url || localUrl;
+      const assetId = data.asset?.id;
+      const isImageReference = activeTab === 'image' || (activeTab === 'video' && targetSlot !== 'video_ref');
+      if (isImageReference && !assetId) throw new Error(isZh ? '素材保存失败，请重新上传' : 'Asset could not be saved. Please upload again.');
+      const finalUrl = isImageReference
+        ? `/api/assets/${encodeURIComponent(assetId)}/download?inline=1`
+        : data.url || data.asset?.url || localUrl;
       setUploadProgress(100);
 
       // Save into respective slot
@@ -677,6 +683,25 @@ const HomeStudioPromptComposer = forwardRef(function HomeStudioPromptComposer(
     if (!promptText && activeTab !== 'digital-human') {
       toast.error(isZh ? '请输入创作提示词或指令' : 'Please enter a creation prompt');
       textareaRef.current?.focus();
+      return;
+    }
+
+    if (activeTab === 'image' && Number(draft.batch) > 1) {
+      toast.error(isZh ? '首页暂不支持批量生成，请前往图片工作台' : 'For batch generation, please use the image studio.');
+      return;
+    }
+    if (activeTab === 'image' && (hasTemporaryReferenceUrl(draft.imageUrls) || (draft.imageUrls || []).some((url) => /^(?:blob:|data:)/i.test(url)))) {
+      toast.error(isZh ? '参考图已失效，请重新上传' : 'Reference image expired. Please upload again.');
+      return;
+    }
+
+    if (activeTab === 'video' && (hasTemporaryReferenceUrl([...(draft.imageUrls || []), draft.firstFrameUrl, draft.endFrameUrl]) || [...(draft.imageUrls || []), draft.firstFrameUrl, draft.endFrameUrl].some((url) => typeof url === 'string' && /^(?:blob:|data:)/i.test(url)))) {
+      toast.error(isZh ? '参考图已失效，请重新上传' : 'Reference image expired. Please upload again.');
+      return;
+    }
+
+    if (activeTab === 'video' && (draft.firstFrameUrl || draft.endFrameUrl || draft.imageUrls?.length)) {
+      toast.error(isZh ? '参考图视频请前往视频工作台生成' : 'Please use the video studio for image-to-video generation.');
       return;
     }
 
