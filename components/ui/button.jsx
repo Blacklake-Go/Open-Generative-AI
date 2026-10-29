@@ -162,7 +162,7 @@ Button.displayName = "Button";
  * KOYO Studio Accessible Icon-Only Button
  * Enforces minimum 28px/32px/38px/44px touch targets and square geometry.
  * Complies with WCAG 2.5.3 (label or aria-label required).
- * Active press state: active:scale-95 (80ms instant mechanical feedback).
+ * Active press state: active:scale-[0.96] (80ms press-duration mechanical feedback).
  */
 const IconButton = React.forwardRef(
   (
