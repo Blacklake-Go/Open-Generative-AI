@@ -42,9 +42,9 @@ export default function LoginForm({ locale = 'en' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const copy = getAuthCopy(locale).login;
-  const routes = getAuthRoutes(locale);
+  const routes = getAuthRoutes(locale, '/login', searchParams.get('redirect'));
 
-  const redirectUrl = searchParams.get('redirect') || routes.studioUrl;
+  const { redirectUrl } = routes;
 
   // Tabs: 'email' | 'phone'
   const [activeTab, setActiveTab] = useState('email');

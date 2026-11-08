@@ -32,9 +32,9 @@ export default function RegisterForm({ locale = 'en' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const copy = getAuthCopy(locale).register;
-  const routes = getAuthRoutes(locale);
+  const routes = getAuthRoutes(locale, '/register', searchParams.get('redirect'));
 
-  const redirectUrl = searchParams.get('redirect') || routes.studioUrl;
+  const { redirectUrl } = routes;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
