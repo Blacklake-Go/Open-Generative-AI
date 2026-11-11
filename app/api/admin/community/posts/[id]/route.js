@@ -2,6 +2,7 @@ import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse, r
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { checkIdempotency, completeIdempotency, getRequiredIdempotencyKey, releaseIdempotency } from '@/lib/admin/idempotency';
 import { updateCommunityPostForAdmin } from '@/lib/services/community';
+import { publicCommunityFailure } from '@/lib/community/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,16 +30,27 @@ async function handlePATCH(request, context) {
   let body = {};
   try {
     body = await request.json();
-  } catch {}
+  } catch {
+    await releaseIdempotency(idemp.keyHash);
+    return errorResponse('VALIDATION_ERROR', '请求内容无效', 422, guard.requestId);
+  }
 
-  const post = await updateCommunityPostForAdmin(id, {
+  let post;
+  try { post = await updateCommunityPostForAdmin(id, {
     title: body.title,
     description: body.description,
     modelName: body.modelName,
     tags: body.tags,
     status: body.status,
     isFeatured: body.isFeatured,
-  });
+    moderationReason: body.moderationReason,
+  }, { actor: guard.user, expectedVersion: body.expectedVersion });
+  } catch (error) {
+    await releaseIdempotency(idemp.keyHash);
+    const failure = publicCommunityFailure(error);
+    if (failure) return errorResponse(failure.code, failure.message, failure.status, guard.requestId);
+    throw error;
+  }
 
   if (!post) {
     await releaseIdempotency(idemp.keyHash);

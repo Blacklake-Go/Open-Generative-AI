@@ -304,7 +304,7 @@ function FeaturedCaseShowcase({ posts, onOpen, onRemix, t, locale }) {
             <h2 id="featured-cases-title" className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">{t.featuredTitle}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400">{t.featuredSubtitle}</p>
           </div>
-          <Link href="/creations" className="text-xs font-semibold text-cyan-300 transition-colors hover:text-cyan-200">{t.shareMyCase}</Link>
+          <Link href="/community/submit" className="text-xs font-semibold text-cyan-300 transition-colors hover:text-cyan-200">{t.shareMyCase}</Link>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
@@ -490,19 +490,16 @@ export default function CommunityClient({ initialPostId = null, locale: localePr
     } catch { triggerToast(t.networkError); }
   };
 
-  const handleRemix = (post, event) => {
+  const handleRemix = async (post, event) => {
     event.stopPropagation();
-    fetch(`/api/community/posts/${post.id}/remix`, { method: 'POST' }).catch(() => {});
-    const target = post.media_type === 'video' ? 'video' : post.media_type === 'audio' ? 'audio' : post.media_type === 'workflow' ? 'workflow' : 'image';
-    const params = new URLSearchParams();
-    if (post.prompt) params.set('remixPrompt', post.prompt);
-    if (target === 'video') {
-      params.set('model', 'kling-v2.6-pro-t2v');
-    } else if (target === 'image') {
-      params.set('model', 'gpt-image-2.5-flash');
-    }
-    const studioUrl = localizeStudioPath(norm, target);
-    window.location.href = `${studioUrl}?${params.toString()}`;
+    try {
+      const response = await fetch(`/api/community/posts/${post.id}/remix`, { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok) return triggerToast(result.error || t.networkError);
+      const target = new URL(result.createUrl);
+      if (target.origin !== 'https://www.supdance.com' || target.pathname !== '/') throw new Error('Invalid creation destination');
+      window.location.assign(target.href);
+    } catch { triggerToast(t.networkError); }
   };
 
   return (
@@ -601,7 +598,7 @@ export default function CommunityClient({ initialPostId = null, locale: localePr
               </p>
               <div className="mt-6">
                 <Link
-                  href="/creations"
+                  href="/community/submit"
                   className="inline-flex items-center gap-2 rounded-full bg-white hover:bg-white/90 text-black px-6 py-2.5 text-xs sm:text-sm font-semibold shadow-lg transition-transform active:scale-95"
                 >
                   <Share2 className="size-4" />
