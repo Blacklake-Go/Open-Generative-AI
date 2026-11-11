@@ -44,8 +44,7 @@ test('Providers service defines international and mainland social providers with
   assert.match(content, /callbackPath:\s*'(\/api\/auth\/oauth\/|\/auth\/)tiktok\/callback'/);
   assert.match(content, /callbackPath:\s*'\/api\/auth\/oauth\/instagram\/callback'/);
   assert.match(content, /callbackPath:\s*'\/api\/auth\/oauth\/wechat\/callback'/);
-  assert.match(content, /callbackPath:\s*'\/api\/auth\/qq\/callback'/);
-  assert.match(content, /默认: https:\/\/www\.supdance\.com\/api\/auth\/qq\/callback/);
+  assert.match(content, /callbackPath:\s*'\/api\/auth\/oauth\/qq\/callback'/);
   assert.match(content, /callbackPath:\s*'\/api\/auth\/oauth\/douyin\/callback'/);
   assert.match(content, /wechat_oauth:app_secret/);
 });
@@ -129,7 +128,7 @@ test('Instagram provider is configured in social catalog, oauth, card icon, and 
 
   const oauth = await readCode('lib/oauth.js');
   assert.match(oauth, /instagram:\s*\{/);
-  assert.match(oauth, /(www|api)\.instagram\.com\/oauth\/authorize/);
+  assert.match(oauth, /api\.instagram\.com\/oauth\/authorize/);
   assert.match(oauth, /api\.instagram\.com\/oauth\/access_token/);
   assert.match(oauth, /graph\.instagram\.com\/me/);
 

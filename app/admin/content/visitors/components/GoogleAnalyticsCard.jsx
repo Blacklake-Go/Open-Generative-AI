@@ -222,7 +222,7 @@ export default function GoogleAnalyticsCard({ value, onChange, disabled }) {
                         handleFieldChange('serviceAccountPrivateKey', text);
                       }
                     }}
-                    placeholder="-----BEGIN PRIVATE KEY----- 或直接粘贴 JSON 密钥"
+                    placeholder="粘贴服务账号私钥或 JSON 密钥"
                     className="w-full rounded-lg border border-white/10 bg-black/40 p-2 font-mono text-[11px] text-white/80 placeholder-white/20 outline-none focus:border-brand resize-y"
                   />
                 </div>

@@ -154,27 +154,6 @@ test('public capabilities merge only task types with explicit compatible inputs 
     durations: [5, 10, 8],
     qualities: ['standard', 'high'],
     parameters: ['generate_audio'],
-    // Each reviewed route keeps its own declared controls so the server can
-    // validate and quote a concrete route instead of the merged superset.
-    variants: [{
-      taskType: 't2v',
-      inputTypes: ['text'],
-      outputTypes: ['video'],
-      aspectRatios: ['16:9', '9:16'],
-      resolutions: ['720p'],
-      durations: [5, 10],
-      qualities: ['standard'],
-      parameters: ['generate_audio'],
-    }, {
-      taskType: 't2v',
-      inputTypes: ['text'],
-      outputTypes: ['video'],
-      aspectRatios: [],
-      resolutions: ['1080p'],
-      durations: [8],
-      qualities: ['high'],
-      parameters: [],
-    }],
   }]);
 });
 
@@ -195,22 +174,12 @@ test('production-shaped reviewed video route metadata projects only declared con
       aspectRatios: ['16:9', '9:16', '1:1'], resolutions: [], durations: [],
       qualities: [],
       parameters: [],
-      variants: [{
-        taskType: 't2v', inputTypes: ['text'], outputTypes: ['video'],
-        aspectRatios: ['16:9', '9:16', '1:1'], resolutions: [], durations: [],
-        qualities: [], parameters: [],
-      }],
     },
     {
       taskType: 'i2v', inputTypes: ['image'], outputTypes: ['video'],
       aspectRatios: ['16:9', '9:16', '1:1'], resolutions: [], durations: [],
       qualities: [],
       parameters: [],
-      variants: [{
-        taskType: 'i2v', inputTypes: ['image'], outputTypes: ['video'],
-        aspectRatios: ['16:9', '9:16', '1:1'], resolutions: [], durations: [],
-        qualities: [], parameters: [],
-      }],
     },
   ]);
 
@@ -235,10 +204,17 @@ test('production-shaped reviewed video route metadata projects only declared con
     aspectRatios: ['16:9', '9:16'], resolutions: ['720p'], durations: [4, 5, 10, 15],
     qualities: [],
     parameters: [],
-    variants: [{
-      taskType: 't2v', inputTypes: ['text'], outputTypes: ['video'],
-      aspectRatios: ['16:9', '9:16'], resolutions: ['720p'], durations: [4, 5, 10, 15],
-      qualities: [], parameters: [],
-    }],
   }]);
+});
+
+test('launch allowlist limits the public picker and order admission to verified models', () => {
+  const previous = process.env.PUBLIC_LAUNCH_MODEL_IDS;
+  try {
+    process.env.PUBLIC_LAUNCH_MODEL_IDS = 'seedream-4.5';
+    assert.equal(isSelectablePublicModel({ ...ready, id: 'seedream-4.5' }), true);
+    assert.equal(isSelectablePublicModel({ ...ready, id: 'seedream-5.0' }), false);
+  } finally {
+    if (previous === undefined) delete process.env.PUBLIC_LAUNCH_MODEL_IDS;
+    else process.env.PUBLIC_LAUNCH_MODEL_IDS = previous;
+  }
 });

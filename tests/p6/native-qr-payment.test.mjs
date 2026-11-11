@@ -81,26 +81,49 @@ test('alipay gateway failures log safe metadata without raw response bodies', as
   assert.doesNotMatch(logText, /provider-response-signature-sentinel|Business Failed/);
 });
 
-test('alipay query distinguishes an uncreated trade from an unpaid trade', async () => {
+test('alipay checkout returns only a confirmed precreate QR and rejects gateway failures', async () => {
   const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
     modulusLength: 2048,
     publicKeyEncoding: { type: 'spki', format: 'pem' },
     privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
   });
+  const provider = getAlipayProvider({ appId: 'test-app-id', privateKey, publicKey, gateway: 'https://alipay.invalid/gateway.do' });
+  const order = { id: 'test-qr-order', amount_minor: 4900, currency: 'CNY' };
+  const user = { id: 'test-user' };
+  const plan = { id: 'credit_490', name: '490 通用算力' };
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response(JSON.stringify({
-    alipay_trade_query_response: { code: '40004', sub_code: 'ACQ.TRADE_NOT_EXIST' },
-  }), { status: 200 });
+  const originalPrecreateFlag = process.env.ALIPAY_PRECREATE_DISABLED;
+  const originalPagePayFlag = process.env.ALIPAY_PAGE_PAY_ENABLED;
+  let calls = 0;
   try {
-    const provider = getAlipayProvider({
-      appId: 'test-app-id', privateKey, publicKey, gateway: 'https://alipay.invalid/gateway.do',
-    });
-    const result = await provider.retrievePayment('test-order-not-created');
-    assert.equal(result.paid, false);
-    assert.equal(result.tradeNotFound, true);
-    assert.equal(result.orderId, 'test-order-not-created');
+    delete process.env.ALIPAY_PRECREATE_DISABLED;
+    process.env.ALIPAY_PAGE_PAY_ENABLED = 'true';
+    globalThis.fetch = async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ alipay_trade_precreate_response: { code: '40006', sub_code: 'isv.illegal-client-ip' } }), { status: 200 });
+    };
+    await assert.rejects(provider.createCheckout({ order, user, plan }));
+    assert.equal(calls, 1, 'rejected precreate must not fall back to an unverified cashier URL');
+
+    globalThis.fetch = async () => new Response(JSON.stringify({ alipay_trade_precreate_response: { code: '10000', qr_code: 'https://alipay.invalid/qr/confirmed' } }), { status: 200 });
+    const checkout = await provider.createCheckout({ order, user, plan });
+    assert.equal(checkout.qr_code, 'https://alipay.invalid/qr/confirmed');
+    assert.equal(checkout.isPagePay, false);
+    await assert.rejects(provider.createCheckout({ order: { ...order, amount_minor: 0 }, user, plan }));
+
+    process.env.ALIPAY_PRECREATE_DISABLED = 'true';
+    delete process.env.ALIPAY_PAGE_PAY_ENABLED;
+    await assert.rejects(provider.createCheckout({ order, user, plan }));
+    process.env.ALIPAY_PAGE_PAY_ENABLED = 'true';
+    const pagePay = await provider.createCheckout({ order, user, plan });
+    assert.equal(pagePay.isPagePay, true);
+    assert.equal(new URL(pagePay.url).searchParams.get('method'), 'alipay.trade.page.pay');
   } finally {
     globalThis.fetch = originalFetch;
+    if (originalPrecreateFlag === undefined) delete process.env.ALIPAY_PRECREATE_DISABLED;
+    else process.env.ALIPAY_PRECREATE_DISABLED = originalPrecreateFlag;
+    if (originalPagePayFlag === undefined) delete process.env.ALIPAY_PAGE_PAY_ENABLED;
+    else process.env.ALIPAY_PAGE_PAY_ENABLED = originalPagePayFlag;
   }
 });
 

@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { applyActiveModelDirectory, isServerModelGenerationEligible, t2iModels } from '../packages/studio/src/models.js';
+import { getServerModelMeta } from '../packages/studio/src/modelDescriptions.js';
+import { findPublicImageCapability } from '../packages/studio/src/publicGenerationCapabilities.js';
 
 const readyModel = {
   id: 'seedream-5.0',
@@ -43,4 +45,24 @@ test('directory refresh removes and restores a previously listed model', () => {
   assert.ok(!t2iModels.some((model) => model.id === modelId));
   assert.equal(applyActiveModelDirectory([row]).activeCount, 1);
   assert.ok(t2iModels.some((model) => model.id === modelId));
+});
+
+test('Studio picker alias receives the canonical server capability', () => {
+  const row = {
+    ...readyModel,
+    id: 'seedream-4.5',
+    generationCapabilities: [{
+      taskType: 't2i',
+      inputTypes: ['text'],
+      outputTypes: ['image'],
+      aspectRatios: ['1:1'],
+      resolutions: ['1k'],
+      qualities: [],
+      parameters: ['prompt'],
+    }],
+  };
+  applyActiveModelDirectory([row]);
+  assert.equal(getServerModelMeta('bytedance-seedream-v4.5')?.id, 'seedream-4.5');
+  assert.equal(findPublicImageCapability(getServerModelMeta('bytedance-seedream-v4.5'), 't2i')?.taskType, 't2i');
+  applyActiveModelDirectory([]);
 });

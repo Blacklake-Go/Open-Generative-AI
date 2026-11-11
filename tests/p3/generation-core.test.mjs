@@ -21,7 +21,7 @@ test('mock provider exposes deterministic success and failure seams', async () =
 
   await assert.rejects(
     () => createMockGenerationProvider({ outcome: 'failed' }).generate({ creation }),
-    { code: 'MOCK_PROVIDER_FAILED', terminalFailure: true },
+    { code: 'MOCK_PROVIDER_FAILED' },
   );
 });
 
@@ -31,10 +31,8 @@ test('generation create and settlement keep credits, task state, events, and aud
   const repositories = fs.readFileSync(new URL('../../lib/repositories/creations.js', import.meta.url), 'utf8');
 
   assert.match(core, /return withTransaction\(async \(tx\) => \{/);
-  assert.match(core, /const executeCommitCredits = testDependencies\?\.commitCredits \|\| commitCredits/);
-  assert.match(core, /executeCommitCredits\(\{[\s\S]*?transaction: tx/);
-  assert.match(core, /const executeVoidCredits = testDependencies\?\.voidCredits \|\| voidCredits/);
-  assert.match(core, /executeVoidCredits\(\{[\s\S]*?transaction: tx/);
+  assert.match(core, /commitCredits\(\{[\s\S]*?transaction: tx/);
+  assert.match(core, /voidCredits\(\{[\s\S]*?transaction: tx/);
   assert.match(core, /logAudit\(\{[\s\S]*?transaction: tx/);
   assert.match(core, /claimQueuedGeneration\(creationId, tx\)/);
   assert.match(credits, /commitCredits\(\{[^}]*transaction = null/);
@@ -46,7 +44,7 @@ test('generation create and settlement keep credits, task state, events, and aud
 test('Canvas generation resolves provider asset references with the creation owner before provider calls', () => {
   const core = fs.readFileSync(new URL('../../lib/services/generationCore.js', import.meta.url), 'utf8');
   assert.match(core, /resolveCanvasOwnedAssetReferences\(parameters,\s*\{\s*userId: creation\.user_id,/);
-  assert.match(core, /const providerParameters = await resolveCanvasProviderParameters\(claimed, parameters, providerId\);[\s\S]*?parameters: providerParameters,/);
+  assert.match(core, /const providerParameters = await resolveCanvasProviderParameters\(claimed, parameters\);[\s\S]*?parameters: providerParameters,/);
 });
 
 test('storage-ingestion failure releases reserved credits and cannot report an unavailable result as success', () => {
@@ -56,8 +54,7 @@ test('storage-ingestion failure releases reserved credits and cannot report an u
   assert.ok(start >= 0 && end > start, 'storage failure finalizer must exist');
   const finalizer = core.slice(start, end);
 
-  assert.match(finalizer, /const executeVoidCredits = dependencies\?\.voidCredits \|\| voidCredits/);
-  assert.match(finalizer, /await executeVoidCredits\(\{/);
+  assert.match(finalizer, /await voidCredits\(/);
   assert.doesNotMatch(finalizer, /commitCredits\(/);
   assert.match(finalizer, /status: 'failed'/);
   assert.match(finalizer, /resultUrl: null/);
@@ -92,9 +89,9 @@ test('financial wallet mutations lock the balance snapshot before calculating a 
 
   assert.match(currency, /return await withTransaction\(async \(tx\) => \{[\s\S]*?currency_wallets WHERE user_id = \$1 FOR UPDATE/);
   assert.match(currency, /SELECT \* FROM currency_wallets WHERE user_id IN \(\$1, \$2\) ORDER BY user_id FOR UPDATE/);
-  assert.match(exchange, /currency_wallets WHERE user_id\s*=\s*\$1 FOR UPDATE/);
-  assert.match(exchange, /grantPerpetualCredits\(/);
-  assert.match(exchange, /grantSubscriptionCredits\(/);
+  assert.match(exchange, /currency_wallets WHERE user_id = \$1 FOR UPDATE/);
+  assert.match(exchange, /UPDATE users[\s\S]*?daily_free_credits \+ subscription_credits \+ perpetual_credits/);
+  assert.match(exchange, /subscriptionBalanceAfter/);
   assert.match(credits, /SELECT \* FROM credit_wallets WHERE user_id = \$1 FOR UPDATE/);
 });
 

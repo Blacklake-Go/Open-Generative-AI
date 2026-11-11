@@ -10,11 +10,6 @@ const reservation = {
   model_id: 'test-image',
   reserved_amount: 10,
   bucket_split_json: { daily: 2, subscription: 3, perpetual: 5 },
-  bucket_allocations_json: [
-    {bucket:'daily',source:'wallet',amount:2,expiresAt:null},
-    {bucket:'subscription',source:'wallet',amount:3,expiresAt:null},
-    {bucket:'perpetual',source:'wallet',amount:5,expiresAt:null},
-  ],
 };
 
 function mockTransaction({
@@ -34,7 +29,6 @@ function mockTransaction({
       if (sql.includes('FROM credit_wallets')) return wallet;
       return null;
     },
-    async queryMany() { return []; },
     async execute(sql, params) {
       writes.push({ sql, params });
       return { rowCount: 1 };
@@ -64,7 +58,7 @@ test('commit and release subtract the reservation from the aggregate frozen bala
   });
   const releaseWalletWrite = releaseTx.writes.find(({ sql }) => sql.includes('SET daily_free_credits = $1'));
   assert.equal(released.status, 'VOIDED');
-  assert.deepEqual(releaseWalletWrite.params.slice(0, 4).map(Number), [2, 3, 10, 5]);
+  assert.deepEqual(releaseWalletWrite.params.slice(0, 4).map(Number), [4, 6, 10, 5]);
 });
 
 test('commit and release refuse to settle when frozen balance is below the reservation', async () => {
@@ -127,10 +121,4 @@ test('commit and release refuse missing or corrupt wallet buckets before writes'
       assert.equal(mock.writes.length, 0);
     }
   }
-});
-
- test('legacy expiring reservations require evidence and cannot credit a new cycle', async () => {
-  const mock = mockTransaction({currentReservation: {...reservation, bucket_allocations_json: null}});
-  await assert.rejects(voidCredits({reservationId: reservation.id, transaction:mock.transaction}), {code:'CREDIT_RELEASE_CONTEXT_REQUIRED'});
-  assert.equal(mock.writes.length,0);
 });

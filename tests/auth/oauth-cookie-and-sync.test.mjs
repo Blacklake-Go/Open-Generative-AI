@@ -1,4 +1,3 @@
-import {NextResponse} from 'next/server.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -99,12 +98,18 @@ test('setSessionCookie and clearSessionCookie configure domain and expiry proper
     assert.equal(cookieJar[0].options.path, '/');
     assert.equal(cookieJar[0].options.httpOnly, true);
 
-    const actualResponse=NextResponse.json({ok:true});
-    clearSessionCookie(actualResponse,{headers:new Headers({host:'www.supdance.com'})});
-    const expired=actualResponse.headers.getSetCookie();
-    assert.equal(expired.length,2);
-    assert.equal(expired.filter(cookie=>cookie.includes('Domain=.supdance.com')).length,1);
-    assert.ok(expired.every(cookie=>cookie.includes('Max-Age=0')));
+    // Clear cookies
+    cookieJar.length = 0;
+    clearSessionCookie(mockResponse, {
+      headers: new Map([['host', 'www.supdance.com']]),
+    });
+
+    // Should clear both domain and host-only cookies
+    assert.equal(cookieJar.length, 2);
+    assert.equal(cookieJar[0].options.domain, '.supdance.com');
+    assert.equal(cookieJar[0].options.maxAge, 0);
+    assert.equal(cookieJar[1].options.domain, undefined);
+    assert.equal(cookieJar[1].options.maxAge, 0);
   } finally {
     process.env = origEnv;
   }

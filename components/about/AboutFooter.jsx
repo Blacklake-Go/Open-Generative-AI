@@ -626,7 +626,7 @@ const FOOTER_COPY = {
   },
 };
 
-export default function AboutFooter({ locale = 'en' }) {
+export default function AboutFooter({ locale = 'en', compact = false }) {
   const activeLocale = normalizeLocale(locale);
   const copy = FOOTER_COPY[activeLocale] || FOOTER_COPY.en;
   const { brand } = useBranding();
@@ -655,6 +655,7 @@ export default function AboutFooter({ locale = 'en' }) {
       <div className="absolute -bottom-24 -left-20 w-[420px] h-[420px] bg-[#00f5d4]/5 blur-[130px] rounded-full pointer-events-none" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+        {!compact && (<>
         {/* ========================================================= */}
         {/* TIER 1: 品牌超级号召横幅与实时算力集群全网状态条           */}
         {/* ========================================================= */}
@@ -793,6 +794,7 @@ export default function AboutFooter({ locale = 'en' }) {
             })}
           </div>
         </div>
+        </>)}
 
         {/* ========================================================= */}
         {/* TIER 3: 产品体系、开发者生态、合规政策与技术订阅           */}
