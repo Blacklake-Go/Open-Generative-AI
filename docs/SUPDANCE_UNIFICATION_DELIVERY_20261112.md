@@ -35,8 +35,10 @@ Never deploy by overwriting that dirty root or copying a local historical main.
 - Open calls use immutable rules, server-controlled integer prizes, owned published
   entries, frozen post/rules snapshots, deadline and judge ownership guards.
   Award approval is an outbox record, not a wallet credit. **Central prize
-  settlement and its admin UI are not implemented; no real award is paid by this
-  release.** Closing is refused until all approved awards are settled.
+  settlement is not implemented; no real award is paid by this
+  release.** The permission-controlled admin page supports draft creation,
+  publication, deadline-gated judging and award approval with explicit pending
+  settlement status. Closing is refused until all approved awards are settled.
 
 ## Validation and rollout contract
 

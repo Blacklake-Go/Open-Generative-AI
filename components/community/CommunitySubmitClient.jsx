@@ -58,7 +58,7 @@ export default function CommunitySubmitClient({ locale = 'en' }) {
   {!user && <Button asChild size="lg"><Link href={localizedHref('/account/connected', { explicit: locale })}>{copy[10]}</Link></Button>}
   {loading && <p role="status">{copy[16]}</p>}{error && <p role="alert" className="text-danger">{error}</p>}{notice && <p role="status">{notice}</p>}
   {data?.mainAssetsUnavailable && <p role="alert">{copy[12]}</p>}
-  {user && <Button size="lg" onClick={load} disabled={loading}>{copy[13]}</Button>}
+  {user && <Button size="lg" onClick={() => { setNotice(''); void load(); }} disabled={loading}>{copy[13]}</Button>}
   {data && <Card><CardContent className="pt-6"><form onSubmit={submit} className="space-y-4">
    <label className="block space-y-2"><span>{copy[1]}</span><select className="h-control-lg w-full rounded-xl border border-line bg-well px-3 text-ink control-focus" value={selected} onChange={(event)=>setSelected(event.target.value)} required>
     <option value="">{copy[1]}</option>{groups.map(([label,items,source])=><optgroup key={source} label={label}>{items.map((item)=><option key={item.id} value={`${source}:${item.id}`}>{item.title || item.id}</option>)}</optgroup>)}

@@ -40,6 +40,8 @@ test('campaigns freeze rules and entries, enforce deadlines/ownership/judges/cap
  const before=await db.queryOne('SELECT credits FROM auth_usr.users WHERE id=$1',[author.id]);
  const awards=await Promise.all([campaigns.approveCommunityAward(campaign.id,entries[0].id,'QA reviewed by other judge',judge),campaigns.approveCommunityAward(campaign.id,entries[0].id,'QA retry',judge)]);
  assert.equal(awards[0].id,awards[1].id);assert.equal(awards[0].status,'approved');assert.equal(awards[0].settled_at,null);assert.equal(awards[0].prize_credits,10);
+ const listed=(await campaigns.communityCampaignEntries(campaign.id))[0];
+ assert.equal(listed.award_id,awards[0].id);assert.equal(listed.award_status,'approved');assert.equal(listed.settled_at,null);
  assert.deepEqual(await db.queryOne('SELECT credits FROM auth_usr.users WHERE id=$1',[author.id]),before);
  await assert.rejects(()=>campaigns.transitionCommunityCampaign(campaign.id,'closed',judge),{code:'COMMUNITY_AWARD_LIMIT'});
  assert.equal((await db.queryOne("SELECT count(*)::int AS count FROM ai_studio.community_campaign_events WHERE campaign_id=$1 AND action='award_approved'",[campaign.id])).count,1);
