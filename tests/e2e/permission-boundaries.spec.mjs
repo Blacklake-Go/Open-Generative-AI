@@ -238,6 +238,8 @@ test('community navigation can be enabled after build without a hydration mismat
     expect(ready).toBe(true);
     await page.goto(`http://127.0.0.1:${port}/account/connected`, { waitUntil: 'networkidle' });
     await expect(page.getByRole('banner').getByRole('link', { name: 'Open calls', exact: true })).toBeVisible();
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Your ONE assets', exact: true })).toHaveAttribute('href', '/assets');
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Historical ONE account', exact: true })).toHaveAttribute('href', '/account');
     await page.reload({ waitUntil: 'networkidle' });
     await expect(page.getByRole('banner').getByRole('link', { name: 'Open calls', exact: true })).toBeVisible();
     expect(errors).toEqual([]);
