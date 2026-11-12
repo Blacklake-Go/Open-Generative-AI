@@ -10,6 +10,7 @@ import { getUserBySession } from '@/lib/services/auth';
 import { getBrandConfig, getNavigationConfig } from '@/lib/services/branding';
 import { BrandingProvider } from '@/lib/hooks/useBranding';
 
+import { CommunityModeProvider } from '@/components/community/CommunityModeProvider';
 import DynamicFavicon from '@/components/site/DynamicFavicon';
 import VisitorAnalytics from '@/components/analytics/VisitorAnalytics';
 import { getVisitorAnalyticsConfig } from '@/lib/services/visitorAnalytics';
@@ -122,9 +123,11 @@ export default async function RootLayout({ children }) {
         <VisitorAnalytics config={visitorAnalytics} />
         <GlobalSiteBanner banner={banner} />
         <BrandingProvider initialBrand={brand} initialNav={navigation}>
-          <MaintenanceGate maintenance={maintenance} user={user}>
-            {children}
-          </MaintenanceGate>
+          <CommunityModeProvider enabled={process.env.SUPDANCE_COMMUNITY_ENABLED === 'true'}>
+            <MaintenanceGate maintenance={maintenance} user={user}>
+              {children}
+            </MaintenanceGate>
+          </CommunityModeProvider>
         </BrandingProvider>
       </body>
     </html>

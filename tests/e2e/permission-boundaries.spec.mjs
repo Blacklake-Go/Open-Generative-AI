@@ -215,3 +215,35 @@ test('cached account hints cannot break hydration or replace the verified sessio
   await expect(page.getByRole('button', { name: 'Sign in to ONE with your main account', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('community navigation can be enabled after build without a hydration mismatch', async ({ page }) => {
+  const { spawn } = await import('node:child_process');
+  const { setTimeout: delay } = await import('node:timers/promises');
+  const { requireIsolatedTestDatabase } = await import('../../scripts/test-database-guard.mjs');
+  const database = requireIsolatedTestDatabase(process.env.TEST_DATABASE_URL, process.env.DATABASE_URL);
+  const port = 3112;
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
+    env: { ...process.env, NODE_ENV: 'production', DATABASE_URL: database.href, SUPDANCE_COMMUNITY_ENABLED: 'true', NEXT_PUBLIC_SUPDANCE_COMMUNITY_MODE: 'true' },
+    stdio: 'ignore',
+  });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    let ready = false;
+    for (let attempt = 0; attempt < 90; attempt++) {
+      if (server.exitCode !== null) throw new Error('Isolated community server exited before readiness');
+      try { const response = await fetch(`http://127.0.0.1:${port}/api/live`); if (response.status === 200) { ready = true; break; } } catch {}
+      await delay(200);
+    }
+    expect(ready).toBe(true);
+    await page.goto(`http://127.0.0.1:${port}/account/connected`, { waitUntil: 'networkidle' });
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Open calls', exact: true })).toBeVisible();
+    await page.reload({ waitUntil: 'networkidle' });
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Open calls', exact: true })).toBeVisible();
+    expect(errors).toEqual([]);
+  } finally {
+    server.kill('SIGTERM');
+    await Promise.race([new Promise(resolve => server.once('exit', resolve)), delay(5000)]);
+    if (server.exitCode === null) server.kill('SIGKILL');
+  }
+});
