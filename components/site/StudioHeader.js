@@ -312,6 +312,7 @@ export default function StudioHeader({
               {/* 无限画布 (独立二号白板工作台) */}
               <Link
                 href="/canvas"
+                  prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMobileOpen(false)}

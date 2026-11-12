@@ -1683,6 +1683,7 @@ export default function StandaloneShell({
               <div className="mt-3 border-t border-line-subtle pt-3">
                 <Link
                   href="/canvas"
+                  prefetch={false}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMobileOpen(false)}

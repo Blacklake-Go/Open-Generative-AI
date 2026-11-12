@@ -272,6 +272,7 @@ export default function TopMegaNavigation({
             <NavigationMenu.Link asChild>
               <Link
                 href="/canvas"
+                  prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`inline-flex items-center gap-1.5 rounded-lg border border-transparent px-3 h-control-sm text-body-sm font-medium font-jost text-ink-muted transition-[background-color,color,border-color] duration-fast hover:bg-wash hover:text-ink shrink-0 select-none ${FOCUS_RING}`}

@@ -200,3 +200,18 @@ test('Creative Agent shows its Chinese availability state without requesting ses
   await expect(status).toContainText('用户隔离会话、生成计费与结果保存');
   expect(legacyRequests).toEqual([]);
 });
+
+test('cached account hints cannot break hydration or replace the verified session on reload', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.addInitScript(() => {
+    localStorage.setItem('ko_user', JSON.stringify({ id: 'expired-cache-owner', credits: 999, plan_id: 'vip', isSubscribed: true }));
+    localStorage.setItem('ko_entitlements', JSON.stringify({ planId: 'vip', credits: 999, isPaidSubscription: true }));
+    document.cookie = 'NEXT_LOCALE=en; Path=/; SameSite=Lax';
+  });
+  await page.goto('/account/connected', { waitUntil: 'networkidle' });
+  await expect(page.getByRole('button', { name: 'Sign in to ONE with your main account', exact: true })).toBeVisible();
+  await page.reload({ waitUntil: 'networkidle' });
+  await expect(page.getByRole('button', { name: 'Sign in to ONE with your main account', exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
