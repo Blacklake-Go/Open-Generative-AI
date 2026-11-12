@@ -134,3 +134,10 @@ fabricate provider health timestamps. Routing and price evidence behavior is
 covered separately by mandatory isolated fixtures. These skips are not production
 provider acceptance. The source timer restores the GitHub three-minute readiness
 contract; no production timer is activated by this code commit.
+
+SSO shadow identities never gain ONE spending authority, even if an unrelated
+legacy grant later appears. Wallet presentation classifies the identity using the
+current database row and does not offer an old spending link to a shadow account.
+The restored acceptance test includes a temporary7-credit shadow fixture, rejects
+its legacy generation and deletes only that fixture; original financial hashes
+still match. Existing pre-link accounts retain their historical spending path.

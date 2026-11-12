@@ -139,6 +139,9 @@ test('main-site SSO is browser-bound, reuses the canonical identity and never au
     process.env.SUPDANCE_FEDERATION_TRANSACTIONS_ON_MAIN = 'false';
     const { requireLegacyTransactionAuthority } = await import('../../lib/federation/transactionAuthority.js');
     await assert.rejects(() => requireLegacyTransactionAuthority(ids[0]), {code:'MAIN_WALLET_REQUIRED'});
+    await db.execute('INSERT INTO ops_bill.credit_wallets(user_id,perpetual_credits)VALUES($1,7)',[ids[0]]);
+    await assert.rejects(() => requireLegacyTransactionAuthority(ids[0]), {code:'MAIN_WALLET_REQUIRED'});
+    await db.execute('DELETE FROM ops_bill.credit_wallets WHERE user_id=$1',[ids[0]]);
     assert.equal((await db.queryOne("SELECT count(*)::int count FROM auth_usr.auth_accounts WHERE user_id=$1 AND provider='supdance_main'", [ids[0]])).count, 1);
     assert.deepEqual(await sourceFingerprints(), before);
   } finally { await rm(dir, { recursive: true, force: true }); }
