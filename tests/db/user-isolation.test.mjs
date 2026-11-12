@@ -14,10 +14,10 @@ const db = await import('../../lib/db/index.js');
 const authService = await import('../../lib/services/auth.js');
 const authRepo = await import('../../lib/repositories/auth.js');
 const { allocateUserId } = await import('../../lib/auth/user-id.js');
-const assetsRoute = await import('../../app/api/assets/route.js');
-const assetDetailRoute = await import('../../app/api/assets/[id]/route.js');
+const assetsRoute = await import('../../app/api/assets/library/route.js');
+const assetDetailRoute = await import('../../app/api/assets/library/[id]/route.js');
 const assetDownloadRoute = await import('../../app/api/assets/[id]/download/route.js');
-const assetBatchRoute = await import('../../app/api/assets/batch/route.js');
+const assetBatchRoute = await import('../../app/api/assets/library/batch/route.js');
 const assetFolderRoute = await import('../../app/api/assets/folders/[id]/route.js');
 const creationsRoute = await import('../../app/api/creations/route.js');
 const ledgerRoute = await import('../../app/api/financial/credits/ledger/route.js');
@@ -96,12 +96,12 @@ test('authenticated user asset, creation, and credit APIs return only that user 
       [`led_a_${crypto.randomUUID()}`, userA, `led_b_${crypto.randomUUID()}`, userB],
     );
 
-    const assetList = await assetsRoute.GET(nextRequest('/api/assets', sessionB.token));
+    const assetList = await assetsRoute.GET(nextRequest('/api/assets/library', sessionB.token));
     assert.equal(assetList.status, 200);
     const assetListBody = await assetList.json();
     assert.ok(!assetListBody.assets.some((asset) => asset.id === assetA));
 
-    const crossUserAsset = await assetDetailRoute.GET(nextRequest(`/api/assets/${assetA}`, sessionB.token), { params: Promise.resolve({ id: assetA }) });
+    const crossUserAsset = await assetDetailRoute.GET(nextRequest(`/api/assets/library/${assetA}`, sessionB.token), { params: Promise.resolve({ id: assetA }) });
     assert.equal(crossUserAsset.status, 404);
     const ownerDownload = await assetDownloadRoute.GET(
       nextRequest(`/api/assets/${assetA}/download`, sessionA.token),
@@ -132,12 +132,12 @@ test('authenticated user asset, creation, and credit APIs return only that user 
     assert.equal(crossUserAmhDownload.status, 404);
 
     const patchCrossUserAsset = await assetDetailRoute.PATCH(
-      nextRequest(`/api/assets/${assetA}`, sessionB.token, 'PATCH', { title: 'changed by B' }),
+      nextRequest(`/api/assets/library/${assetA}`, sessionB.token, 'PATCH', { title: 'changed by B' }),
       { params: Promise.resolve({ id: assetA }) },
     );
     assert.equal(patchCrossUserAsset.status, 404);
     const deleteCrossUserAsset = await assetDetailRoute.DELETE(
-      nextRequest(`/api/assets/${assetA}`, sessionB.token, 'DELETE'),
+      nextRequest(`/api/assets/library/${assetA}`, sessionB.token, 'DELETE'),
       { params: Promise.resolve({ id: assetA }) },
     );
     assert.equal(deleteCrossUserAsset.status, 404);
@@ -145,7 +145,7 @@ test('authenticated user asset, creation, and credit APIs return only that user 
     assert.equal(stillOwnedByA.user_id, userA);
     assert.equal(stillOwnedByA.title, 'A private asset');
     const batchDeleteCrossUserAsset = await assetBatchRoute.POST(
-      nextRequest('/api/assets/batch', sessionB.token, 'POST', { action: 'delete', assetIds: [assetA] }),
+      nextRequest('/api/assets/library/batch', sessionB.token, 'POST', { action: 'trash', assetIds: [assetA] }),
     );
     assert.equal(batchDeleteCrossUserAsset.status, 200);
     assert.equal((await batchDeleteCrossUserAsset.json()).count, 0);

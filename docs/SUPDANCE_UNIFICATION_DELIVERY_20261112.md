@@ -17,7 +17,9 @@ Never deploy by overwriting that dirty root or copying a local historical main.
   by default preserves ONE generation under existing authorization, reservation
   and expiry rules. Even when explicitly enabled, positive historical buckets,
   frozen reservations or unexpired returned lots retain their old spending path.
-  Only linked users with no remaining legacy value are sent to main for new work.
+  Main SSO shadow accounts with no historical value always create on main; they
+  cannot open a second ONE spending wallet through identity rollout. At financial
+  cutover, all linked users with no remaining legacy value create on main.
   Already accepted jobs and callbacks retain original settlement authority.
   Suspended mappings block fallback. No balance is converted or reissued.
 - Additive088 provides mapping/audit and append-only provenance snapshots. The
@@ -85,3 +87,12 @@ Federation request bodies are bounded on actual streamed bytes, including reques
 without Content-Length; credentials and assertions are parsed only after the 16KiB
 limit and MIME check. Community/account pages follow the existing six-language
 route structure and canonical prefix redirects.
+
+CI fixture repairs retain production safety contracts: valid reserved telephone
+examples, current `/api/assets/library` ownership boundaries, identical studio
+identity for idempotent retries, complete verified local route specifications,
+and ephemeral test-only encryption keys. A persisted Canvas receipt is polled
+without resubmission and its credits remain reserved. An unknown stale upstream
+outcome also remains reserved with one reconciliation event. Explicit upstream
+terminal failures and the existing storage compensation policy still release
+credits once. None of these repairs weakens runtime admission or financial guards.

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { NextRequest } from 'next/server';
 
 const testUrl = String(process.env.TEST_DATABASE_URL || '').trim();
@@ -42,6 +43,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
   const videoProviderModelId = `video_model_${suffix}`;
   const quoteKey = `quote_idem_${suffix}`;
   const importActor = { id: null, role: 'admin' };
+  const oldEncryptionKey = process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
   const oldApiKey = process.env.MUAPI_API_KEY;
   const oldNodeEnv = process.env.NODE_ENV;
   const oldPollInterval = process.env.PROVIDER_POLL_INTERVAL_MS;
@@ -143,6 +145,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     );
 
     process.env.NODE_ENV = 'test';
+    process.env.STORAGE_SECRETS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     process.env.PROVIDER_POLL_INTERVAL_MS = '1';
     await grantPerpetualCredits(userId, 500, 'local pricing integration fixture', userId, `pricing_test_grant_${suffix}`);
     const imageParameters = { task_type: 't2i', resolution: '1024x1024', num_images: 1 };
@@ -385,7 +388,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     if (oldGenerationAsync === undefined) delete process.env.GENERATION_ASYNC;
     else process.env.GENERATION_ASYNC = oldGenerationAsync;
     const duplicateImageTask = await createGenerationTask({ userId, modelId, prompt: 'nonpaid local image scenario',
-      parameters: imageParameters, quoteId: quoteBody.quote_id, idempotencyKey: `image_task_${suffix}` });
+      parameters: imageParameters, studioId: 'image', quoteId: quoteBody.quote_id, idempotencyKey: `image_task_${suffix}` });
     assert.equal(duplicateImageTask.creation.id, imageTask.creation.id);
     assert.equal(duplicateImageTask.idempotent, true);
 
@@ -421,14 +424,16 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
           [creation.reservation_id],
         );
         assert.equal(reservation.status, 'RESERVED', 'private asset persistence must complete before credits are committed');
-        return { id: `asset_${creation.id}`, object_key: creation.result_object_key, visibility: 'private' };
+        return transaction.queryOne(`INSERT INTO ai_studio.user_assets
+          (id,user_id,creation_id,asset_type,studio_id,title,object_key,visibility,storage_status)
+          VALUES($1,$2,$3,$4,$5,'QA private archived asset',$6,'private','ready')
+          ON CONFLICT(id) DO UPDATE SET object_key=EXCLUDED.object_key RETURNING *`,
+          [`asset_${creation.id}`,creation.user_id,creation.id,creation.model===videoModelId?'video':'image',creation.studio_id,creation.result_object_key]);
       },
       getProviderAdapter: async (providerId) => {
         assert.equal(providerId, 'muapi');
-        let submittedModelId = null;
         return {
           async createTask({ providerModelId: submittedId, providerEndpoint }) {
-            submittedModelId = submittedId;
             submittedModels.push(submittedId);
             if (submittedId === providerModelId) {
               assert.equal(providerEndpoint, '/api/v1/test-image');
@@ -438,8 +443,9 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
             assert.equal(providerEndpoint, '/api/v1/test-video');
             return { providerRequestId: `video_request_${suffix}`, resultUrl: null, actualCostUsd: null };
           },
-          async getTask() {
-            assert.equal(submittedModelId, videoProviderModelId);
+          async getTask(requestId, { providerModelId: polledModelId } = {}) {
+            if (requestId === atomicProviderRequestId) return { status: 'processing' };
+            assert.equal(polledModelId, videoProviderModelId);
             return { status: 'succeeded', resultUrl: 'data:video/mp4;base64,AAAA', actualCostUsd: 0.025 };
           },
           normalizeError(error) { return error; },
@@ -465,7 +471,12 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     const workerCycle = await runGenerationWorkerOnce({ batchSize: 1, testDependencies });
     assert.equal(workerCycle.queuedCount, 1);
     assert.equal(workerCycle.processed[0]?.id, atomicCreationId);
-    assert.equal(workerCycle.processed[0]?.result?.success, true);
+    assert.equal(workerCycle.processed[0]?.result?.status, 'processing');
+    assert.equal(submittedModels.length,0,'a persisted upstream receipt must never trigger another paid submission');
+    const originalReceiptTask = await db.queryOne('SELECT reservation_id,provider_request_id FROM ai_studio.creations WHERE id=$1',[atomicCreationId]);
+    assert.equal(originalReceiptTask.provider_request_id,atomicProviderRequestId);
+    const originalReservation = await db.queryOne('SELECT status FROM ops_bill.credit_reservations WHERE id=$1',[originalReceiptTask.reservation_id]);
+    assert.equal(originalReservation.status,'RESERVED');
     const imageResult = await processGenerationTask({ creationId: imageTask.creation.id, testDependencies });
     creationId = imageTask.creation.id;
     const videoResult = await processGenerationTask({ creationId: videoTask.creation.id, testDependencies });
@@ -481,7 +492,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(assetFailureResult.success, false);
     assert.equal(assetFailureResult.storageFailed, true);
     assert.equal(assetFailureResult.creation.status, 'failed');
-    assert.deepEqual(submittedModels, [providerModelId, providerModelId, videoProviderModelId, providerModelId, providerModelId]);
+    assert.deepEqual(submittedModels, [providerModelId, videoProviderModelId, providerModelId, providerModelId]);
     assert.equal(videoResult.attempts, 1);
 
     const failedReservation = await db.queryOne(`SELECT status FROM ops_bill.credit_reservations WHERE id=$1`, [storageFailureTask.creation.reservation_id]);
@@ -495,7 +506,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     const assetFailureLedger = await db.queryMany(`SELECT action_type,delta FROM ops_bill.credit_ledger_v2
       WHERE user_id=$1 AND reference_id=$2 ORDER BY action_type,delta`, [userId, assetFailureTask.creation.reservation_id]);
     assert.ok(assetFailureLedger.some((row) => row.action_type === 'TASK_RESERVE' && Number(row.delta) === -50));
-    assert.ok(assetFailureLedger.some((row) => row.action_type === 'TASK_RELEASE' && Number(row.delta) === 50));
+    assert.ok(assetFailureLedger.some(row => row.action_type === 'TASK_RELEASE' && Number(row.delta) === 50));
 
     const callbackSecret = `isolated_callback_${suffix}`.padEnd(48, 'x');
     process.env.GENERATION_CALLBACK_SECRET = callbackSecret;
@@ -563,7 +574,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(costRows.find((row) => row.job_id === videoTask.creation.id).reconciliation_status, 'provider_reported');
     assert.ok(await (await import('../../lib/repositories/creations.js')).findUserCreationByIdempotency(userId, `image_task_${suffix}`));
     const wallet = await db.queryOne('SELECT perpetual_credits,frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1', [userId]);
-    assert.equal(Number(wallet.frozen_credits), 0);
+    assert.equal(Number(wallet.frozen_credits), 50);
     assert.equal(Number(wallet.perpetual_credits), 340);
 
     const imageCreationRow = await db.queryOne('SELECT * FROM ai_studio.creations WHERE id=$1', [imageTask.creation.id]);
@@ -653,6 +664,8 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     assert.equal(cost.actual_cost_usd, null);
     assert.equal(cost.reconciliation_status, 'pending_reconciliation');
   } finally {
+    if (oldEncryptionKey === undefined) delete process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
+    else process.env.STORAGE_SECRETS_ENCRYPTION_KEY = oldEncryptionKey;
     if (oldApiKey === undefined) delete process.env.MUAPI_API_KEY;
     else process.env.MUAPI_API_KEY = oldApiKey;
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;
