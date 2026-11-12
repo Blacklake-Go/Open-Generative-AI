@@ -25,7 +25,7 @@ test('4. 注册与登录用户的语言偏好完整生效闭环测试', { skip: 
   const sessionCookie = `ko_session=${session.token}`;
 
   // 4.1 默认用户查询偏好设置
-  const reqGetPref = new NextRequest('http://127.0.0.1:3100/api/user/preferences', {
+  const reqGetPref = new NextRequest('https://one.supdance.com/api/user/preferences', {
     headers: { cookie: sessionCookie },
   });
   const resGetPref = await getPreferences(reqGetPref);
@@ -34,11 +34,11 @@ test('4. 注册与登录用户的语言偏好完整生效闭环测试', { skip: 
   assert.equal(getPrefData.preferences.locale, 'en', '未显式修改过偏好的用户，GET 偏好设置中语言应为 en');
 
   // 4.2 用户在个人中心 -> 账号与设置 -> 界面语言 中将语言设置为 简体中文 (zh-CN)
-  const reqPutZh = new NextRequest('http://127.0.0.1:3100/api/user/preferences', {
+  const reqPutZh = new NextRequest('https://one.supdance.com/api/user/preferences', {
     method: 'PUT',
     headers: {
       'content-type': 'application/json',
-      Origin: 'http://127.0.0.1:3100',
+      Origin: 'https://one.supdance.com',
       cookie: sessionCookie,
     },
     body: JSON.stringify({ locale: 'zh-CN' }),
@@ -63,11 +63,11 @@ test('4. 注册与登录用户的语言偏好完整生效闭环测试', { skip: 
   assert.equal(sessionUserZh.locale, 'zh-CN', 'getUserBySession 必须反映已保存的 zh-CN 偏好');
 
   // 4.4 模拟用户改回 英文 (en)
-  const reqPutEn = new NextRequest('http://127.0.0.1:3100/api/user/preferences', {
+  const reqPutEn = new NextRequest('https://one.supdance.com/api/user/preferences', {
     method: 'PUT',
     headers: {
       'content-type': 'application/json',
-      Origin: 'http://127.0.0.1:3100',
+      Origin: 'https://one.supdance.com',
       cookie: sessionCookie,
     },
     body: JSON.stringify({ locale: 'en' }),

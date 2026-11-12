@@ -310,7 +310,7 @@ pgTest('admin HTTP reconciliation preserves credits and reported cost, audits th
   const input = await fixture();
   const costRecordId = await costs.insertProviderCostRecord({ ...input, creditsCharged:40, actualCostUsd:1, estimatedCostUsd:2, costSource:'provider_reported' });
   const session = await auth.createSession(input.userId);
-  const origin='http://127.0.0.1:3100'; const key=randomUUID();
+  const origin='https://one.supdance.com'; const key=randomUUID();
   const request=(method='GET')=>new NextRequest(`${origin}/api/admin/cost-center/reconciliations?cost_record_id=${costRecordId}`,{
     method,headers:{Origin:origin,Cookie:`ko_session=${session.token}`,...(method==='POST'?{'Content-Type':'application/json','Idempotency-Key':key}:{})},
     ...(method==='POST'?{body:JSON.stringify({costRecordId,status:'invoice_matched',reconciledCostUsd:1.25,evidenceRef:'QA invoice receipt'})}:{}),
