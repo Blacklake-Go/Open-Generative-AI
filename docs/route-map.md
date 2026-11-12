@@ -26,22 +26,22 @@
 
 | 语言码 | 前缀 | 有独立路由树 | 服务它的目录 | 树内路由数 | 会造出重复 URL 的别名 |
 | --- | --- | --- | --- | --- | --- |
-| `en` | `（无前缀）` | 否 | `app/[locale]/**` | 6 | — |
-| `zh-CN` | `/zh` | 是 | `app/zh/**` | 25 | `/zh-cn` `/zh-CN` |
-| `ja-JP` | `/ja-JP` | 否 | `app/[locale]/**` | 6 | `/ja` |
-| `ko-KR` | `/ko-KR` | 否 | `app/[locale]/**` | 6 | `/ko` |
-| `zh-TW` | `/zh-TW` | 否 | `app/[locale]/**` | 6 | `/zh-tw` |
-| `es` | `/es` | 否 | `app/[locale]/**` | 6 | `/es-es` `/es-la` `/es-mx` `/es-ar` |
+| `en` | `（无前缀）` | 否 | `app/[locale]/**` | 11 | — |
+| `zh-CN` | `/zh` | 是 | `app/zh/**` | 28 | `/zh-cn` `/zh-CN` |
+| `ja-JP` | `/ja-JP` | 否 | `app/[locale]/**` | 11 | `/ja` |
+| `ko-KR` | `/ko-KR` | 否 | `app/[locale]/**` | 11 | `/ko` |
+| `zh-TW` | `/zh-TW` | 否 | `app/[locale]/**` | 11 | `/zh-tw` |
+| `es` | `/es` | 否 | `app/[locale]/**` | 11 | `/es-es` `/es-la` `/es-mx` `/es-ar` |
 
 ## 带前缀路径的三种命运
 
 `app/[locale]/[...slug]/page.js` 按这个顺序判定，闸门拿同一批表求差：
 1. 别名/非规范码（`ja`、`zh-CN`、`es-ES`…）→ **308** 到规范前缀（正常由中间件先做掉，页面层留一条给 matcher 之外的入口）；
-2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`assets` `login` `studio`）→ 就地渲染，永不走到这里；
-3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `feedback` `forgot-password` `lab` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
+2. 该前缀下真建了树（或由 `app/[locale]/**` 服务：`account` `assets` `community` `login` `studio`）→ 就地渲染，永不走到这里；
+3. 顶层段能 GET 到 → **307** 回无前缀（语言由 cookie 承载）：`about` `account` `admin` `agents` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `content-policy` `creations` `credits` `design-system` `embed-auth` `feedback` `forgot-password` `lab` `login` `models` `onboarding` `pricing` `privacy` `profile` `refund` `register` `reset-password` `sitemap.xml` `studio` `subscription` `terms` `u` `workflow`；
 4. 都不满足 → **404**（品牌化 404 页，按 `x-locale` 出文案）。
 
-已本地化的前缀与子路径：`/zh` → `about` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `credits` `forgot-password` `lab` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
+已本地化的前缀与子路径：`/zh` → `about` `account` `assets` `assistant` `benefits` `call-api` `canvas-tools` `change-password` `coins` `community` `credits` `forgot-password` `lab` `login` `models` `pricing` `profile` `register` `reset-password` `studio` `subscription` `workflow`
 
 ## 页面路由
 
@@ -50,12 +50,18 @@
 | `/` | `app/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc` | `app/[locale]/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/{*}` | `app/[locale]/[...slug]/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `${config.rootPath}/${path}${suffix}` `/${path}${suffix}` |
+| `/:loc/account` | `app/[locale]/account/page.js` | **redirect** | noindex | force-dynamic | 1 | `（根）` | 有 | `${getLocaleConfig(locale).rootPath}/studio?account=open${action}` |
+| `/:loc/account/connected` | `app/[locale]/account/connected/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/assets` | `app/[locale]/assets/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | `${rootPath}/login?redirect=${encodeURIComponent(targetPath)}` |
+| `/:loc/community` | `app/[locale]/community/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
+| `/:loc/community/campaigns` | `app/[locale]/community/campaigns/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
+| `/:loc/community/submit` | `app/[locale]/community/submit/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/login` | `app/[locale]/login/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | `/login` `${config.rootPath}/login` |
 | `/:loc/studio/{**}` | `app/[locale]/studio/[[...slug]]/page.js` | **onboarding** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/studio/assets` | `app/[locale]/studio/assets/page.js` | **onboarding** | index | force-dynamic | 1 | `（根）` | 有 | `${rootPath}/assets` |
 | `/about` | `app/about/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/account` | `app/account/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | `${studioRoot}?account=open${action}` |
+| `/account/connected` | `app/account/connected/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/admin` | `app/admin/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/admins` | `app/admin/admins/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/audit` | `app/admin/audit/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -65,6 +71,7 @@
 | `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=branding` |
 | `/admin/content/effects` | `app/admin/content/effects/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=motion` |
 | `/admin/content/icon` | `app/admin/content/icon/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/content/visitors` | `app/admin/content/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/content/x-prompts` | `app/admin/content/x-prompts/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/cost-center` | `app/admin/cost-center/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/coupons` | `app/admin/coupons/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
@@ -75,7 +82,8 @@
 | `/admin/forbidden` | `app/admin/forbidden/page.js` | **public** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations` | `app/admin/generations/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/generations/failures` | `app/admin/generations/failures/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
-| `/admin/health` | `app/admin/health/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
+| `/admin/generations/reconciliation` | `app/admin/generations/reconciliation/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/health` | `app/admin/health/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/i18n` | `app/admin/i18n/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/invites` | `app/admin/invites/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/login` | `app/admin/login/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -89,6 +97,7 @@
 | `/admin/models/pricing` | `app/admin/models/pricing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/models/routing?tab=pending` `/admin/models/routing?tab=pricing` |
 | `/admin/models/profit-center` | `app/admin/models/profit-center/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/providers` | `app/admin/models/providers/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/models/publication` | `app/admin/models/publication/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/registry` | `app/admin/models/registry/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/routing` | `app/admin/models/routing/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/models/telemetry` | `app/admin/models/telemetry/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -107,6 +116,8 @@
 | `/admin/routing/{*}` | `app/admin/routing/[modelId]/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/security/sessions` | `app/admin/security/sessions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/settings` | `app/admin/settings/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/settings/storage` | `app/admin/settings/storage/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/storage` | `app/admin/storage/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings/storage` |
 | `/admin/subscription-faq` | `app/admin/subscription-faq/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/subscriptions` | `app/admin/subscriptions/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/system` | `app/admin/system/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
@@ -115,7 +126,7 @@
 | `/admin/users` | `app/admin/users/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/{*}` | `app/admin/users/[id]/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/users/dashboard` | `app/admin/users/dashboard/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
-| `/admin/visitors` | `app/admin/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/visitors` | `app/admin/visitors/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/content/visitors` |
 | `/admin/webhooks` | `app/admin/webhooks/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/agents` | `app/agents/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents` |
 | `/agents/{*}` | `app/agents/[agent_id]/page.js` | **redirect** | **该 noindex，源码未写** | — | 2 | `（根）` | 有 | `/studio/agents/${encodeURIComponent(agent_id)}` |
@@ -132,10 +143,13 @@
 | `/coins` | `app/coins/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/community` | `app/community/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/community/{*}` | `app/community/[id]/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
+| `/community/campaigns` | `app/community/campaigns/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
+| `/community/submit` | `app/community/submit/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/content-policy` | `app/content-policy/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/creations` | `app/creations/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/credits` | `app/credits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/design-system` | `app/design-system/page.js` | **public** | noindex | — | 2 | `（根）` | 有 | — |
+| `/embed-auth` | `app/embed-auth/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/feedback` | `app/feedback/page.js` | **client** | index | force-dynamic | 1 | `（根）` | 有 | — |
 | `/forgot-password` | `app/forgot-password/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/lab` | `app/lab/page.js` | **public** | index | — | 1 | `（根）` | 有 | `/zh/lab` |
@@ -158,6 +172,7 @@
 | `/workflow/{*}/{*}` | `app/workflow/[id]/[tab]/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc` | `app/zh/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | `/` |
 | `/:loc/about` | `app/zh/about/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
+| `/:loc/account/connected` | `app/zh/account/connected/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/assets` | `app/zh/assets/page.js` | **redirect** | **该 noindex，源码未写** | force-dynamic | 1 | `（根）` | 有 | `/zh/login?redirect=/zh/assets` |
 | `/:loc/assistant` | `app/zh/assistant/page.js` | **redirect** | **该 noindex，源码未写** | — | 1 | `（根）` | 有 | `/zh/studio` |
 | `/:loc/benefits` | `app/zh/benefits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
@@ -168,6 +183,8 @@
 | `/:loc/coins` | `app/zh/coins/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/community` | `app/zh/community/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/community/{*}` | `app/zh/community/[id]/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
+| `/:loc/community/campaigns` | `app/zh/community/campaigns/page.js` | **public** | index | force-dynamic | 1 | `（根）` | 有 | — |
+| `/:loc/community/submit` | `app/zh/community/submit/page.js` | **client** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/credits` | `app/zh/credits/page.js` | **client** | index | — | 1 | `（根）` | 有 | — |
 | `/:loc/forgot-password` | `app/zh/forgot-password/page.js` | **public** | noindex | force-dynamic | 1 | `（根）` | 有 | — |
 | `/:loc/lab` | `app/zh/lab/page.js` | **public** | index | — | 1 | `（根）` | 有 | — |
@@ -190,7 +207,9 @@
 | `/admin/**` | admin | none | app/admin/layout.js 会话闸门 + 每页 requireAdminPagePermission 权限闸门 |
 | `/onboarding` | session | none | 无会话 redirect /；已完成者 redirect 进 studio |
 | `/studio/**` | onboarding | index | 三处 studio 入口各自 await assertOnboardingComplete()；匿名放行，只挡未完成引导的用户 |
+| `/account/connected` | client | none | 匿名可发起主站登录；钱包与连接接口分别校验会话、所有权和灰度名单 |
 | `/account` | redirect | none | 无条件 redirect /studio?account=open |
+| `/embed-auth` | public | none | 嵌入式授权登录页：供无限画布 iframe 跨域嵌入登录 |
 | `/login` | public | none | 独立登录页，支持邮箱/密码与手机短信验证码 |
 | `/register` | public | none | 独立注册页，支持邮箱验证码与邀请码 |
 | `/forgot-password` | public | none | 独立找回密码与账号找回页 |
@@ -200,12 +219,13 @@
 | `/assistant` | redirect | none | 旧别名，redirect 进 studio |
 | `/subscription` | redirect | none | 旧别名，redirect 进 /pricing |
 | `/agents/**` | redirect | none | 5 个页面全是 /studio/agents* 的跳转 |
-| `/` | public | index | 首页门户：按 cookie/header 语言就地渲染 JimengHomePortal，首页永远是 https://www.Supdance.com |
+| `/` | public | index | ONE 首页按 cookie/header 语言渲染；社区模式开关开启时显示创作者社区，否则保留旧 JimengHomePortal |
 | `/coins` | client | index | K 币兑换中心：服务端零检查，目录匿名可看、兑换与穿戴在客户端查会话（components/coins/CoinExchangeClient.js fetch /api/auth/me）；app/coins 与 app/zh/coins 共用同一份硬编码中文正文，无前缀变体暂无英文文案 |
 | `/credits` | client | index | 服务端零检查，客户端 fetch /api/auth/me；正文目前仍是硬编码中文 |
 | `/benefits` | client | index | 硬币权益页：匿名可看目录，兑换与明细在客户端各自查会话 |
 | `/creations` | client | index | 服务端零检查，客户端决定登录态 |
-| `/community/**` | public | index | 游客可浏览；发帖接口各自查会话 |
+| `/community/submit` | client | none | 投稿页可见登录入口；本人资产读取、投稿和撤回均由会话与资产所有权校验保护 |
+| `/community/**` | public | index | 游客只可浏览已公开作品；投稿、活动报名和审核接口分别校验会话、所有权与权限 |
 | `/pricing` | public | index | 正文硬编码中文，无 locale prop |
 | `/call-api` | public | none | 营销落地页，零入链；正文硬编码中文，爬到了也没有对应语言版本 |
 | `/design-system` | public | none | 内部组件画廊，零入链、无鉴权，公开可爬所以必须 noindex |
@@ -236,9 +256,9 @@
 
 ## API 路由
 
-- 处理器总数：229（其中 `/api/**` 225，`/api/admin/**` 104 个全部经 `requirePermission`）
-- 免会话：`/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
-- 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
+- 处理器总数：248（其中 `/api/**` 244，`/api/admin/**` 109 个全部经 `requirePermission`）
+- 免会话：`/api/federation/login/start` `/api/auth/login` `/api/auth/register` `/api/auth/logout` `/api/auth/me` `/api/auth/social-options` `/api/auth/oauth/[provider]` `/api/auth/oauth/google/one-tap` `/api/auth/oauth/[provider]/callback` `/api/auth/phone/send-code` `/api/auth/phone/verify` `/api/billing/plans` `/api/billing/credit-packs` `/api/site/branding` `/api/site/content-config` `/api/site/subscription-faq` `/api/i18n` `/api/models/active` `/api/health` `/api/live` `/api/ready` `/api/analytics/track` `/api/analytics/banner-event`
+- 带签名校验（对端服务器直接 POST，所以不走同源检查）：`/api/federation/login/complete` `/api/billing/webhooks/stripe` `/api/billing/webhooks/alipay` `/api/billing/webhooks/wechat` `/api/generations/[id]/callback`
 - 遗留代理（迁移目标是收敛到 `POST /api/generations`）：`/api/api/v1/*` `/api/v1/*` `/api/v1/creative-agent/*` `/api/agents/*` `/api/app/*` `/api/workflow/*`
 - 变更型但缺 `guardMutation`：`app/api/auth/oauth/[provider]/callback/route.js` `app/api/auth/oauth/[provider]/webhook/route.js` `app/api/billing/webhooks/paypal/route.js` `app/api/webhooks/bilibili/route.js` `app/api/webhooks/douyin/route.js`
 
@@ -256,12 +276,12 @@
 | `api-mutation-without-guard` | 5 | 5 |
 | `api-mutation-without-rate-limit` | 16 | 16 |
 | `api-spoofed-client-user-id` | 0 | 0 |
-| `raw-unprefixed-href` | 87 | 87 |
+| `raw-unprefixed-href` | 89 | 88 |
 | `locale-zh-branch-outside-onboarding` | 10 | 10 |
 
 ## 服务器 A 边缘层
 
-- 入口只有 www.Supdance.com（go 域名按决定停用）；nginx 反代到 127.0.0.1:3100 的 `next start`。
+- 2026-11-12 实测：supdance.com/www.supdance.com 主站指向 Go/React 服务 127.0.0.1:3240；ONE one.supdance.com 指向本 Next.js 应用 127.0.0.1:3200；canvas.supdance.com 为独立静态应用。遗留 /api/canvas 链路仍指向 3100，不能据同一 IP 推断它们是同一应用。
 - worker 是独立服务 supdance-worker.service（scripts/generation-worker.mjs）。
 - public/robots.txt：Allow: /，Disallow: /admin/ 与 /api/；无 Sitemap 行。
 - public/ 下的静态文件由 Next 先于 app/uploads/[...path] 服务，两条路径共存。
