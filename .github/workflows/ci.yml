@@ -42,8 +42,8 @@ jobs:
 
     env:
       # 业务库只用于 schema 基线与只读校验；一切破坏性演练只碰 open_generative_ai_test。
-      DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai
-      TEST_DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai_test
+      DATABASE_URL: postgresql://ci_user:ci_pass@127.0.0.1:5432/open_generative_ai
+      TEST_DATABASE_URL: postgresql://ci_user:ci_pass@127.0.0.1:5432/open_generative_ai_test
       REDIS_URL: redis://localhost:6379
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
       E2E_BASE_URL: http://127.0.0.1:3100
