@@ -28,11 +28,14 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
   });
 
   describe('1. FOCUS_RING & FOCUS_RING_DANGER Token Formatting and Deduplication', () => {
-    test('FOCUS_RING has zero duplicated classes and all focus rules use focus-visible:', () => {
+    // v3.8.0 §4.17.2: one focus treatment for the whole product — a 1px
+    // currentColor 36% outline with 1px offset. No box-shadow focus ring.
+    const globalsCss = read('app/globals.css');
+
+    test('FOCUS_RING resolves to the single control-focus treatment', () => {
       assert.ok(tokens.FOCUS_RING, 'FOCUS_RING must be exported');
       const classes = tokens.FOCUS_RING.trim().split(/\s+/);
 
-      // Check duplicates
       const uniqueClasses = new Set(classes);
       assert.equal(
         classes.length,
@@ -40,32 +43,26 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
         `FOCUS_RING contains duplicated classes: ${classes.join(' ')}`
       );
 
-      // Check outline neutralization
-      assert.ok(classes.includes('outline-none'), 'FOCUS_RING must specify outline-none');
-
-      // Check focus-visible prefixing for all focus-related utilities
-      const nonPrefixedFocus = classes.filter(
-        c => c !== 'outline-none' && !c.startsWith('focus-visible:')
+      assert.equal(tokens.FOCUS_RING, 'control-focus', 'FOCUS_RING must be control-focus');
+      assert.ok(
+        globalsCss.includes('.control-focus:focus-visible'),
+        'globals.css must declare the control-focus keyboard outline'
       );
-      assert.deepEqual(
-        nonPrefixedFocus,
-        [],
-        `All focus styles in FOCUS_RING must be prefixed with "focus-visible:", found: ${nonPrefixedFocus.join(', ')}`
+      assert.ok(
+        globalsCss.includes('outline: 1px solid color-mix(in srgb, currentColor 36%, transparent)'),
+        'control-focus must draw a 1px currentColor 36% outline'
       );
-
-      // Check exact expected utilities
-      assert.ok(classes.includes('focus-visible:ring-1'), 'Must specify 1px hairline ring');
-      assert.ok(classes.includes('focus-visible:ring-brand-ring'), 'Must bind brand ring token');
-      assert.ok(classes.includes('focus-visible:ring-offset-2'), 'Must specify 2px ring offset');
-      assert.ok(classes.includes('focus-visible:ring-offset-bg-base'), 'Must specify canvas offset color');
-      assert.ok(classes.includes('focus-visible:border-brand'), 'Must specify brand border on focus-visible');
+      assert.ok(globalsCss.includes('outline-offset: 1px'), 'control-focus must offset by 1px');
+      assert.ok(
+        !classes.some(c => c.includes('ring-')),
+        'Focus must not use a box-shadow ring'
+      );
     });
 
-    test('FOCUS_RING_DANGER has zero duplicated classes and all focus rules use focus-visible:', () => {
+    test('FOCUS_RING_DANGER reuses the same outline treatment', () => {
       assert.ok(tokens.FOCUS_RING_DANGER, 'FOCUS_RING_DANGER must be exported');
       const classes = tokens.FOCUS_RING_DANGER.trim().split(/\s+/);
 
-      // Check duplicates
       const uniqueClasses = new Set(classes);
       assert.equal(
         classes.length,
@@ -73,25 +70,11 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
         `FOCUS_RING_DANGER contains duplicated classes: ${classes.join(' ')}`
       );
 
-      // Check outline neutralization
-      assert.ok(classes.includes('outline-none'), 'FOCUS_RING_DANGER must specify outline-none');
-
-      // Check focus-visible prefixing
-      const nonPrefixedFocus = classes.filter(
-        c => c !== 'outline-none' && !c.startsWith('focus-visible:')
+      assert.equal(tokens.FOCUS_RING_DANGER, 'control-focus', 'FOCUS_RING_DANGER must be control-focus');
+      assert.ok(
+        !classes.some(c => c.includes('ring-')),
+        'Danger focus must not add a coloured box-shadow ring'
       );
-      assert.deepEqual(
-        nonPrefixedFocus,
-        [],
-        `All focus styles in FOCUS_RING_DANGER must be prefixed with "focus-visible:", found: ${nonPrefixedFocus.join(', ')}`
-      );
-
-      // Check exact expected utilities
-      assert.ok(classes.includes('focus-visible:ring-1'), 'Must specify 1px hairline ring');
-      assert.ok(classes.includes('focus-visible:ring-danger-ring'), 'Must bind danger ring token');
-      assert.ok(classes.includes('focus-visible:ring-offset-2'), 'Must specify 2px ring offset');
-      assert.ok(classes.includes('focus-visible:ring-offset-bg-base'), 'Must specify canvas offset color');
-      assert.ok(classes.includes('focus-visible:border-danger'), 'Must specify danger border on focus-visible');
     });
   });
 
@@ -100,18 +83,18 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
       assert.ok(tokens.OVERLAY_PANEL, 'OVERLAY_PANEL must be exported');
       const classes = tokens.OVERLAY_PANEL.trim().split(/\s+/);
 
-      // Radius assertion: strictly rounded-xl (16px)
+      // v3.8.0 §4.17.1 B: 16px radius + elevation-3 live in `.popover-surface`.
       assert.ok(
-        classes.includes('rounded-xl'),
-        `OVERLAY_PANEL must have rounded-xl (16px), got: ${tokens.OVERLAY_PANEL}`
+        classes.includes('popover-surface'),
+        `OVERLAY_PANEL must compose the popover-surface recipe, got: ${tokens.OVERLAY_PANEL}`
       );
       assert.ok(
-        !classes.includes('rounded-lg'),
-        'OVERLAY_PANEL must NOT have rounded-lg'
+        !classes.some(c => /^rounded-/.test(c)),
+        'OVERLAY_PANEL must not carry its own radius utility'
       );
       assert.ok(
-        !classes.includes('rounded-2xl'),
-        'OVERLAY_PANEL must NOT have rounded-2xl'
+        !classes.includes('shadow-elevation-3'),
+        'OVERLAY_PANEL must not duplicate the shadow provided by popover-surface'
       );
 
       // Blur assertion: strictly backdrop-blur-md (12px)
@@ -128,10 +111,8 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
         'OVERLAY_PANEL must NOT have backdrop-blur-xl'
       );
 
-      // Optical surface and shadow
+      // Optical surface
       assert.ok(classes.includes('bg-overlay-glass'), 'OVERLAY_PANEL must specify bg-overlay-glass');
-      assert.ok(classes.includes('shadow-elevation-3'), 'OVERLAY_PANEL must specify shadow-elevation-3');
-      assert.ok(classes.includes('border-line-subtle'), 'OVERLAY_PANEL must specify border-line-subtle');
       assert.ok(classes.includes('overflow-hidden'), 'OVERLAY_PANEL must specify overflow-hidden');
 
       // Deduplication check
@@ -143,10 +124,10 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
       assert.ok(tokens.PROMPT_POPOVER, 'PROMPT_POPOVER must be exported');
       const classes = tokens.PROMPT_POPOVER.trim().split(/\s+/);
 
-      assert.ok(classes.includes('rounded-xl'), 'PROMPT_POPOVER must have rounded-xl');
-      assert.ok(!classes.includes('rounded-lg'), 'PROMPT_POPOVER must not have rounded-lg');
+      assert.ok(classes.includes('popover-surface'), 'PROMPT_POPOVER must compose popover-surface');
+      assert.ok(!classes.some(c => /^rounded-/.test(c)), 'PROMPT_POPOVER must not carry its own radius');
+      assert.ok(!classes.includes('shadow-elevation-3'), 'PROMPT_POPOVER must not duplicate the popover shadow');
       assert.ok(classes.includes('backdrop-blur-md'), 'PROMPT_POPOVER must have backdrop-blur-md');
-      assert.ok(classes.includes('shadow-elevation-3'), 'PROMPT_POPOVER must have shadow-elevation-3');
       assert.ok(classes.includes('bg-overlay-glass'), 'PROMPT_POPOVER must have bg-overlay-glass');
       assert.ok(classes.includes('min-w-44'), 'PROMPT_POPOVER must have min-w-44 (176px)');
       assert.ok(classes.includes('max-h-popover'), 'PROMPT_POPOVER must have max-h-popover');
@@ -207,13 +188,13 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
       );
 
       assert.ok(classes.includes('active:scale-[0.98]'), 'Must include active:scale-[0.98]');
-      assert.ok(classes.includes('active:duration-instant'), 'Must include active:duration-instant');
-      assert.ok(classes.includes('focus-visible:border-brand'), 'Must include focus-visible:border-brand');
+      assert.ok(classes.includes('active:duration-press'), 'Must include active:duration-press');
+      assert.ok(classes.includes('control-focus'), 'Must inherit the shared control-focus treatment');
       assert.ok(classes.includes('disabled:pointer-events-none'), 'Must include disabled:pointer-events-none');
       assert.ok(classes.includes('aria-disabled:pointer-events-none'), 'Must include aria-disabled:pointer-events-none');
     });
 
-    test('ICON_CONTROL_BASE has no internal class duplicates and specifies active:scale-95', () => {
+    test('ICON_CONTROL_BASE has no internal class duplicates and specifies active:scale-[0.96]', () => {
       const classes = tokens.ICON_CONTROL_BASE.trim().split(/\s+/);
       const unique = new Set(classes);
       assert.equal(
@@ -222,8 +203,8 @@ describe('Milestone 1 Challenger 2: Empirical Adversarial Challenge Suite', () =
         `ICON_CONTROL_BASE has duplicated classes: ${classes.join(' ')}`
       );
 
-      assert.ok(classes.includes('active:scale-95'), 'Icon control must include active:scale-95');
-      assert.ok(classes.includes('active:duration-instant'), 'Icon control must include active:duration-instant');
+      assert.ok(classes.includes('active:scale-[0.96]'), 'Icon control must include active:scale-[0.96]');
+      assert.ok(classes.includes('active:duration-press'), 'Icon control must include active:duration-press');
     });
   });
 

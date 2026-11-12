@@ -3,6 +3,19 @@ import assert from 'node:assert/strict';
 
 import { submitPlatformGeneration } from '../../packages/studio/src/platformGeneration.js';
 
+test('synchronous success exposes a stable owner-scoped asset link instead of a temporary signed result', async () => {
+  const result = await submitPlatformGeneration({
+    modelId: 'image-model', prompt: 'example', idempotencyKey: 'stable-image-job-1',
+    fetchImpl: async (url) => ({
+      ok: true, status: 200,
+      json: async () => url === '/api/generation/quote'
+        ? { quoteId: 'quote-1' }
+        : { creation: { id: 'job-1', status: 'succeeded', asset_id: 'asset_12345678', result_url: 'https://storage.example/temporary?X-Amz-Signature=secret' } },
+    }),
+  });
+  assert.equal(result.url, '/api/assets/asset_12345678/download?inline=1');
+});
+
 function jsonResponse(payload, status = 200) {
   return {
     ok: status >= 200 && status < 300,
@@ -10,6 +23,38 @@ function jsonResponse(payload, status = 200) {
     json: async () => payload,
   };
 }
+
+test('published capability versions bind quote and submission and preserve text-only results', async () => {
+  const bodies=[];
+  const result=await submitPlatformGeneration({modelId:'fixture-text',capabilityVersion:'reviewed-v2',
+    parameters:{task_type:'t2t',max_tokens:64},prompt:'fixture',idempotencyKey:'capability-bound-text',
+    fetchImpl:async (url,options)=>{
+      bodies.push(JSON.parse(options.body));
+      return jsonResponse(url==='/api/generation/quote'?{quoteId:'text-quote'}:{creation:{id:'text-job',status:'succeeded',result_text:'Fixture result',credit_cost:10}});
+    }});
+  assert.equal(bodies[0].capabilityVersion,'reviewed-v2');
+  assert.equal(bodies[1].capabilityVersion,'reviewed-v2');
+  assert.equal(result.result_text,'Fixture result');
+  assert.equal(result.output,'Fixture result');
+  assert.equal(result.url,null);
+});
+
+test('restored member reads its original completed job without a quote or submission', async()=>{
+  const calls=[];
+  const result=await submitPlatformGeneration({modelId:'fixture-image',idempotencyKey:'original-member-key',resumeExistingTask:true,
+    fetchImpl:async url=>{
+      calls.push(url);assert.match(url,/^\/api\/generations\?idempotencyKey=/);
+      return jsonResponse({creation:{id:'original-job',model:'fixture-image',status:'succeeded',asset_id:'asset_original'}});
+    }});
+  assert.equal(calls.length,1);assert.equal(result.id,'original-job');
+});
+
+test('uncertain original task lookup never creates a replacement job', async()=>{
+  const calls=[];
+  await assert.rejects(submitPlatformGeneration({modelId:'fixture-image',idempotencyKey:'uncertain-member-key',resumeExistingTask:true,
+    fetchImpl:async url=>{calls.push(url);return jsonResponse({code:'GENERATION_READ_FAILED'},503);}}),{pending:true});
+  assert.equal(calls.length,1);
+});
 
 test('platform generation obtains the server quote before creating a job and binds both to one retry key', async () => {
   const calls = [];

@@ -1,0 +1,19 @@
+[Unit]
+Description=SupDance asset trash retention purge (www.supdance.com)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=www
+Group=www
+WorkingDirectory=/home/wwwroot/AI/domain/supdance.com/web
+EnvironmentFile=/etc/supdance.env
+ExecStart=/usr/local/bin/node scripts/asset-trash-retention.mjs --apply
+TimeoutStartSec=600
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=append:/home/wwwroot/AI/logs/asset-retention.log
+StandardError=append:/home/wwwroot/AI/logs/asset-retention.log

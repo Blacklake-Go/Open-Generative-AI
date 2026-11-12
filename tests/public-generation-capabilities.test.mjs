@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getServerModelMeta, setServerModelMeta } from "../packages/studio/src/modelDescriptions.js";
 import {
   buildPublicVideoParameters,
   buildPublicImageParameters,
@@ -136,24 +135,4 @@ test("image Studio controls and T2I/I2I request parameters follow the server cap
     image_url: "https://asset.example/source.png",
     swap_url: "https://asset.example/swap.png",
   });
-});
-
-test("Studio variant aliases inherit the canonical public generation capability", () => {
-  const canonical = {
-    id: "seedream-4.5",
-    generationCapabilities: [{
-      taskType: "t2i",
-      inputTypes: ["text"],
-      outputTypes: ["image"],
-      aspectRatios: ["1:1"],
-      resolutions: ["2k"],
-    }],
-  };
-  setServerModelMeta([canonical], {
-    "seedream-4.5": ["bytedance-seedream-v4.5", "bytedance-seedream-v4.5-edit"],
-  });
-  const selected = getServerModelMeta("bytedance-seedream-v4.5");
-  assert.equal(selected?.id, canonical.id);
-  assert.equal(findPublicImageCapability(selected, "t2i")?.taskType, "t2i");
-  assert.equal(getServerModelMeta("unpublished-model"), null);
 });

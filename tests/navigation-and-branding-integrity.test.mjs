@@ -152,3 +152,42 @@ test('3. 关于页面导航与首页全站统一导航融合审计', () => {
     'AboutPageClient.jsx 必须彻底移除 FigmaHeader 标签'
   );
 });
+
+test('4. 站点标题设置入口与 koyosim 旧版标题清理审计', async () => {
+  const brandingServiceCode = fs.readFileSync(path.join(repoRoot, 'lib/services/branding.js'), 'utf8');
+  const { DEFAULT_BRAND } = await import('../lib/hooks/useBranding.js');
+  const brandingClientCode = fs.readFileSync(path.join(repoRoot, 'app/admin/content/branding/BrandingManagerClient.js'), 'utf8');
+
+  // 4.1 DEFAULT_BRAND_CONFIG 与 DEFAULT_BRAND 必须包含站点标题及模板
+  assert.match(brandingServiceCode, /siteTitle:\s*'SupDance — Free AI Image & Video Studio'/);
+  assert.match(brandingServiceCode, /titleTemplate:\s*'%s \| SupDance AI Studio'/);
+  assert.equal(DEFAULT_BRAND.siteTitle, 'SupDance — Free AI Image & Video Studio');
+  assert.equal(DEFAULT_BRAND.titleTemplate, '%s | SupDance AI Studio');
+
+  // 4.2 后台品牌设置工作台必须提供站点标题配置入口
+  assert.match(brandingClientCode, /id="title-settings"/, '品牌设置必须包含 title-settings 区域');
+  assert.match(brandingClientCode, /siteTitle/, '品牌设置必须包含 siteTitle 状态管理与输入项');
+  assert.match(brandingClientCode, /titleTemplate/, '品牌设置必须包含 titleTemplate 模板输入项');
+  assert.match(brandingClientCode, /站点标题与浏览器标签页设置/, '品牌设置必须包含直观的中文标题卡片');
+
+  // 4.3 核心路由 metadata title 绝不应包含旧版 KOYO Studio
+  const pagesToCheck = [
+    'app/page.js',
+    'app/about/page.js',
+    'app/assets/page.js',
+    'app/models/page.js',
+    'app/zh/page.js',
+    'app/zh/about/page.js',
+    'app/zh/assets/page.js',
+    'app/zh/models/page.js',
+  ];
+
+  for (const pagePath of pagesToCheck) {
+    const code = fs.readFileSync(path.join(repoRoot, pagePath), 'utf8');
+    assert.doesNotMatch(
+      code,
+      /KOYO Studio/i,
+      `${pagePath} 中的元数据标题不应再包含旧版 KOYO Studio`
+    );
+  }
+});

@@ -53,7 +53,7 @@ test('source snapshot requires matching production provenance and all 11 Canvas 
   }
 });
 
-test('source tree fingerprint ignores active Next output but tracks frozen rollback builds and source changes', async () => {
+test('source tree fingerprint ignores active and rotated Next build outputs but tracks source changes', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'supdance-source-hash-'));
   try {
     await fs.writeFile(path.join(root, 'app.js'), 'source');
@@ -62,19 +62,20 @@ test('source tree fingerprint ignores active Next output but tracks frozen rollb
     await fs.writeFile(path.join(root, '.next/BUILD_ID'), 'active-build');
     assert.equal(await computeSourceTreeSha256(root), initialHash);
 
+    // 部署轮转会生成 .next-backup-* / .next-pre-* 等构建产物目录；计入源码树哈希会让每次
+    // 轮转和生产快照比对都产生 "source drift" 误报（3795311 fix(deploy)），因此一并忽略。
     for (const directory of ['.next-backup-20261010_143131', '.next-pre-canvas-20261008', '.next-previous-release', '.next-failed-release']) {
       await fs.mkdir(path.join(root, directory));
       await fs.writeFile(path.join(root, directory, 'BUILD_ID'), directory);
     }
-    const rollbackHash = await computeSourceTreeSha256(root);
-    assert.notEqual(rollbackHash, initialHash);
+    const rotatedBuildHash = await computeSourceTreeSha256(root);
+    assert.equal(rotatedBuildHash, initialHash);
 
     await fs.writeFile(path.join(root, '.next-backup-20261010_143131/BUILD_ID'), 'updated-rollback-build');
-    const updatedRollbackHash = await computeSourceTreeSha256(root);
-    assert.notEqual(updatedRollbackHash, rollbackHash);
+    assert.equal(await computeSourceTreeSha256(root), initialHash);
 
     await fs.writeFile(path.join(root, 'app.js'), 'changed source');
-    assert.notEqual(await computeSourceTreeSha256(root), updatedRollbackHash);
+    assert.notEqual(await computeSourceTreeSha256(root), initialHash);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
   }

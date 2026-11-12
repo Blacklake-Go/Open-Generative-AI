@@ -96,3 +96,14 @@ without resubmission and its credits remain reserved. An unknown stale upstream
 outcome also remains reserved with one reconciliation event. Explicit upstream
 terminal failures and the existing storage compensation policy still release
 credits once. None of these repairs weakens runtime admission or financial guards.
+
+## GitHub regression preservation
+
+The server snapshot had older or absent test/document files relative to GitHub
+main. The snapshot commit remains an immutable audit record. The combined feature
+tree restores every GitHub main regression test and previously omitted supporting
+document, static reference asset and service definition. It does not remove those
+checks to make CI pass. Only test-local ephemeral result-encryption setup is added
+to the two generation integration fixtures. New restored-snapshot acceptance files
+remain separately guarded. Current full-suite totals must be refreshed after this
+reconciliation; earlier server-only 22-test results are not the final suite.

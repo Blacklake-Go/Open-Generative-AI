@@ -33,6 +33,7 @@ test('generation retries reuse one intent key, then release it after terminal su
   const idempotencyStorage = new MemoryStorage();
   const generationKeys = [];
   const quoteKeys = [];
+  const recoveryKeys = [];
   let generationAttempt = 0;
 
   const fetchImpl = async (url, options = {}) => {
@@ -53,6 +54,10 @@ test('generation retries reuse one intent key, then release it after terminal su
         creation: { id, status: 'succeeded', result_url: '/api/assets/test-result', credit_cost: 4 },
       });
     }
+    if (url.startsWith('/api/generations?idempotencyKey=')) {
+      recoveryKeys.push(new URL(url,'https://supdance.test').searchParams.get('idempotencyKey'));
+      return jsonResponse({creation:{id:'generation-1',status:'queued'}});
+    }
     throw new Error('Unexpected request: ' + url);
   };
 
@@ -71,14 +76,14 @@ test('generation retries reuse one intent key, then release it after terminal su
   assert.equal(idempotencyStorage.values.size, 1);
 
   await submit();
-  assert.equal(generationKeys.length, 2);
-  assert.equal(generationKeys[0], generationKeys[1]);
-  assert.equal(quoteKeys[0], quoteKeys[1]);
+  assert.equal(generationKeys.length, 1,'resuming a lost receipt must not submit another job');
+  assert.equal(generationKeys[0], recoveryKeys[0]);
+  assert.equal(quoteKeys.length,1,'an already created task does not need another quote');
   assert.equal(idempotencyStorage.values.size, 0);
 
   await submit();
-  assert.equal(generationKeys.length, 3);
-  assert.notEqual(generationKeys[1], generationKeys[2]);
+  assert.equal(generationKeys.length, 2);
+  assert.notEqual(generationKeys[0], generationKeys[1]);
 });
 
 test('unpriced models do not get a static or generic credit estimate', () => {

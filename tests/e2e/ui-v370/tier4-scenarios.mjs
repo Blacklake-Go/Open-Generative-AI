@@ -26,8 +26,11 @@ export const tier4Tests = [
       assert.ok(inputField.includes('isComposingRef'), 'PromptInputField must track composition state');
       assert.ok(inputField.includes('229'), 'Must protect against IME Enter key code 229');
 
-      // 3. Verify Spec Popovers use rounded-xl (16px) and shadow-elevation-3
-      assert.ok(composerFile.includes('rounded-xl') && composerFile.includes('shadow-elevation-3'));
+      // 3. Verify Spec Popovers use the unified popover-surface shell (16px + elevation-3)
+      assert.ok(
+        composerFile.includes('popover-surface'),
+        'PromptComposer popovers must use popover-surface'
+      );
 
       // 4. Verify Studio tokens define PROMPT_PANEL with 20px radius
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
@@ -49,7 +52,7 @@ export const tier4Tests = [
 
       // 3. Check MegaMenuPanel optical standards
       const megaPanel = readProjectFile('components/navigation/MegaMenuPanel.js');
-      assert.ok(megaPanel.includes('rounded-2xl'), 'MegaMenuPanel must use rounded-2xl');
+      assert.ok(megaPanel.includes('rounded-xl'), 'MegaMenuPanel must use rounded-xl');
       assert.ok(megaPanel.includes('shadow-elevation-3'), 'MegaMenuPanel must use shadow-elevation-3');
     },
   },

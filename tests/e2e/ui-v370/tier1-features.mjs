@@ -58,12 +58,12 @@ export const tier1Tests = [
     id: 'T1-F1-3',
     feature: 1,
     name: 'F1: Button active/pressed mechanical sink (scale-[0.98])',
-    description: 'Verifies Button specifies 80ms active press sink scale-[0.98] and active:duration-instant.',
+    description: 'Verifies Button specifies 80ms active press sink scale-[0.98] and active:duration-press.',
     run: async () => {
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
       assertContract(
-        studioTokens.includes('active:scale-[0.98]') && studioTokens.includes('active:duration-instant'),
-        'Studio CONTROL_BASE must enforce active:scale-[0.98] and active:duration-instant',
+        studioTokens.includes('active:scale-[0.98]') && studioTokens.includes('active:duration-press'),
+        'Studio CONTROL_BASE must enforce active:scale-[0.98] and active:duration-press',
         { file: 'packages/studio/src/ui/tokens.js' }
       );
     },
@@ -71,20 +71,27 @@ export const tier1Tests = [
   {
     id: 'T1-F1-4',
     feature: 1,
-    name: 'F1: Button focus-visible hairline focus ring',
-    description: 'Verifies Button defines focus-visible hairline focus ring and brand ring color.',
+    name: 'F1: Button unified control-focus outline ring',
+    description: 'Verifies v3.8.0 unified focus treatment: control-focus utility with 1px currentColor outline.',
     run: async () => {
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
       const rootButton = readProjectFile('components/ui/button.jsx');
+      const globals = readProjectFile('app/globals.css');
 
       assert.ok(
-        studioTokens.includes('focus-visible:ring-brand-ring') &&
+        studioTokens.includes("export const FOCUS_RING = 'control-focus'") &&
         studioTokens.includes('focus-visible:border-brand'),
-        'Studio FOCUS_RING must define focus-visible:ring-brand-ring and focus-visible:border-brand'
+        'Studio FOCUS_RING must resolve to control-focus and keep focus-visible:border-brand'
       );
       assert.ok(
-        rootButton.includes('focus-visible:ring-brand-ring'),
-        'Root Button must define focus-visible:ring-brand-ring'
+        rootButton.includes('control-focus') && !rootButton.includes('focus-visible:ring-brand-ring'),
+        'Root Button must use control-focus and not legacy ring utilities'
+      );
+      assert.ok(
+        globals.includes('.control-focus:focus-visible') &&
+        globals.includes('outline: 1px solid color-mix(in srgb, currentColor 36%, transparent)') &&
+        globals.includes('outline-offset: 1px'),
+        'globals.css must define the 1px hairline control-focus outline with 1px offset'
       );
     },
   },
@@ -92,21 +99,23 @@ export const tier1Tests = [
     id: 'T1-F1-5',
     feature: 1,
     name: 'F1: Button disabled interaction safety',
-    description: 'Verifies Button disabled state specifies pointer-events-none, opacity-40, and cursor-not-allowed.',
+    description: 'Verifies Button disabled state specifies pointer-events-none, opacity-45, cursor-not-allowed, and aria-disabled parity.',
     run: async () => {
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
       const rootButton = readProjectFile('components/ui/button.jsx');
 
       assert.ok(
         studioTokens.includes('disabled:pointer-events-none') &&
-        studioTokens.includes('disabled:opacity-40') &&
+        studioTokens.includes('disabled:opacity-45') &&
         studioTokens.includes('disabled:cursor-not-allowed'),
         'Studio CONTROL_BASE must disable pointer-events and drop opacity on disabled'
       );
       assert.ok(
         rootButton.includes('disabled:pointer-events-none') &&
-        rootButton.includes('disabled:opacity-40'),
-        'Root Button must disable pointer-events and drop opacity on disabled'
+        rootButton.includes('disabled:opacity-45') &&
+        rootButton.includes('aria-disabled:pointer-events-none') &&
+        rootButton.includes('aria-disabled:opacity-45'),
+        'Root Button must disable pointer-events and drop opacity on disabled and aria-disabled'
       );
     },
   },
@@ -298,18 +307,25 @@ export const tier1Tests = [
     id: 'T1-F4-1',
     feature: 4,
     name: 'F4: Popover & DropdownMenu shell radius contract',
-    description: 'Verifies Popover and DropdownMenu content wrappers use defined radius token.',
+    description: 'Verifies Popover and DropdownMenu resolve 16px radius through the unified popover-surface shell.',
     run: async () => {
       const dropdownFile = readProjectFile('components/ui/dropdown-menu.jsx');
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
+      const globals = readProjectFile('app/globals.css');
 
       assert.ok(
-        dropdownFile.includes('rounded-lg') || dropdownFile.includes('rounded-xl'),
-        'DropdownMenuContent must specify rounded radius class'
+        dropdownFile.includes('popover-surface'),
+        'DropdownMenuContent must use the unified popover-surface shell'
       );
       assert.ok(
-        studioTokens.includes('OVERLAY_PANEL'),
-        'Studio tokens must define OVERLAY_PANEL'
+        studioTokens.includes('OVERLAY_PANEL') && studioTokens.includes('popover-surface'),
+        'Studio OVERLAY_PANEL must use the unified popover-surface shell'
+      );
+      assert.ok(
+        globals.includes('.popover-surface') &&
+        globals.includes('border-radius: var(--radius-xl)') &&
+        globals.includes('--radius-xl: 16px'),
+        'globals.css .popover-surface must resolve to the 16px --radius-xl token'
       );
     },
   },
@@ -317,13 +333,18 @@ export const tier1Tests = [
     id: 'T1-F4-2',
     feature: 4,
     name: 'F4: Popover elevation depth (shadow-elevation-3)',
-    description: 'Verifies Popover and DropdownMenu shells specify shadow-elevation-3.',
+    description: 'Verifies the unified popover-surface shell carries shadow-elevation-3 for all overlays.',
     run: async () => {
       const dropdownFile = readProjectFile('components/ui/dropdown-menu.jsx');
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
+      const globals = readProjectFile('app/globals.css');
 
-      assert.ok(dropdownFile.includes('shadow-elevation-3'), 'DropdownMenuContent must use shadow-elevation-3');
-      assert.ok(studioTokens.includes('shadow-elevation-3'), 'Studio OVERLAY_PANEL must use shadow-elevation-3');
+      assert.ok(dropdownFile.includes('popover-surface'), 'DropdownMenuContent must use popover-surface');
+      assert.ok(studioTokens.includes('popover-surface'), 'Studio OVERLAY_PANEL must use popover-surface');
+      assert.ok(
+        globals.includes('box-shadow: var(--shadow-elevation-3)'),
+        'globals.css popover-surface must carry shadow-elevation-3'
+      );
     },
   },
   {
@@ -454,11 +475,11 @@ export const tier1Tests = [
     id: 'T1-F6-2',
     feature: 6,
     name: 'F6: Timing ladder compliance on interactive controls',
-    description: 'Verifies studio tokens bind duration-fast, duration-instant, duration-base.',
+    description: 'Verifies studio tokens bind duration-fast and active:duration-press on interactive controls.',
     run: async () => {
       const studioTokens = readProjectFile('packages/studio/src/ui/tokens.js');
       assert.ok(studioTokens.includes('duration-fast'), 'CONTROL_BASE must specify duration-fast');
-      assert.ok(studioTokens.includes('active:duration-instant'), 'CONTROL_BASE must specify active:duration-instant');
+      assert.ok(studioTokens.includes('active:duration-press'), 'CONTROL_BASE must specify active:duration-press');
     },
   },
   {
@@ -483,8 +504,9 @@ export const tier1Tests = [
         'CONTROL_BASE must use targeted property transitions, not transition-all'
       );
       assert.ok(
-        studioTokens.includes('transition-[background-color,border-color,color,box-shadow,transform]'),
-        'CONTROL_BASE must target exact transition properties'
+        studioTokens.includes('transition-[background-color,border-color,color,transform]') &&
+        !studioTokens.includes('box-shadow,transform'),
+        'CONTROL_BASE must target exact transition properties without animating box-shadow'
       );
     },
   },
@@ -543,10 +565,10 @@ export const tier1Tests = [
     id: 'T1-F7-4',
     feature: 7,
     name: 'F7: Navigation Menu Viewport geometry',
-    description: 'Verifies TopMegaNavigation viewport has rounded-2xl and shadow-elevation-3.',
+    description: 'Verifies TopMegaNavigation viewport has rounded-xl and shadow-elevation-3.',
     run: async () => {
       const megaNav = readProjectFile('components/navigation/TopMegaNavigation.js');
-      assert.ok(megaNav.includes('rounded-2xl'), 'NavigationMenu.Viewport must use rounded-2xl');
+      assert.ok(megaNav.includes('rounded-xl'), 'NavigationMenu.Viewport must use rounded-xl');
       assert.ok(megaNav.includes('shadow-elevation-3'), 'NavigationMenu.Viewport must use shadow-elevation-3');
     },
   },

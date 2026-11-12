@@ -68,8 +68,8 @@ test('Canvas provider references use the job owner, object key, visibility, and 
     { userId: 'canvas-owner-1', assetId: 'asset_abcdefgh' },
   ]);
   assert.deepEqual(signed, [
-    { objectKey: 'private/asset_12345678.webp', visibility: 'private' },
-    { objectKey: 'private/asset_abcdefgh.webp', visibility: 'private' },
+    { provider: null, locationId: null, bucket: null, region: null, objectKey: 'private/asset_12345678.webp', visibility: 'private' },
+    { provider: null, locationId: null, bucket: null, region: null, objectKey: 'private/asset_abcdefgh.webp', visibility: 'private' },
   ]);
   assert.deepEqual(result, {
     image: 'https://assets.example/private%2Fasset_12345678.webp?visibility=private',
@@ -141,6 +141,16 @@ test('Canvas provider references fail closed for missing owner-scoped or deleted
     }),
     { code: 'CANVAS_ASSET_URL_UNAVAILABLE' },
   );
+});
+
+test('Studio asset URLs are resolved for the owner and reject another user', async () => {
+  const resolve = (userId) => resolveCanvasOwnedAssetReferences({ image_url: '/api/assets/asset_12345678/download?inline=1' }, {
+    userId,
+    getUserAssetDownload: async (owner) => owner === 'owner' ? { objectKey: 'private/image.png' } : null,
+    getAssetUrl: async () => 'https://storage.example/fresh-signature',
+  });
+  assert.deepEqual(await resolve('owner'), { image_url: 'https://storage.example/fresh-signature' });
+  await assert.rejects(resolve('another-user'), { code: 'CANVAS_ASSET_URL_UNAVAILABLE' });
 });
 
 test('Canvas provider references never treat a stored URL or unsafe path as a storage object key', async () => {

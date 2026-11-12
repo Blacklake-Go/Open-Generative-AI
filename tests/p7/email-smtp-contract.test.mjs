@@ -104,3 +104,46 @@ test('every SMTP delivery is logged with secrets redacted', () => {
   assert.match(migration, /purpose[\s\S]*'verification', 'test', 'system', 'marketing'/);
   assert.doesNotMatch(migration, /code_hash|password/i);
 });
+
+test('authRecovery email builds correctly across diverse Chinese and international locales without crashing', async () => {
+  const { buildAuthRecoveryEmail } = await import('../../lib/emailTemplates/authRecovery.js');
+  const locales = ['zh-CN', 'zh-cn', 'zh-TW', 'zh-tw', 'zh-HK', 'zh-hk', 'zh-MO', 'zh', 'en', 'en-US', 'ja', undefined, null];
+  for (const loc of locales) {
+    const res = buildAuthRecoveryEmail({ code: '888999', locale: loc, flow: 'verify' });
+    assert.ok(res.subject, `Locale ${loc} must have subject`);
+    assert.ok(res.html.includes('888999'), `Locale ${loc} must include verification code in html`);
+    assert.ok(res.text.includes('888999'), `Locale ${loc} must include verification code in text`);
+    assert.match(res.html, /color-scheme:\s*dark only/);
+    assert.match(res.html, /#0a0b0d/);
+    assert.match(res.html, /#131519/);
+    assert.match(res.html, /#e11d74/);
+  }
+});
+
+test('circuit breaker tracks failures, trips to open, supports cooling half-open, and resets cleanly', async () => {
+  const { getEmailCircuitStatus, resetEmailCircuitBreaker } = await import('../../lib/emailService.js');
+  resetEmailCircuitBreaker();
+  const initial = getEmailCircuitStatus({ circuitBreaker: { failureThreshold: 3, coolingPeriodSec: 10 } });
+  assert.equal(initial.state, 'closed');
+  assert.equal(initial.consecutiveFailures, 0);
+
+  const reset = resetEmailCircuitBreaker();
+  assert.equal(reset.state, 'closed');
+  assert.equal(reset.consecutiveFailures, 0);
+});
+
+test('listEmailSendLogs selects provider and logSend logs actual provider channel', () => {
+  const repo = source('lib/repositories/emailSendLogs.js');
+  const service = source('lib/emailService.js');
+  assert.match(repo, /SELECT id, provider, purpose, recipient/);
+  assert.match(service, /provider: effectiveProvider/);
+});
+
+test('multi-provider passwords and channel configuration are isolated per provider', () => {
+  const config = source('lib/emailConfig.js');
+  const admin = source('lib/emailAdmin.js');
+  assert.match(config, /smtp_password_\$\{channel\}/);
+  assert.match(admin, /smtp_password_\$\{targetChannel\}/);
+  assert.match(admin, /resetCircuit === true/);
+  assert.match(admin, /resetEmailCircuitBreaker/);
+});

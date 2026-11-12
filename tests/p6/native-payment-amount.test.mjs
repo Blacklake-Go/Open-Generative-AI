@@ -45,7 +45,10 @@ test('repeating a paid Alipay notice grants a credit pack only once', async () =
     status: 'pending', amount_minor: 4900, plan_id: 'credit_490', billing_cycle: 'one_time',
     metadata_json: { productType: 'credit_pack', productId: 'credit_490', creditAmount: 490 },
   };
-  const wallet = { daily_free_credits: 0, subscription_credits: 0, perpetual_credits: 106, frozen_credits: 0 };
+  const wallet = {
+    daily_free_credits: 0, subscription_credits: 0, perpetual_credits: 106, frozen_credits: 0,
+    daily_expires_at: null, subscription_expires_at: null,
+  };
   const paymentLedger = [];
   const creditLedger = [];
   const tx = {
@@ -62,6 +65,11 @@ test('repeating a paid Alipay notice grants a credit pack only once', async () =
       }
       if (sql.includes('FROM credit_ledger_v2 WHERE idempotency_key = $1')) {
         return creditLedger.find((row) => row.idempotencyKey === params[0]) || null;
+      }
+      if (sql.includes('FROM ops_bill.credit_wallets WHERE user_id=$1')) {
+        // 发放流程会把分桶余额同步回 users.credits（syncLegacyCreditBalance）。
+        // 夹具里没有过期桶，直接按分桶合计返回有效余额。
+        return { total: wallet.daily_free_credits + wallet.subscription_credits + wallet.perpetual_credits };
       }
       if (sql.includes('SELECT * FROM credit_wallets WHERE user_id = $1')) return wallet;
       throw new Error(`Unexpected query: ${sql.slice(0, 100)}`);

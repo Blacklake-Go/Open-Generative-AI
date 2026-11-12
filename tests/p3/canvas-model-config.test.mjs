@@ -31,19 +31,17 @@ test('Canvas config preserves only an explicitly mounted model default', () => {
   assert.equal(unavailable.defaults.imageModelId, '');
 });
 
-test('Canvas model candidates require a recent healthy or degraded provider route', async () => {
-  const now = Date.parse('2026-10-09T07:00:00Z');
-  const rows = [
-    { id: 'healthy-image', name: 'Healthy image', category: 'image', credits: 15, health_status: 'healthy', last_health_check_at: new Date(now - 60_000).toISOString() },
-    { id: 'degraded-image', name: 'Degraded image', category: 'image', credits: 20, health_status: 'degraded', last_health_check_at: new Date(now - 60_000).toISOString() },
-    { id: 'stale-image', name: 'Stale image', category: 'image', credits: 25, health_status: 'healthy', last_health_check_at: new Date(now - 16 * 60_000).toISOString() },
-    { id: 'unhealthy-image', name: 'Unhealthy image', category: 'image', credits: 30, health_status: 'unhealthy', last_health_check_at: new Date(now - 60_000).toISOString() },
-  ];
+test('Canvas candidates use the same published and orderable model admission as the main site', async () => {
+  const published = { id: 'ready-image', name: 'Ready image', type: 'image', credits_price: 15, tier: 'core', is_active: true, is_visible: true, auto_route_eligible: true, hasWorkingRoute: true };
   const candidates = await listCanvasModelCandidates({
-    query: async () => rows,
-    now,
-    maxHealthAgeMs: 15 * 60_000,
+    listModels: async () => [published,
+      { ...published, id: 'missing-route', hasWorkingRoute: false },
+      { ...published, id: 'hidden', is_visible: false },
+      { ...published, id: 'unpriced', credits_price: 0 },
+      { ...published, id: 'backup', tier: 'backup' },
+      { ...published, id: 'not-published', auto_route_eligible: false },
+    ],
   });
-
-  assert.deepEqual(candidates.map((model) => model.id), ['healthy-image', 'degraded-image']);
+  assert.deepEqual(candidates.map((model) => model.id), ['ready-image']);
+  assert.equal(candidates[0].credits, 15);
 });

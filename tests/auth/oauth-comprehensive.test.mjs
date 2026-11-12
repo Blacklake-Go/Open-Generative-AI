@@ -80,7 +80,7 @@ test('Bilibili buildAuthorizationUrl sets gourl and preserves response_type and 
 
 test('Instagram OAuth uses safe user fields and robust fallback', async () => {
   const content = await readCode('lib/oauth.js');
-  assert.match(content, /fields=id,username,account_type/);
+  assert.match(content, /fields=user_id,username/);
   assert.match(content, /profileTransport:\s*'instagram'/);
   assert.match(content, /context\?\.user_id/);
 });
@@ -112,5 +112,21 @@ test('Mobile OAuth triggers perform full-page redirection instead of popup', asy
 
   assert.match(profileTab, /isMobile/);
   assert.match(profileTab, /window\.location\.assign\(url\)/);
+});
+
+test('Douyin OAuth redirect URI, token error assertions, and userinfo payload handling', async () => {
+  const content = await readCode('lib/oauth.js');
+  // Canonical redirect URI on supdance.com domains
+  assert.match(content, /if \(provider === "douyin"\)/);
+  assert.match(content, /https:\/\/www\.supdance\.com\/api\/auth\/oauth\/douyin\/callback/);
+  // Authorize URL without trailing slash & scopeDelimiter
+  assert.match(content, /authorizeUrl:\s*["']https:\/\/open\.douyin\.com\/platform\/oauth\/connect["']/);
+  assert.match(content, /scopeDelimiter:\s*','/);
+  // Token error checking handles error_code and data.error_code
+  assert.match(content, /data\.data\?\.error_code/);
+  // Userinfo error_code evaluates Number(errCode) !== 0 to prevent "0" string bug
+  assert.match(content, /Number\(errCode\) !== 0/);
+  // High-res avatar preference
+  assert.match(content, /avatar_larger/);
 });
 

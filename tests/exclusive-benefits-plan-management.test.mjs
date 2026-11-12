@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import {
   EXCLUSIVE_BENEFITS,
@@ -18,13 +19,14 @@ import { updatePlanDetails, createPlan } from '../lib/services/billing.js';
 
 test('专属权益定义与键名校验', () => {
   assert.ok(Array.isArray(EXCLUSIVE_BENEFITS));
-  assert.equal(EXCLUSIVE_BENEFITS.length, 6);
+  assert.equal(EXCLUSIVE_BENEFITS.length, 7);
 
   const expectedKeys = [
     'no_watermark',
     'exclusive_latest_models',
     'vip_speed_queue',
     'export_4k',
+    'canvas_premium_tools',
     'commercial_license',
     'dedicated_support',
   ];
@@ -48,6 +50,11 @@ test('专属权益定义与键名校验', () => {
   const proDefaults = getDefaultExclusiveFeatures('pro');
   assert.ok(proDefaults.includes('exclusive_latest_models'));
   assert.ok(proDefaults.includes('dedicated_support'));
+
+  for (const planId of ['starter', 'basic', 'plus', 'pro']) {
+    assert.ok(getDefaultExclusiveFeatures(planId).includes('canvas_premium_tools'), `${planId} 应默认包含画布高级工具`);
+  }
+  assert.equal(getDefaultExclusiveFeatures('free').includes('canvas_premium_tools'), false);
 });
 
 test('syncFeaturesListWithExclusive 能正确将勾选的专属权益合并至展示特性列表', () => {
@@ -81,6 +88,7 @@ test('COMMERCIAL_PLAN_CATALOG 默认内置专属权益与 v2.2 价格体系及 0
   for (const [key, plan] of Object.entries(COMMERCIAL_PLAN_CATALOG)) {
     assert.ok(Array.isArray(plan.exclusiveFeatures), `${key} 应该包含 exclusiveFeatures`);
     assert.ok(plan.exclusiveFeatures.length > 0, `${key} 应该有默认专属特权`);
+    assert.ok(plan.exclusiveFeatures.includes('canvas_premium_tools'), `${key} 应默认包含画布高级工具`);
 
     assert.equal(plan.quotaBase, expectedQuotas[key], `${key} 配额应为 ${expectedQuotas[key]}`);
     assert.equal(plan.monthlyCny, expectedMonthly[key], `${key} 月付价格应为 ${expectedMonthly[key]}`);
@@ -187,4 +195,37 @@ test('mapPlanConfig 优先采用数据库中的定制属性，而不是被硬编
   assert.equal(plan.badge, '运营特惠');
   assert.deepEqual(plan.exclusiveFeatures, ['no_watermark', 'vip_speed_queue', 'commercial_license']);
   assert.ok(plan.features.includes('自定义权益A'));
+});
+
+test('后台订阅配置保存链路会把 exclusiveFeatures 持久化到套餐配置', () => {
+  const route = readFileSync(new URL('../app/api/admin/plans/[id]/route.js', import.meta.url), 'utf8');
+  const billing = readFileSync(new URL('../lib/services/billing.js', import.meta.url), 'utf8');
+  const editor = readFileSync(new URL('../app/admin/plans/PlanCardEditor.js', import.meta.url), 'utf8');
+
+  assert.match(editor, /exclusiveFeatures,/);
+  assert.match(route, /updatePlanDetails\(\{[\s\S]*?exclusiveFeatures: body\.exclusiveFeatures[\s\S]*?\}\)/);
+  assert.match(billing, /exclusiveFeatures !== undefined \? \{ exclusiveFeatures: Array\.isArray\(exclusiveFeatures\) \? exclusiveFeatures : \[\] \}/);
+});
+
+test('新建套餐弹窗默认勾选画布高级工具并随创建请求提交', () => {
+  const modal = readFileSync(new URL('../app/admin/plans/CreatePlanModal.js', import.meta.url), 'utf8');
+  assert.match(modal, /useState\(\[[^\]]*'canvas_premium_tools'/);
+
+  const route = readFileSync(new URL('../app/api/admin/plans/route.js', import.meta.url), 'utf8');
+  assert.match(route, /exclusiveFeatures: body\.exclusiveFeatures/);
+
+  const billing = readFileSync(new URL('../lib/services/billing.js', import.meta.url), 'utf8');
+  assert.match(billing, /getDefaultExclusiveFeatures\(cleanId\)/);
+});
+
+test('后台订阅配置保存链路会转发季度价与存储容量字段', () => {
+  const route = readFileSync(new URL('../app/api/admin/plans/[id]/route.js', import.meta.url), 'utf8');
+  const billing = readFileSync(new URL('../lib/services/billing.js', import.meta.url), 'utf8');
+  const editor = readFileSync(new URL('../app/admin/plans/PlanCardEditor.js', import.meta.url), 'utf8');
+
+  for (const field of ['quarterlyCny', 'quarterlyUsd', 'storageGb']) {
+    assert.match(editor, new RegExp(`${field}:`));
+    assert.match(route, new RegExp(`${field}: body\\.${field}`));
+    assert.match(billing, new RegExp(`${field} !== undefined`));
+  }
 });

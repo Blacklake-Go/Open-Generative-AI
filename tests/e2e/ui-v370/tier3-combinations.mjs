@@ -78,12 +78,19 @@ export const tier3Tests = [
     id: 'T3-COMB-5',
     features: [4, 5],
     name: 'F4 + F5: Spec Popovers floating above PromptComposer geometry and optical depth',
-    description: 'Ensures popovers anchored to PromptComposer use rounded-xl (16px) and shadow-elevation-3.',
+    description: 'Ensures popovers anchored to PromptComposer use the unified popover-surface shell (16px + elevation-3).',
     run: async () => {
       const composerFile = readProjectFile('packages/studio/src/components/prompt/PromptComposer.jsx');
+      const globals = readProjectFile('app/globals.css');
       assert.ok(
-        composerFile.includes('rounded-xl') && composerFile.includes('shadow-elevation-3'),
-        'PromptComposer popovers must use rounded-xl and shadow-elevation-3'
+        composerFile.includes('popover-surface'),
+        'PromptComposer popovers must use the unified popover-surface shell'
+      );
+      assert.ok(
+        globals.includes('.popover-surface') &&
+        globals.includes('border-radius: var(--radius-xl)') &&
+        globals.includes('box-shadow: var(--shadow-elevation-3)'),
+        'popover-surface must resolve 16px radius and elevation-3 shadow'
       );
     },
   },

@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh model-routing exchange rate several times per day
+
+[Timer]
+OnCalendar=*-*-* 02,08,14,20:00:00 UTC
+Persistent=true
+Unit=supdance-reference-fx.service
+
+[Install]
+WantedBy=timers.target

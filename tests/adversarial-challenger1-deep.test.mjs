@@ -117,53 +117,37 @@ describe('Challenger 1 Deep Stress Suite: Token Contract & Optical Geometry', ()
   // 2. High Contrast & Focus Ring Border Visibility
   // =========================================================================
   describe('2. Focus Ring Border Visibility & High Contrast', () => {
-    test('FOCUS_RING strictly includes 1px brand border, 1px brand ring, and 2px offset', () => {
+    test('FOCUS_RING uses the single control-focus outline (§4.17.2)', () => {
       assert.ok(
-        tokensSource.includes("export const FOCUS_RING ="),
-        'tokens.js must export FOCUS_RING'
+        tokensSource.includes("export const FOCUS_RING = 'control-focus'"),
+        'FOCUS_RING must resolve to the shared control-focus treatment'
       );
       assert.ok(
-        tokensSource.includes('focus-visible:border-brand'),
-        'FOCUS_RING must include focus-visible:border-brand for border visibility'
+        globalsCss.includes('.control-focus:focus-visible'),
+        'globals.css must declare the control-focus keyboard outline'
       );
       assert.ok(
-        tokensSource.includes('focus-visible:ring-1'),
-        'FOCUS_RING must specify focus-visible:ring-1'
+        globalsCss.includes('outline: 1px solid color-mix(in srgb, currentColor 36%, transparent)'),
+        'control-focus must draw a 1px currentColor 36% outline'
       );
       assert.ok(
-        tokensSource.includes('focus-visible:ring-brand-ring'),
-        'FOCUS_RING must specify focus-visible:ring-brand-ring'
+        globalsCss.includes('outline-offset: 1px'),
+        'control-focus must offset the outline by 1px'
       );
       assert.ok(
-        tokensSource.includes('focus-visible:ring-offset-2'),
-        'FOCUS_RING must specify focus-visible:ring-offset-2'
-      );
-      assert.ok(
-        tokensSource.includes('focus-visible:ring-offset-bg-base'),
-        'FOCUS_RING must specify focus-visible:ring-offset-bg-base'
+        !tokensSource.includes('focus-visible:ring-1'),
+        'Focus must not regress to a box-shadow ring'
       );
     });
 
-    test('FOCUS_RING_DANGER strictly includes 1px danger border, 1px danger ring, and 2px offset', () => {
+    test('FOCUS_RING_DANGER reuses the same outline treatment without a coloured glow', () => {
       assert.ok(
-        tokensSource.includes("export const FOCUS_RING_DANGER ="),
-        'tokens.js must export FOCUS_RING_DANGER'
+        tokensSource.includes("export const FOCUS_RING_DANGER = 'control-focus'"),
+        'FOCUS_RING_DANGER must resolve to control-focus'
       );
       assert.ok(
-        tokensSource.includes('focus-visible:border-danger'),
-        'FOCUS_RING_DANGER must include focus-visible:border-danger'
-      );
-      assert.ok(
-        tokensSource.includes('focus-visible:ring-danger-ring'),
-        'FOCUS_RING_DANGER must include focus-visible:ring-danger-ring'
-      );
-      assert.ok(
-        tokensSource.includes('focus-visible:ring-offset-2'),
-        'FOCUS_RING_DANGER must specify focus-visible:ring-offset-2'
-      );
-      assert.ok(
-        tokensSource.includes('focus-visible:ring-offset-bg-base'),
-        'FOCUS_RING_DANGER must specify focus-visible:ring-offset-bg-base'
+        !tokensSource.includes('focus-visible:ring-danger-ring'),
+        'Danger focus must not add a coloured ring'
       );
     });
 
@@ -173,11 +157,11 @@ describe('Challenger 1 Deep Stress Suite: Token Contract & Optical Geometry', ()
         tokensSource.includes('FOCUS_RING,') && tokensSource.includes('export const CONTROL_BASE'),
         'CONTROL_BASE must incorporate FOCUS_RING'
       );
-      // 2. ICON_CONTROL_BASE
+      // 2. ICON_CONTROL_BASE — §4.17.2: compact icon buttons press to .96
       assert.ok(
         tokensSource.includes('export const ICON_CONTROL_BASE = [') &&
-        tokensSource.includes('active:scale-95 active:duration-instant'),
-        'ICON_CONTROL_BASE must exist with active:scale-95'
+        tokensSource.includes('active:scale-[0.96] active:duration-press'),
+        'ICON_CONTROL_BASE must exist with active:scale-[0.96] press feedback'
       );
       // 3. FIELD_BASE
       assert.ok(
@@ -213,20 +197,27 @@ describe('Challenger 1 Deep Stress Suite: Token Contract & Optical Geometry', ()
   // 3. Popover Optical Geometry (16px rounded-xl, backdrop-blur-md, shadow-elevation-3)
   // =========================================================================
   describe('3. Popover Optical Geometry & Overlays', () => {
-    test('OVERLAY_PANEL strictly enforces rounded-xl (16px), backdrop-blur-md (12px), shadow-elevation-3', () => {
+    test('OVERLAY_PANEL enforces the v3.8.0 popover surface (rounded-xl, shadow-elevation-3)', () => {
+      // §4.17.1 B: geometry lives in the shared `.popover-surface` recipe.
       assert.ok(
         tokensSource.includes('export const OVERLAY_PANEL = [') &&
-        tokensSource.includes('bg-overlay-glass backdrop-blur-md border border-line-subtle rounded-xl shadow-elevation-3'),
-        'OVERLAY_PANEL must specify bg-overlay-glass backdrop-blur-md border border-line-subtle rounded-xl shadow-elevation-3'
+        tokensSource.includes('popover-surface bg-overlay-glass backdrop-blur-md'),
+        'OVERLAY_PANEL must compose the popover-surface recipe with glass background'
+      );
+      assert.ok(
+        globalsCss.includes('.popover-surface') &&
+        globalsCss.includes('border-radius: var(--radius-xl)') &&
+        globalsCss.includes('box-shadow: var(--shadow-elevation-3)'),
+        '.popover-surface must supply 16px radius and elevation-3 shadow'
       );
     });
 
-    test('PROMPT_POPOVER strictly enforces rounded-xl (16px), backdrop-blur-md (12px), shadow-elevation-3', () => {
+    test('PROMPT_POPOVER enforces the v3.8.0 popover surface (rounded-xl, shadow-elevation-3)', () => {
       assert.ok(
         tokensSource.includes('export const PROMPT_POPOVER = [') &&
-        tokensSource.includes('min-w-44 max-h-popover rounded-xl border border-line-strong') &&
-        tokensSource.includes('bg-overlay-glass backdrop-blur-md p-2.5 text-ink shadow-elevation-3'),
-        'PROMPT_POPOVER must specify rounded-xl, backdrop-blur-md, and shadow-elevation-3'
+        tokensSource.includes('min-w-44 max-h-popover popover-surface') &&
+        tokensSource.includes('bg-overlay-glass backdrop-blur-md p-2.5 text-ink'),
+        'PROMPT_POPOVER must size itself and compose the popover-surface recipe'
       );
     });
 

@@ -11,6 +11,7 @@ function createTransaction({ wallet, rows = [], order = null, userCredits = 0 })
   const state = {
     wallet: wallet ? { ...wallet } : null,
     rows: rows.map((row) => ({ ...row })),
+    lots: [],
     order: order ? { ...order } : null,
     obligation: null,
     userCredits,
@@ -73,9 +74,35 @@ function createTransaction({ wallet, rows = [], order = null, userCredits = 0 })
           && row.bucket_type === 'SUBSCRIPTION' && Number(row.delta) > 0
           && row.reference_id !== params[1] && new Date(row.created_at).getTime() > transferTime).length };
       }
+      if (sql.includes('AS total') && sql.includes('FROM ops_bill.credit_wallets')) {
+        // syncLegacyCreditBalance：按有效桶（未过期）合计写回 users.credits。
+        const now = new Date(params[1]).getTime();
+        const active = (amount, expiresAt) => (Number(amount || 0) > 0
+          && (!expiresAt || new Date(expiresAt).getTime() > now) ? Number(amount) : 0);
+        const returned = state.lots
+          .filter((lot) => !lot.expires_at || new Date(lot.expires_at).getTime() > now)
+          .reduce((sum, lot) => sum + Number(lot.remaining_credits || 0), 0);
+        return {
+          total: active(state.wallet.daily_free_credits, state.wallet.daily_expires_at)
+            + active(state.wallet.subscription_credits, state.wallet.subscription_expires_at)
+            + Number(state.wallet.perpetual_credits || 0) + returned,
+        };
+      }
       if (sql.includes('SELECT * FROM credit_wallets')) return state.wallet ? { ...state.wallet } : null;
       if (sql.includes('SELECT credits FROM users')) return { credits: state.userCredits };
       throw new Error(`Unhandled queryOne: ${sql}`);
+    },
+    async queryMany(sql) {
+      if (sql.includes('FROM ops_bill.credit_returned_lots')) {
+        if (sql.includes('remaining_credits>0 AND expires_at<=$2')) {
+          const now = Date.now();
+          return state.lots.filter((lot) => Number(lot.remaining_credits) > 0
+            && lot.expires_at && new Date(lot.expires_at).getTime() <= now).map((lot) => ({ ...lot }));
+        }
+        return state.lots.filter((lot) => Number(lot.remaining_credits) > 0
+          && (!lot.expires_at || new Date(lot.expires_at).getTime() > Date.now())).map((lot) => ({ ...lot }));
+      }
+      throw new Error(`Unhandled queryMany: ${sql}`);
     },
     async execute(sql, params = []) {
       if (sql.includes('UPDATE credit_wallets')) {
@@ -88,7 +115,7 @@ function createTransaction({ wallet, rows = [], order = null, userCredits = 0 })
         if (sql.includes('perpetual_credits = $3')) state.wallet.perpetual_credits = Number(params[2]);
         return { rowCount: 1 };
       }
-      if (sql.includes('UPDATE users SET credits = $1')) {
+      if (sql.includes('UPDATE users SET credits')) {
         state.userCredits = Number(params[0]);
         return { rowCount: 1 };
       }

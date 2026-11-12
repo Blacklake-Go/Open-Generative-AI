@@ -15,7 +15,7 @@ test('1. Infinite Canvas links use unified relative path /canvas across all comp
   assert.ok(!shell.includes('https://www.Supdance.com/canvas'), 'StandaloneShell must not hardcode online canvas URL');
 
   const portal = fs.readFileSync(path.join(root, 'components/home/JimengHomePortal.jsx'), 'utf8');
-  assert.ok(portal.includes('href="/canvas"'), 'JimengHomePortal must use href="/canvas"');
+  assert.ok(portal.includes("localizeStudioPath('/canvas'"), 'JimengHomePortal must link to the locale-aware /canvas path');
   assert.ok(!portal.includes('https://www.Supdance.com/canvas'), 'JimengHomePortal must not hardcode online canvas URL');
 
   const header = fs.readFileSync(path.join(root, 'components/site/StudioHeader.js'), 'utf8');
@@ -54,8 +54,8 @@ test('3. Entitlements synchronous caching & screen flicker elimination', () => {
   assert.ok(shell.includes('entitlements={sessionEntitlements}'), 'StandaloneShell must pass entitlements to UserDropdownMenu');
 
   const assetCenter = fs.readFileSync(path.join(root, 'components/assets/JimengAssetCenter.jsx'), 'utf8');
-  assert.ok(assetCenter.includes('entitlements, refresh: refreshSession'), 'JimengAssetCenter must extract entitlements');
-  assert.ok(assetCenter.includes('entitlements={entitlements}'), 'JimengAssetCenter must pass entitlements to UserDropdownMenu');
+  assert.ok(assetCenter.includes('useUserSession(initialUser)'), 'JimengAssetCenter must restore the shared session (including cached entitlements)');
+  assert.ok(assetCenter.includes('refresh: refreshSession'), 'JimengAssetCenter must expose the session refresh used after account switches');
 
   const figmaHeader = fs.readFileSync(path.join(root, 'components/about/FigmaHeader.jsx'), 'utf8');
   assert.ok(figmaHeader.includes('entitlements } = useUserSession'), 'FigmaHeader must extract entitlements');

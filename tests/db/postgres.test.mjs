@@ -379,7 +379,7 @@ test('simulated generation settles once and releases once on provider failure', 
        min_gross_margin_rate,is_active,created_at,updated_at)
       VALUES ($1,$2,'fixed',3,'{}'::jsonb,'{}'::jsonb,1,0.35,TRUE,now(),now())`, [`p3_pricing_${suffix}`, modelId]);
     await db.execute(`UPDATE ai_studio.ai_providers SET enabled=TRUE,health_status='healthy',
-      last_health_check_at=now(),balance=1000,circuit_state='closed' WHERE id='muapi'`);
+      last_health_check_at=now(),balance=1000,available_quota=1000,quota_checked_at=now(),circuit_state='closed' WHERE id='muapi'`);
     await db.execute(`INSERT INTO ai_studio.provider_models
       (id,model_id,provider_id,provider_model_id,enabled,priority,cost_config,capabilities,
        review_status,provider_endpoint,supported_task_types,supported_resolutions,
@@ -397,6 +397,8 @@ test('simulated generation settles once and releases once on provider failure', 
     process.env.MUAPI_API_KEY = 'not-a-real-provider-key-for-local-tests';
     process.env.NODE_ENV = 'test';
     process.env.STORAGE_SECRETS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
+    await db.execute(`INSERT INTO ai_studio.exchange_rate_snapshots(id,base_currency,quote_currency,rate,source_type,observed_at,expires_at)
+      VALUES($1,'USD','CNY',7.2,'manual',now(),now()+interval '1 day')`, [`p3_fx_${suffix}`]);
     await grantPerpetualCredits(userId, 30, 'P3 integration seed', userId, `p3:seed:${userId}`);
 
     const testDependencies = {
@@ -450,8 +452,7 @@ test('simulated generation settles once and releases once on provider failure', 
     assert.ok(ledger.rows.some((row) => row.action_type === 'TASK_COMMIT'));
     assert.ok(ledger.rows.some((row) => row.action_type === 'TASK_RELEASE'));
   } finally {
-    if (oldEncryptionKey === undefined) delete process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
-    else process.env.STORAGE_SECRETS_ENCRYPTION_KEY = oldEncryptionKey;
+    await db.execute('DELETE FROM ai_studio.exchange_rate_snapshots WHERE id=$1', [`p3_fx_${suffix}`]).catch(() => {});
     await db.execute('DELETE FROM credit_reservations WHERE user_id = $1', [userId]).catch(() => {});
     await db.execute('DELETE FROM credit_ledger_v2 WHERE user_id = $1', [userId]).catch(() => {});
     await db.execute('DELETE FROM creations WHERE user_id = $1', [userId]).catch(() => {});
@@ -460,6 +461,8 @@ test('simulated generation settles once and releases once on provider failure', 
     await db.execute('DELETE FROM ai_studio.provider_models WHERE id = $1', [mappingId]).catch(() => {});
     await db.execute('DELETE FROM ai_studio.model_pricing WHERE model_id = $1', [modelId]).catch(() => {});
     await db.execute('DELETE FROM ai_studio.ai_models WHERE id = $1', [modelId]).catch(() => {});
+    if (oldEncryptionKey === undefined) delete process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
+    else process.env.STORAGE_SECRETS_ENCRYPTION_KEY = oldEncryptionKey;
     if (oldApiKey === undefined) delete process.env.MUAPI_API_KEY;
     else process.env.MUAPI_API_KEY = oldApiKey;
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;
@@ -467,7 +470,7 @@ test('simulated generation settles once and releases once on provider failure', 
   }
 });
 
-test('unknown stale upstream outcome retains frozen credits and records reconciliation once', { skip: !testUrl }, async () => {
+test('stale processing without an acknowledgement stays pending reconciliation with one event and reserved funds', { skip: !testUrl }, async () => {
   const suffix = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
   const userId = await seedCanonicalUser();
   const creationId = `timeout_generation_${suffix}`;
@@ -498,21 +501,28 @@ test('unknown stale upstream outcome retains frozen credits and records reconcil
 
     const expired = await expireStaleGenerationTasks({ timeoutMs: 60_000, limit: 10 });
     assert.deepEqual(expired, { checkedCount: 1, processed: [{ id: creationId, status: 'pending_reconciliation' }] });
-    const row = await db.queryOne('SELECT status FROM ai_studio.creations WHERE id=$1', [creationId]);
+
+    const row = await db.queryOne(`SELECT status,error_code,error_reason FROM ai_studio.creations WHERE id=$1`, [creationId]);
     assert.equal(row.status, 'processing');
     const reservationRow = await db.queryOne('SELECT status FROM ops_bill.credit_reservations WHERE id=$1', [reservation.reservationId]);
     assert.equal(reservationRow.status, 'RESERVED');
     const ledger = await db.queryMany(`SELECT action_type,delta FROM ops_bill.credit_ledger_v2
       WHERE user_id=$1 AND reference_id=$2 ORDER BY action_type`, [userId, reservation.reservationId]);
-    assert.deepEqual(ledger.map(entry => [entry.action_type, Number(entry.delta)]), [['TASK_RESERVE', -10]]);
-    assert.deepEqual(await db.queryOne('SELECT perpetual_credits,frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1', [userId]), frozen);
-    const secondRun = await expireStaleGenerationTasks({ timeoutMs: 60_000, limit: 10 });
-    assert.deepEqual(secondRun, expired);
-    const events = await db.queryMany(`SELECT event_type FROM ai_studio.generation_events
+    assert.deepEqual(ledger.map((entry) => [entry.action_type, Number(entry.delta)]), [['TASK_RESERVE', -10]]);
+    const restored = await db.queryOne('SELECT perpetual_credits,frozen_credits FROM ops_bill.credit_wallets WHERE user_id=$1', [userId]);
+    assert.equal(Number(restored.perpetual_credits), 0);
+    assert.equal(Number(restored.frozen_credits), 10);
+    const timeoutEvents = await db.queryMany(`SELECT event_type FROM ai_studio.generation_events
       WHERE creation_id=$1 AND event_type='TASK_RECONCILIATION_REQUIRED'`, [creationId]);
-    assert.equal(events.length, 1);
-    assert.equal((await db.queryOne(`SELECT count(*)::int count FROM ops_bill.credit_ledger_v2
-      WHERE user_id=$1 AND reference_id=$2`, [userId, reservation.reservationId])).count, 1);
+    assert.equal(timeoutEvents.length, 1);
+
+    const secondRun = await expireStaleGenerationTasks({ timeoutMs: 60_000, limit: 10 });
+    assert.deepEqual(secondRun, { checkedCount: 1, processed: [{ id: creationId, status: 'pending_reconciliation' }] });
+    const repeatedEvents = await db.queryMany(`SELECT id FROM ai_studio.generation_events WHERE creation_id=$1 AND event_type='TASK_RECONCILIATION_REQUIRED'`, [creationId]);
+    assert.equal(repeatedEvents.length, 1);
+    const ledgerAfterRepeat = await db.queryMany(`SELECT action_type,delta FROM ops_bill.credit_ledger_v2
+      WHERE user_id=$1 AND reference_id=$2`, [userId, reservation.reservationId]);
+    assert.equal(ledgerAfterRepeat.length, 1);
   } finally {
     await db.execute('DELETE FROM ai_studio.creations WHERE id=$1', [creationId]).catch(() => {});
     await db.execute('DELETE FROM ops_bill.credit_reservations WHERE user_id=$1', [userId]).catch(() => {});

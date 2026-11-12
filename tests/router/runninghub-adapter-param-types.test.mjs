@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { RunningHubAdapter } from '../../lib/adapters/RunningHubAdapter.js';
+import { register } from 'node:module';
+
+try {
+  register('../../scripts/server-only-loader.mjs', import.meta.url);
+} catch {}
+
+const { RunningHubAdapter } = await import('../../lib/adapters/RunningHubAdapter.js');
 
 test('RunningHub uses mapping-local LIST parameters and preserves string option values', async () => {
   const originalFetch = globalThis.fetch;
