@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { localizedHref } from '@/lib/client/localeSwitch';
 import BrandLogo from '@/components/site/BrandLogo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useBranding } from '@/lib/hooks/useBranding';
@@ -18,10 +19,10 @@ export default function CommunityHeader({ locale = 'en' }) {
   const { brand } = useBranding();
   const labels = COPY[locale] || COPY.en;
   return <header className="fixed inset-x-0 top-0 z-header flex h-14 items-center gap-3 border-b border-line-subtle bg-base px-4 text-ink">
-    <Link href="/community" aria-label="SupDance ONE" className="shrink-0"><BrandLogo brand={brand} /></Link>
+    <Link href={localizedHref('/community', { explicit: locale })} aria-label="SupDance ONE" className="shrink-0"><BrandLogo brand={brand} /></Link>
     <nav aria-label={labels[0]} className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap">
       {['/community', '/community/campaigns', '/community/submit', '/account/connected', 'https://www.supdance.com/'].map((href, index) =>
-        <Button key={href} asChild size="lg" variant={index === 4 ? 'primary' : 'ghost'}><a href={href}>{labels[index]}</a></Button>)}
+        <Button key={href} asChild size="lg" variant={index === 4 ? 'primary' : 'ghost'}><a href={index === 4 ? href : localizedHref(href, { explicit: locale })}>{labels[index]}</a></Button>)}
     </nav>
     <LanguageSwitcher className="hidden shrink-0 sm:block" showLabel={false} />
   </header>;

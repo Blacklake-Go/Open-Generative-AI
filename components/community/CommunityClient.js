@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { localizedHref } from '@/lib/client/localeSwitch';
 import {
   AudioLines,
   Clapperboard,
@@ -304,7 +305,7 @@ function FeaturedCaseShowcase({ posts, onOpen, onRemix, t, locale }) {
             <h2 id="featured-cases-title" className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">{t.featuredTitle}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-400">{t.featuredSubtitle}</p>
           </div>
-          <Link href="/community/submit" className="text-xs font-semibold text-cyan-300 transition-colors hover:text-cyan-200">{t.shareMyCase}</Link>
+          <Link href={localizedHref('/community/submit', { explicit: locale })} className="text-xs font-semibold text-cyan-300 transition-colors hover:text-cyan-200">{t.shareMyCase}</Link>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
@@ -598,7 +599,7 @@ export default function CommunityClient({ initialPostId = null, locale: localePr
               </p>
               <div className="mt-6">
                 <Link
-                  href="/community/submit"
+                  href={localizedHref('/community/submit', { explicit: norm })}
                   className="inline-flex items-center gap-2 rounded-full bg-white hover:bg-white/90 text-black px-6 py-2.5 text-xs sm:text-sm font-semibold shadow-lg transition-transform active:scale-95"
                 >
                   <Share2 className="size-4" />

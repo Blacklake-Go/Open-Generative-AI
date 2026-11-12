@@ -214,7 +214,12 @@ async function apply(name, selectedFiles) {
   const client = new pg.Client({ connectionString: url.toString() });
   await client.connect();
   try {
-    for (const file of selectedFiles) await client.query(sqlByFile.get(file));
+    // Match the application migration runner's configured schema resolution.
+    await client.query('SET search_path TO ai_studio, ops_bill, auth_usr, sys_core, public');
+    for (const file of selectedFiles) {
+      try { await client.query(sqlByFile.get(file)); }
+      catch (error) { throw new Error(`Migration rehearsal failed at ${file}: ${error.message}`, { cause: error }); }
+    }
   } finally { await client.end(); }
 }
 

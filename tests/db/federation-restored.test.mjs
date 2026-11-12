@@ -86,8 +86,18 @@ test('account mapping proves both owners, rejects session swapping, replay and c
     assert.equal((await db.queryOne('SELECT count(*)::int count FROM supdance_federation.identity_links')).count, 1);
     assert.deepEqual(await sourceFingerprints(), before);
     const { requireLegacyTransactionAuthority } = await import('../../lib/federation/transactionAuthority.js');
+    process.env.SUPDANCE_FEDERATION_TRANSACTIONS_ON_MAIN = 'false';
+    await requireLegacyTransactionAuthority(a.id);
+    await assert.rejects(() => requireLegacyTransactionAuthority(a.id, null, {purpose:'checkout'}), {code:'MAIN_WALLET_REQUIRED'});
+    process.env.SUPDANCE_FEDERATION_TRANSACTIONS_ON_MAIN = 'true';
     await assert.rejects(() => requireLegacyTransactionAuthority(a.id), {code:'MAIN_WALLET_REQUIRED'});
     await requireLegacyTransactionAuthority(b.id);
+    await db.execute(`INSERT INTO ops_bill.credit_wallets(user_id,perpetual_credits)VALUES($1,7)`,[a.id]);
+    await requireLegacyTransactionAuthority(a.id);
+    await assert.rejects(() => requireLegacyTransactionAuthority(a.id,null,{purpose:'checkout'}),{code:'MAIN_WALLET_REQUIRED'});
+    assert.equal(Number((await db.queryOne('SELECT perpetual_credits FROM ops_bill.credit_wallets WHERE user_id=$1',[a.id])).perpetual_credits),7);
+    await db.execute('DELETE FROM ops_bill.credit_wallets WHERE user_id=$1',[a.id]);
+    assert.deepEqual(await sourceFingerprints(), before);
     await db.execute("UPDATE supdance_federation.identity_links SET state='suspended' WHERE one_user_id=$1",[a.id]);
     await assert.rejects(() => requireLegacyTransactionAuthority(a.id), {code:'MAIN_WALLET_REQUIRED'});
     await db.execute("UPDATE supdance_federation.identity_links SET state='active' WHERE one_user_id=$1",[a.id]);

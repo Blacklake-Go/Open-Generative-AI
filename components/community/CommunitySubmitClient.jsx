@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { localizedHref } from '@/lib/client/localeSwitch';
 import StudioHeader from '@/components/site/StudioHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,7 @@ export default function CommunitySubmitClient({ locale = 'en' }) {
  const groups = [[copy[6],data?.mainAssets || [],'main'],[copy[7],data?.assets || [],'one']];
  return <><StudioHeader locale={locale}/><main className="mx-auto max-w-3xl space-y-6 px-4 pb-12 pt-24 text-ink">
   <h1 className="text-page-title">{copy[0]}</h1>
-  {!user && <Button asChild size="lg"><Link href="/account/connected">{copy[10]}</Link></Button>}
+  {!user && <Button asChild size="lg"><Link href={localizedHref('/account/connected', { explicit: locale })}>{copy[10]}</Link></Button>}
   {loading && <p role="status">{copy[16]}</p>}{error && <p role="alert" className="text-danger">{error}</p>}{notice && <p role="status">{notice}</p>}
   {data?.mainAssetsUnavailable && <p role="alert">{copy[12]}</p>}
   {user && <Button size="lg" onClick={load} disabled={loading}>{copy[13]}</Button>}

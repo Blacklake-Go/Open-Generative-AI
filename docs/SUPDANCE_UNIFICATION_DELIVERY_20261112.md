@@ -12,11 +12,14 @@ Never deploy by overwriting that dirty root or copying a local historical main.
 - Separate Ed25519 signing keys, one-time browser/session-bound challenges,
   explicit one-to-one mappings and allowlists. Existing accounts prove ownership
   on both sites; SSO shadow users receive no credits, email merge or role promotion.
-- Main wallet is canonical for newly admitted paid work after linking. New ONE
-  quotes/tasks/checkouts fail with MAIN_WALLET_REQUIRED. Already accepted work,
-  reservations and payment callbacks retain their original settlement authority.
-  Suspended mappings also block legacy fallback. Legacy bucket balances/expiry
-  remain separate; no historical credit is converted or reissued.
+- New checkout for linked users moves to the main wallet. Identity rollout is
+  separate from financial cutover: SUPDANCE_FEDERATION_TRANSACTIONS_ON_MAIN=false
+  by default preserves ONE generation under existing authorization, reservation
+  and expiry rules. Even when explicitly enabled, positive historical buckets,
+  frozen reservations or unexpired returned lots retain their old spending path.
+  Only linked users with no remaining legacy value are sent to main for new work.
+  Already accepted jobs and callbacks retain original settlement authority.
+  Suspended mappings block fallback. No balance is converted or reissued.
 - Additive088 provides mapping/audit and append-only provenance snapshots. The
   importer rejects changes to previously observed immutable financial entries.
 - Integer pricing uses exact upward rounding, worst net package revenue after
@@ -75,3 +78,8 @@ files; this is not a passing restoration claim. Their actual restored-data resul
 are delivered separately. Enabling the marker on another host still fails before
 database imports. A clean-lockfile CI build remains required before production
 promotion, independently of the earlier candidate built with existing dependencies.
+
+Federation request bodies are bounded on actual streamed bytes, including requests
+without Content-Length; credentials and assertions are parsed only after the 16KiB
+limit and MIME check. Community/account pages follow the existing six-language
+route structure and canonical prefix redirects.
