@@ -7,7 +7,7 @@ const database=requireIsolatedTestDatabase(process.env.TEST_DATABASE_URL,process
 const root=process.cwd();const port=Number(process.env.STANDALONE_SMOKE_PORT||3111);
 const base=`http://127.0.0.1:${port}`;
 const directory=path.resolve(process.env.NEXT_DIST_DIR||'.next','standalone');
-const child=spawn(process.execPath,[path.join(directory,'server.js')],{cwd:directory,env:{...process.env,DATABASE_URL:database.href,PORT:String(port),HOSTNAME:'127.0.0.1'},stdio:['ignore','pipe','pipe']});
+const child=spawn(process.execPath,[path.join(directory,'server.js')],{cwd:directory,env:{...process.env,DATABASE_URL:database.href,SUPDANCE_COMMUNITY_ENABLED:'true',PORT:String(port),HOSTNAME:'127.0.0.1'},stdio:['ignore','pipe','pipe']});
 let diagnostics='';for(const stream of [child.stdout,child.stderr])stream.on('data',chunk=>{diagnostics=(diagnostics+chunk.toString()).slice(-12000);});
 const checks=[];
 try {

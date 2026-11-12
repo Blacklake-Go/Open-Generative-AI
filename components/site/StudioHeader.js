@@ -21,6 +21,7 @@ import { getMegaNavCategories } from '@/config/mega-navigation';
 import NavIcon from '@/components/navigation/NavIcon';
 import NavBadge from '@/components/navigation/NavBadge';
 import CommunityHeader from '@/components/community/CommunityHeader';
+import { useCommunityMode } from '@/components/community/CommunityModeProvider';
 
 export function BrandMark({ compact = false, locale = null }) {
   const { brand } = useBranding();
@@ -77,6 +78,7 @@ export default function StudioHeader({
   const pathname = usePathname();
   const router = useRouter();
   const { brand } = useBranding();
+  const communityMode = useCommunityMode();
   const { user, credits, entitlements, mutate } = useUserSession(initialUser);
 
   const getCookieLocale = () => {
@@ -163,7 +165,7 @@ export default function StudioHeader({
       : (pathname === '/creations' ? 'creations' : null)
   );
 
-  if (process.env.NEXT_PUBLIC_SUPDANCE_COMMUNITY_MODE === 'true') return <CommunityHeader locale={activeLocale} />;
+  if (communityMode) return <CommunityHeader locale={activeLocale} />;
 
   return (
     <>
@@ -312,6 +314,7 @@ export default function StudioHeader({
               {/* 无限画布 (独立二号白板工作台) */}
               <Link
                 href="/canvas"
+                  prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMobileOpen(false)}
