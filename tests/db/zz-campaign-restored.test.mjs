@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-if(process.env.SUPDANCE_RESTORED_DRILL!=='true'||new URL(process.env.DATABASE_URL).hostname!=='one-db')throw Error('Named restored database required');
+// Protected restored snapshots are an explicit operational acceptance suite.
+// Ordinary CI must not require production snapshots or touch a live database.
+if (process.env.SUPDANCE_RESTORED_DRILL !== 'true') {
+  test('protected restored-snapshot acceptance', { skip: 'Requires the explicit named restored ONE database' }, () => {});
+} else {
+  if (!process.env.DATABASE_URL || new URL(process.env.DATABASE_URL).hostname !== 'one-db') throw new Error('Refusing any database outside the named restored ONE drill');
 const db=await import('../../lib/db/index.js');
 const campaigns=await import('../../lib/community/campaigns.js');
 const{allocateUserId}=await import('../../lib/auth/user-id.js');
@@ -40,3 +45,5 @@ test('campaigns freeze rules and entries, enforce deadlines/ownership/judges/cap
  assert.equal((await db.queryOne("SELECT count(*)::int AS count FROM ai_studio.community_campaign_events WHERE campaign_id=$1 AND action='award_approved'",[campaign.id])).count,1);
 });
 test.after(async()=>{await db.closePgPool();});
+
+}

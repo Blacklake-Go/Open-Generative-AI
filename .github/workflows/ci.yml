@@ -56,11 +56,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies (lockfile only)
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Wait for PostgreSQL readiness
         run: |
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build workspaces and application
         run: |
-          npm run build:studio
+          npm run build:packages
           npm run vite:build
           npm run build
 

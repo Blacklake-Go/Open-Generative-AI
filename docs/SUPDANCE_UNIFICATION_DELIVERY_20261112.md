@@ -52,3 +52,26 @@ allowlisted users first. Record actual commit, BUILD_ID, source hashes, test log
 and final traffic state separately; a build or200 response alone is not acceptance.
 
 Music budget remains cumulative21.3/50 credits; no new paid calls in stage2.
+
+## Reproducible source and CI correction
+
+The first cloud run exposed a pre-existing package.json/lockfile mismatch before
+any test ran. The lockfile is regenerated from the declared dependencies without
+running package scripts; no live dependencies are changed. CI uses Node24 like the
+validated Linux candidate and explicitly includes development dependencies needed
+for tests and workspace builds, even under NODE_ENV=production.
+
+The three required library workspaces previously had only upstream gitlinks in
+this repository while the running site used physical production workspace source.
+Their required package directories are now captured at the existing import paths,
+with original licenses or license declarations and a per-file checksum manifest in
+`production-workspaces-20261112.json`. Unrelated upstream applications and generated
+dist/node_modules remain excluded. Only missing final LF is normalized and recorded.
+The original server and developer checkouts remain untouched.
+
+Protected restored-snapshot acceptance tests require SUPDANCE_RESTORED_DRILL=true
+and the named one-db host. Standard CI explicitly skips those three private-fixture
+files; this is not a passing restoration claim. Their actual restored-data results
+are delivered separately. Enabling the marker on another host still fails before
+database imports. A clean-lockfile CI build remains required before production
+promotion, independently of the earlier candidate built with existing dependencies.

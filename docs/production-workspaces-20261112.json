@@ -1,0 +1,372 @@
+{
+  "source": "protected production workspace snapshot 2026-11-12",
+  "purpose": "freeze actual runtime libraries without importing unrelated upstream applications",
+  "packages": [
+    {
+      "path": "packages/Vibe-Workflow/packages/workflow-builder",
+      "upstream_url": "https://github.com/SamurAIGPT/Vibe-Workflow.git",
+      "former_gitlink": "c65ce897e82bf73659c2725528c8492cd609d831",
+      "license_or_declaration_path": "packages/Vibe-Workflow/LICENSE",
+      "files": [
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/.gitignore",
+          "production_sha256": "407aeda6214a003c95cc1e695205fded1c1d078a980592203c3a692c9a36ce23",
+          "source_sha256": "407aeda6214a003c95cc1e695205fded1c1d078a980592203c3a692c9a36ce23",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/babel.config.json",
+          "production_sha256": "250a94d05eaf763ff40302a8cf690c554b92b3964ec2f8274f0ba7396986480e",
+          "source_sha256": "250a94d05eaf763ff40302a8cf690c554b92b3964ec2f8274f0ba7396986480e",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/package.json",
+          "production_sha256": "345ee6eab47512d2aa6857e4cf1084c7d592c307f2ce693a8d295e30978fbe1c",
+          "source_sha256": "345ee6eab47512d2aa6857e4cf1084c7d592c307f2ce693a8d295e30978fbe1c",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/postcss.config.js",
+          "production_sha256": "54a758307a2ce79551eac8e5a0646f6a291b4e5e81e498b07a5d89329c5dd068",
+          "source_sha256": "54a758307a2ce79551eac8e5a0646f6a291b4e5e81e498b07a5d89329c5dd068",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/WorkflowBuilder.jsx",
+          "production_sha256": "d992c62e24b74b748ea7e5517f80b600d43a2fb02bff092fd03c55de532275e6",
+          "source_sha256": "d992c62e24b74b748ea7e5517f80b600d43a2fb02bff092fd03c55de532275e6",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/ApiNode.jsx",
+          "production_sha256": "ce1d885b82c7d5506afc897a12cb38ca1428dfb17ab4fd26a205bb4afa54bd20",
+          "source_sha256": "ce1d885b82c7d5506afc897a12cb38ca1428dfb17ab4fd26a205bb4afa54bd20",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/AudioNode.jsx",
+          "production_sha256": "ca5f245cdfe1cc6c5c276fadaec119884cd4d9ad38b38005080955515d31f229",
+          "source_sha256": "7e04c4c2e414eba06ea279d4d3d25dc23df50582e632587af4b27b4a8fd42901",
+          "trailing_lf_added": true
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/AudioPlayer.jsx",
+          "production_sha256": "d097e366743e56cf2ef8d0d3f61e04c60d4f49048e9d65d0fad5e9a8ebe13ce6",
+          "source_sha256": "d097e366743e56cf2ef8d0d3f61e04c60d4f49048e9d65d0fad5e9a8ebe13ce6",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/ChatWidget.jsx",
+          "production_sha256": "1f8a6d25738352d0b60e2278d3031e60217578534abfa25022e3537570cb8879",
+          "source_sha256": "1f8a6d25738352d0b60e2278d3031e60217578534abfa25022e3537570cb8879",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/ImageNode.jsx",
+          "production_sha256": "7a9f3deb49063da324ac635b86a6da4fbd69029662b162c0ef25179b5340a35b",
+          "source_sha256": "7a9f3deb49063da324ac635b86a6da4fbd69029662b162c0ef25179b5340a35b",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/NodeFlow.jsx",
+          "production_sha256": "787672e5940e4255ba55f1b0771271c16b3d6ec649d0cc39a7e1258378fb4827",
+          "source_sha256": "787672e5940e4255ba55f1b0771271c16b3d6ec649d0cc39a7e1258378fb4827",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/NodeOptionsMenu.jsx",
+          "production_sha256": "b2ee4ca764bcd29f6246443fe6f1f0c525a894ebb7f3eddc07ac17a727f8d25f",
+          "source_sha256": "b2ee4ca764bcd29f6246443fe6f1f0c525a894ebb7f3eddc07ac17a727f8d25f",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/NodeSendButton.jsx",
+          "production_sha256": "149091d2423ee016deeb0fd08cd7106126f0fb5a2f4c1c382a779f86f7fef1f6",
+          "source_sha256": "149091d2423ee016deeb0fd08cd7106126f0fb5a2f4c1c382a779f86f7fef1f6",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/NodesNavbar.jsx",
+          "production_sha256": "302ed759d9e5932f6622978f47c3fc913354d7563b29dc2c1cfda0169b1842c1",
+          "source_sha256": "302ed759d9e5932f6622978f47c3fc913354d7563b29dc2c1cfda0169b1842c1",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/PromptConcate.jsx",
+          "production_sha256": "c6dcd1b89bde6080fc11fd1b36e1f56677f573711881cf39cddadf786f440b39",
+          "source_sha256": "c6dcd1b89bde6080fc11fd1b36e1f56677f573711881cf39cddadf786f440b39",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/RenderApiField.jsx",
+          "production_sha256": "179d97ccad0e2e5429f2adf15759dac8b339b102079fe688c061801d9dd124f7",
+          "source_sha256": "179d97ccad0e2e5429f2adf15759dac8b339b102079fe688c061801d9dd124f7",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/RenderField.jsx",
+          "production_sha256": "b684a255c3344129101606534a912ba60574e8dcad7547aa89d4a7f695b8a45f",
+          "source_sha256": "b684a255c3344129101606534a912ba60574e8dcad7547aa89d4a7f695b8a45f",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/TextNode.jsx",
+          "production_sha256": "dc6c37ecf0bb65af29de342d683198b21a8fb275a76c81f8aab22e0e8e8f650b",
+          "source_sha256": "dc6c37ecf0bb65af29de342d683198b21a8fb275a76c81f8aab22e0e8e8f650b",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/UploadNode.jsx",
+          "production_sha256": "9be6bc1614dfb33c5d1af53c5a8a98b8eee881e88939dd879447bb7b38ee296a",
+          "source_sha256": "9be6bc1614dfb33c5d1af53c5a8a98b8eee881e88939dd879447bb7b38ee296a",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/VideoCombiner.jsx",
+          "production_sha256": "e45a07b0de0917794ce4911f1e74a660f5bf2caaf5d75ece0502eeb94823be09",
+          "source_sha256": "e45a07b0de0917794ce4911f1e74a660f5bf2caaf5d75ece0502eeb94823be09",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/VideoNode.jsx",
+          "production_sha256": "65b03f4f378bb28dad6563a26a6daac61d65143596acb436c5524a7799067f80",
+          "source_sha256": "65b03f4f378bb28dad6563a26a6daac61d65143596acb436c5524a7799067f80",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/VideoPlayer.jsx",
+          "production_sha256": "7aaec33e0ea6e67445eda9567daf003fd4b17a78f04fa9447625069b943fb05e",
+          "source_sha256": "7aaec33e0ea6e67445eda9567daf003fd4b17a78f04fa9447625069b943fb05e",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/WorkflowStore.jsx",
+          "production_sha256": "6e2570813fe4d834ad685dc8442adb9ba3cce9b3f6326232d62d2a8ab6e0040f",
+          "source_sha256": "6e2570813fe4d834ad685dc8442adb9ba3cce9b3f6326232d62d2a8ab6e0040f",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/useGenerationCost.jsx",
+          "production_sha256": "1b1dd4b99157b11ab77503e888e76b073fbf7822a5898ae9e25062ad09c222b8",
+          "source_sha256": "1b1dd4b99157b11ab77503e888e76b073fbf7822a5898ae9e25062ad09c222b8",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/components/utility.jsx",
+          "production_sha256": "0f38594de6da12c5dead59c1523fc29fe580f8f5f87f23507a90eb6e0aa5cb1b",
+          "source_sha256": "46dd788eed382406cfb63bfc79becb401918be8c751b4de6d81af065dc4eb0b9",
+          "trailing_lf_added": true
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/index.js",
+          "production_sha256": "355e73653292fc90026b44098a84f36b4badab5950b64f3b51b5388678f6ab55",
+          "source_sha256": "355e73653292fc90026b44098a84f36b4badab5950b64f3b51b5388678f6ab55",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/src/tailwind.css",
+          "production_sha256": "40d99780091c77aa8324c49dbfab97508e7ccad8d89ec9baf4fed4e9a4a4aad3",
+          "source_sha256": "40d99780091c77aa8324c49dbfab97508e7ccad8d89ec9baf4fed4e9a4a4aad3",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Vibe-Workflow/packages/workflow-builder/tailwind.config.js",
+          "production_sha256": "af12d04a1df985f1827487b036c2243cf5a99645f122556aac55dece1185fa4e",
+          "source_sha256": "af12d04a1df985f1827487b036c2243cf5a99645f122556aac55dece1185fa4e",
+          "trailing_lf_added": false
+        }
+      ]
+    },
+    {
+      "path": "packages/Open-Poe-AI/packages/agents",
+      "upstream_url": "https://github.com/Anil-matcha/Open-Poe-AI.git",
+      "former_gitlink": "3e21ebc92d93bd699ffc6000bbcf980eaa8830cb",
+      "license_or_declaration_path": "packages/Open-Poe-AI/README.md",
+      "files": [
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/.gitignore",
+          "production_sha256": "218f5fdd6e31d8e7b074af64904f4ff63a41f6573814eb287258c7222a023a64",
+          "source_sha256": "218f5fdd6e31d8e7b074af64904f4ff63a41f6573814eb287258c7222a023a64",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/README.md",
+          "production_sha256": "ee010e87d72a4cfa2c1d6f5be17d9a8d039e115e4db988d21c03ab95ea7cc46a",
+          "source_sha256": "ee010e87d72a4cfa2c1d6f5be17d9a8d039e115e4db988d21c03ab95ea7cc46a",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/THEME_SETUP.md",
+          "production_sha256": "b4230f0dddb7ff35b9b603c507047ac7364abd49206b134f6732ed756f7903b2",
+          "source_sha256": "b4230f0dddb7ff35b9b603c507047ac7364abd49206b134f6732ed756f7903b2",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/babel.config.json",
+          "production_sha256": "d0c589dac3c1f1b609bff411036c9d2da25037e4b9d5bb0773efae5d7db0f2fd",
+          "source_sha256": "d0c589dac3c1f1b609bff411036c9d2da25037e4b9d5bb0773efae5d7db0f2fd",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/package.json",
+          "production_sha256": "fda4227e1d9bc7e763f6ccd08cd78dbb68c1c54c9fa024f873f12f6fd4f35faa",
+          "source_sha256": "fda4227e1d9bc7e763f6ccd08cd78dbb68c1c54c9fa024f873f12f6fd4f35faa",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/postcss.config.js",
+          "production_sha256": "54a758307a2ce79551eac8e5a0646f6a291b4e5e81e498b07a5d89329c5dd068",
+          "source_sha256": "54a758307a2ce79551eac8e5a0646f6a291b4e5e81e498b07a5d89329c5dd068",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/AgentProfile.jsx",
+          "production_sha256": "7281ac21cbde15aad4bfd349c9a8670e48267d36f5b0122cad2464ebd8b92128",
+          "source_sha256": "7281ac21cbde15aad4bfd349c9a8670e48267d36f5b0122cad2464ebd8b92128",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/AiAgent.jsx",
+          "production_sha256": "93e2227bab3a3bef163295c6ab8faf84b470313181242f9756d418c207dd9569",
+          "source_sha256": "93e2227bab3a3bef163295c6ab8faf84b470313181242f9756d418c207dd9569",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/CreatePage.jsx",
+          "production_sha256": "f67034a29bed527f3186c751365c47f5338deb329771d37dd171dcf788a20d55",
+          "source_sha256": "f67034a29bed527f3186c751365c47f5338deb329771d37dd171dcf788a20d55",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/EditPage.jsx",
+          "production_sha256": "3c9e0681c4e659d366b13476e97771f4ce6483545304651b4501d134a6fb70f5",
+          "source_sha256": "3c9e0681c4e659d366b13476e97771f4ce6483545304651b4501d134a6fb70f5",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/components/AgentThemeProvider.jsx",
+          "production_sha256": "08618a1f639fbd9b83616027dfec03b2e5bd0350575cb0af35d12a2c036700b6",
+          "source_sha256": "08618a1f639fbd9b83616027dfec03b2e5bd0350575cb0af35d12a2c036700b6",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/components/CreateAgent.jsx",
+          "production_sha256": "f199f7a3bc4e579ebf0e8b3890761066623e0c22b1125c52cf99462ca242e7ff",
+          "source_sha256": "f199f7a3bc4e579ebf0e8b3890761066623e0c22b1125c52cf99462ca242e7ff",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/components/EditAgent.jsx",
+          "production_sha256": "f481fa82b8061e5b33e16467cecc5352f4675be98c2d23c968d7bb9a769cf1d0",
+          "source_sha256": "f481fa82b8061e5b33e16467cecc5352f4675be98c2d23c968d7bb9a769cf1d0",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/components/ProfileAgent.jsx",
+          "production_sha256": "e7572b67e033738ef8dff8dd0752ab0c34525192fe3bf66afaf2d1918bc731f9",
+          "source_sha256": "e7572b67e033738ef8dff8dd0752ab0c34525192fe3bf66afaf2d1918bc731f9",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/components/themes.jsx",
+          "production_sha256": "270c596dc7b6c835894d7bf7256b483182dcb7a891bc4973c621adb47ac6c4f9",
+          "source_sha256": "270c596dc7b6c835894d7bf7256b483182dcb7a891bc4973c621adb47ac6c4f9",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/index.js",
+          "production_sha256": "40ebfb6b754eb953142bf286dacc084d0cb92587641a9333df14f5f474552dcf",
+          "source_sha256": "40ebfb6b754eb953142bf286dacc084d0cb92587641a9333df14f5f474552dcf",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/tailwind.css",
+          "production_sha256": "1174830c007bc712527aa3524e2a0622e1e0e75db3687c0871d49800d96515e3",
+          "source_sha256": "1174830c007bc712527aa3524e2a0622e1e0e75db3687c0871d49800d96515e3",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/src/utils/server.js",
+          "production_sha256": "3e747ea8de1c93e7b5669730f43821a853fa63c6cf52350934c2ff6c2f0b16af",
+          "source_sha256": "3e747ea8de1c93e7b5669730f43821a853fa63c6cf52350934c2ff6c2f0b16af",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-Poe-AI/packages/agents/tailwind.config.js",
+          "production_sha256": "d18f2911c31df4f4db9a312d0172e629f709b8ee1da36f65d4cd5cee39eaff4d",
+          "source_sha256": "d18f2911c31df4f4db9a312d0172e629f709b8ee1da36f65d4cd5cee39eaff4d",
+          "trailing_lf_added": false
+        }
+      ]
+    },
+    {
+      "path": "packages/Open-AI-Design-Agent/packages/design-agent",
+      "upstream_url": "https://github.com/Anil-matcha/Open-AI-Design-Agent",
+      "former_gitlink": "ebc0ce7650baad0d13797ccd471c883e78be3161",
+      "license_or_declaration_path": "packages/Open-AI-Design-Agent/LICENSE",
+      "files": [
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/.gitignore",
+          "production_sha256": "679f5d92ffa640518d6475edab9fc410fb764b3757d6662ca70ebf48e7e0d6df",
+          "source_sha256": "679f5d92ffa640518d6475edab9fc410fb764b3757d6662ca70ebf48e7e0d6df",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/babel.config.json",
+          "production_sha256": "b3e09ea25d4af3d8d1b136d2b587a1eb9d92caf8d4ed369f60cf08b4b5a8c334",
+          "source_sha256": "b3e09ea25d4af3d8d1b136d2b587a1eb9d92caf8d4ed369f60cf08b4b5a8c334",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/package.json",
+          "production_sha256": "a438e6f4b141b7f72043221c60299c3ffaf6cc895b39956049a532576f4588b8",
+          "source_sha256": "a438e6f4b141b7f72043221c60299c3ffaf6cc895b39956049a532576f4588b8",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/postcss.config.js",
+          "production_sha256": "b78f5d0a0a449ecf58b6b6252e26cd2216c7aa41235e2d6d01a26b9a065cd439",
+          "source_sha256": "b78f5d0a0a449ecf58b6b6252e26cd2216c7aa41235e2d6d01a26b9a065cd439",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/src/CanvasArea.jsx",
+          "production_sha256": "ebc12d88f4a59a01a25aa979a8024748553a964885b9c6e57acd52ac806eaf65",
+          "source_sha256": "ebc12d88f4a59a01a25aa979a8024748553a964885b9c6e57acd52ac806eaf65",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/src/CreativeCanvas.jsx",
+          "production_sha256": "8360a80628b5267dd31d6e211306a27f14cc4c6dda905ae3524f94006e326742",
+          "source_sha256": "8360a80628b5267dd31d6e211306a27f14cc4c6dda905ae3524f94006e326742",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/src/components/PlanVisualizer.jsx",
+          "production_sha256": "417b383ff8ba7d57df2390277edffd31d7732751549bb69eefe8184e0c32d317",
+          "source_sha256": "417b383ff8ba7d57df2390277edffd31d7732751549bb69eefe8184e0c32d317",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/src/index.js",
+          "production_sha256": "0cca3aa154b01e8eda102f88b9681054e148318ac02df434a6a04758a735f3be",
+          "source_sha256": "0cca3aa154b01e8eda102f88b9681054e148318ac02df434a6a04758a735f3be",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/src/tailwind.css",
+          "production_sha256": "4cc346217def1d6a25d1d52482e25a758a53c94058b1e29b23458c328b3bb09b",
+          "source_sha256": "4cc346217def1d6a25d1d52482e25a758a53c94058b1e29b23458c328b3bb09b",
+          "trailing_lf_added": false
+        },
+        {
+          "path": "packages/Open-AI-Design-Agent/packages/design-agent/tailwind.config.js",
+          "production_sha256": "f3bc52d6a286e3a330f61c91dde6199b6b3de9f90292bbb29bc56c9c66fc029a",
+          "source_sha256": "f3bc52d6a286e3a330f61c91dde6199b6b3de9f90292bbb29bc56c9c66fc029a",
+          "trailing_lf_added": false
+        }
+      ]
+    }
+  ]
+}

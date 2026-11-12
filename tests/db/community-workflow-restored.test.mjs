@@ -4,7 +4,12 @@ import { readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-if (process.env.SUPDANCE_RESTORED_DRILL !== 'true' || new URL(process.env.DATABASE_URL).hostname !== 'one-db') throw new Error('Named restored ONE database required');
+// Protected restored snapshots are an explicit operational acceptance suite.
+// Ordinary CI must not require production snapshots or touch a live database.
+if (process.env.SUPDANCE_RESTORED_DRILL !== 'true') {
+  test('protected restored-snapshot acceptance', { skip: 'Requires the explicit named restored ONE database' }, () => {});
+} else {
+  if (!process.env.DATABASE_URL || new URL(process.env.DATABASE_URL).hostname !== 'one-db') throw new Error('Refusing any database outside the named restored ONE drill');
 const storage = await mkdtemp(join(tmpdir(), 'supdance-community-media-'));
 process.env.AMH_STORAGE_DIR = storage;
 process.env.STORAGE_PROVIDER = 'amh';
@@ -83,3 +88,5 @@ test('pagination has no double offset and featured filtering is applied', async 
 });
 
 test.after(async () => { await db.closePgPool(); await rm(storage, { recursive: true, force: true }); });
+
+}

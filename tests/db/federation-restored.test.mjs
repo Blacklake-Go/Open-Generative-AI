@@ -5,9 +5,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generateKeyPairSync, scryptSync } from 'node:crypto';
 
-if (process.env.SUPDANCE_RESTORED_DRILL !== 'true' || new URL(process.env.DATABASE_URL).hostname !== 'one-db') {
-  throw new Error('This test only runs against the named isolated restored ONE database.');
-}
+// Protected restored snapshots are an explicit operational acceptance suite.
+// Ordinary CI must not require production snapshots or touch a live database.
+if (process.env.SUPDANCE_RESTORED_DRILL !== 'true') {
+  test('protected restored-snapshot acceptance', { skip: 'Requires the explicit named restored ONE database' }, () => {});
+} else {
+  if (!process.env.DATABASE_URL || new URL(process.env.DATABASE_URL).hostname !== 'one-db') throw new Error('Refusing any database outside the named restored ONE drill');
 const db = await import('../../lib/db/index.js');
 const accounts = await import('../../lib/federation/accounts.js');
 const { snapshotLegacyFinance } = await import('../../lib/federation/legacyFinance.js');
@@ -127,3 +130,5 @@ test('main-site SSO is browser-bound, reuses the canonical identity and never au
     assert.deepEqual(await sourceFingerprints(), before);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+}
