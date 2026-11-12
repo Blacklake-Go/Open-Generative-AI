@@ -4,10 +4,6 @@ import { NextRequest } from 'next/server.js';
 import { middleware } from '../middleware.js';
 import { DEFAULT_LOCALE, normalizeLocale, isSupportedLocale } from '../lib/locales.js';
 import { getRequestLocale } from '../lib/i18n.js';
-import { queryOne, execute } from '../lib/application/dataAccess.js';
-import { closePgPool } from '../lib/db/pg.js';
-import { createSession, getUserBySession } from '../lib/services/auth.js';
-import { GET as getPreferences, PUT as updatePreferences } from '../app/api/user/preferences/route.js';
 
 test('1. 默认语言严格强制为英语 (en)，浏览器 Accept-Language 标头不能篡改默认语言', async () => {
   // 1.1 访问首页 /，浏览器为中文 Accept-Language，无 Cookie
@@ -99,69 +95,3 @@ test('3. URL 显式前缀路由始终受支持且正常解析', async () => {
   assert.ok(resJaAlias.headers.get('location')?.includes('/ja-JP/studio'));
 });
 
-test('4. 注册与登录用户的语言偏好完整生效闭环测试', async () => {
-  // 找到一个已有用户进行会话与偏好生命周期测试
-  const testUser = await queryOne('SELECT id, email, locale, social_links FROM users WHERE email = $1', ['admin@koyosim.com']);
-  assert.ok(testUser, '测试用户应存在');
-
-  // 创建真实会话
-  const session = await createSession(testUser.id);
-  const sessionCookie = `ko_session=${session.token}`;
-
-  // 4.1 默认用户查询偏好设置
-  const reqGetPref = new Request('https://supdance.com/api/user/preferences', {
-    headers: { cookie: sessionCookie },
-  });
-  const resGetPref = await getPreferences(reqGetPref);
-  const getPrefData = await resGetPref.json();
-  assert.equal(resGetPref.status, 200);
-  assert.equal(getPrefData.preferences.locale, 'en', '未显式修改过偏好的用户，GET 偏好设置中语言应为 en');
-
-  // 4.2 用户在个人中心 -> 账号与设置 -> 界面语言 中将语言设置为 简体中文 (zh-CN)
-  const reqPutZh = new Request('https://supdance.com/api/user/preferences', {
-    method: 'PUT',
-    headers: {
-      'content-type': 'application/json',
-      cookie: sessionCookie,
-    },
-    body: JSON.stringify({ locale: 'zh-CN' }),
-  });
-  const resPutZh = await updatePreferences(reqPutZh);
-  const putZhData = await resPutZh.json();
-  assert.equal(resPutZh.status, 200);
-  assert.equal(putZhData.preferences.locale, 'zh-CN');
-
-  // 验证响应中正确写入了 NEXT_LOCALE 与 locale Cookie
-  const setCookieHeader = resPutZh.headers.get('set-cookie') || '';
-  assert.ok(setCookieHeader.includes('NEXT_LOCALE=zh-CN'), 'PUT 响应必须包含 NEXT_LOCALE=zh-CN Cookie');
-  assert.ok(setCookieHeader.includes('locale=zh-CN'), 'PUT 响应必须包含 locale=zh-CN Cookie');
-
-  // 验证数据库中确实落库
-  const updatedUserRow = await queryOne('SELECT locale, social_links FROM users WHERE id = $1', [testUser.id]);
-  assert.equal(updatedUserRow.locale, 'zh-CN', '数据库 users.locale 必须更新为 zh-CN');
-  assert.equal(updatedUserRow.social_links?.preferences?.locale, 'zh-CN', '用户偏好中必须记录 explicit 语言习惯');
-
-  // 4.3 检验会话中取出的用户语言是否已同步为 zh-CN
-  const sessionUserZh = await getUserBySession(session.token);
-  assert.equal(sessionUserZh.locale, 'zh-CN', 'getUserBySession 必须反映已保存的 zh-CN 偏好');
-
-  // 4.4 模拟用户改回 英文 (en)
-  const reqPutEn = new Request('https://supdance.com/api/user/preferences', {
-    method: 'PUT',
-    headers: {
-      'content-type': 'application/json',
-      cookie: sessionCookie,
-    },
-    body: JSON.stringify({ locale: 'en' }),
-  });
-  const resPutEn = await updatePreferences(reqPutEn);
-  assert.equal(resPutEn.status, 200);
-  const userEnRow = await queryOne('SELECT locale, social_links FROM users WHERE id = $1', [testUser.id]);
-  assert.equal(userEnRow.locale, 'en');
-  assert.equal(userEnRow.social_links?.preferences?.locale, 'en');
-
-  const sessionUserEn = await getUserBySession(session.token);
-  assert.equal(sessionUserEn.locale, 'en');
-
-  await closePgPool();
-});

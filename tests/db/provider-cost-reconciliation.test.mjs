@@ -301,3 +301,33 @@ pgTest('reconciliation joins the caller transaction and rolls back with it', asy
   assert.equal(Number((await readCost(id)).reconciled_cost_usd), 1.4);
   assert.equal((await readEvents(id)).length, 1);
 });
+
+pgTest('admin HTTP reconciliation preserves credits and reported cost, audits the decision and replays once', async () => {
+  const { NextRequest } = await import('next/server.js');
+  const { randomUUID } = await import('node:crypto');
+  const auth = await import('../../lib/services/auth.js');
+  const route = await import('../../app/api/admin/cost-center/reconciliations/route.js');
+  const input = await fixture();
+  const costRecordId = await costs.insertProviderCostRecord({ ...input, creditsCharged:40, actualCostUsd:1, estimatedCostUsd:2, costSource:'provider_reported' });
+  const session = await auth.createSession(input.userId);
+  const origin='http://127.0.0.1:3100'; const key=randomUUID();
+  const request=(method='GET')=>new NextRequest(`${origin}/api/admin/cost-center/reconciliations?cost_record_id=${costRecordId}`,{
+    method,headers:{Origin:origin,Cookie:`ko_session=${session.token}`,...(method==='POST'?{'Content-Type':'application/json','Idempotency-Key':key}:{})},
+    ...(method==='POST'?{body:JSON.stringify({costRecordId,status:'invoice_matched',reconciledCostUsd:1.25,evidenceRef:'QA invoice receipt'})}:{}),
+  });
+  assert.equal((await route.GET(request())).status,403);
+  await db.execute("UPDATE auth_usr.users SET role='finance_admin' WHERE id=$1",[input.userId]);
+  assert.equal((await route.GET(request())).status,200);
+  const first=await route.POST(request('POST'));assert.equal(first.status,200);
+  const result=(await first.json()).data;
+  const replay=await route.POST(request('POST'));assert.equal(replay.status,200);
+  assert.equal((await replay.json()).data.eventId,result.eventId);
+  const detail=(await (await route.GET(request())).json()).data;
+  assert.equal(detail.events.length,1);
+  assert.equal(Number(detail.record.actual_cost_usd),1);
+  assert.equal(detail.record.credits_charged,40);
+  assert.equal(Number(detail.record.reconciled_cost_usd),1.25);
+  assert.equal(await readUserCredits(input.userId),120);
+  const audit=await db.queryOne("SELECT count(*)::int count FROM ops_bill.admin_audit_logs WHERE action='cost.reconcile' AND target_id=$1",[costRecordId]);
+  assert.equal(audit.count,1);
+});

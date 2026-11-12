@@ -107,6 +107,7 @@ test('P7 database integration tests create and remove an isolated temporary data
   assert.doesNotThrow(() => requireIsolatedTestDatabase('postgresql://test_user:test_pass@127.0.0.1:5432/p7_test_it_012345', ''));
   const unitRunner = await source('scripts/run-all-tests-isolated.mjs');
   assert.match(unitRunner, /if \(full === path\.join\(testsRoot, 'db'\)\) continue/);
+  assert.ok(unitRunner.includes('\\.test\\.(?:mjs|js)$'), 'Manual provider acceptance scripts must never be swept into unit CI');
   assert.match(runner, /TEST_DATABASE_URL/);
   assert.match(runner, /CREATE DATABASE/);
   assert.match(runner, /DROP DATABASE IF EXISTS/);

@@ -90,3 +90,7 @@ TEST_READY.md
 !/packages/Open-AI-Design-Agent/packages/
 /packages/Open-AI-Design-Agent/packages/*
 !/packages/Open-AI-Design-Agent/packages/design-agent/
+
+# This API source is not an operational log directory.
+!app/api/admin/system/logs/
+!app/api/admin/system/logs/route.js

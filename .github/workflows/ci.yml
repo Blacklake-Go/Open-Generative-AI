@@ -62,6 +62,18 @@ jobs:
       - name: Install dependencies (lockfile only)
         run: npm ci --include=dev
 
+      - name: Generate ephemeral signing and encryption keys for isolated CI
+        run: |
+          node --input-type=module <<'JS'
+          import { randomBytes } from 'node:crypto';
+          import { appendFileSync } from 'node:fs';
+          for (const name of ['OAUTH_STATE_SECRET', 'STORAGE_SECRETS_ENCRYPTION_KEY', 'AUTH_VERIFICATION_CODE_SECRET', 'BILLING_SESSION_SECRET']) {
+            const value = randomBytes(32).toString('hex');
+            process.stdout.write(`::add-mask::${value}\n`);
+            appendFileSync(process.env.GITHUB_ENV, `${name}=${value}\n`);
+          }
+          JS
+
       - name: Wait for PostgreSQL readiness
         run: |
           for i in $(seq 1 30); do

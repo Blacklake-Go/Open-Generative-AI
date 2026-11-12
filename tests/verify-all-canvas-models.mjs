@@ -5,6 +5,12 @@ import { GoogleAdapter } from '../lib/adapters/GoogleAdapter.js';
 import { getServerProviderApiKey } from '../lib/services/providerSecrets.js';
 import { getCanvasModelConfig, listCanvasModelCandidates, getCanvasAllowedModelIds } from '../lib/services/canvasModelConfig.js';
 
+// This is a manual operational acceptance script, not an automatic unit test.
+// Provider calls and catalog mutation need a separately approved test context.
+if (process.env.SUPDANCE_MANUAL_ACCEPTANCE !== 'true') {
+  throw new Error('Manual acceptance is disabled; select an isolated test context and explicitly approve provider spend first.');
+}
+
 async function main() {
   console.log('=== STEP 1: VERIFY CANVAS CONFIG DEFAULTS AND MOUNTS ===');
   const config = await getCanvasModelConfig();

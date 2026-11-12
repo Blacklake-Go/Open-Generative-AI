@@ -15,7 +15,7 @@ function collect(directory) {
     // general TEST_DATABASE_URL a second time during the unit-file sweep.
     if (full === path.join(testsRoot, 'db')) continue;
     if (entry.isDirectory()) files.push(...collect(full));
-    else if (/\.(?:mjs|js)$/.test(entry.name)) files.push(full);
+    else if (/\.test\.(?:mjs|js)$/.test(entry.name)) files.push(full);
   }
   return files.sort();
 }

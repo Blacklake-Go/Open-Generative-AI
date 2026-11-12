@@ -107,3 +107,30 @@ checks to make CI pass. Only test-local ephemeral result-encryption setup is add
 to the two generation integration fixtures. New restored-snapshot acceptance files
 remain separately guarded. Current full-suite totals must be refreshed after this
 reconciliation; earlier server-only 22-test results are not the final suite.
+
+## Final gate repairs and live security mitigation
+
+The combined tree captures the one real ignored runtime source file found during
+a fresh audit (`app/api/admin/system/logs/route.js`); nested node_modules and Apple
+metadata remain excluded. The log API retains permission checks, type allowlisting
+and bounded reads. Cost reconciliation orchestration moves behind an application
+service; repository transactions remain unchanged and unknown costs stay NULL.
+
+The obsolete role endpoint without password reverification is deleted in7c76822.
+All UI callers use the existing verified admin endpoint. While the full release
+is pending, production ONE and Canvas gateways reject only that legacy path with
+410. Each rule was backed up, tested on a loopback proxy, rolled back there, then
+applied. Current builds and financial databases are unchanged. Both3100 and3200
+processes share the same old ONE source/build/database and bind only to loopback.
+
+CI creates masked, ephemeral signing/encryption keys for the isolated job. Database
+preference lifecycle coverage now allocates its own ordinary fixture user inside
+the guarded disposable database, never a real administrator. The unit sweep only
+collects *.test.js / *.test.mjs; manual provider-generation and catalog-mutating
+verification scripts remain preserved but disabled by default and excluded. Two
+production-catalog-size/readiness acceptance cases require explicit
+SUPDANCE_CATALOG_ACCEPTANCE=true; normal CI reports them skipped. They do not
+fabricate provider health timestamps. Routing and price evidence behavior is
+covered separately by mandatory isolated fixtures. These skips are not production
+provider acceptance. The source timer restores the GitHub three-minute readiness
+contract; no production timer is activated by this code commit.

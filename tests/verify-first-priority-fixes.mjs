@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict';
+import { requireIsolatedTestDatabase } from '../scripts/test-database-guard.mjs';
 import { getPgPool, closePgPool, queryOne, execute, withTransaction } from '../lib/db/index.js';
 import * as modelsRepo from '../lib/repositories/models.js';
 import * as modelBrands from '../lib/services/modelBrands.js';
 import { resolveBrand } from '../lib/modelCenter/brandDictionary.js';
+
+// This is a manual operational acceptance script, not an automatic unit test.
+// Provider calls and catalog mutation need a separately approved test context.
+if (process.env.SUPDANCE_MANUAL_ACCEPTANCE !== 'true') {
+  throw new Error('Manual acceptance is disabled; select an isolated test context and explicitly approve provider spend first.');
+}
+const isolatedDatabase = requireIsolatedTestDatabase(process.env.TEST_DATABASE_URL, process.env.DATABASE_URL);
+process.env.DATABASE_URL = isolatedDatabase.toString();
 
 async function runTests() {
   console.log('=== STARTING FIRST PRIORITY VERIFICATION SUITE ===\n');
