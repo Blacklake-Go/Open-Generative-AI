@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Check, Eye, Image as ImageIcon, LoaderCircle, Pencil, RefreshCw, Search, Star, Video, X } from 'lucide-react';
 import { Card, StatusBadge } from '@/components/admin/AdminUi';
+import { Textarea } from '@/components/ui/textarea';
 
 const EMPTY_FORM = {
   id: '',
@@ -27,7 +28,7 @@ function statusTone(status) {
 }
 
 function statusLabel(status) {
-  return { published: '已发布', hidden: '已隐藏', banned: '已封禁' }[status] || status;
+  return { pending: '待审核', rejected: '已驳回', withdrawn: '已撤回', published: '已发布', hidden: '已隐藏', banned: '已封禁' }[status] || status;
 }
 
 function mediaLabel(type) {
@@ -77,6 +78,8 @@ export default function CommunityCasesManager({ canWrite }) {
     tags: Array.isArray(row.tags) ? row.tags.join(', ') : '',
     status: row.status || 'published',
     isFeatured: Boolean(row.is_featured),
+    expectedVersion: row.moderation_version,
+    moderationReason: row.moderation_reason || '',
   });
 
   const save = async (event) => {
@@ -95,11 +98,13 @@ export default function CommunityCasesManager({ canWrite }) {
           tags: editing.tags.split(',').map((tag) => tag.trim()).filter(Boolean),
           status: editing.status,
           isFeatured: editing.isFeatured,
+          expectedVersion: editing.expectedVersion,
+          moderationReason: editing.moderationReason,
         }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error?.message || '保存失败');
-      setFeedback({ type: 'success', message: editing.isFeatured ? '已保存，并已进入前台精选案例展示。' : '作品信息已保存。' });
+      setFeedback({ type: 'success', message: editing.isFeatured && editing.status === 'published' ? '已保存，并已进入前台精选案例展示。' : '作品审核与信息已保存。' });
       setEditing(null);
       await load();
     } catch (error) {
@@ -141,7 +146,7 @@ export default function CommunityCasesManager({ canWrite }) {
               <input value={filters.q} onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))} placeholder="搜索标题、作者、模型" className="h-10 w-full rounded-lg border border-white/10 bg-black/25 pl-9 pr-3 text-sm text-white outline-none focus:border-brand/50" />
             </label>
             <select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))} className="h-10 rounded-lg border border-white/10 bg-[#0a0a0a] px-3 text-xs text-gray-300 outline-none focus:border-brand/50">
-              <option value="">全部状态</option><option value="published">已发布</option><option value="hidden">已隐藏</option><option value="banned">已封禁</option>
+              <option value="">全部状态</option><option value="pending">待审核</option><option value="published">已发布</option><option value="rejected">已驳回</option><option value="hidden">已隐藏</option><option value="banned">已封禁</option><option value="withdrawn">已撤回</option>
             </select>
             <select value={filters.mediaType} onChange={(event) => setFilters((current) => ({ ...current, mediaType: event.target.value }))} className="h-10 rounded-lg border border-white/10 bg-[#0a0a0a] px-3 text-xs text-gray-300 outline-none focus:border-brand/50">
               <option value="">全部类型</option><option value="image">图像</option><option value="video">视频</option><option value="audio">音乐</option><option value="workflow">工作流</option>
@@ -193,7 +198,8 @@ export default function CommunityCasesManager({ canWrite }) {
             <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
               <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">作品标题</span><input required maxLength={255} value={editing.title} onChange={(event) => setEditing((current) => ({ ...current, title: event.target.value }))} className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-white outline-none focus:border-brand/50" /></label>
               <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">案例说明</span><textarea maxLength={2000} rows={5} value={editing.description} onChange={(event) => setEditing((current) => ({ ...current, description: event.target.value }))} placeholder="说明创作背景、适用场景或值得复用的方法" className="w-full resize-y rounded-lg border border-white/10 bg-black/30 px-3 py-3 text-sm leading-6 text-white outline-none focus:border-brand/50" /></label>
-              <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">使用模型</span><input maxLength={120} value={editing.modelName} onChange={(event) => setEditing((current) => ({ ...current, modelName: event.target.value }))} className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-white outline-none focus:border-brand/50" /></label><label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">发布状态</span><select value={editing.status} onChange={(event) => setEditing((current) => ({ ...current, status: event.target.value }))} className="h-11 w-full rounded-lg border border-white/10 bg-surface-raised px-3 text-sm text-white outline-none focus:border-brand/50"><option value="published">已发布 · 前台可见</option><option value="hidden">已隐藏 · 暂不展示</option><option value="banned">已封禁 · 违规内容</option></select></label></div>
+              <div className="grid gap-4 sm:grid-cols-2"><label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">使用模型</span><input maxLength={120} value={editing.modelName} onChange={(event) => setEditing((current) => ({ ...current, modelName: event.target.value }))} className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-white outline-none focus:border-brand/50" /></label><label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">发布状态</span><select value={editing.status} onChange={(event) => setEditing((current) => ({ ...current, status: event.target.value }))} className="h-11 w-full rounded-lg border border-white/10 bg-surface-raised px-3 text-sm text-white outline-none focus:border-brand/50"><option value="pending">待审核</option><option value="published">已发布 · 前台可见</option><option value="rejected">已驳回</option><option value="hidden">已隐藏 · 暂不展示</option><option value="banned">已封禁 · 违规内容</option></select></label></div>
+              <label className="block space-y-2"><span className="text-body text-ink-muted">审核原因</span><Textarea value={editing.moderationReason} onChange={(event) => setEditing((current) => ({ ...current, moderationReason: event.target.value }))} maxLength={1000} required={['hidden','banned','rejected'].includes(editing.status)} /></label>
               <label className="block"><span className="mb-2 block text-xs font-semibold text-gray-300">精选标签 <span className="font-normal text-gray-500">用逗号分隔，最多 10 个</span></span><input value={editing.tags} onChange={(event) => setEditing((current) => ({ ...current, tags: event.target.value }))} placeholder="产品广告, 超现实, Seedream" className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-white outline-none focus:border-brand/50" /></label>
               <label className={`flex items-start gap-3 rounded-xl border p-4 ${editing.isFeatured ? 'border-amber-400/30 bg-amber-400/[0.08]' : 'border-white/10 bg-white/[0.02]'}`}><input type="checkbox" checked={editing.isFeatured} onChange={(event) => setEditing((current) => ({ ...current, isFeatured: event.target.checked }))} className="mt-0.5 size-4 accent-amber-300" /><span><span className="flex items-center gap-1.5 text-sm font-semibold text-white"><Star className="size-4 text-amber-300" />加入精选案例展示</span><span className="mt-1 block text-xs leading-5 text-gray-500">仅当作品为“已发布”时，才会在社区顶部案例位显示。</span></span></label>
               <div className="rounded-xl border border-brand/20 bg-brand/[0.05] p-4 text-xs leading-5 text-ink-muted"><Check className="mb-1 size-4 text-brand" /><p>前台案例展示会保留原作品媒体、提示词、模型参数、点赞、评论和“做同款”链路。这里的编辑只维护运营文案与可见性，不会修改原始生成资产。</p></div>

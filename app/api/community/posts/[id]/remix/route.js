@@ -15,9 +15,9 @@ export async function POST(request, { params }) {
     const { id } = await params;
     const limit = await consumeRateLimit({ scope: 'community_remix_user', subject: user.id, limit: 60, windowMs: 60 * 60 * 1000 });
     if (!limit.allowed) return rateLimitResponse(limit);
-    await recordRemixCount(id);
-    return json({ ok: true });
+    const result = await recordRemixCount(id);
+    return json({ ok: true, ...result });
   } catch (error) {
-    return json({ error: '记录做同款失败' }, { status: 500 });
+    return json({ error: '记录做同款失败' }, { status: error.code === 'COMMUNITY_NOT_FOUND' ? 404 : 500 });
   }
 }

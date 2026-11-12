@@ -42,8 +42,8 @@ jobs:
 
     env:
       # 业务库只用于 schema 基线与只读校验；一切破坏性演练只碰 open_generative_ai_test。
-      DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai
-      TEST_DATABASE_URL: postgresql://ci_user:ci_pass@localhost:5432/open_generative_ai_test
+      DATABASE_URL: postgresql://ci_user:ci_pass@127.0.0.1:5432/open_generative_ai
+      TEST_DATABASE_URL: postgresql://ci_user:ci_pass@127.0.0.1:5432/open_generative_ai_test
       REDIS_URL: redis://localhost:6379
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
       E2E_BASE_URL: http://127.0.0.1:3100
@@ -56,11 +56,23 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies (lockfile only)
-        run: npm ci
+        run: npm ci --include=dev
+
+      - name: Generate ephemeral signing and encryption keys for isolated CI
+        run: |
+          node --input-type=module <<'JS'
+          import { randomBytes } from 'node:crypto';
+          import { appendFileSync } from 'node:fs';
+          for (const name of ['OAUTH_STATE_SECRET', 'STORAGE_SECRETS_ENCRYPTION_KEY', 'AUTH_VERIFICATION_CODE_SECRET', 'BILLING_SESSION_SECRET']) {
+            const value = randomBytes(32).toString('hex');
+            process.stdout.write(`::add-mask::${value}\n`);
+            appendFileSync(process.env.GITHUB_ENV, `${name}=${value}\n`);
+          }
+          JS
 
       - name: Wait for PostgreSQL readiness
         run: |
@@ -102,15 +114,17 @@ jobs:
       - name: i18n contract
         run: npm run test:i18n
 
+      - name: Build required library workspaces before component tests
+        run: npm run build:packages
+
       - name: Database integration suite (isolated temporary database)
         run: npm run test:db
 
       - name: Unit and contract suite
         run: npm run test:all:isolated
 
-      - name: Build workspaces and application
+      - name: Build applications
         run: |
-          npm run build:studio
           npm run vite:build
           npm run build
 
@@ -120,11 +134,31 @@ jobs:
       - name: Browser permission-boundary suite
         run: npm run test:e2e
 
+      - name: Package standalone candidate without runtime secrets or user uploads
+        env:
+          RELEASE_SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/package-standalone.mjs
+
+      - name: Smoke test the independent standalone runtime
+        run: node scripts/smoke-standalone.mjs
+
+      - name: Upload standalone candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-standalone-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            outputs/one-standalone.tgz
+            outputs/standalone-smoke.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Upload browser artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
-          path: .playwright-artifacts
+          path: |
+            .playwright-artifacts
+            outputs/standalone-smoke.log
           if-no-files-found: ignore
           retention-days: 7

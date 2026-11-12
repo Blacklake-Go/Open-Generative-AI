@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StudioHeader, { PageEyebrow } from '@/components/site/StudioHeader';
+import AboutFooter from '@/components/about/AboutFooter';
 
 export const metadata = { title: '退款政策与资产保障 | supdance' };
 
@@ -66,6 +67,7 @@ export default function RefundPage() {
           </div>
         </div>
       </main>
+      <AboutFooter locale="zh" compact />
     </div>
   );
 }

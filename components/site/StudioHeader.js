@@ -20,6 +20,7 @@ import TopMegaNavigation from '@/components/navigation/TopMegaNavigation';
 import { getMegaNavCategories } from '@/config/mega-navigation';
 import NavIcon from '@/components/navigation/NavIcon';
 import NavBadge from '@/components/navigation/NavBadge';
+import CommunityHeader from '@/components/community/CommunityHeader';
 
 export function BrandMark({ compact = false, locale = null }) {
   const { brand } = useBranding();
@@ -161,6 +162,8 @@ export default function StudioHeader({
       ? 'community'
       : (pathname === '/creations' ? 'creations' : null)
   );
+
+  if (process.env.NEXT_PUBLIC_SUPDANCE_COMMUNITY_MODE === 'true') return <CommunityHeader locale={activeLocale} />;
 
   return (
     <>

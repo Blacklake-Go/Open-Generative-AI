@@ -34,7 +34,7 @@ test('P7 CI includes static, repository, build and browser gates', async () => {
     'npm run security:secrets',
     'npm run test:i18n',
     'npm run test:db',
-    'npm run build:studio',
+    'npm run build:packages',
     'npm run vite:build',
     'npm run build',
     'npx playwright install --with-deps chromium',
@@ -46,7 +46,11 @@ test('P7 CI includes static, repository, build and browser gates', async () => {
   assert.match(packageJson.scripts['test:ci'], /format:check/);
   assert.match(packageJson.scripts['test:ci'], /release:check/);
   assert.match(packageJson.scripts['test:ci'], /security:secrets/);
-  assert.match(packageJson.scripts['test:ci'], /build:studio/);
+  assert.match(packageJson.scripts['test:ci'], /build:packages/);
+  assert.match(packageJson.scripts['build:packages'], /build:studio/);
+  assert.match(packageJson.scripts['build:packages'], /build:workflow/);
+  assert.match(packageJson.scripts['build:packages'], /build:agent/);
+  assert.match(packageJson.scripts['build:packages'], /build:design/);
   assert.match(packageJson.scripts['test:ci'], /vite:build/);
   assert.match(packageJson.scripts['test:ci'], /build/);
 });
@@ -101,6 +105,9 @@ test('P7 database integration tests create and remove an isolated temporary data
   assert.match(packageJson.scripts['test:db'], /run-isolated-pg-tests/);
   assert.match(runner, /const databaseName = `p7_test_it_/);
   assert.doesNotThrow(() => requireIsolatedTestDatabase('postgresql://test_user:test_pass@127.0.0.1:5432/p7_test_it_012345', ''));
+  const unitRunner = await source('scripts/run-all-tests-isolated.mjs');
+  assert.match(unitRunner, /if \(full === path\.join\(testsRoot, 'db'\)\) continue/);
+  assert.ok(unitRunner.includes('\\.test\\.(?:mjs|js)$'), 'Manual provider acceptance scripts must never be swept into unit CI');
   assert.match(runner, /TEST_DATABASE_URL/);
   assert.match(runner, /CREATE DATABASE/);
   assert.match(runner, /DROP DATABASE IF EXISTS/);

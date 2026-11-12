@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StudioHeader, { PageEyebrow } from '@/components/site/StudioHeader';
+import AboutFooter from '@/components/about/AboutFooter';
 
 export const metadata = { title: '内容安全准则与合规使用规范 | supdance' };
 
@@ -66,6 +67,7 @@ export default function ContentPolicyPage() {
           </div>
         </div>
       </main>
+      <AboutFooter locale="zh" compact />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StudioHeader, { PageEyebrow } from '@/components/site/StudioHeader';
+import AboutFooter from '@/components/about/AboutFooter';
 
 export const metadata = { title: '隐私政策 | supdance' };
 
@@ -130,6 +131,7 @@ export default function PrivacyPage() {
           </div>
         </div>
       </main>
+      <AboutFooter locale="zh" compact />
     </div>
   );
 }

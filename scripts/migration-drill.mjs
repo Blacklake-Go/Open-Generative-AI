@@ -214,7 +214,12 @@ async function apply(name, selectedFiles) {
   const client = new pg.Client({ connectionString: url.toString() });
   await client.connect();
   try {
-    for (const file of selectedFiles) await client.query(sqlByFile.get(file));
+    // Match the application migration runner's configured schema resolution.
+    await client.query('SET search_path TO ai_studio, ops_bill, auth_usr, sys_core, public');
+    for (const file of selectedFiles) {
+      try { await client.query(sqlByFile.get(file)); }
+      catch (error) { throw new Error(`Migration rehearsal failed at ${file}: ${error.message}`, { cause: error }); }
+    }
   } finally { await client.end(); }
 }
 
@@ -259,11 +264,17 @@ try {
   await createDatabase(emptyDb);
   await createDatabase(upgradeDb);
   await createDatabase(post044Db);
-  await apply(emptyDb, files);
   const migration044Prerequisite = files.find((name) => name === '043_zz_minimax_music_backup_model_prerequisite.sql');
   if (migration044Prerequisite) {
+    const prerequisiteIndex = files.indexOf(migration044Prerequisite);
+    await apply(emptyDb, files.slice(0, prerequisiteIndex + 1));
+    // Validate this intermediate prerequisite before later catalog migrations
+    // legitimately change audio into the dedicated music category.
     await verifyCanvas044Prerequisite(emptyDb);
+    await apply(emptyDb, files.slice(prerequisiteIndex + 1));
     await verifyLateCanvas044Prerequisite(post044Db, migration044Prerequisite);
+  } else {
+    await apply(emptyDb, files);
   }
   // Simulate a pre-P6 release at migration 008, then apply every subsequent
   // migration in the same order used by the production migration runner.

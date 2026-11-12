@@ -10,8 +10,12 @@ function collect(directory) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     if (entry.name === 'e2e' || entry.name === 'node_modules') continue;
     const full = path.join(directory, entry.name);
+    // Database integration runs only through test:db, which creates and drops
+    // a guarded p7_test_it_* database. Never execute those tests against the
+    // general TEST_DATABASE_URL a second time during the unit-file sweep.
+    if (full === path.join(testsRoot, 'db')) continue;
     if (entry.isDirectory()) files.push(...collect(full));
-    else if (/\.(?:mjs|js)$/.test(entry.name)) files.push(full);
+    else if (/\.test\.(?:mjs|js)$/.test(entry.name)) files.push(full);
   }
   return files.sort();
 }

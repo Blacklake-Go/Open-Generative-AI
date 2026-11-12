@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -13,10 +13,17 @@ test('persistCreationResult passes through relative or data urls', async () => {
   assert.equal(await persistCreationResult({ url: null }), null);
 });
 
-test('persistCreationResult falls back on non-existent or failing host', async () => {
-  const badUrl = 'http://127.0.0.1:59999/not-exist.png';
-  const result = await persistCreationResult({ url: badUrl, timeoutMs: 500 });
-  assert.equal(result, badUrl);
+test('persistCreationResult falls back on a failing host only outside production', async () => {
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'test';
+  try {
+    const badUrl = 'http://127.0.0.1:59999/not-exist.png';
+    const result = await persistCreationResult({ url: badUrl, timeoutMs: 500 });
+    assert.equal(result, badUrl);
+  } finally {
+    if (previous === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previous;
+  }
 });
 
 test('persistCreationResult throws instead of falling back in production', async () => {

@@ -49,7 +49,7 @@ export async function POST(request) {
     return json(result);
   } catch (error) {
     console.error('[billing/checkout]', error);
-    const status = error.code === 'IDEMPOTENCY_REQUIRED' || error.code === 'IDEMPOTENCY_CONFLICT' ? 422 : 500;
-    return json({ error: publicErrorMessage(error, '创建订单失败') }, { status });
+    const status = error.code === 'MAIN_WALLET_REQUIRED' ? 409 : error.code === 'IDEMPOTENCY_REQUIRED' || error.code === 'IDEMPOTENCY_CONFLICT' ? 422 : 500;
+    return json({ error: publicErrorMessage(error, '创建订单失败'), ...(error.code === 'MAIN_WALLET_REQUIRED' ? { code: error.code, rechargeUrl: 'https://www.supdance.com/settings?section=profile' } : {}) }, { status });
   }
 }

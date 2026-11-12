@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { NextRequest } from 'next/server';
 
 const testUrl = String(process.env.TEST_DATABASE_URL || '').trim();
@@ -43,6 +44,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
   const videoProviderModelId = `video_model_${suffix}`;
   const quoteKey = `quote_idem_${suffix}`;
   const importActor = { id: null, role: 'admin' };
+  const oldEncryptionKey = process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
   const oldApiKey = process.env.MUAPI_API_KEY;
   const oldNodeEnv = process.env.NODE_ENV;
   const oldPollInterval = process.env.PROVIDER_POLL_INTERVAL_MS;
@@ -194,6 +196,7 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     );
 
     process.env.NODE_ENV = 'test';
+    process.env.STORAGE_SECRETS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     process.env.PROVIDER_POLL_INTERVAL_MS = '1';
     await grantPerpetualCredits(userId, 500, 'local pricing integration fixture', userId, `pricing_test_grant_${suffix}`);
     const imageParameters = { task_type: 't2i', resolution: '1024x1024', num_images: 1 };
@@ -847,6 +850,8 @@ test('pricing control pins idempotent quotes, previews and rolls back imports, a
     await db.execute(`UPDATE ai_studio.ai_models SET capabilities = capabilities - 'supported_ratios' WHERE id=$1`, [modelId]);
   } finally {
     await db.execute('DELETE FROM ai_studio.exchange_rate_snapshots WHERE id=$1', [`fx_test_${suffix}`]).catch(() => {});
+    if (oldEncryptionKey === undefined) delete process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
+    else process.env.STORAGE_SECRETS_ENCRYPTION_KEY = oldEncryptionKey;
     if (oldApiKey === undefined) delete process.env.MUAPI_API_KEY;
     else process.env.MUAPI_API_KEY = oldApiKey;
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;

@@ -1,13 +1,7 @@
 import { withAdminErrorBoundary, requirePermission, okResponse, errorResponse } from '@/lib/admin/authz';
 import { PERMISSIONS } from '@/lib/admin/permissions';
 import { checkIdempotency, completeIdempotency, getRequiredIdempotencyKey, releaseIdempotency } from '@/lib/admin/idempotency';
-import { logAudit } from '@/lib/admin/audit';
-import {
-  getProviderCostRecord,
-  listCostReconciliationEvents,
-  listCostReconciliationQueue,
-  reconcileProviderCostRecord,
-} from '@/lib/repositories/costRecords';
+import { readCostReconciliations, recordCostReconciliation } from '@/lib/services/costReconciliation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,21 +22,12 @@ async function handleGET(request) {
   const status = String(searchParams.get('status') || '').trim() || null;
   const limit = searchParams.get('limit') || 50;
 
-  if (costRecordId) {
-    const record = await getProviderCostRecord(costRecordId);
-    if (!record) {
-      return errorResponse('COST_RECORD_NOT_FOUND', `成本记录 ${costRecordId} 不存在`, 404, guard.requestId);
-    }
-    return okResponse({
-      record,
-      events: await listCostReconciliationEvents(costRecordId, { limit }),
-    }, guard.requestId);
+  try {
+    return okResponse(await readCostReconciliations({ costRecordId, status, limit }), guard.requestId);
+  } catch (error) {
+    if (error?.code === 'COST_RECORD_NOT_FOUND') return errorResponse('COST_RECORD_NOT_FOUND', '成本记录不存在', 404, guard.requestId);
+    throw error;
   }
-
-  return okResponse({
-    rows: await listCostReconciliationQueue({ status, limit }),
-    status: status || null,
-  }, guard.requestId);
 }
 
 async function handlePOST(request) {
@@ -75,59 +60,27 @@ async function handlePOST(request) {
     return errorResponse('VALIDATION_ERROR', '必须提供 costRecordId', 422, guard.requestId);
   }
 
-  const before = await getProviderCostRecord(costRecordId);
-  if (!before) {
-    await releaseIdempotency(idemp.keyHash);
-    return errorResponse('COST_RECORD_NOT_FOUND', `成本记录 ${costRecordId} 不存在`, 404, guard.requestId);
-  }
-
   let result;
   try {
-    result = await reconcileProviderCostRecord({
+    result = await recordCostReconciliation({
       costRecordId,
       status: body.status,
       reconciledCostUsd: body.reconciledCostUsd ?? null,
       evidenceRef: body.evidenceRef ?? null,
       varianceReason: body.varianceReason ?? null,
-      actorId: guard.user.id,
+      actor: guard.user,
+      requestId: guard.requestId,
     });
   } catch (error) {
     await releaseIdempotency(idemp.keyHash);
     if (error?.code === 'COST_RECORD_NOT_FOUND') {
-      return errorResponse('COST_RECORD_NOT_FOUND', error.message, 404, guard.requestId);
+      return errorResponse('COST_RECORD_NOT_FOUND', '成本记录不存在', 404, guard.requestId);
     }
     if (error?.code === 'COST_RECONCILIATION_INVALID') {
-      return errorResponse('VALIDATION_ERROR', error.message, 422, guard.requestId);
+      return errorResponse('VALIDATION_ERROR', '请检查对账状态、金额、凭据与差异原因', 422, guard.requestId);
     }
     throw error;
   }
-
-  await logAudit({
-    actor: guard.user,
-    action: 'cost.reconcile',
-    targetType: 'provider_cost_record',
-    targetId: costRecordId,
-    riskLevel: 'medium',
-    before: {
-      status: before.reconciliation_status,
-      estimatedCostUsd: before.estimated_cost_usd,
-      providerReportedCostUsd: before.actual_cost_usd,
-      reconciledCostUsd: before.reconciled_cost_usd,
-      evidenceRef: before.billing_evidence_ref,
-      varianceReason: before.variance_reason,
-    },
-    after: {
-      status: result.status,
-      estimatedCostUsd: before.estimated_cost_usd,
-      providerReportedCostUsd: result.providerReportedCostUsd,
-      reconciledCostUsd: result.reconciledCostUsd,
-      varianceUsd: result.varianceUsd,
-      evidenceRef: result.evidenceRef,
-      varianceReason: result.varianceReason,
-      eventId: result.eventId,
-    },
-    requestId: guard.requestId,
-  });
 
   await completeIdempotency(idemp.keyHash, result);
   return okResponse(result, guard.requestId);

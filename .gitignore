@@ -41,7 +41,6 @@ data/backups/
 /.playwright-artifacts/
 /.ui-repair-preview/
 /.agents/
-/.impeccable/
 *.db
 *.tar
 *.tar.gz
@@ -74,3 +73,24 @@ TEST_READY.md
 .env
 .env.*
 !.env.example
+
+# Freeze production workspace libraries; unrelated upstream applications remain excluded.
+/packages/Vibe-Workflow/*
+!/packages/Vibe-Workflow/LICENSE
+!/packages/Vibe-Workflow/packages/
+/packages/Vibe-Workflow/packages/*
+!/packages/Vibe-Workflow/packages/workflow-builder/
+/packages/Open-Poe-AI/*
+!/packages/Open-Poe-AI/README.md
+!/packages/Open-Poe-AI/packages/
+/packages/Open-Poe-AI/packages/*
+!/packages/Open-Poe-AI/packages/agents/
+/packages/Open-AI-Design-Agent/*
+!/packages/Open-AI-Design-Agent/LICENSE
+!/packages/Open-AI-Design-Agent/packages/
+/packages/Open-AI-Design-Agent/packages/*
+!/packages/Open-AI-Design-Agent/packages/design-agent/
+
+# This API source is not an operational log directory.
+!app/api/admin/system/logs/
+!app/api/admin/system/logs/route.js

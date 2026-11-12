@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StudioHeader, { PageEyebrow } from '@/components/site/StudioHeader';
+import AboutFooter from '@/components/about/AboutFooter';
 
 export const metadata = { title: '服务条款 | supdance' };
 
@@ -76,6 +77,7 @@ export default function TermsPage() {
           </div>
         </div>
       </main>
+      <AboutFooter locale="zh" compact />
     </div>
   );
 }

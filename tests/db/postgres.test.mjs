@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { readdir } from 'node:fs/promises';
 
@@ -357,6 +358,7 @@ test('simulated generation settles once and releases once on provider failure', 
   const failureKey = `${key}_failure`;
   const mappingId = `p3_mapping_${suffix}`;
   const priceVersionId = `p3_price_${suffix}`;
+  const oldEncryptionKey = process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
   const oldApiKey = process.env.MUAPI_API_KEY;
   const oldNodeEnv = process.env.NODE_ENV;
 
@@ -394,6 +396,7 @@ test('simulated generation settles once and releases once on provider failure', 
         'p3-fixture-evidence','active','test-fixture',now())`, [priceVersionId, mappingId]);
     process.env.MUAPI_API_KEY = 'not-a-real-provider-key-for-local-tests';
     process.env.NODE_ENV = 'test';
+    process.env.STORAGE_SECRETS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
     await db.execute(`INSERT INTO ai_studio.exchange_rate_snapshots(id,base_currency,quote_currency,rate,source_type,observed_at,expires_at)
       VALUES($1,'USD','CNY',7.2,'manual',now(),now()+interval '1 day')`, [`p3_fx_${suffix}`]);
     await grantPerpetualCredits(userId, 30, 'P3 integration seed', userId, `p3:seed:${userId}`);
@@ -458,6 +461,8 @@ test('simulated generation settles once and releases once on provider failure', 
     await db.execute('DELETE FROM ai_studio.provider_models WHERE id = $1', [mappingId]).catch(() => {});
     await db.execute('DELETE FROM ai_studio.model_pricing WHERE model_id = $1', [modelId]).catch(() => {});
     await db.execute('DELETE FROM ai_studio.ai_models WHERE id = $1', [modelId]).catch(() => {});
+    if (oldEncryptionKey === undefined) delete process.env.STORAGE_SECRETS_ENCRYPTION_KEY;
+    else process.env.STORAGE_SECRETS_ENCRYPTION_KEY = oldEncryptionKey;
     if (oldApiKey === undefined) delete process.env.MUAPI_API_KEY;
     else process.env.MUAPI_API_KEY = oldApiKey;
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;

@@ -21,7 +21,7 @@ test('1. Migration 057 and Backfill Script exist and cover all requirements', ()
   assert.ok(fs.existsSync(scriptPath), 'backfill-and-recover-channels.mjs must exist');
 });
 
-test('2. Database state verification: capabilities, price versions, and provider health', async () => {
+test('2. Database state verification: capabilities, price versions, and provider health', {skip:process.env.SUPDANCE_CATALOG_ACCEPTANCE !== 'true' ? 'Requires an explicitly selected catalog snapshot; fixture DB size is not production readiness' : false}, async () => {
   const { queryOne, queryMany } = await import('../lib/db/connection.js');
   
   // 2.1 Provider models capabilities
@@ -77,9 +77,7 @@ test.after(async () => {
   await closePgPool().catch(() => {});
 });
 
-test('3. listActiveModels() returns selectable public models with active routes and capabilities', async () => {
-  const { query } = await import('../lib/db/connection.js');
-  await query("UPDATE ai_studio.ai_providers SET last_health_check_at = now() WHERE enabled = true");
+test('3. listActiveModels() returns selectable public models with active routes and capabilities', {skip:process.env.SUPDANCE_CATALOG_ACCEPTANCE !== 'true' ? 'Requires configured provider evidence and genuine health probes; never fabricates timestamps' : false}, async () => {
 
   const { listActiveModels } = await import('../lib/services/models.js');
   const { isSelectablePublicModel } = await import('../lib/modelCenter/publicDirectory.js');

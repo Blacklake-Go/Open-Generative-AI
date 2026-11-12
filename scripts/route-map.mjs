@@ -279,7 +279,7 @@ function securityFacts(src) {
   return {
     methods,
     mutating: methods.some((m) => !['GET', 'HEAD', 'OPTIONS'].includes(m)),
-    guardMutation: /(?:guardMutation|canvasMutationGuard)\(/.test(src),
+    guardMutation: /(?:guardMutation|canvasMutationGuard|federationMutationGuard)\(/.test(src),
     requirePermission: /requirePermission\(/.test(src),
     sameOriginOnly: /guardSameOrigin\(/.test(src),
     rateLimited: /consumeRateLimit\(|guardScopedProxyRequest\(/.test(src),

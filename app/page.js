@@ -3,6 +3,7 @@ import { normalizeLocale } from '@/lib/locales';
 import { getUserBySession } from '@/lib/services/auth';
 import { isChinaIp, resolveClientIp } from '@/lib/security/chinaIpBlock';
 import JimengHomePortal from '@/components/home/JimengHomePortal';
+import CommunityClient from '@/components/community/CommunityClient';
 
 export const metadata = {
   title: 'SupDance — AI Creative Workspace',
@@ -25,6 +26,8 @@ export default async function Home() {
   const headerLocale = headerList.get('x-locale');
   const targetLocale = normalizeLocale(user?.locale || cookieLocale || headerLocale || 'en');
   const googleOneTapEligible = !user && !isChinaIp(resolveClientIp(headerList).ip, headerList);
+
+  if (process.env.SUPDANCE_COMMUNITY_ENABLED === 'true') return <CommunityClient locale={targetLocale} />;
 
   return <JimengHomePortal locale={targetLocale} initialUser={user} googleOneTapEligible={googleOneTapEligible} />;
 }

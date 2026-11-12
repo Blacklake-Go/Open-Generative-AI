@@ -12,6 +12,7 @@ const extensions = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.css'
 // the exception hash-bound so an unrelated no-LF file still fails the gate.
 const immutableMigrationByteExceptions = new Map([
   ['lib/db/migrations/017_user_notifications.sql', '2b22010a836f38a0353edc938ecd7629775e19ea5c27b07095f32473b75e7d81'],
+  ['lib/db/migrations/087_attempt_route_decision_link.sql', '4518f2b12af05b7a4fa60fd5a9d64385757d09695d6e5e90f554d0d704eab449'],
 ]);
 const issues = [];
 for (const name of result.stdout.split(/\r?\n/).filter(Boolean)) {

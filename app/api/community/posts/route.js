@@ -2,6 +2,7 @@ import { getUserFromRequest, json } from '@/lib/services/auth';
 import { createCommunityPost, listCommunityPosts } from '@/lib/services/community';
 import { consumeRateLimit, guardMutation } from '@/lib/security/requestGuard';
 import { publicErrorMessage } from '@/lib/security/publicError';
+import { publicCommunityFailure } from '@/lib/community/errors';
 
 
 /** 限流主体：登录态按用户，其余按客户端 IP；XFF 由 nginx 单向写入。 */
@@ -78,6 +79,8 @@ export async function POST(request) {
     const body = await request.json();
     const {
       creationId,
+      assetId,
+      mainAssetId,
       title,
       description,
       mediaType,
@@ -90,13 +93,15 @@ export async function POST(request) {
       tags,
     } = body;
 
-    if (!mediaUrl) {
-      return json({ error: '缺少作品媒体资源地址' }, { status: 400 });
+    if (!assetId && !creationId && !mainAssetId) {
+      return json({ error: '请选择你拥有的作品' }, { status: 400 });
     }
 
     const post = await createCommunityPost({
       userId: user.id,
       creationId,
+      assetId,
+      mainAssetId,
       title: title || '未命名作品',
       description,
       mediaType: mediaType || 'image',
@@ -112,6 +117,7 @@ export async function POST(request) {
     return json({ post }, { status: 201 });
   } catch (error) {
     console.error('[community create error]', error);
-    return json({ error: publicErrorMessage(error, '发布到社区失败') }, { status: 500 });
+    const failure = publicCommunityFailure(error);
+    return json({ error: failure?.message || publicErrorMessage(error, '发布到社区失败'), code: failure?.code }, { status: failure?.status || 500 });
   }
 }

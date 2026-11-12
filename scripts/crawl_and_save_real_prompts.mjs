@@ -264,7 +264,7 @@ const fs = require('fs');
 const { Pool } = require('/home/wwwroot/AI/domain/supdance.com/web/node_modules/pg');
 
 const pool = new Pool({
-  connectionString: 'postgres://supdance_ai_user:Koyosim_Ai%402026_PgPass%21@127.0.0.1:5432/supdance_ai'
+  connectionString: process.env.DATABASE_URL
 });
 
 async function update() {
