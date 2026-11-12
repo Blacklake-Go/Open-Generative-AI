@@ -66,6 +66,7 @@
 | `/admin/admins` | `app/admin/admins/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/audit` | `app/admin/audit/page.js` | **admin** | noindex | — | 2 | `admin` | 有 | — |
 | `/admin/community` | `app/admin/community/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
+| `/admin/community/campaigns` | `app/admin/community/campaigns/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/content/analytics` | `app/admin/content/analytics/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | — |
 | `/admin/content/banners` | `app/admin/content/banners/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=banner` |
 | `/admin/content/branding` | `app/admin/content/branding/page.js` | **admin** | noindex | force-dynamic | 2 | `admin` | 有 | `/admin/settings?tab=branding` |
