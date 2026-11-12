@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { requireIsolatedTestDatabase } from './test-database-guard.mjs';
 const database=requireIsolatedTestDatabase(process.env.TEST_DATABASE_URL,process.env.DATABASE_URL);
@@ -11,6 +11,12 @@ const child=spawn(process.execPath,[path.join(directory,'server.js')],{cwd:direc
 let diagnostics='';for(const stream of [child.stdout,child.stderr])stream.on('data',chunk=>{diagnostics=(diagnostics+chunk.toString()).slice(-12000);});
 const checks=[];
 try {
+  // The exported package must carry its own migration tooling; it cannot rely
+  // on the build checkout or production node_modules during rollout.
+  const migration=spawnSync(process.execPath,['--experimental-loader','./scripts/server-only-loader.mjs','scripts/migrate.mjs'],{cwd:directory,env:{...process.env,DATABASE_URL:database.href},encoding:'utf8',timeout:120000});
+  diagnostics+=migration.stdout||'';diagnostics+=migration.stderr||'';
+  if(migration.error||migration.status!==0)throw new Error('Standalone migration tooling failed against the isolated test database');
+  checks.push({migrationTooling:true,isolatedDatabaseOnly:true,status:'passed'});
   let ready=false;
   for(let count=0;count<90;count++) {
     if(child.exitCode!==null)throw new Error('Standalone server exited before liveness');
