@@ -141,3 +141,22 @@ current database row and does not offer an old spending link to a shadow account
 The restored acceptance test includes a temporary7-credit shadow fixture, rejects
 its legacy generation and deletes only that fixture; original financial hashes
 still match. Existing pre-link accounts retain their historical spending path.
+
+## Reproducible candidate artifact
+
+Next15.5.26 emits its supported standalone runtime. After the ordinary clean
+Linux build and browser suite pass, CI packages only tracked public assets,
+compiled static files, traced dependencies and reviewed schema tooling. Loaded
+.env files and user uploads are refused; accidentally embedded private CI/runtime
+environment values fail packaging. Metadata records both the source head and
+the actual checked-out merge commit/tree plus BUILD_ID and Node version. A second
+standalone process is tested on a different loopback port and isolated test DB
+for liveness, account/community/locale pages and referenced compiled assets. This
+is artifact acceptance, not real provider success or production readiness. The
+artifact is usable only after the complete workflow succeeds and deployment
+backup/canary/rollback gates also pass.
+
+Component contracts import the built Studio library. Clean CI therefore builds
+all four library workspaces before component tests; it does not rely on generated
+dist files left by the server or a developer checkout. The same order is recorded
+in test:ci, while the complete application build remains a separate later gate.

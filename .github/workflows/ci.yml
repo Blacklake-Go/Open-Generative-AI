@@ -114,15 +114,17 @@ jobs:
       - name: i18n contract
         run: npm run test:i18n
 
+      - name: Build required library workspaces before component tests
+        run: npm run build:packages
+
       - name: Database integration suite (isolated temporary database)
         run: npm run test:db
 
       - name: Unit and contract suite
         run: npm run test:all:isolated
 
-      - name: Build workspaces and application
+      - name: Build applications
         run: |
-          npm run build:packages
           npm run vite:build
           npm run build
 
@@ -132,11 +134,31 @@ jobs:
       - name: Browser permission-boundary suite
         run: npm run test:e2e
 
+      - name: Package standalone candidate without runtime secrets or user uploads
+        env:
+          RELEASE_SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/package-standalone.mjs
+
+      - name: Smoke test the independent standalone runtime
+        run: node scripts/smoke-standalone.mjs
+
+      - name: Upload standalone candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-standalone-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            outputs/one-standalone.tgz
+            outputs/standalone-smoke.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Upload browser artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
-          path: .playwright-artifacts
+          path: |
+            .playwright-artifacts
+            outputs/standalone-smoke.log
           if-no-files-found: ignore
           retention-days: 7

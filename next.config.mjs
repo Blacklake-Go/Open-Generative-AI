@@ -4,6 +4,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.js');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   experimental: { cpus: 2 },
   transpilePackages: ['studio', 'ai-agent', 'workflow-builder', 'design-agent'],
   distDir: process.env.NEXT_DIST_DIR || '.next',
